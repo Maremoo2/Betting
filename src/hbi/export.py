@@ -20,6 +20,8 @@ DEFAULT_EXPORT_TABLES = (
     "provider_market_snapshots",
     "provider_fetch_audit",
     "provider_payloads",
+    "runner_fundamental_snapshots",
+    "fundamental_model_runs",
     "shadow_tickets",
     "shadow_daily_reports",
 )
