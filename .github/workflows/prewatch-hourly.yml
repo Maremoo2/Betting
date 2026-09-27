@@ -1,0 +1,131 @@
+name: HBI PRE-WATCH Hourly
+
+on:
+  schedule:
+    # Covers both CET and CEST. The Python gate below enforces 09:00-21:59 Europe/Oslo.
+    - cron: "0 7-20 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Manual run mode"
+        required: false
+        default: "MANUAL"
+        type: choice
+        options:
+          - MANUAL
+          - MORNING_DISCOVERY
+          - HOURLY_WATCH
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: hbi-prewatch-hourly
+  cancel-in-progress: false
+
+jobs:
+  prewatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install HBI
+        run: pip install -e ".[dev]"
+
+      - name: Resolve Oslo schedule
+        id: gate
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MANUAL_MODE: ${{ inputs.mode }}
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import os
+          from hbi.schedule import evaluate_schedule, github_output
+
+          if os.environ["EVENT_NAME"] == "workflow_dispatch":
+              mode = os.environ.get("MANUAL_MODE") or "MANUAL"
+              print("should_run=true")
+              print(f"mode={mode}")
+              print("reason=manual workflow_dispatch")
+          else:
+              print(github_output(evaluate_schedule()))
+          PY
+
+      - name: Show schedule decision
+        run: |
+          echo "should_run=${{ steps.gate.outputs.should_run }}"
+          echo "mode=${{ steps.gate.outputs.mode }}"
+          echo "reason=${{ steps.gate.outputs.reason }}"
+
+      - name: Restore previous HBI state
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HBI_DB_PATH: data/hbi.sqlite
+        run: python -m hbi.state_artifact
+
+      - name: Initialize / migrate database
+        if: steps.gate.outputs.should_run == 'true'
+        run: hbi --db data/hbi.sqlite init-db
+
+      - name: Run HBI PRE-WATCH
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          HBI_DB_PATH: data/hbi.sqlite
+          HBI_RUN_MODE: ${{ steps.gate.outputs.mode }}
+          HBI_RUN_AUDIT_PATH: run-audit.json
+          # Real providers will populate these canonical files in a future provider step.
+          # With no provider configured the run is an audited NOOP rather than fake data.
+        run: python -m hbi.scheduled_run
+
+      - name: Optional Google Sheets mirror
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          HBI_SPREADSHEET_ID: ${{ secrets.HBI_SPREADSHEET_ID }}
+          HBI_GOOGLE_CREDENTIALS_JSON: ${{ secrets.HBI_GOOGLE_CREDENTIALS_JSON }}
+        shell: bash
+        run: |
+          if [[ -z "$HBI_SPREADSHEET_ID" || -z "$HBI_GOOGLE_CREDENTIALS_JSON" ]]; then
+            echo "Google Sheets secrets not configured; skipping mirror."
+            exit 0
+          fi
+          pip install -e ".[sheets]"
+          CREDS="$RUNNER_TEMP/hbi-google-service-account.json"
+          printf '%s' "$HBI_GOOGLE_CREDENTIALS_JSON" > "$CREDS"
+          hbi --db data/hbi.sqlite sync-sheets             --spreadsheet-id "$HBI_SPREADSHEET_ID"             --credentials "$CREDS"
+
+      - name: Export audit tables
+        if: steps.gate.outputs.should_run == 'true'
+        run: hbi --db data/hbi.sqlite export hbi-export --format csv
+
+      - name: Persist HBI state for next run
+        if: steps.gate.outputs.should_run == 'true' && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hbi-state
+          path: |
+            data/hbi.sqlite
+            run-audit.json
+            hbi-export/
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
+
+      - name: Upload failure diagnostics
+        if: steps.gate.outputs.should_run == 'true' && failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hbi-failure-${{ github.run_id }}
+          path: |
+            run-audit.json
+            hbi-export/
+          if-no-files-found: ignore
+          retention-days: 14
