@@ -37,8 +37,7 @@ def evaluate_schedule(now: datetime | None = None) -> ScheduleDecision:
 
 def github_output(decision: ScheduleDecision) -> str:
     """Return newline-separated key=value output for $GITHUB_OUTPUT."""
-    return "
-".join(
+    return "\n".join(
         (
             f"should_run={'true' if decision.should_run else 'false'}",
             f"mode={decision.mode}",
