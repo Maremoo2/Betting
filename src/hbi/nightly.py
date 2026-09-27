@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, time, timedelta
+from zoneinfo import ZoneInfo
 
 from .benchmark import closing_line_value
 from .providers.rikstoto import RikstotoClient
 from .storage import SQLiteStore
+
+OSLO = ZoneInfo("Europe/Oslo")
 
 
 @dataclass(frozen=True)
@@ -125,17 +128,28 @@ def settle_open_shadow_tickets(
             won = finishes.get(selection) == 1
             gross = stake * price if won else 0.0
         elif product == "P":
+            final_odds = raceday_result.get("finalOdds")
+            place_by_race = (
+                final_odds.get("placeOdds")
+                if isinstance(final_odds, dict)
+                else None
+            )
+            race_place_odds = (
+                place_by_race.get(str(race_number))
+                if isinstance(place_by_race, dict)
+                else None
+            )
+            if not isinstance(race_place_odds, dict) or not finishes:
+                pending += 1
+                continue
             price = _final_odds(
                 raceday_result,
                 product_key="placeOdds",
                 race_number=race_number,
                 selection=selection,
             )
-            if price is None:
-                pending += 1
-                continue
-            won = selection in finishes and price > 0
-            gross = stake * price if won else 0.0
+            won = selection in race_place_odds and price is not None and price > 0
+            gross = stake * price if won and price is not None else 0.0
         else:
             # Publicly observed result contracts used here expose reliable V/P
             # final odds. Other products stay pending until an official dividend
@@ -176,7 +190,12 @@ def settle_open_shadow_tickets(
 
 
 def build_daily_report(store: SQLiteStore, report_date: date) -> dict[str, object]:
-    tickets = store.shadow_tickets_for_date(report_date.isoformat())
+    local_start = datetime.combine(report_date, time.min, tzinfo=OSLO)
+    local_end = local_start + timedelta(days=1)
+    tickets = store.shadow_tickets_between(
+        local_start.astimezone(UTC),
+        local_end.astimezone(UTC),
+    )
     executable = [
         ticket
         for ticket in tickets
@@ -184,6 +203,7 @@ def build_daily_report(store: SQLiteStore, report_date: date) -> dict[str, objec
     ]
     settled = [ticket for ticket in executable if ticket.get("status") == "SETTLED"]
     stake = sum(float(ticket.get("stake_nok") or 0) for ticket in executable)
+    settled_stake = sum(float(ticket.get("stake_nok") or 0) for ticket in settled)
     gross = sum(float(ticket.get("gross_return_nok") or 0) for ticket in settled)
     net = sum(float(ticket.get("net_pnl_nok") or 0) for ticket in settled)
     wins = sum(float(ticket.get("gross_return_nok") or 0) > 0 for ticket in settled)
@@ -191,7 +211,7 @@ def build_daily_report(store: SQLiteStore, report_date: date) -> dict[str, objec
         ticket.get("clv") is not None and float(ticket["clv"]) > 0
         for ticket in settled
     )
-    roi = None if stake <= 0 else net / stake
+    roi = None if settled_stake <= 0 else net / settled_stake
 
     by_product: dict[str, dict[str, float | int]] = {}
     for ticket in executable:
@@ -213,6 +233,7 @@ def build_daily_report(store: SQLiteStore, report_date: date) -> dict[str, objec
         "report_date": report_date.isoformat(),
         "generated_at_utc": datetime.now(UTC).isoformat(),
         "stake_nok": stake,
+        "settled_stake_nok": settled_stake,
         "gross_return_nok": gross,
         "net_pnl_nok": net,
         "roi": roi,
