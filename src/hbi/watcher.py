@@ -86,6 +86,14 @@ def run_watcher(
         )
         audit.snapshots_inserted += inserted
         audit.fetch_failures += failures
+        raw = json.loads(str(race.get("raw_json") or "{}"))
+        pool_inserted, pool_failures = collector.collect_pool_context(
+            raceday_key=str(race["provider_raceday_key"]),
+            products=list(raw.get("pools") or []),
+            observed_at=current,
+        )
+        audit.snapshots_inserted += pool_inserted
+        audit.fetch_failures += pool_failures
 
     target_schedule: list[tuple[datetime, dict[str, object]]] = []
     for race in due:
@@ -115,6 +123,14 @@ def run_watcher(
         )
         audit.snapshots_inserted += inserted
         audit.fetch_failures += failures
+        raw = json.loads(str(race.get("raw_json") or "{}"))
+        pool_inserted, pool_failures = collector.collect_pool_context(
+            raceday_key=str(race["provider_raceday_key"]),
+            products=list(raw.get("pools") or []),
+            observed_at=live_now,
+        )
+        audit.snapshots_inserted += pool_inserted
+        audit.fetch_failures += pool_failures
 
         result = run_win_shadow_decision(
             store,
