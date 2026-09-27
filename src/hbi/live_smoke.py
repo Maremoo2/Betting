@@ -3,13 +3,13 @@ from __future__ import annotations
 import json
 import os
 import tempfile
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 
 from .fundamental import run_and_persist_fundamental
-from .rikstoto_collector import RikstotoCollector
 from .providers.rikstoto import RikstotoClient
+from .rikstoto_collector import RikstotoCollector
 from .storage import SQLiteStore
 
 ROOT = Path(__file__).parents[2]
@@ -26,6 +26,7 @@ class LiveSmokeResult:
     selected_race_id: str | None = None
     selected_raceday_key: str | None = None
     selected_race_number: int | None = None
+    selected_country: str | None = None
     selected_track: str | None = None
     selected_start_time_utc: str | None = None
     fundamental_endpoint_ok: bool = False
@@ -37,6 +38,8 @@ class LiveSmokeResult:
     win_market_supported: bool = False
     win_market_rows: int = 0
     provider_fetch_failures: int = 0
+    probes: list[dict[str, object]] = field(default_factory=list)
+    failed_fetches: list[dict[str, object]] = field(default_factory=list)
     error: str | None = None
 
 
@@ -46,6 +49,12 @@ def _store(path: str | Path) -> SQLiteStore:
     if MIGRATIONS.exists():
         store.apply_migrations(MIGRATIONS)
     return store
+
+
+def _race_priority(race, now: datetime) -> tuple[int, int, datetime]:
+    country_rank = {"NO": 0, "SE": 1, "DK": 2}.get(race.country_code, 3)
+    future_rank = 0 if race.start_time > now else 1
+    return future_rank, country_rank, race.start_time
 
 
 def run_live_smoke() -> LiveSmokeResult:
@@ -71,42 +80,72 @@ def run_live_smoke() -> LiveSmokeResult:
         result.error = "racedays endpoint returned no races"
         return result
 
-    future = sorted(
-        (race for race in races if race.start_time > now),
-        key=lambda race: race.start_time,
+    candidates = sorted(
+        (race for race in races if "V" in race.single_leg_products),
+        key=lambda race: _race_priority(race, now),
     )
-    ordered = future or sorted(races, key=lambda race: race.start_time, reverse=True)
-    selected = next(
-        (race for race in ordered if "V" in race.single_leg_products),
-        ordered[0],
-    )
+    if not candidates:
+        candidates = sorted(races, key=lambda race: _race_priority(race, now))
 
-    result.selected_race_id = selected.race_id
-    result.selected_raceday_key = selected.raceday_key
-    result.selected_race_number = selected.race_number
-    result.selected_track = selected.raceday_name or selected.track_code
-    result.selected_start_time_utc = selected.start_time.isoformat()
-    result.win_market_supported = "V" in selected.single_leg_products
+    distinct = []
+    seen_racedays: set[str] = set()
+    for race in candidates:
+        if race.raceday_key in seen_racedays:
+            continue
+        seen_racedays.add(race.raceday_key)
+        distinct.append(race)
+        if len(distinct) >= 8:
+            break
 
+    selected = distinct[0]
     with tempfile.TemporaryDirectory() as tmp:
         store = _store(Path(tmp) / "live-smoke.sqlite")
         collector = RikstotoCollector(store, client)
         collector.discover(now)
 
-        fundamental_inserted, fundamental_ok, _ = collector.collect_fundamentals(
-            raceday_key=selected.raceday_key,
-            race_number=selected.race_number,
-            race_id=selected.race_id,
-            observed_at=now,
-            products=[
-                *selected.single_leg_products,
-                *selected.pools,
-            ],
-        )
-        result.fundamental_endpoint_ok = fundamental_ok
-        result.fundamental_snapshots = fundamental_inserted
+        successful = None
+        for race in distinct:
+            inserted, ok, source = collector.collect_fundamentals(
+                raceday_key=race.raceday_key,
+                race_number=race.race_number,
+                race_id=race.race_id,
+                observed_at=now,
+                products=[
+                    *race.single_leg_products,
+                    *race.pools,
+                ],
+            )
+            result.probes.append(
+                {
+                    "race_id": race.race_id,
+                    "country": race.country_code,
+                    "track": race.raceday_name or race.track_code,
+                    "race_number": race.race_number,
+                    "start_time_utc": race.start_time.isoformat(),
+                    "single_leg_products": list(race.single_leg_products),
+                    "pools": list(race.pools),
+                    "fundamental_ok": ok,
+                    "fundamental_snapshots": inserted,
+                    "source": source,
+                }
+            )
+            if ok and inserted >= 2:
+                successful = race
+                break
 
-        if fundamental_ok:
+        selected = successful or selected
+        result.selected_race_id = selected.race_id
+        result.selected_raceday_key = selected.raceday_key
+        result.selected_race_number = selected.race_number
+        result.selected_country = selected.country_code
+        result.selected_track = selected.raceday_name or selected.track_code
+        result.selected_start_time_utc = selected.start_time.isoformat()
+        result.win_market_supported = "V" in selected.single_leg_products
+
+        if successful is not None:
+            result.fundamental_endpoint_ok = True
+            rows = store.latest_runner_fundamentals(selected.race_id, before=now)
+            result.fundamental_snapshots = len(rows)
             run = run_and_persist_fundamental(
                 store,
                 race_id=selected.race_id,
@@ -128,14 +167,20 @@ def run_live_smoke() -> LiveSmokeResult:
             result.win_market_rows = inserted
             result.provider_fetch_failures += failures
 
-        result.provider_fetch_failures += sum(
-            1
-            for row in store.fetch_table("provider_fetch_audit")
-            if not bool(row["success"])
-        )
+        audits = store.fetch_table("provider_fetch_audit")
+        failed = [row for row in audits if not bool(row["success"])]
+        result.provider_fetch_failures = len(failed)
+        result.failed_fetches = [
+            {
+                "endpoint": row["endpoint"],
+                "status_code": row["status_code"],
+                "error_message": row["error_message"],
+            }
+            for row in failed[-30:]
+        ]
 
     if not result.fundamental_endpoint_ok:
-        result.error = "no usable Rikstoto base-program fundamentals for selected race"
+        result.error = "no usable Rikstoto base-program fundamentals across smoke probes"
     return result
 
 
