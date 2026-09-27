@@ -15,6 +15,7 @@ OSLO = ZoneInfo("Europe/Oslo")
 
 class EndpointConfidence(StrEnum):
     USER_VERIFIED = "USER_VERIFIED"
+    LIVE_SMOKE_VERIFIED = "LIVE_SMOKE_VERIFIED"
     OPEN_SOURCE_OBSERVED = "OPEN_SOURCE_OBSERVED"
     HISTORICAL_FRONTEND_INFERRED = "HISTORICAL_FRONTEND_INFERRED"
 
@@ -72,6 +73,7 @@ class RikstotoClient:
         "/game/{raceday}/odds/tv/{race}": EndpointConfidence.OPEN_SOURCE_OBSERVED,
         "/game/{raceday}/odds/t/{race}": EndpointConfidence.OPEN_SOURCE_OBSERVED,
         "/racedays/{raceday}/scratched": EndpointConfidence.OPEN_SOURCE_OBSERVED,
+        "/racedays/{raceday}/starts": EndpointConfidence.LIVE_SMOKE_VERIFIED,
         "/racedays/{raceday}/raceInfo": EndpointConfidence.OPEN_SOURCE_OBSERVED,
         "/results/racedays/{raceday}/raceresults": EndpointConfidence.OPEN_SOURCE_OBSERVED,
         "/results/raceDays/{raceday}/{race}/completeresults": (
@@ -174,6 +176,9 @@ class RikstotoClient:
 
     def scratched(self, raceday_key: str) -> FetchResult:
         return self._fetch(f"/racedays/{raceday_key}/scratched")
+
+    def starts(self, raceday_key: str) -> FetchResult:
+        return self._fetch(f"/racedays/{raceday_key}/starts")
 
     def race_info(self, raceday_key: str) -> FetchResult:
         return self._fetch(f"/racedays/{raceday_key}/raceInfo")
