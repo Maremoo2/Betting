@@ -49,11 +49,11 @@ class RikstotoCollector:
         races = self.client.discover_races(fetch)
 
         for race in races:
-            local_date = race.start_time.astimezone(self.client.parse_timestamp(race.start_time_raw).tzinfo)
+            local_date = race.start_time_raw[:10]
             self.store.upsert_race(
                 {
                     "race_id": race.race_id,
-                    "race_date": local_date.date().isoformat(),
+                    "race_date": local_date,
                     "country": race.country_code or "UNKNOWN",
                     "track": race.raceday_name or race.track_code,
                     "race_no": race.race_number,
@@ -178,6 +178,87 @@ class RikstotoCollector:
                 except ValueError:
                     pass
         return inserted
+
+
+    def collect_pool_context(
+        self,
+        *,
+        raceday_key: str,
+        products: list[str],
+        observed_at: datetime,
+    ) -> tuple[int, int]:
+        """Persist raw multi-leg/public-pool payloads when historical endpoints still work.
+
+        These endpoints were visible in older public Rikstoto frontend source. They
+        are treated as optional research inputs and never required for the core
+        single-race collector.
+        """
+        inserted = failures = 0
+
+        timeline = self.client.product_timeline(raceday_key)
+        self._audit(timeline, observed_at)
+        if timeline.success and isinstance(timeline.payload, dict):
+            digest = hashlib.sha256(
+                f"{raceday_key}|timeline|{observed_at.isoformat()}".encode()
+            ).hexdigest()
+            inserted += int(
+                self.store.insert_provider_payload(
+                    payload_id=digest,
+                    provider=self.PROVIDER,
+                    category="PRODUCT_TIMELINE",
+                    provider_raceday_key=raceday_key,
+                    observed_at=observed_at,
+                    source_uri=timeline.url,
+                    payload=timeline.payload,
+                )
+            )
+        else:
+            failures += 1
+
+        investments = self.client.product_investments(raceday_key)
+        self._audit(investments, observed_at)
+        if investments.success and isinstance(investments.payload, dict):
+            digest = hashlib.sha256(
+                f"{raceday_key}|investments|{observed_at.isoformat()}".encode()
+            ).hexdigest()
+            inserted += int(
+                self.store.insert_provider_payload(
+                    payload_id=digest,
+                    provider=self.PROVIDER,
+                    category="PRODUCT_INVESTMENTS",
+                    provider_raceday_key=raceday_key,
+                    observed_at=observed_at,
+                    source_uri=investments.url,
+                    payload=investments.payload,
+                )
+            )
+        else:
+            failures += 1
+
+        for product in sorted(set(products)):
+            if product not in {"DD", "V4", "V4X", "V5", "V5A", "V5B", "V64", "V65", "V75", "V85"}:
+                continue
+            addition = self.client.program_addition(raceday_key, product)
+            self._audit(addition, observed_at)
+            if addition.success and isinstance(addition.payload, dict):
+                digest = hashlib.sha256(
+                    f"{raceday_key}|{product}|addition|{observed_at.isoformat()}".encode()
+                ).hexdigest()
+                inserted += int(
+                    self.store.insert_provider_payload(
+                        payload_id=digest,
+                        provider=self.PROVIDER,
+                        category="PROGRAM_ADDITION",
+                        provider_raceday_key=raceday_key,
+                        product=product,
+                        observed_at=observed_at,
+                        source_uri=addition.url,
+                        payload=addition.payload,
+                    )
+                )
+            else:
+                failures += 1
+        return inserted, failures
 
     def collect_market(
         self,
