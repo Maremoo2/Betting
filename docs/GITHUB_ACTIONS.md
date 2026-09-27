@@ -62,3 +62,15 @@ to the target spreadsheet.
 - one workflow at a time via GitHub Actions concurrency
 - state only advances on successful runs
 - failed runs can upload diagnostics but do not replace the successful state artifact
+
+
+## Nightly Research Observatory backup
+
+The 00:30 Europe/Oslo settlement workflow also runs Research Observatory v1. It exports
+the canonical database to CSV and JSON, verifies SQLite integrity, produces SHA-256
+hashes, and uploads a unique artifact named
+`hbi-research-backup-<github-run-id>` with requested 90-day retention.
+
+The rolling `hbi-state` artifact remains separate and is still used for state
+continuity between scheduled runs. Immutable research backups are for audit/recovery,
+not as the normal state-restore source.

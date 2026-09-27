@@ -591,6 +591,88 @@ class SQLiteStore:
                 for row in rows
             }
 
+    def get_shadow_decision_run(
+        self,
+        decision_run_id: str,
+    ) -> dict[str, object] | None:
+        with self.connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM shadow_decision_runs WHERE decision_run_id=?",
+                (decision_run_id,),
+            ).fetchone()
+            return None if row is None else dict(row)
+
+    def insert_shadow_decision_run(self, run: dict[str, object]) -> bool:
+        columns = (
+            "decision_run_id", "race_id", "provider_raceday_key", "product",
+            "created_at_utc", "race_start_time_utc", "decision_status", "reason",
+            "shadow_model_version", "fundamental_model_version",
+            "source_market_observed_at_utc", "target_minutes_to_start",
+            "actual_minutes_to_start", "execution_latency_seconds", "field_size",
+            "fundamental_probabilities_json", "market_probabilities_json",
+            "combined_probabilities_json", "model_market_conflict_score", "ticket_count",
+        )
+        values = [run.get(column) for column in columns]
+        with self.connect() as connection:
+            cursor = connection.execute(
+                f"INSERT OR IGNORE INTO shadow_decision_runs ({','.join(columns)}) "
+                f"VALUES ({','.join('?' for _ in columns)})",
+                values,
+            )
+            return cursor.rowcount == 1
+
+    def upsert_race_research_evaluation(self, evaluation: dict[str, object]) -> None:
+        columns = (
+            "race_id", "shadow_model_version", "fundamental_model_version",
+            "decision_time_utc", "outcome_settled_at_utc", "winner_selection_id",
+            "field_size", "fundamental_log_loss", "market_log_loss",
+            "combined_log_loss", "fundamental_brier", "market_brier",
+            "combined_brier", "model_market_conflict_score",
+            "source_market_observed_at_utc", "created_at_utc",
+        )
+        values = [evaluation.get(column) for column in columns]
+        with self.connect() as connection:
+            connection.execute(
+                f"INSERT INTO race_research_evaluations ({','.join(columns)}) "
+                f"VALUES ({','.join('?' for _ in columns)}) "
+                "ON CONFLICT(race_id,shadow_model_version) DO UPDATE SET "
+                "fundamental_model_version=excluded.fundamental_model_version,"
+                "decision_time_utc=excluded.decision_time_utc,"
+                "outcome_settled_at_utc=excluded.outcome_settled_at_utc,"
+                "winner_selection_id=excluded.winner_selection_id,"
+                "field_size=excluded.field_size,"
+                "fundamental_log_loss=excluded.fundamental_log_loss,"
+                "market_log_loss=excluded.market_log_loss,"
+                "combined_log_loss=excluded.combined_log_loss,"
+                "fundamental_brier=excluded.fundamental_brier,"
+                "market_brier=excluded.market_brier,"
+                "combined_brier=excluded.combined_brier,"
+                "model_market_conflict_score=excluded.model_market_conflict_score,"
+                "source_market_observed_at_utc=excluded.source_market_observed_at_utc,"
+                "created_at_utc=excluded.created_at_utc",
+                values,
+            )
+
+    def upsert_research_daily_report(self, report: dict[str, object]) -> None:
+        columns = (
+            "report_date", "generated_at_utc", "schema_version", "data_health_json",
+            "evaluation_json", "trend_json", "markdown_report",
+        )
+        values = [report.get(column) for column in columns]
+        with self.connect() as connection:
+            connection.execute(
+                f"INSERT INTO research_daily_reports ({','.join(columns)}) "
+                f"VALUES ({','.join('?' for _ in columns)}) "
+                "ON CONFLICT(report_date) DO UPDATE SET "
+                "generated_at_utc=excluded.generated_at_utc,"
+                "schema_version=excluded.schema_version,"
+                "data_health_json=excluded.data_health_json,"
+                "evaluation_json=excluded.evaluation_json,"
+                "trend_json=excluded.trend_json,"
+                "markdown_report=excluded.markdown_report",
+                values,
+            )
+
     def create_shadow_ticket(self, ticket: dict[str, object]) -> bool:
         columns = (
             "ticket_id", "dedupe_key", "created_at_utc", "decision_time_utc", "race_id",
@@ -708,6 +790,8 @@ class SQLiteStore:
             "provider_market_snapshots", "provider_fetch_audit", "shadow_tickets",
             "shadow_daily_reports", "provider_payloads",
             "runner_fundamental_snapshots", "fundamental_model_runs",
+            "shadow_decision_runs", "race_research_evaluations",
+            "research_daily_reports",
         }
         if table not in allowed:
             raise ValueError("unsupported table")
@@ -722,6 +806,8 @@ class SQLiteStore:
             "provider_market_snapshots", "provider_fetch_audit", "shadow_tickets",
             "shadow_daily_reports", "provider_payloads",
             "runner_fundamental_snapshots", "fundamental_model_runs",
+            "shadow_decision_runs", "race_research_evaluations",
+            "research_daily_reports",
         }
         if table not in allowed:
             raise ValueError("unsupported table")

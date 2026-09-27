@@ -61,6 +61,10 @@ def test_shadow_decision_requires_fundamental_probabilities(tmp_path):
     assert result.status == "NOT_EXECUTABLE"
     rows = store.fetch_table("shadow_tickets")
     assert rows[0]["reject_reason"] == "NO_FUNDAMENTAL_PREDICTIONS"
+    decisions = store.fetch_table("shadow_decision_runs")
+    assert len(decisions) == 1
+    assert decisions[0]["decision_status"] == "NOT_EXECUTABLE"
+    assert decisions[0]["reason"] == "NO_FUNDAMENTAL_PREDICTIONS"
 
 
 def test_shadow_decision_can_create_frozen_paper_bet(tmp_path):
@@ -94,6 +98,15 @@ def test_shadow_decision_can_create_frozen_paper_bet(tmp_path):
     assert ticket["status"] == "SHADOW_BET"
     assert json.loads(ticket["selections_json"]) == ["1"]
     assert ticket["stake_nok"] == 25.0
+    decision = store.fetch_table("shadow_decision_runs")[0]
+    assert decision["decision_status"] == "SHADOW_BET"
+    assert decision["ticket_count"] == 1
+    assert json.loads(decision["fundamental_probabilities_json"]) == {
+        "1": 0.7,
+        "2": 0.3,
+    }
+    assert json.loads(decision["market_probabilities_json"])
+    assert json.loads(decision["combined_probabilities_json"])
 
 
 class SettlementClient(RikstotoClient):
@@ -170,3 +183,45 @@ def test_nightly_settlement_and_report(tmp_path):
     assert report["tickets"] == 1
     assert report["winning_tickets"] == 1
     assert report["net_pnl_nok"] == 37.5
+
+
+
+def test_first_t4_decision_is_frozen_across_repeated_watcher_runs(tmp_path):
+    store = _store(tmp_path)
+    _market(store)
+    race_start = datetime(2026, 9, 27, 18, 0, tzinfo=UTC)
+    first_time = datetime(2026, 9, 27, 17, 56, tzinfo=UTC)
+
+    first = run_win_shadow_decision(
+        store,
+        race_id="r1",
+        provider_raceday_key="BJ_NR_2026-09-27",
+        race_start_at=race_start,
+        decision_time=first_time,
+    )
+    assert first.status == "NOT_EXECUTABLE"
+
+    for selection, probability in (("1", 0.7), ("2", 0.3)):
+        store.insert_prediction(
+            prediction_id=f"late-{selection}",
+            race_id="r1",
+            selection_id=selection,
+            created_at=datetime(2026, 9, 27, 17, 57, tzinfo=UTC),
+            model_name="fundamental",
+            model_version="late",
+            layer="FUNDAMENTAL",
+            probability=probability,
+            feature_as_of=datetime(2026, 9, 27, 17, 57, tzinfo=UTC),
+        )
+
+    second = run_win_shadow_decision(
+        store,
+        race_id="r1",
+        provider_raceday_key="BJ_NR_2026-09-27",
+        race_start_at=race_start,
+        decision_time=datetime(2026, 9, 27, 17, 58, tzinfo=UTC),
+    )
+
+    assert second.status == "NOT_EXECUTABLE"
+    assert store.count("shadow_decision_runs") == 1
+    assert store.count("shadow_tickets") == 1
