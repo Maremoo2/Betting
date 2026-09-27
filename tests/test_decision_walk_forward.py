@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from hbi.decision import DecisionPolicy, assess_value
 from hbi.domain import Decision, RejectStatus
@@ -41,7 +41,7 @@ def test_unresolved_conflict_never_directly_bets():
 
 
 def test_walk_forward_window_compares_model_to_market():
-    t0 = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    t0 = datetime(2026, 1, 1, tzinfo=UTC)
     races = [
         EvaluatedRace(
             race_id="r1",
