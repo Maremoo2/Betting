@@ -35,7 +35,7 @@ class GovernanceValidation:
 def load_governance(path: str | Path) -> dict[str, Any]:
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
-        raise ValueError("governance document must be a JSON object")
+        raise TypeError("governance document must be a JSON object")
     return payload
 
 
