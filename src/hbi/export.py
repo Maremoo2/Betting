@@ -25,6 +25,12 @@ DEFAULT_EXPORT_TABLES = (
     "shadow_decision_runs",
     "race_research_evaluations",
     "research_daily_reports",
+    "decision_provenance",
+    "system_run_manifests",
+    "integrity_audits",
+    "challenger_registry",
+    "challenger_forward_events",
+    "counterfactual_runs",
     "shadow_tickets",
     "shadow_daily_reports",
 )
