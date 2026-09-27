@@ -135,6 +135,25 @@ def run_win_shadow_decision(
 ) -> ShadowRunResult:
     current = decision_time or datetime.now(UTC)
     rules = policy or ShadowPolicy()
+    frozen_id = _decision_run_id(
+        race_id,
+        "V",
+        rules.model_version,
+        rules.target_minutes_to_start,
+    )
+    existing = store.get_shadow_decision_run(frozen_id)
+    if existing is not None:
+        return ShadowRunResult(
+            race_id=race_id,
+            created=0,
+            status=str(existing["decision_status"]),
+            reason=(
+                None
+                if existing.get("reason") is None
+                else str(existing.get("reason"))
+            ),
+        )
+
     rows = store.latest_provider_market(race_id, "V")
     if not rows:
         _persist_decision_run(
