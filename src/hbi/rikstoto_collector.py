@@ -40,7 +40,10 @@ class RikstotoCollector:
 
     @staticmethod
     def _discipline(sport_type: str) -> str:
-        return {"T": "trot", "G": "gallop"}.get(sport_type.upper(), sport_type.lower() or "unknown")
+        return {"T": "trot", "G": "gallop"}.get(
+            sport_type.upper(),
+            sport_type.lower() or "unknown",
+        )
 
     def discover(self, now: datetime | None = None) -> list[RikstotoRace]:
         observed = now or datetime.now(UTC)
@@ -267,13 +270,20 @@ class RikstotoCollector:
         race_number: int,
         race_id: str,
         observed_at: datetime | None = None,
+        products: set[str] | None = None,
     ) -> tuple[int, int]:
         observed = observed_at or datetime.now(UTC)
-        calls = (
-            ("V", self.client.win_odds(raceday_key, race_number)),
-            ("P", self.client.place_odds(raceday_key, race_number)),
-            ("TV", self.client.twin_odds(raceday_key, race_number)),
-            ("T", self.client.triple_odds(raceday_key, race_number)),
+        enabled = products or {"V", "P", "TV", "T"}
+        fetchers = {
+            "V": self.client.win_odds,
+            "P": self.client.place_odds,
+            "TV": self.client.twin_odds,
+            "T": self.client.triple_odds,
+        }
+        calls = tuple(
+            (product, fetchers[product](raceday_key, race_number))
+            for product in ("V", "P", "TV", "T")
+            if product in enabled
         )
         inserted = failures = 0
         for product, fetch in calls:
