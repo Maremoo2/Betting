@@ -1,0 +1,13 @@
+# HBI strategy and research-governance ownership.
+# GitHub CODEOWNERS is advisory unless branch protection requires reviews.
+# The Protected Strategy Files workflow provides the hard CI gate.
+
+/src/hbi/fundamental.py @Maremoo2
+/src/hbi/probability.py @Maremoo2
+/src/hbi/engine.py @Maremoo2
+/src/hbi/decision.py @Maremoo2
+/src/hbi/shadow.py @Maremoo2
+/src/hbi/race_difficulty.py @Maremoo2
+/src/hbi/governance.py @Maremoo2
+/src/hbi/promotion.py @Maremoo2
+/docs/research_governance.json @Maremoo2
