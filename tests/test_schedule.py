@@ -1,18 +1,18 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
 
 from hbi.schedule import evaluate_schedule
 
 
 def test_summer_utc_conversion_hits_oslo_09():
-    decision = evaluate_schedule(datetime(2026, 7, 1, 7, 0, tzinfo=timezone.utc))
+    decision = evaluate_schedule(datetime(2026, 7, 1, 7, 0, tzinfo=UTC))
     assert decision.should_run
     assert decision.mode == "MORNING_DISCOVERY"
     assert decision.local_time.hour == 9
 
 
 def test_winter_utc_conversion_hits_oslo_09():
-    decision = evaluate_schedule(datetime(2026, 12, 1, 8, 0, tzinfo=timezone.utc))
+    decision = evaluate_schedule(datetime(2026, 12, 1, 8, 0, tzinfo=UTC))
     assert decision.should_run
     assert decision.mode == "MORNING_DISCOVERY"
     assert decision.local_time.hour == 9
