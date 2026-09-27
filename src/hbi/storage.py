@@ -22,15 +22,44 @@ class SQLiteStore:
     path: str | Path
 
     def connect(self) -> sqlite3.Connection:
-        connection = sqlite3.connect(str(self.path))
+        if str(self.path) != ":memory:":
+            Path(self.path).parent.mkdir(parents=True, exist_ok=True)
+        connection = sqlite3.connect(str(self.path), timeout=5.0)
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA foreign_keys = ON")
+        connection.execute("PRAGMA busy_timeout = 5000")
+        if str(self.path) != ":memory:":
+            connection.execute("PRAGMA journal_mode = WAL")
         return connection
 
     def initialize(self, schema_path: str | Path) -> None:
         schema = Path(schema_path).read_text(encoding="utf-8")
         with self.connect() as connection:
             connection.executescript(schema)
+
+    def apply_migrations(self, migrations_dir: str | Path) -> list[str]:
+        """Apply *.sql files once, in filename order."""
+        directory = Path(migrations_dir)
+        applied: list[str] = []
+        with self.connect() as connection:
+            known = {
+                row[0]
+                for row in connection.execute(
+                    "SELECT migration_id FROM schema_migrations"
+                )
+            }
+            for path in sorted(directory.glob("*.sql")):
+                migration_id = path.name
+                if migration_id in known:
+                    continue
+                connection.executescript(path.read_text(encoding="utf-8"))
+                connection.execute(
+                    "INSERT INTO schema_migrations (migration_id,applied_at_utc) "
+                    "VALUES (?,?)",
+                    (migration_id, datetime.now().astimezone().isoformat()),
+                )
+                applied.append(migration_id)
+        return applied
 
     def upsert_race(self, race: dict[str, object]) -> None:
         columns = (
@@ -270,4 +299,12 @@ class SQLiteStore:
             return [dict(row) for row in connection.execute(f"SELECT * FROM {table}")]
 
     def count(self, table: str) -> int:
-        return len(self.fetch_table(table))
+        allowed = {
+            "races", "runners", "evidence", "market_snapshots", "predictions",
+            "race_diagnostics", "model_versions", "decisions", "review_flags",
+            "prewatch_events", "outcomes", "schema_migrations",
+        }
+        if table not in allowed:
+            raise ValueError("unsupported table")
+        with self.connect() as connection:
+            return int(connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])
