@@ -52,6 +52,8 @@ Implemented in this repository:
 - market-free `FUNDAMENTAL_CHAMPION_V1_1` shadow probabilities
 - best-effort T-4 shadow watcher every five minutes
 - immutable shadow ticket ledger and nightly settlement/report
+- Research Observatory v1 with data-health, calibration, model-vs-market and CLV/P&L reporting
+- immutable nightly SQLite + CSV + JSON research backups with integrity hashes
 - **market-only benchmark** for log-loss and Brier evaluation
 - decision-price vs closing-price / CLV evaluation primitive
 - Brier/log-loss/calibration helpers
@@ -194,3 +196,20 @@ See [docs/RIKSTOTO_PROVIDER.md](docs/RIKSTOTO_PROVIDER.md) for endpoint provenan
 
 See [docs/FUNDAMENTAL_CHAMPION_V1.md](docs/FUNDAMENTAL_CHAMPION_V1.md) for the exact
 market-free formula, point-in-time rules and promotion gate.
+
+
+## Research Observatory
+
+The Shadow Champion remains frozen while the repository accumulates prospective data.
+At 00:30 Europe/Oslo, after settlement, HBI now builds a separate Research Observatory
+report covering data health, T-4 timing, provider failures, fundamental/market/combined
+log loss and Brier, calibration, model-market conflict, CLV and paper P/L.
+
+Every first T-4 decision is frozen in `shadow_decision_runs`, including PASS and
+NOT_EXECUTABLE races, so later evaluation is not limited to the bets that happened to
+be placed.
+
+The nightly workflow also creates a unique research backup containing SQLite, CSV,
+JSON and SHA-256 manifest files with requested 90-day artifact retention.
+
+See [docs/RESEARCH_OBSERVATORY.md](docs/RESEARCH_OBSERVATORY.md).
