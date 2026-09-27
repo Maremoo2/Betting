@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -27,7 +27,7 @@ def test_combined_probability_sums_to_one():
 
 
 def test_point_in_time_rejects_future_source():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     with pytest.raises(PointInTimeViolation):
         validate_record(
             PointInTimeRecord(
@@ -55,7 +55,7 @@ def test_high_difficulty_can_reject_without_touching_probabilities():
 
 
 def test_market_path_uses_probability_direction():
-    t0 = datetime(2026, 9, 27, 10, 0, tzinfo=timezone.utc)
+    t0 = datetime(2026, 9, 27, 10, 0, tzinfo=UTC)
     metrics = calculate_market_path(
         [
             MarketSnapshot("r1", "h1", t0, 6.0, 1000),
