@@ -106,6 +106,9 @@ the market baseline?
 ## Current implementation status
 
 Implemented:
+- Research Observatory v1 for prospective data-health and model/market evaluation
+- frozen T-4 decision audit covering BET, PASS and NOT_EXECUTABLE
+- immutable nightly research backups with SQLite integrity verification and SHA-256
 - read-only Rikstoto provider with explicit endpoint-provenance levels
 - live-smoke-verified Rikstoto `/starts` canonical race-field snapshots
 - Swedish ATG point-in-time market-free lifetime-history enrichment
