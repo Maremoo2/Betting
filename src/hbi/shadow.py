@@ -72,7 +72,24 @@ def run_win_shadow_decision(
         for row in rows
         if row.get("odds_decimal") is not None and float(row["odds_decimal"]) > 1
     }
-    fundamental = store.latest_predictions(race_id, layer=rules.fundamental_layer)
+    fundamental_run = store.latest_fundamental_model_run(race_id, before=current)
+    if fundamental_run is not None and not bool(fundamental_run["shadow_eligible"]):
+        reason = str(fundamental_run.get("reason") or "FUNDAMENTAL_NOT_SHADOW_ELIGIBLE")
+        return _record_not_executable(
+            store,
+            race_id=race_id,
+            raceday_key=provider_raceday_key,
+            decision_time=current,
+            race_start_at=race_start_at,
+            policy=rules,
+            reason=reason,
+        )
+
+    fundamental = store.latest_predictions(
+        race_id,
+        layer=rules.fundamental_layer,
+        before=current,
+    )
     if not fundamental:
         return _record_not_executable(
             store,
