@@ -97,10 +97,40 @@ CREATE TABLE IF NOT EXISTS decisions (
     fair_odds REAL,
     available_price REAL,
     minimum_price REAL,
+    expected_close_price REAL,
+    actual_close_price REAL,
+    closing_line_value REAL,
     model_market_conflict_score REAL,
     race_difficulty_score REAL,
     reject_reason TEXT,
     stake_nok REAL NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS review_flags (
+    flag_id TEXT PRIMARY KEY,
+    race_id TEXT NOT NULL REFERENCES races(race_id),
+    selection_id TEXT,
+    flag_type TEXT NOT NULL,
+    note TEXT,
+    source_uri TEXT NOT NULL,
+    source_published_at_utc TEXT NOT NULL,
+    captured_at_utc TEXT NOT NULL,
+    confidence REAL NOT NULL CHECK(confidence BETWEEN 0 AND 1),
+    resolved_at_utc TEXT
+);
+
+CREATE TABLE IF NOT EXISTS prewatch_events (
+    event_id TEXT PRIMARY KEY,
+    race_id TEXT NOT NULL REFERENCES races(race_id),
+    selection_id TEXT,
+    captured_at_utc TEXT NOT NULL,
+    action TEXT NOT NULL,
+    reasons_json TEXT NOT NULL,
+    probability_move_pp REAL,
+    relative_odds_move_pct REAL,
+    pool_growth_pct REAL,
+    minutes_to_start REAL,
+    policy_version TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS outcomes (
