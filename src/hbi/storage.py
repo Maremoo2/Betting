@@ -566,13 +566,19 @@ class SQLiteStore:
         race_id: str,
         *,
         layer: str,
+        before: datetime | None = None,
     ) -> dict[str, float]:
+        query = (
+            "SELECT selection_id, probability, created_at_utc FROM predictions "
+            "WHERE race_id=? AND layer=?"
+        )
+        params: list[object] = [race_id, layer]
+        if before is not None:
+            query += " AND created_at_utc<=?"
+            params.append(before.isoformat())
+        query += " ORDER BY created_at_utc DESC"
         with self.connect() as connection:
-            rows = connection.execute(
-                "SELECT selection_id, probability, created_at_utc FROM predictions "
-                "WHERE race_id=? AND layer=? ORDER BY created_at_utc DESC",
-                (race_id, layer),
-            )
+            rows = connection.execute(query, params)
             output: dict[str, float] = {}
             for row in rows:
                 selection = str(row["selection_id"])
