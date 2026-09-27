@@ -3,7 +3,7 @@ name: HBI Rikstoto 5m Shadow Watcher
 on:
   schedule:
     # Covers 09:00-21:59 Europe/Oslo across CET/CEST; Python gate filters exact local hours.
-    - cron: "*/5 7-20 * * *"
+    - cron: "*/5 7-22 * * *"
   workflow_dispatch:
 
 permissions:
@@ -38,8 +38,8 @@ jobs:
             echo "mode=MANUAL_SHADOW_WATCH" >> "$GITHUB_OUTPUT"
           else
             python - <<'PY' >> "$GITHUB_OUTPUT"
-          from hbi.schedule import evaluate_schedule, github_output
-          print(github_output(evaluate_schedule()))
+          from hbi.schedule import evaluate_shadow_watcher_schedule, github_output
+          print(github_output(evaluate_shadow_watcher_schedule()))
           PY
           fi
 
