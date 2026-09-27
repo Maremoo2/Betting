@@ -795,6 +795,8 @@ class SQLiteStore:
             "provider_market_snapshots", "provider_fetch_audit", "shadow_tickets",
             "shadow_daily_reports", "provider_payloads",
             "runner_fundamental_snapshots", "fundamental_model_runs",
+            "shadow_decision_runs", "race_research_evaluations",
+            "research_daily_reports",
         }
         if table not in allowed:
             raise ValueError("unsupported table")
