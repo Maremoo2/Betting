@@ -284,7 +284,6 @@ class SQLiteStore:
                 ),
             )
 
-
     def upsert_provider_race_ref(
         self,
         *,
@@ -594,7 +593,7 @@ class SQLiteStore:
             "race_diagnostics", "model_versions", "decisions", "review_flags",
             "prewatch_events", "outcomes", "schema_migrations", "provider_race_refs",
             "provider_market_snapshots", "provider_fetch_audit", "shadow_tickets",
-            "shadow_daily_reports",
+            "shadow_daily_reports", "provider_payloads",
         }
         if table not in allowed:
             raise ValueError("unsupported table")
