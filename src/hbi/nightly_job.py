@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -25,7 +25,7 @@ def main() -> None:
         store.apply_migrations(MIGRATIONS)
 
     settlement = settle_open_shadow_tickets(store, client=RikstotoClient())
-    report_date = datetime.now(UTC).astimezone(OSLO).date()
+    report_date = datetime.now(UTC).astimezone(OSLO).date() - timedelta(days=1)
     report = build_daily_report(store, report_date)
     payload = {
         "settlement": {
