@@ -284,6 +284,11 @@ class SQLiteStore:
                 ),
             )
 
+    def checkpoint(self) -> None:
+        """Flush WAL pages into the main database before artifact persistence."""
+        with self.connect() as connection:
+            connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+
     def fetch_market_snapshots(self, race_id: str, selection_id: str) -> list[sqlite3.Row]:
         with self.connect() as connection:
             return list(
