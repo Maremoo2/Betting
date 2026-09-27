@@ -1,6 +1,9 @@
-# Horse Betting Intelligence — V3.2 architecture
+# Horse Betting Intelligence — V1 system architecture
 
 ## Principle
+
+V1 is the system/platform milestone. The underlying betting methodology remains the
+Benter-first V3.2 decision architecture developed for this project.
 
 Benter defines the betting logic. Modern ML/AI is used to improve data discipline,
 feature extraction, model validation and automation; it does not replace the
@@ -144,3 +147,23 @@ Intentionally not yet implemented:
 - automated feature extraction from LLMs
 - low-latency always-on collector (GitHub scheduling remains best-effort)
 - real-money execution
+
+
+## V1 control plane
+
+The decision/data plane is intentionally separated from a read-only control and
+learning plane:
+
+- `docs/research_governance.json` is the machine-readable governance authority;
+- `research_integrity.py` checks point-in-time ordering and future-mutation invariance;
+- `replay_validation.py` replays frozen decisions through the same runtime code;
+- `settlement_integrity.py` reconciles official outcomes, P/L and CLV;
+- `learning.py` produces a deterministic research dataset from frozen records;
+- `challenger.py` gives every Challenger a separate prospective validation clock;
+- `promotion.py` can only emit a recommendation for manual review;
+- `counterfactual.py` evaluates hypothetical policies without changing original
+  decisions or execution authority;
+- `manifest.py` hashes critical code, schema, policy/governance and run metadata.
+
+This mirrors the strongest lesson from AI-Trader: operational validity and strategic
+validity are separate states.
