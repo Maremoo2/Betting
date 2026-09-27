@@ -922,7 +922,9 @@ class SQLiteStore:
             "shadow_daily_reports", "provider_payloads",
             "runner_fundamental_snapshots", "fundamental_model_runs",
             "shadow_decision_runs", "race_research_evaluations",
-            "research_daily_reports",
+            "research_daily_reports", "decision_provenance",
+            "system_run_manifests", "integrity_audits", "challenger_registry",
+            "challenger_forward_events", "counterfactual_runs",
         }
         if table not in allowed:
             raise ValueError("unsupported table")
