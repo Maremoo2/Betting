@@ -245,12 +245,26 @@ class RikstotoCollector:
         selected_product: str | None = None
         selected_race: dict[str, object] | None = None
 
-        for product in candidates:
-            fetch = self.client.program(raceday_key, product)
+        fetch_candidates: list[tuple[str, FetchResult]] = [
+            ("VP/trot", self.client.trot_program(raceday_key, "VP"))
+        ]
+        fetch_candidates.extend(
+            (product, self.client.program(raceday_key, product))
+            for product in candidates
+        )
+
+        for product, fetch in fetch_candidates:
             self._audit(fetch, observed_at)
-            result = self.client.result_object(fetch)
-            races = result.get("races") if isinstance(result, dict) else None
-            if not fetch.success or not isinstance(races, list):
+            races: list[object] | None = None
+            if fetch.success and isinstance(fetch.payload, dict):
+                raw_result = fetch.payload.get("result")
+                if isinstance(raw_result, list):
+                    races = raw_result
+                elif isinstance(raw_result, dict):
+                    nested = raw_result.get("races")
+                    if isinstance(nested, list):
+                        races = nested
+            if not isinstance(races, list):
                 continue
             target = next(
                 (
