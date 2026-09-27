@@ -68,6 +68,7 @@ def main() -> None:
         "v1_system_audit": {
             "engineering_status": v1_audit["engineering_status"],
             "temporal_integrity": v1_audit["temporal_integrity"]["status"],
+            "provider_integrity": v1_audit["provider_integrity"]["status"],
             "runtime_replay_parity": v1_audit["runtime_replay_parity"]["status"],
             "settlement_integrity": v1_audit["settlement_integrity"]["status"],
             "learning_rows": v1_audit["learning_dataset"]["rows"],
