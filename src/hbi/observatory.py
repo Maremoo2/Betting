@@ -78,6 +78,18 @@ def _loads_distribution(raw: object) -> dict[str, float] | None:
     return output
 
 
+def _score_distribution(
+    distribution: dict[str, float] | None,
+    winner: str,
+) -> tuple[float | None, float | None]:
+    if distribution is None or winner not in distribution:
+        return None, None
+    return (
+        log_loss(distribution, winner),
+        multiclass_brier(distribution, winner),
+    )
+
+
 def _winner_from_complete(result: dict[str, object]) -> str | None:
     rows = result.get("results")
     if not isinstance(rows, list):
@@ -185,19 +197,12 @@ def materialize_race_evaluations(
         market = _loads_distribution(run.get("market_probabilities_json"))
         combined = _loads_distribution(run.get("combined_probabilities_json"))
 
-        def score(
-            distribution: dict[str, float] | None,
-        ) -> tuple[float | None, float | None]:
-            if distribution is None or winner not in distribution:
-                return None, None
-            return (
-                log_loss(distribution, winner),
-                multiclass_brier(distribution, winner),
-            )
-
-        fundamental_log, fundamental_brier = score(fundamental)
-        market_log, market_brier = score(market)
-        combined_log, combined_brier = score(combined)
+        fundamental_log, fundamental_brier = _score_distribution(
+            fundamental,
+            winner,
+        )
+        market_log, market_brier = _score_distribution(market, winner)
+        combined_log, combined_brier = _score_distribution(combined, winner)
         field = fundamental or market or combined or {}
 
         store.upsert_race_research_evaluation(
@@ -612,42 +617,24 @@ def render_markdown(
         "## Data health",
         "",
         f"- Races discovered: {health['races']}",
-        f"- Races with starts: {health['races_with_starts']} "
-        f"({_fmt(health['starts_race_coverage'])})",
-        f"- Races with Vinner odds: {health['races_with_v_odds']} "
-        f"({_fmt(health['v_odds_race_coverage'])})",
+        f"- Races with starts: {health['races_with_starts']} ({_fmt(health['starts_race_coverage'])})",
+        f"- Races with Vinner odds: {health['races_with_v_odds']} ({_fmt(health['v_odds_race_coverage'])})",
         f"- Mean history coverage: {_fmt(health['mean_history_coverage'])}",
         f"- ATG runner coverage: {_fmt(health['atg_runner_coverage'])}",
-        f"- Provider fetch failures: {health['provider_fetch_failures']} / "
-        f"{health['provider_fetches']}",
-        f"- Frozen T-4 decision runs: {health['decision_runs']} "
-        f"{health['decision_status_counts']}",
-        f"- T-4 latency median / p95: "
-        f"{_fmt(health['t4_latency_seconds_median'], 1)}s / "
-        f"{_fmt(health['t4_latency_seconds_p95'], 1)}s",
+        f"- Provider fetch failures: {health['provider_fetch_failures']} / {health['provider_fetches']}",
+        f"- Frozen T-4 decision runs: {health['decision_runs']} {health['decision_status_counts']}",
+        f"- T-4 latency median / p95: {_fmt(health['t4_latency_seconds_median'], 1)}s / {_fmt(health['t4_latency_seconds_p95'], 1)}s",
         f"- Shadow settlement rate: {_fmt(health['settlement_rate'])}",
         "",
         "## Predictive evaluation",
         "",
         f"- Official outcomes available: {evaluation['outcomes_n']}",
-        f"- Frozen race evaluations: {evaluation['race_evaluations_n']} / "
-        f"{evaluation['decision_runs_n']} decision runs "
-        f"(coverage {_fmt(evaluation['evaluation_coverage'])})",
-        f"- Metric N — fundamental / market / combined: "
-        f"{evaluation['fundamental_n']} / {evaluation['market_n']} / "
-        f"{evaluation['combined_n']}",
-        f"- Log loss — fundamental / market / combined: "
-        f"{_fmt(evaluation['fundamental_log_loss'])} / "
-        f"{_fmt(evaluation['market_log_loss'])} / "
-        f"{_fmt(evaluation['combined_log_loss'])}",
-        f"- Brier — fundamental / market / combined: "
-        f"{_fmt(evaluation['fundamental_brier'])} / "
-        f"{_fmt(evaluation['market_brier'])} / "
-        f"{_fmt(evaluation['combined_brier'])}",
-        f"- Combined minus market log loss: "
-        f"{_fmt(evaluation['combined_minus_market_log_loss'])}",
-        f"- Mean model-market conflict: "
-        f"{_fmt(evaluation['mean_model_market_conflict'])}",
+        f"- Frozen race evaluations: {evaluation['race_evaluations_n']} / {evaluation['decision_runs_n']} decision runs (coverage {_fmt(evaluation['evaluation_coverage'])})",
+        f"- Metric N — fundamental / market / combined: {evaluation['fundamental_n']} / {evaluation['market_n']} / {evaluation['combined_n']}",
+        f"- Log loss — fundamental / market / combined: {_fmt(evaluation['fundamental_log_loss'])} / {_fmt(evaluation['market_log_loss'])} / {_fmt(evaluation['combined_log_loss'])}",
+        f"- Brier — fundamental / market / combined: {_fmt(evaluation['fundamental_brier'])} / {_fmt(evaluation['market_brier'])} / {_fmt(evaluation['combined_brier'])}",
+        f"- Combined minus market log loss: {_fmt(evaluation['combined_minus_market_log_loss'])}",
+        f"- Mean model-market conflict: {_fmt(evaluation['mean_model_market_conflict'])}",
         "",
         "## Shadow economics",
         "",
@@ -660,21 +647,15 @@ def render_markdown(
         "",
         "## Outcome collection",
         "",
-        f"- Attempted / persisted / already present / pending / failed fetches: "
-        f"{outcome_collection.attempted} / {outcome_collection.persisted} / "
-        f"{outcome_collection.already_present} / {outcome_collection.pending} / "
-        f"{outcome_collection.failed_fetches}",
+        f"- Attempted / persisted / already present / pending / failed fetches: {outcome_collection.attempted} / {outcome_collection.persisted} / {outcome_collection.already_present} / {outcome_collection.pending} / {outcome_collection.failed_fetches}",
         "",
         "## Research guardrail",
         "",
-        "These metrics describe the frozen prospective shadow system. Small-N results "
-        "are not evidence of a durable betting edge and do not change the frozen "
-        "Shadow Champion automatically.",
+        "These metrics describe the frozen prospective shadow system. Small-N results are not evidence of a durable betting edge and do not change the frozen Shadow Champion automatically.",
         "",
         f"Cumulative evaluated races: {trend['all_evaluations_n']}",
     ]
     return "\n".join(lines) + "\n"
-
 
 def build_research_observatory(
     store: SQLiteStore,
