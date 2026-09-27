@@ -97,3 +97,17 @@ The watcher also stores:
 - execution latency from ideal T-4
 
 This lets later research distinguish provider latency from model/runner latency.
+
+
+## Market-free program fundamentals
+
+HBI also reads the base public program contract through
+`/api/game/program/{raceday}/{product}` when available. Historical Rikstoto frontend
+types show that this payload contains runner facts and horse annual statistics.
+
+For the fundamental feature store HBI explicitly excludes `program/addition` fields
+such as win odds and investment percentages. The base program snapshot is timestamped
+and frozen before the T-4 decision.
+
+The first model using this feed is documented in
+[Fundamental Shadow Champion v1](FUNDAMENTAL_CHAMPION_V1.md).
