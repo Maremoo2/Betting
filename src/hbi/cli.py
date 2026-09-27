@@ -10,7 +10,6 @@ from .pipeline import HBIPipeline
 from .sheets_mirror import GoogleSheetsMirror
 from .storage import SQLiteStore
 
-
 DEFAULT_SCHEMA = Path(__file__).parents[2] / "db" / "schema.sql"
 DEFAULT_MIGRATIONS = Path(__file__).parents[2] / "db" / "migrations"
 
