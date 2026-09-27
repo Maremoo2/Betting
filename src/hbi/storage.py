@@ -284,6 +284,250 @@ class SQLiteStore:
                 ),
             )
 
+
+    def upsert_provider_race_ref(
+        self,
+        *,
+        provider: str,
+        provider_raceday_key: str,
+        race_number: int,
+        race_id: str,
+        provider_track_code: str | None,
+        provider_start_time_raw: str | None,
+        discovered_at: datetime,
+        raw: dict[str, object] | None = None,
+    ) -> None:
+        with self.connect() as connection:
+            connection.execute(
+                "INSERT INTO provider_race_refs "
+                "(provider,provider_raceday_key,race_number,race_id,provider_track_code,"
+                "provider_start_time_raw,discovered_at_utc,raw_json) "
+                "VALUES (?,?,?,?,?,?,?,?) "
+                "ON CONFLICT(provider,provider_raceday_key,race_number) DO UPDATE SET "
+                "race_id=excluded.race_id,provider_track_code=excluded.provider_track_code,"
+                "provider_start_time_raw=excluded.provider_start_time_raw,"
+                "discovered_at_utc=excluded.discovered_at_utc,raw_json=excluded.raw_json",
+                (
+                    provider,
+                    provider_raceday_key,
+                    race_number,
+                    race_id,
+                    provider_track_code,
+                    provider_start_time_raw,
+                    discovered_at.isoformat(),
+                    None if raw is None else json.dumps(raw, ensure_ascii=False),
+                ),
+            )
+
+    def provider_races_between(self, start: datetime, end: datetime) -> list[dict[str, object]]:
+        with self.connect() as connection:
+            rows = connection.execute(
+                "SELECT p.*, r.start_time_utc, r.track, r.country, r.discipline "
+                "FROM provider_race_refs p JOIN races r ON r.race_id=p.race_id "
+                "WHERE r.start_time_utc>=? AND r.start_time_utc<? ORDER BY r.start_time_utc",
+                (start.isoformat(), end.isoformat()),
+            )
+            return [dict(row) for row in rows]
+
+    def insert_provider_market_snapshot(
+        self,
+        *,
+        snapshot_id: str,
+        provider: str,
+        race_id: str,
+        product: str,
+        selection_key: str,
+        observed_at: datetime,
+        provider_updated_at: datetime | None,
+        source_uri: str,
+        odds_decimal: float | None = None,
+        min_odds: float | None = None,
+        max_odds: float | None = None,
+        pool_size: float | None = None,
+        raw: dict[str, object] | None = None,
+    ) -> bool:
+        with self.connect() as connection:
+            cursor = connection.execute(
+                "INSERT OR IGNORE INTO provider_market_snapshots "
+                "(snapshot_id,provider,race_id,product,selection_key,observed_at_utc,"
+                "provider_updated_at_utc,odds_decimal,min_odds,max_odds,pool_size,source_uri,"
+                "raw_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (
+                    snapshot_id,
+                    provider,
+                    race_id,
+                    product,
+                    selection_key,
+                    observed_at.isoformat(),
+                    None if provider_updated_at is None else provider_updated_at.isoformat(),
+                    odds_decimal,
+                    min_odds,
+                    max_odds,
+                    pool_size,
+                    source_uri,
+                    None if raw is None else json.dumps(raw, ensure_ascii=False),
+                ),
+            )
+            return cursor.rowcount == 1
+
+    def latest_provider_market(
+        self,
+        race_id: str,
+        product: str,
+    ) -> list[dict[str, object]]:
+        with self.connect() as connection:
+            observed = connection.execute(
+                "SELECT MAX(observed_at_utc) FROM provider_market_snapshots "
+                "WHERE race_id=? AND product=?",
+                (race_id, product),
+            ).fetchone()[0]
+            if observed is None:
+                return []
+            rows = connection.execute(
+                "SELECT * FROM provider_market_snapshots "
+                "WHERE race_id=? AND product=? AND observed_at_utc=? "
+                "ORDER BY selection_key",
+                (race_id, product, observed),
+            )
+            return [dict(row) for row in rows]
+
+    def record_provider_fetch(
+        self,
+        *,
+        fetch_id: str,
+        provider: str,
+        endpoint: str,
+        fetched_at: datetime,
+        success: bool,
+        status_code: int | None,
+        latency_ms: float,
+        error_message: str | None,
+    ) -> None:
+        with self.connect() as connection:
+            connection.execute(
+                "INSERT INTO provider_fetch_audit "
+                "(fetch_id,provider,endpoint,fetched_at_utc,success,status_code,latency_ms,"
+                "error_message) VALUES (?,?,?,?,?,?,?,?)",
+                (
+                    fetch_id,
+                    provider,
+                    endpoint,
+                    fetched_at.isoformat(),
+                    int(success),
+                    status_code,
+                    latency_ms,
+                    error_message,
+                ),
+            )
+
+    def latest_predictions(
+        self,
+        race_id: str,
+        *,
+        layer: str,
+    ) -> dict[str, float]:
+        with self.connect() as connection:
+            rows = connection.execute(
+                "SELECT selection_id, probability, created_at_utc FROM predictions "
+                "WHERE race_id=? AND layer=? ORDER BY created_at_utc DESC",
+                (race_id, layer),
+            )
+            output: dict[str, float] = {}
+            for row in rows:
+                selection = str(row["selection_id"])
+                if selection not in output:
+                    output[selection] = float(row["probability"])
+            return output
+
+    def create_shadow_ticket(self, ticket: dict[str, object]) -> bool:
+        columns = (
+            "ticket_id", "dedupe_key", "created_at_utc", "decision_time_utc", "race_id",
+            "provider", "provider_raceday_key", "product", "decision", "status",
+            "selections_json", "stake_nok", "row_price_nok", "number_of_rows",
+            "available_price", "fair_odds", "estimated_edge", "expected_value",
+            "model_version", "source_snapshot_time_utc", "target_minutes_to_start",
+            "actual_minutes_to_start", "execution_latency_seconds", "reject_reason",
+            "notes",
+        )
+        values = [ticket.get(column) for column in columns]
+        with self.connect() as connection:
+            cursor = connection.execute(
+                f"INSERT OR IGNORE INTO shadow_tickets ({','.join(columns)}) "
+                f"VALUES ({','.join('?' for _ in columns)})",
+                values,
+            )
+            return cursor.rowcount == 1
+
+    def settle_shadow_ticket(
+        self,
+        *,
+        ticket_id: str,
+        settled_at: datetime,
+        gross_return_nok: float,
+        net_pnl_nok: float,
+        settlement_source_uri: str,
+        result: dict[str, object],
+        closing_price: float | None = None,
+        clv: float | None = None,
+        status: str = "SETTLED",
+    ) -> None:
+        with self.connect() as connection:
+            connection.execute(
+                "UPDATE shadow_tickets SET status=?,settlement_source_uri=?,settled_at_utc=?,"
+                "gross_return_nok=?,net_pnl_nok=?,closing_price=?,clv=?,result_json=? "
+                "WHERE ticket_id=?",
+                (
+                    status,
+                    settlement_source_uri,
+                    settled_at.isoformat(),
+                    gross_return_nok,
+                    net_pnl_nok,
+                    closing_price,
+                    clv,
+                    json.dumps(result, ensure_ascii=False),
+                    ticket_id,
+                ),
+            )
+
+    def open_shadow_tickets(self) -> list[dict[str, object]]:
+        with self.connect() as connection:
+            rows = connection.execute(
+                "SELECT * FROM shadow_tickets WHERE status IN "
+                "('SHADOW_BET','PENDING_SETTLEMENT') ORDER BY decision_time_utc"
+            )
+            return [dict(row) for row in rows]
+
+    def shadow_tickets_for_date(self, iso_date: str) -> list[dict[str, object]]:
+        with self.connect() as connection:
+            rows = connection.execute(
+                "SELECT * FROM shadow_tickets WHERE substr(decision_time_utc,1,10)=? "
+                "ORDER BY decision_time_utc",
+                (iso_date,),
+            )
+            return [dict(row) for row in rows]
+
+    def upsert_shadow_daily_report(self, report: dict[str, object]) -> None:
+        columns = (
+            "report_date", "generated_at_utc", "stake_nok", "gross_return_nok",
+            "net_pnl_nok", "roi", "tickets", "settled_tickets", "winning_tickets",
+            "positive_clv_tickets", "report_json",
+        )
+        values = [report.get(column) for column in columns]
+        with self.connect() as connection:
+            connection.execute(
+                f"INSERT INTO shadow_daily_reports ({','.join(columns)}) "
+                f"VALUES ({','.join('?' for _ in columns)}) "
+                "ON CONFLICT(report_date) DO UPDATE SET "
+                "generated_at_utc=excluded.generated_at_utc,"
+                "stake_nok=excluded.stake_nok,gross_return_nok=excluded.gross_return_nok,"
+                "net_pnl_nok=excluded.net_pnl_nok,roi=excluded.roi,tickets=excluded.tickets,"
+                "settled_tickets=excluded.settled_tickets,"
+                "winning_tickets=excluded.winning_tickets,"
+                "positive_clv_tickets=excluded.positive_clv_tickets,"
+                "report_json=excluded.report_json",
+                values,
+            )
+
     def checkpoint(self) -> None:
         """Flush WAL pages into the main database before artifact persistence."""
         with self.connect() as connection:
@@ -303,7 +547,9 @@ class SQLiteStore:
         allowed = {
             "races", "runners", "evidence", "market_snapshots", "predictions",
             "race_diagnostics", "model_versions", "decisions", "review_flags",
-            "prewatch_events", "outcomes",
+            "prewatch_events", "outcomes", "provider_race_refs",
+            "provider_market_snapshots", "provider_fetch_audit", "shadow_tickets",
+            "shadow_daily_reports",
         }
         if table not in allowed:
             raise ValueError("unsupported table")
@@ -314,7 +560,9 @@ class SQLiteStore:
         allowed = {
             "races", "runners", "evidence", "market_snapshots", "predictions",
             "race_diagnostics", "model_versions", "decisions", "review_flags",
-            "prewatch_events", "outcomes", "schema_migrations",
+            "prewatch_events", "outcomes", "schema_migrations", "provider_race_refs",
+            "provider_market_snapshots", "provider_fetch_audit", "shadow_tickets",
+            "shadow_daily_reports",
         }
         if table not in allowed:
             raise ValueError("unsupported table")
