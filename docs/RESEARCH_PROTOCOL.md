@@ -67,3 +67,18 @@ CLV is an evaluation feature, not proof of profit.
 LLMs can extract structured evidence and assist research. They do not directly
 set production p(win). Multiple LLM opinions are not averaged into a probability
 unless a supervised meta-model later proves incremental out-of-sample value.
+
+
+## Observatory and frozen prospective sample
+
+The Research Observatory may add diagnostics, backups and reporting without changing
+the frozen Shadow Champion. Every first T-4 decision is retained, including PASS and
+NOT_EXECUTABLE, so research does not condition only on races where a paper bet was
+placed.
+
+Daily reports must expose the sample size for each predictive layer. Fundamental,
+market and combined metrics may have different N when data coverage differs.
+
+Model selection decisions must not be made from the same short prospective window
+used to discover a candidate feature. Observatory metrics are evidence for later
+pre-registered Champion/Challenger tests, not an automatic tuning signal.
