@@ -7,6 +7,7 @@ from pathlib import Path
 from .export import export_database_csv, export_database_json
 from .json_provider import load_market_snapshots, load_race_cards, load_results
 from .pipeline import HBIPipeline
+from .sheets_mirror import GoogleSheetsMirror
 from .storage import SQLiteStore
 
 
@@ -66,6 +67,16 @@ def cmd_export(args: argparse.Namespace) -> None:
         print(f"exported database to {args.output}")
 
 
+def cmd_sync_sheets(args: argparse.Namespace) -> None:
+    store = _store(args.db, args.schema)
+    mirror = GoogleSheetsMirror(
+        spreadsheet_id=args.spreadsheet_id,
+        credentials_path=args.credentials,
+    )
+    counts = mirror.mirror_default_tables(store)
+    print("mirrored " + ", ".join(f"{table}={count}" for table, count in counts.items()))
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="hbi")
     parser.add_argument("--db", default="data/hbi.sqlite")
@@ -93,6 +104,11 @@ def build_parser() -> argparse.ArgumentParser:
     export.add_argument("output")
     export.add_argument("--format", choices=("csv", "json"), default="csv")
     export.set_defaults(func=cmd_export)
+
+    sheets = sub.add_parser("sync-sheets")
+    sheets.add_argument("--spreadsheet-id", required=True)
+    sheets.add_argument("--credentials", required=True)
+    sheets.set_defaults(func=cmd_sync_sheets)
 
     return parser
 
