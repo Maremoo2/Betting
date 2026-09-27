@@ -568,23 +568,28 @@ class SQLiteStore:
         layer: str,
         before: datetime | None = None,
     ) -> dict[str, float]:
-        query = (
-            "SELECT selection_id, probability, created_at_utc FROM predictions "
-            "WHERE race_id=? AND layer=?"
-        )
+        where = "race_id=? AND layer=?"
         params: list[object] = [race_id, layer]
         if before is not None:
-            query += " AND created_at_utc<=?"
+            where += " AND created_at_utc<=?"
             params.append(before.isoformat())
-        query += " ORDER BY created_at_utc DESC"
         with self.connect() as connection:
-            rows = connection.execute(query, params)
-            output: dict[str, float] = {}
-            for row in rows:
-                selection = str(row["selection_id"])
-                if selection not in output:
-                    output[selection] = float(row["probability"])
-            return output
+            latest = connection.execute(
+                f"SELECT MAX(created_at_utc) FROM predictions WHERE {where}",
+                params,
+            ).fetchone()[0]
+            if latest is None:
+                return {}
+            rows = connection.execute(
+                "SELECT selection_id, probability FROM predictions "
+                "WHERE race_id=? AND layer=? AND created_at_utc=? "
+                "ORDER BY selection_id",
+                (race_id, layer, latest),
+            )
+            return {
+                str(row["selection_id"]): float(row["probability"])
+                for row in rows
+            }
 
     def create_shadow_ticket(self, ticket: dict[str, object]) -> bool:
         columns = (
