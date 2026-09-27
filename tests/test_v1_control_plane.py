@@ -11,6 +11,7 @@ from hbi.governance import load_governance, validate_governance
 from hbi.learning import build_learning_rows
 from hbi.manifest import build_run_manifest
 from hbi.promotion import PromotionMetrics, assess_challenger_for_manual_review
+from hbi.provider_integrity import run_provider_integrity
 from hbi.replay_validation import run_runtime_replay_parity
 from hbi.research_integrity import future_mutation_invariance, run_research_integrity_check
 from hbi.settlement_integrity import run_settlement_integrity
@@ -361,3 +362,71 @@ def test_learning_dataset_preserves_frozen_decision(tmp_path):
     assert rows[0]["data_quality_status"] == "OK"
     assert rows[0]["research_only"] is True
     assert rows[0]["execution_authority"] is False
+
+
+
+def test_provider_integrity_passes_for_provenance_complete_decision(tmp_path):
+    store = _store(tmp_path)
+    _frozen_decision(store)
+    observed = datetime(2026, 9, 27, 17, 56, tzinfo=UTC)
+    store.upsert_provider_race_ref(
+        provider="rikstoto",
+        provider_raceday_key="MP_NR_2026-09-27",
+        race_number=1,
+        race_id="r1",
+        provider_track_code="MP",
+        provider_start_time_raw="2026-09-27T20:00:00",
+        discovered_at=datetime(2026, 9, 27, 8, 0, tzinfo=UTC),
+    )
+    for selection, odds in (("1", 2.5), ("2", 4.0)):
+        store.insert_provider_market_snapshot(
+            snapshot_id=f"pm-{selection}",
+            provider="rikstoto",
+            race_id="r1",
+            product="V",
+            selection_key=selection,
+            observed_at=observed,
+            provider_updated_at=observed,
+            source_uri="fixture://win",
+            odds_decimal=odds,
+        )
+        store.insert_runner_fundamental_snapshot(
+            {
+                "snapshot_id": f"pf-{selection}",
+                "race_id": "r1",
+                "selection_id": selection,
+                "observed_at_utc": observed.isoformat(),
+                "feature_as_of_utc": observed.isoformat(),
+                "source_uri": "fixture://fundamental",
+                "horse_name": f"Horse {selection}",
+                "history_total_starts": 20,
+                "history_total_wins": 5,
+                "scratched": 0,
+                "data_quality": "KNOWN_HISTORY_ATG",
+            }
+        )
+
+    report = run_provider_integrity(store)
+    assert report["status"] == "PASS"
+    assert report["checked_decisions"] == 1
+    assert report["failures"] == []
+
+
+def test_provider_integrity_fails_when_frozen_market_is_missing(tmp_path):
+    store = _store(tmp_path)
+    _frozen_decision(store)
+    store.upsert_provider_race_ref(
+        provider="rikstoto",
+        provider_raceday_key="MP_NR_2026-09-27",
+        race_number=1,
+        race_id="r1",
+        provider_track_code="MP",
+        provider_start_time_raw="2026-09-27T20:00:00",
+        discovered_at=datetime(2026, 9, 27, 8, 0, tzinfo=UTC),
+    )
+    report = run_provider_integrity(store)
+    assert report["status"] == "FAIL"
+    assert any(
+        item["reason"] == "decision_market_snapshot_not_found_in_provider_store"
+        for item in report["failures"]
+    )
