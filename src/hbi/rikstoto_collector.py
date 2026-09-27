@@ -316,7 +316,8 @@ class RikstotoCollector:
             payload=starts_fetch.payload if isinstance(starts_fetch.payload, dict) else {},
         )
 
-        race = self.store.get_race(race_id)
+        race_row = self.store.get_race(race_id)
+        race = None if race_row is None else dict(race_row)
         country = str(race.get("country") or "") if race else ""
         track = str(race.get("track") or "") if race else ""
         discipline = str(race.get("discipline") or "") if race else ""
