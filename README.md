@@ -29,9 +29,10 @@ surface, **not** the primary database. A spreadsheet is useful for human review,
 it is a poor canonical store for high-frequency timestamped market snapshots and
 frozen model history.
 
-Provider-neutral interfaces in `src/hbi/ingestion.py` define how an approved ATG,
-Rikstoto, exchange or other race/market feed can be connected later. No live data is
-fabricated while those provider contracts are absent.
+Provider-neutral interfaces in `src/hbi/ingestion.py` remain the modelling boundary.
+A read-only Rikstoto adapter is now implemented behind that boundary. Its endpoint
+provenance is explicit: user-verified, open-source-observed, or historical-frontend
+inferred. Provider failures are logged; missing values are never fabricated.
 
 ## Current V3.2 foundation
 
@@ -45,6 +46,9 @@ Implemented in this repository:
 - structured review flags for material qualitative events
 - persistent SQLite storage with idempotent snapshots and frozen predictions
 - provider-neutral race/market ingestion contracts
+- read-only Rikstoto raceday + V/P/TV/T market collection
+- best-effort T-4 shadow watcher every five minutes
+- immutable shadow ticket ledger and nightly settlement/report
 - **market-only benchmark** for log-loss and Brier evaluation
 - decision-price vs closing-price / CLV evaluation primitive
 - Brier/log-loss/calibration helpers
@@ -73,9 +77,9 @@ The repository does **not** currently:
 - treat odds shortening as automatic "smart money"
 - promote new features because of one profitable backtest
 
-External race/market data sources and scheduled live collection should be connected
-only after their contracts, rate limits, timestamps and legal/technical access are
-clear.
+The Rikstoto integration is read-only and intentionally contains no login, account,
+purchase or real-money submission code. Historical/inferred endpoints are optional
+and must fail closed when their contract is unavailable.
 
 ## Research rule
 
@@ -149,3 +153,31 @@ finish as audited `NOOP` runs instead of creating fake race data. The scheduler 
 persistence are therefore deployable before the provider layer.
 
 See [docs/GITHUB_ACTIONS.md](docs/GITHUB_ACTIONS.md).
+
+
+## Rikstoto shadow research
+
+The repository now has a GitHub-native paper-betting loop:
+
+```text
+Rikstoto raceday discovery
+  -> five-minute read-only market watcher
+  -> early + best-effort T-4 snapshots
+  -> V3.2 market/fundamental check
+  -> immutable shadow BET / PASS / NOT_EXECUTABLE
+  -> official result/final-odds settlement
+  -> 00:30 Europe/Oslo daily review
+```
+
+The five-minute watcher runs through 23:59 Europe/Oslo so late races are not lost.
+Every HBI workflow that writes the persistent SQLite artifact uses the shared
+`hbi-state-writer` concurrency group, preventing two runs from restoring the same
+old database and overwriting each other.
+
+Automatic paper decisions currently start with **Vinner** because that product maps
+directly to the existing full-field p(win) model. Plass, Tvilling, Trippel and
+multi-leg pool data are collected when available, but no product is given a fake
+probability or payout rule merely to create more paper bets.
+
+See [docs/RIKSTOTO_PROVIDER.md](docs/RIKSTOTO_PROVIDER.md) for endpoint provenance and
+[docs/SHADOW_BETTING.md](docs/SHADOW_BETTING.md) for decision/settlement rules.
