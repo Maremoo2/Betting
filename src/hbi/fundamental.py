@@ -112,7 +112,7 @@ class MarketFreeFundamentalChampionV1:
         for row in active:
             raw_time = row.get("feature_as_of_utc")
             if not isinstance(raw_time, str):
-                raise ValueError("fundamental snapshot missing feature_as_of_utc")
+                raise TypeError("fundamental snapshot missing feature_as_of_utc")
             feature_time = datetime.fromisoformat(raw_time)
             validate_record(
                 PointInTimeRecord(
