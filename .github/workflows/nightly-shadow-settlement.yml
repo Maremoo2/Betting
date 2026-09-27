@@ -59,6 +59,7 @@ jobs:
           HBI_NIGHTLY_REPORT_PATH: nightly-report.json
           HBI_OBSERVATORY_JSON_PATH: research-observatory.json
           HBI_OBSERVATORY_MD_PATH: research-observatory.md
+          HBI_V1_AUDIT_DIR: research-v1
         run: python -m hbi.nightly_job
 
       - name: Export canonical database as CSV
@@ -78,7 +79,8 @@ jobs:
             --db data/hbi.sqlite \
             --output backup-manifest.json \
             --include hbi-export hbi-backup/hbi-export.json \
-              nightly-report.json research-observatory.json research-observatory.md
+              nightly-report.json research-observatory.json research-observatory.md \
+              research-v1
 
       - name: Optional Google Sheets mirror
         if: steps.gate.outputs.should_run == 'true'
@@ -110,6 +112,7 @@ jobs:
             nightly-report.json
             research-observatory.json
             research-observatory.md
+            research-v1/
             backup-manifest.json
           if-no-files-found: error
           retention-days: 90
@@ -125,6 +128,7 @@ jobs:
             nightly-report.json
             research-observatory.json
             research-observatory.md
+            research-v1/
             backup-manifest.json
             hbi-export/
           if-no-files-found: error
@@ -140,6 +144,7 @@ jobs:
             nightly-report.json
             research-observatory.json
             research-observatory.md
+            research-v1/
             backup-manifest.json
           if-no-files-found: ignore
           retention-days: 14
