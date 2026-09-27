@@ -9,6 +9,7 @@ from uuid import uuid4
 from .decision import DecisionPolicy
 from .domain import Decision
 from .engine import CombinationPolicy, evaluate_race
+from .probability import normalize_market_odds
 from .storage import SQLiteStore
 
 
@@ -44,6 +45,85 @@ def _dedupe_key(race_id: str, product: str, selection: str, model_version: str) 
     return sha256(f"{race_id}|{product}|{selection}|{model_version}".encode()).hexdigest()
 
 
+def _decision_run_id(race_id: str, product: str, model_version: str, target: float) -> str:
+    return sha256(f"{race_id}|{product}|{model_version}|T-{target:g}".encode()).hexdigest()
+
+
+def _timing(
+    race_start_at: datetime,
+    decision_time: datetime,
+    target_minutes: float,
+) -> tuple[float, float]:
+    actual_minutes = (race_start_at - decision_time).total_seconds() / 60
+    ideal_time = race_start_at - timedelta(minutes=target_minutes)
+    latency = (decision_time - ideal_time).total_seconds()
+    return actual_minutes, latency
+
+
+def _persist_decision_run(
+    store: SQLiteStore,
+    *,
+    race_id: str,
+    raceday_key: str,
+    race_start_at: datetime,
+    decision_time: datetime,
+    policy: ShadowPolicy,
+    status: str,
+    reason: str | None,
+    fundamental_model_version: str | None = None,
+    source_market_observed_at: str | None = None,
+    fundamental: dict[str, float] | None = None,
+    market: dict[str, float] | None = None,
+    combined: dict[str, float] | None = None,
+    conflict: float | None = None,
+    ticket_count: int = 0,
+) -> None:
+    actual_minutes, latency = _timing(
+        race_start_at,
+        decision_time,
+        policy.target_minutes_to_start,
+    )
+    store.insert_shadow_decision_run(
+        {
+            "decision_run_id": _decision_run_id(
+                race_id,
+                "V",
+                policy.model_version,
+                policy.target_minutes_to_start,
+            ),
+            "race_id": race_id,
+            "provider_raceday_key": raceday_key,
+            "product": "V",
+            "created_at_utc": decision_time.isoformat(),
+            "race_start_time_utc": race_start_at.isoformat(),
+            "decision_status": status,
+            "reason": reason,
+            "shadow_model_version": policy.model_version,
+            "fundamental_model_version": fundamental_model_version,
+            "source_market_observed_at_utc": source_market_observed_at,
+            "target_minutes_to_start": policy.target_minutes_to_start,
+            "actual_minutes_to_start": actual_minutes,
+            "execution_latency_seconds": latency,
+            "field_size": (
+                len(fundamental)
+                if fundamental
+                else len(market) if market else None
+            ),
+            "fundamental_probabilities_json": (
+                None if fundamental is None else json.dumps(fundamental, sort_keys=True)
+            ),
+            "market_probabilities_json": (
+                None if market is None else json.dumps(market, sort_keys=True)
+            ),
+            "combined_probabilities_json": (
+                None if combined is None else json.dumps(combined, sort_keys=True)
+            ),
+            "model_market_conflict_score": conflict,
+            "ticket_count": ticket_count,
+        }
+    )
+
+
 def run_win_shadow_decision(
     store: SQLiteStore,
     *,
@@ -57,6 +137,16 @@ def run_win_shadow_decision(
     rules = policy or ShadowPolicy()
     rows = store.latest_provider_market(race_id, "V")
     if not rows:
+        _persist_decision_run(
+            store,
+            race_id=race_id,
+            raceday_key=provider_raceday_key,
+            race_start_at=race_start_at,
+            decision_time=current,
+            policy=rules,
+            status="NOT_EXECUTABLE",
+            reason="NO_WIN_MARKET_SNAPSHOT",
+        )
         return _record_not_executable(
             store,
             race_id=race_id,
@@ -72,9 +162,39 @@ def run_win_shadow_decision(
         for row in rows
         if row.get("odds_decimal") is not None and float(row["odds_decimal"]) > 1
     }
+    market = normalize_market_odds(market_odds) if market_odds else None
+    source_market_time = str(rows[0]["observed_at_utc"])
+
     fundamental_run = store.latest_fundamental_model_run(race_id, before=current)
+    fundamental_model_version = (
+        None
+        if fundamental_run is None
+        else str(fundamental_run.get("model_version") or "") or None
+    )
     if fundamental_run is not None and not bool(fundamental_run["shadow_eligible"]):
-        reason = str(fundamental_run.get("reason") or "FUNDAMENTAL_NOT_SHADOW_ELIGIBLE")
+        reason = str(
+            fundamental_run.get("reason") or "FUNDAMENTAL_NOT_SHADOW_ELIGIBLE"
+        )
+        raw_probabilities = fundamental_run.get("probabilities_json")
+        fundamental = (
+            json.loads(str(raw_probabilities))
+            if raw_probabilities
+            else None
+        )
+        _persist_decision_run(
+            store,
+            race_id=race_id,
+            raceday_key=provider_raceday_key,
+            race_start_at=race_start_at,
+            decision_time=current,
+            policy=rules,
+            status="NOT_EXECUTABLE",
+            reason=reason,
+            fundamental_model_version=fundamental_model_version,
+            source_market_observed_at=source_market_time,
+            fundamental=fundamental,
+            market=market,
+        )
         return _record_not_executable(
             store,
             race_id=race_id,
@@ -91,6 +211,19 @@ def run_win_shadow_decision(
         before=current,
     )
     if not fundamental:
+        _persist_decision_run(
+            store,
+            race_id=race_id,
+            raceday_key=provider_raceday_key,
+            race_start_at=race_start_at,
+            decision_time=current,
+            policy=rules,
+            status="NOT_EXECUTABLE",
+            reason="NO_FUNDAMENTAL_PREDICTIONS",
+            fundamental_model_version=fundamental_model_version,
+            source_market_observed_at=source_market_time,
+            market=market,
+        )
         return _record_not_executable(
             store,
             race_id=race_id,
@@ -103,6 +236,20 @@ def run_win_shadow_decision(
 
     common = set(market_odds) & set(fundamental)
     if len(common) != len(market_odds) or len(common) != len(fundamental):
+        _persist_decision_run(
+            store,
+            race_id=race_id,
+            raceday_key=provider_raceday_key,
+            race_start_at=race_start_at,
+            decision_time=current,
+            policy=rules,
+            status="NOT_EXECUTABLE",
+            reason="INCOMPLETE_FULL_FIELD_ALIGNMENT",
+            fundamental_model_version=fundamental_model_version,
+            source_market_observed_at=source_market_time,
+            fundamental=fundamental,
+            market=market,
+        )
         return _record_not_executable(
             store,
             race_id=race_id,
@@ -136,13 +283,34 @@ def run_win_shadow_decision(
     candidates = candidates[: rules.max_win_bets_per_race]
 
     if not candidates:
-        return ShadowRunResult(race_id=race_id, created=0, status="PASS", reason="NO_VALUE_BET")
+        _persist_decision_run(
+            store,
+            race_id=race_id,
+            raceday_key=provider_raceday_key,
+            race_start_at=race_start_at,
+            decision_time=current,
+            policy=rules,
+            status="PASS",
+            reason="NO_VALUE_BET",
+            fundamental_model_version=fundamental_model_version,
+            source_market_observed_at=source_market_time,
+            fundamental=evaluated.fundamental_probabilities,
+            market=evaluated.market_probabilities,
+            combined=evaluated.combined_probabilities,
+            conflict=evaluated.model_market_conflict_score,
+        )
+        return ShadowRunResult(
+            race_id=race_id,
+            created=0,
+            status="PASS",
+            reason="NO_VALUE_BET",
+        )
 
-    actual_minutes = (race_start_at - current).total_seconds() / 60
-    ideal_time = race_start_at - timedelta(minutes=rules.target_minutes_to_start)
-    latency = (current - ideal_time).total_seconds()
-    snapshot_time = str(rows[0]["observed_at_utc"])
-
+    actual_minutes, latency = _timing(
+        race_start_at,
+        current,
+        rules.target_minutes_to_start,
+    )
     created = 0
     for selection, assessment in candidates:
         ticket = {
@@ -170,7 +338,7 @@ def run_win_shadow_decision(
             "estimated_edge": assessment.edge_over_fair,
             "expected_value": assessment.expected_value,
             "model_version": rules.model_version,
-            "source_snapshot_time_utc": snapshot_time,
+            "source_snapshot_time_utc": source_market_time,
             "target_minutes_to_start": rules.target_minutes_to_start,
             "actual_minutes_to_start": actual_minutes,
             "execution_latency_seconds": latency,
@@ -181,6 +349,24 @@ def run_win_shadow_decision(
             ),
         }
         created += int(store.create_shadow_ticket(ticket))
+
+    _persist_decision_run(
+        store,
+        race_id=race_id,
+        raceday_key=provider_raceday_key,
+        race_start_at=race_start_at,
+        decision_time=current,
+        policy=rules,
+        status="SHADOW_BET",
+        reason=None,
+        fundamental_model_version=fundamental_model_version,
+        source_market_observed_at=source_market_time,
+        fundamental=evaluated.fundamental_probabilities,
+        market=evaluated.market_probabilities,
+        combined=evaluated.combined_probabilities,
+        conflict=evaluated.model_market_conflict_score,
+        ticket_count=created,
+    )
     return ShadowRunResult(race_id=race_id, created=created, status="SHADOW_BET")
 
 
