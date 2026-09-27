@@ -78,6 +78,7 @@ def run_once(*, db_path: str, mode: str) -> RunAudit:
         audit.results_settled = len(results)
 
     audit.status = "OK" if configured else "NOOP"
+    store.checkpoint()
     audit.finished_at = datetime.now(timezone.utc).isoformat()
     return audit
 
