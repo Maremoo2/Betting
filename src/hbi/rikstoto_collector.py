@@ -144,7 +144,7 @@ class RikstotoCollector:
                 (
                     f"{race_id}|{product}|{selection_key}|{observed_at.isoformat()}|"
                     f"{json.dumps(item, sort_keys=True)}"
-                ).encode("utf-8")
+                ).encode()
             ).hexdigest()
             odds = item.get("odds")
             min_odds = item.get("minOdds")
