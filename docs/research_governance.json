@@ -1,0 +1,52 @@
+{
+  "schema_version": "HBI_RESEARCH_GOVERNANCE_V1",
+  "updated_at_utc": "2026-09-27T19:55:00+00:00",
+  "system_version": "HBI_V1",
+  "operational_validity": "SHADOW_OPERATIONAL",
+  "strategic_validity": "NOT_VALIDATED",
+  "shadow_champion": "FUNDAMENTAL_CHAMPION_V1_1",
+  "market_baseline": "RIKSTOTO_WIN_NORMALIZED",
+  "execution_authority": false,
+  "real_money_execution": false,
+  "auto_promotion_enabled": false,
+  "adaptive_switching_enabled": false,
+  "manual_approval_required": true,
+  "p0": {
+    "temporal_integrity": "ENGINEERING_PASS_EVIDENCE_ACCUMULATING",
+    "provider_integrity": "SHADOW_VALIDATING",
+    "settlement_integrity": "ENGINEERING_PASS_EVIDENCE_ACCUMULATING",
+    "runtime_replay_parity": "ENGINEERING_PASS_EVIDENCE_ACCUMULATING"
+  },
+  "p1": {
+    "statistical_validation": "BLOCKED_BY_FORWARD_EVIDENCE",
+    "challenger_forward_validation": "NOT_STARTED",
+    "real_money_readiness": "BLOCKED"
+  },
+  "promotion_policy": {
+    "minimum_forward_races": 500,
+    "must_beat_current_champion_log_loss": true,
+    "must_beat_current_champion_brier": true,
+    "must_beat_market_log_loss": true,
+    "must_beat_market_brier": true,
+    "calibration_non_inferiority_required": true,
+    "replication_required": true,
+    "economic_metrics_are_secondary": true
+  },
+  "permitted_automatic_actions": [
+    "collect_read_only_market_data",
+    "collect_read_only_fundamental_data",
+    "run_shadow_decisions",
+    "settle_shadow_tickets",
+    "run_research_audits",
+    "build_counterfactual_research",
+    "build_challenger_evidence"
+  ],
+  "forbidden_automatic_actions": [
+    "place_real_money_bets",
+    "promote_challenger",
+    "change_shadow_champion",
+    "change_strategy_thresholds",
+    "change_model_weights",
+    "enable_adaptive_switching"
+  ]
+}
