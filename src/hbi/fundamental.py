@@ -18,7 +18,8 @@ class FundamentalChampionPolicy:
     """Pre-registered shadow Champion v1 policy.
 
     V1 deliberately uses one market-free signal only: a horse's pre-race historical
-    win record from the provider program. It applies empirical-Bayes shrinkage toward
+    win record from the point-in-time fundamental feature store. It applies
+    empirical-Bayes shrinkage toward
     the race's uniform prior and then normalizes across the active field.
 
     No odds, betting percentages, exchange data, tipster ranks, or post-race data are
@@ -55,10 +56,10 @@ class FundamentalRun:
 
 
 class MarketFreeFundamentalChampionV1:
-    MODEL_NAME = "rikstoto_market_free_empirical_win"
-    VERSION = "FUNDAMENTAL_CHAMPION_V1"
-    FEATURE_SET_VERSION = "RIKSTOTO_PROGRAM_CAREER_WIN_V1"
-    CALIBRATION_VERSION = "UNVALIDATED_SHADOW_V1"
+    MODEL_NAME = "market_free_empirical_win"
+    VERSION = "FUNDAMENTAL_CHAMPION_V1_1"
+    FEATURE_SET_VERSION = "RIKSTOTO_STARTS_ATG_CAREER_WIN_V1"
+    CALIBRATION_VERSION = "UNVALIDATED_SHADOW_V1_1"
     ROLE = ModelRole.SHADOW_CHAMPION
     LAYER = "FUNDAMENTAL"
 
@@ -206,7 +207,7 @@ def run_and_persist_fundamental(
         calibration_version=model.CALIBRATION_VERSION,
         created_at=created_at,
         notes=(
-            "Shadow Champion v1. Market-free empirical-Bayes historical win-rate prior. "
+            "Shadow Champion v1.1. Market-free empirical-Bayes historical win-rate prior. "
             "No fitted coefficients; prospective validation required before promotion "
             "outside paper betting."
         ),
@@ -253,6 +254,8 @@ def run_and_persist_fundamental(
                     "minimum_history_coverage": model.policy.minimum_history_coverage,
                     "market_features": [],
                     "unvalidated_shadow_champion": True,
+                    "canonical_field_source": "RIKSTOTO_STARTS",
+                    "history_source": "ATG_FOR_SE_IF_AVAILABLE",
                 },
                 sort_keys=True,
             ),
