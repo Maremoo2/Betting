@@ -391,6 +391,38 @@ class SQLiteStore:
             )
             return [dict(row) for row in rows]
 
+    def insert_provider_payload(
+        self,
+        *,
+        payload_id: str,
+        provider: str,
+        category: str,
+        provider_raceday_key: str,
+        observed_at: datetime,
+        source_uri: str,
+        payload: dict[str, object] | list[object],
+        race_number: int | None = None,
+        product: str | None = None,
+    ) -> bool:
+        with self.connect() as connection:
+            cursor = connection.execute(
+                "INSERT OR IGNORE INTO provider_payloads "
+                "(payload_id,provider,category,provider_raceday_key,race_number,product,"
+                "observed_at_utc,source_uri,payload_json) VALUES (?,?,?,?,?,?,?,?,?)",
+                (
+                    payload_id,
+                    provider,
+                    category,
+                    provider_raceday_key,
+                    race_number,
+                    product,
+                    observed_at.isoformat(),
+                    source_uri,
+                    json.dumps(payload, ensure_ascii=False),
+                ),
+            )
+            return cursor.rowcount == 1
+
     def record_provider_fetch(
         self,
         *,
@@ -549,7 +581,7 @@ class SQLiteStore:
             "race_diagnostics", "model_versions", "decisions", "review_flags",
             "prewatch_events", "outcomes", "provider_race_refs",
             "provider_market_snapshots", "provider_fetch_audit", "shadow_tickets",
-            "shadow_daily_reports",
+            "shadow_daily_reports", "provider_payloads",
         }
         if table not in allowed:
             raise ValueError("unsupported table")
