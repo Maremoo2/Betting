@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
-
 
 OSLO = ZoneInfo("Europe/Oslo")
 
@@ -23,7 +22,7 @@ def evaluate_schedule(now: datetime | None = None) -> ScheduleDecision:
     10:00 through 21:00 local time are HOURLY_WATCH.
     Other hours are skipped. The timezone conversion handles DST.
     """
-    current = now or datetime.now(timezone.utc)
+    current = now or datetime.now(UTC)
     if current.tzinfo is None or current.utcoffset() is None:
         raise ValueError("now must be timezone-aware")
 
@@ -38,7 +37,8 @@ def evaluate_schedule(now: datetime | None = None) -> ScheduleDecision:
 
 def github_output(decision: ScheduleDecision) -> str:
     """Return newline-separated key=value output for $GITHUB_OUTPUT."""
-    return "\n".join(
+    return "
+".join(
         (
             f"should_run={'true' if decision.should_run else 'false'}",
             f"mode={decision.mode}",
