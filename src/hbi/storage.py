@@ -591,6 +591,17 @@ class SQLiteStore:
                 for row in rows
             }
 
+    def get_shadow_decision_run(
+        self,
+        decision_run_id: str,
+    ) -> dict[str, object] | None:
+        with self.connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM shadow_decision_runs WHERE decision_run_id=?",
+                (decision_run_id,),
+            ).fetchone()
+            return None if row is None else dict(row)
+
     def insert_shadow_decision_run(self, run: dict[str, object]) -> bool:
         columns = (
             "decision_run_id", "race_id", "provider_raceday_key", "product",
