@@ -107,14 +107,15 @@ the market baseline?
 
 Implemented:
 - read-only Rikstoto provider with explicit endpoint-provenance levels
-- point-in-time Rikstoto runner/program fundamental snapshots
-- `FUNDAMENTAL_CHAMPION_V1` shadow Champion using market-free historical win records
+- live-smoke-verified Rikstoto `/starts` canonical race-field snapshots
+- Swedish ATG point-in-time market-free lifetime-history enrichment
+- `FUNDAMENTAL_CHAMPION_V1_1` shadow Champion using historical win records
 - full-field normalization and 80% history-coverage shadow eligibility gate
 - five-minute market watcher with best-effort T-4 timing and latency logging
 - immutable shadow ledger
 - Vinner shadow execution when full-field fundamental probabilities exist
 - official Vinner settlement, CLV and nightly paper P/L reporting
-- V/P/TV/T market collection plus optional multi-leg pool-context collection
+- V/P/TV/T market collection; dead historical program/pool endpoints removed from the live path
 - point-in-time validator
 - market-free probability primitives
 - Benter-style probability combination primitive
@@ -131,6 +132,7 @@ Implemented:
 
 Intentionally not yet implemented:
 - calibrated/learned production Fundamental Champion
+- verified Norwegian pre-race horse-history enrichment
 - validated incremental feature blocks for driver/trainer/form/earnings/record/etc.
 - validated current payout/dividend contracts for TV/T/DD/V4/V75/V85
 - autonomous shadow probability/ticket models for P/TV/T/DD/V4/V75/V85
