@@ -183,6 +183,236 @@ class RikstotoCollector:
         return inserted
 
 
+    @staticmethod
+    def _annual_stat(
+        annual: dict[str, object],
+        bucket: str,
+        key: str,
+    ) -> int | float | None:
+        value = annual.get(bucket)
+        if not isinstance(value, dict):
+            return None
+        item = value.get(key)
+        if item is None:
+            return None
+        if isinstance(item, (int, float)):
+            return item
+        try:
+            return float(item)
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def _scratched_for_race(payload: object, race_number: int) -> set[int]:
+        if not isinstance(payload, dict):
+            return set()
+        result = payload.get("result")
+        if not isinstance(result, dict):
+            return set()
+        values = result.get(str(race_number), result.get(race_number))
+        if not isinstance(values, list):
+            return set()
+        output: set[int] = set()
+        for value in values:
+            try:
+                output.add(int(value))
+            except (TypeError, ValueError):
+                continue
+        return output
+
+    def collect_fundamentals(
+        self,
+        *,
+        raceday_key: str,
+        race_number: int,
+        race_id: str,
+        observed_at: datetime,
+        products: list[str] | None = None,
+    ) -> tuple[int, bool, str | None]:
+        """Collect market-free pre-race runner fundamentals from the program contract.
+
+        The base program is used, never program/addition, because the latter can contain
+        odds and investment percentages. Only runner/race facts and historical horse
+        statistics are persisted into the fundamental feature store.
+        """
+        candidates: list[str] = []
+        for product in ["V", *(products or [])]:
+            code = str(product)
+            if code and code not in candidates:
+                candidates.append(code)
+
+        selected_fetch: FetchResult | None = None
+        selected_product: str | None = None
+        selected_race: dict[str, object] | None = None
+
+        for product in candidates:
+            fetch = self.client.program(raceday_key, product)
+            self._audit(fetch, observed_at)
+            result = self.client.result_object(fetch)
+            races = result.get("races") if isinstance(result, dict) else None
+            if not fetch.success or not isinstance(races, list):
+                continue
+            target = next(
+                (
+                    race
+                    for race in races
+                    if isinstance(race, dict)
+                    and int(race.get("raceNumber", -1)) == race_number
+                ),
+                None,
+            )
+            if isinstance(target, dict) and isinstance(target.get("starts"), list):
+                selected_fetch = fetch
+                selected_product = product
+                selected_race = target
+                break
+
+        if selected_fetch is None or selected_race is None or selected_product is None:
+            return 0, False, None
+
+        scratched_fetch = self.client.scratched(raceday_key)
+        self._audit(scratched_fetch, observed_at)
+        scratched = (
+            self._scratched_for_race(scratched_fetch.payload, race_number)
+            if scratched_fetch.success
+            else set()
+        )
+
+        digest = hashlib.sha256(
+            (
+                f"{raceday_key}|{race_number}|fundamentals|{selected_product}|"
+                f"{observed_at.isoformat()}"
+            ).encode()
+        ).hexdigest()
+        self.store.insert_provider_payload(
+            payload_id=digest,
+            provider=self.PROVIDER,
+            category="PROGRAM_FUNDAMENTALS",
+            provider_raceday_key=raceday_key,
+            race_number=race_number,
+            product=selected_product,
+            observed_at=observed_at,
+            source_uri=selected_fetch.url,
+            payload=selected_fetch.payload if isinstance(selected_fetch.payload, dict) else {},
+        )
+
+        existing = self.store.get_race(race_id)
+        if existing is not None:
+            self.store.upsert_race(
+                {
+                    "race_id": race_id,
+                    "race_date": existing["race_date"],
+                    "country": existing["country"],
+                    "track": existing["track"],
+                    "race_no": race_number,
+                    "start_time_utc": existing["start_time_utc"],
+                    "discipline": existing["discipline"],
+                    "distance_m": selected_race.get("distance"),
+                    "start_method": selected_race.get("startMethod"),
+                    "race_class": selected_race.get("raceName"),
+                    "created_at_utc": existing["created_at_utc"],
+                }
+            )
+
+        inserted = 0
+        starts = selected_race.get("starts")
+        if not isinstance(starts, list):
+            return 0, False, selected_fetch.url
+
+        for start in starts:
+            if not isinstance(start, dict) or start.get("startNumber") is None:
+                continue
+            selection_id = str(start["startNumber"])
+            try:
+                start_number = int(start["startNumber"])
+            except (TypeError, ValueError):
+                continue
+            is_scratched = start_number in scratched
+
+            self.store.upsert_runner(
+                {
+                    "race_id": race_id,
+                    "selection_id": selection_id,
+                    "horse_name": str(start.get("horseName") or selection_id),
+                    "post_position": start.get("postPosition"),
+                    "driver_or_jockey": start.get("driver"),
+                    "trainer": start.get("trainer"),
+                    "scratched": int(is_scratched),
+                }
+            )
+
+            annual_raw = start.get("horseAnnualStatistics")
+            annual = annual_raw if isinstance(annual_raw, dict) else {}
+            total_starts = self._annual_stat(
+                annual, "total", "numberOfStarts"
+            )
+            total_wins = self._annual_stat(
+                annual, "total", "numberOfFirstPlaces"
+            )
+            data_quality = (
+                "KNOWN_HISTORY"
+                if total_starts is not None and total_wins is not None
+                else "MISSING_HISTORY"
+            )
+            snapshot_id = hashlib.sha256(
+                (
+                    f"{race_id}|{selection_id}|{observed_at.isoformat()}|"
+                    f"{json.dumps(start, sort_keys=True, default=str)}"
+                ).encode()
+            ).hexdigest()
+            inserted += int(
+                self.store.insert_runner_fundamental_snapshot(
+                    {
+                        "snapshot_id": snapshot_id,
+                        "race_id": race_id,
+                        "selection_id": selection_id,
+                        "observed_at_utc": observed_at.isoformat(),
+                        "feature_as_of_utc": observed_at.isoformat(),
+                        "source_uri": selected_fetch.url,
+                        "horse_name": start.get("horseName"),
+                        "driver_or_jockey": start.get("driver"),
+                        "trainer": start.get("trainer"),
+                        "post_position": start.get("postPosition"),
+                        "extra_distance_m": start.get("extraDistance"),
+                        "total_earnings": start.get("totalEarnings"),
+                        "age": start.get("age"),
+                        "sex": start.get("sex"),
+                        "record_volt": start.get("recordVolt"),
+                        "record_auto": start.get("recordAuto"),
+                        "history_total_starts": total_starts,
+                        "history_total_wins": total_wins,
+                        "history_total_seconds": self._annual_stat(
+                            annual, "total", "numberOfSecondPlaces"
+                        ),
+                        "history_total_thirds": self._annual_stat(
+                            annual, "total", "numberOfThirdPlaces"
+                        ),
+                        "history_total_earnings": self._annual_stat(
+                            annual, "total", "totalEarnings"
+                        ),
+                        "current_year_starts": self._annual_stat(
+                            annual, "currentYear", "numberOfStarts"
+                        ),
+                        "current_year_wins": self._annual_stat(
+                            annual, "currentYear", "numberOfFirstPlaces"
+                        ),
+                        "current_year_seconds": self._annual_stat(
+                            annual, "currentYear", "numberOfSecondPlaces"
+                        ),
+                        "current_year_thirds": self._annual_stat(
+                            annual, "currentYear", "numberOfThirdPlaces"
+                        ),
+                        "current_year_earnings": self._annual_stat(
+                            annual, "currentYear", "totalEarnings"
+                        ),
+                        "scratched": int(is_scratched),
+                        "data_quality": data_quality,
+                        "raw_json": json.dumps(start, ensure_ascii=False, default=str),
+                    }
+                )
+            )
+        return inserted, True, selected_fetch.url
+
     def collect_pool_context(
         self,
         *,
