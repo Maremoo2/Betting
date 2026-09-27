@@ -3,11 +3,17 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from hbi.challenger import forward_clock, record_forward_event, register_challenger
+from hbi.counterfactual import CounterfactualHypothesis, evaluate_counterfactual
+from hbi.decision import DecisionPolicy
 from hbi.eligibility import evaluate_win_eligibility
+from hbi.engine import CombinationPolicy, evaluate_race
 from hbi.governance import load_governance, validate_governance
+from hbi.learning import build_learning_rows
 from hbi.manifest import build_run_manifest
 from hbi.promotion import PromotionMetrics, assess_challenger_for_manual_review
+from hbi.replay_validation import run_runtime_replay_parity
 from hbi.research_integrity import future_mutation_invariance, run_research_integrity_check
+from hbi.settlement_integrity import run_settlement_integrity
 from hbi.storage import SQLiteStore
 from hbi.v1_audit import run_v1_audit
 
@@ -173,3 +179,185 @@ def test_empty_database_v1_audit_is_engineering_pass_with_evidence_pending(tmp_p
     assert report["engineering_status"] == "PASS_WITH_EVIDENCE_PENDING"
     assert report["temporal_integrity"]["status"] == "PASS"
     assert report["runtime_replay_parity"]["status"] == "NO_EVIDENCE"
+
+
+
+def _frozen_decision(store):
+    _race(store)
+    decision_time = datetime(2026, 9, 27, 17, 56, tzinfo=UTC)
+    fundamental = {"1": 0.7, "2": 0.3}
+    odds = {"1": 2.5, "2": 4.0}
+    result = evaluate_race(
+        fundamental_probabilities=fundamental,
+        market_decimal_odds=odds,
+        executable_prices=odds,
+        combination_policy=CombinationPolicy(
+            fundamental_weight=1.0,
+            market_weight=1.0,
+            material_conflict_threshold=100.0,
+        ),
+        decision_policy=DecisionPolicy(
+            minimum_edge=0.05,
+            safety_margin=0.05,
+        ),
+    )
+    store.insert_shadow_decision_run(
+        {
+            "decision_run_id": "dr1",
+            "race_id": "r1",
+            "provider_raceday_key": "MP_NR_2026-09-27",
+            "product": "V",
+            "created_at_utc": decision_time.isoformat(),
+            "race_start_time_utc": "2026-09-27T18:00:00+00:00",
+            "decision_status": "SHADOW_BET",
+            "reason": None,
+            "shadow_model_version": "SHADOW_RESEARCH_V1_EQUAL_LOG_POOL",
+            "fundamental_model_version": "FUNDAMENTAL_CHAMPION_V1_1",
+            "source_market_observed_at_utc": decision_time.isoformat(),
+            "target_minutes_to_start": 4.0,
+            "actual_minutes_to_start": 4.0,
+            "execution_latency_seconds": 0.0,
+            "field_size": 2,
+            "fundamental_probabilities_json": json.dumps(
+                result.fundamental_probabilities,
+                sort_keys=True,
+            ),
+            "market_probabilities_json": json.dumps(
+                result.market_probabilities,
+                sort_keys=True,
+            ),
+            "combined_probabilities_json": json.dumps(
+                result.combined_probabilities,
+                sort_keys=True,
+            ),
+            "model_market_conflict_score": result.model_market_conflict_score,
+            "ticket_count": 1,
+        }
+    )
+    store.upsert_decision_provenance(
+        {
+            "decision_run_id": "dr1",
+            "market_odds_json": json.dumps(odds, sort_keys=True),
+            "combination_policy_json": json.dumps(
+                {
+                    "fundamental_weight": 1.0,
+                    "market_weight": 1.0,
+                    "material_conflict_threshold": 100.0,
+                }
+            ),
+            "decision_policy_json": json.dumps(
+                {"minimum_edge": 0.05, "safety_margin": 0.05}
+            ),
+            "code_sha": "test",
+            "governance_hash": "test",
+            "recorded_at_utc": decision_time.isoformat(),
+        }
+    )
+    return result
+
+
+def test_runtime_replay_matches_frozen_decision(tmp_path):
+    store = _store(tmp_path)
+    _frozen_decision(store)
+    report = run_runtime_replay_parity(store)
+    assert report["status"] == "PASS"
+    assert report["checked_decisions"] == 1
+    assert report["mismatches"] == []
+
+
+def test_counterfactual_is_research_only_and_persisted(tmp_path):
+    store = _store(tmp_path)
+    _frozen_decision(store)
+    store.settle_outcome(
+        race_id="r1",
+        winner_selection_id="1",
+        settled_at=datetime(2026, 9, 27, 19, 0, tzinfo=UTC),
+    )
+    result = evaluate_counterfactual(
+        store,
+        decision_run_id="dr1",
+        hypothesis=CounterfactualHypothesis(
+            name="lower_market_weight",
+            fundamental_weight=1.0,
+            market_weight=0.5,
+            material_conflict_threshold=100.0,
+            minimum_edge=0.05,
+            safety_margin=0.05,
+        ),
+    )
+    assert result["status"] == "EVALUATED"
+    assert result["research_only"] is True
+    assert result["execution_authority"] is False
+    assert store.count("counterfactual_runs") == 1
+
+
+def test_settlement_integrity_reconciles_pnl_and_winner(tmp_path):
+    store = _store(tmp_path)
+    _frozen_decision(store)
+    store.settle_outcome(
+        race_id="r1",
+        winner_selection_id="1",
+        settled_at=datetime(2026, 9, 27, 19, 0, tzinfo=UTC),
+    )
+    store.create_shadow_ticket(
+        {
+            "ticket_id": "t1",
+            "dedupe_key": "d1",
+            "created_at_utc": "2026-09-27T17:56:00+00:00",
+            "decision_time_utc": "2026-09-27T17:56:00+00:00",
+            "race_id": "r1",
+            "provider": "rikstoto",
+            "provider_raceday_key": "MP_NR_2026-09-27",
+            "product": "V",
+            "decision": "BET",
+            "status": "SHADOW_BET",
+            "selections_json": '["1"]',
+            "stake_nok": 25.0,
+            "number_of_rows": 1,
+            "available_price": 2.5,
+            "model_version": "SHADOW_RESEARCH_V1_EQUAL_LOG_POOL",
+            "target_minutes_to_start": 4.0,
+            "actual_minutes_to_start": 4.0,
+            "execution_latency_seconds": 0.0,
+        }
+    )
+    store.settle_shadow_ticket(
+        ticket_id="t1",
+        settled_at=datetime(2026, 9, 27, 19, 0, tzinfo=UTC),
+        gross_return_nok=62.5,
+        net_pnl_nok=37.5,
+        settlement_source_uri="fixture://result",
+        result={"won": True},
+        closing_price=2.5,
+        clv=0.0,
+    )
+    report = run_settlement_integrity(
+        store,
+        now=datetime(2026, 9, 29, 0, 0, tzinfo=UTC),
+    )
+    assert report["status"] == "PASS"
+
+    with store.connect() as connection:
+        connection.execute(
+            "UPDATE shadow_tickets SET net_pnl_nok=99 WHERE ticket_id='t1'"
+        )
+    broken = run_settlement_integrity(
+        store,
+        now=datetime(2026, 9, 29, 0, 1, tzinfo=UTC),
+    )
+    assert broken["status"] == "FAIL"
+    assert any(
+        item["reason"] == "net_pnl_not_equal_gross_minus_stake"
+        for item in broken["failures"]
+    )
+
+
+def test_learning_dataset_preserves_frozen_decision(tmp_path):
+    store = _store(tmp_path)
+    _frozen_decision(store)
+    rows = build_learning_rows(store)
+    assert len(rows) == 1
+    assert rows[0]["decision_run_id"] == "dr1"
+    assert rows[0]["data_quality_status"] == "OK"
+    assert rows[0]["research_only"] is True
+    assert rows[0]["execution_authority"] is False
