@@ -30,6 +30,16 @@ jobs:
             --db /tmp/hbi-v1-integrity.sqlite \
             --output-dir research-v1-ci
 
+      - name: Smoke nightly integration on an empty canonical database
+        run: |
+          mkdir -p ci-nightly
+          HBI_DB_PATH=/tmp/hbi-nightly.sqlite \
+          HBI_NIGHTLY_REPORT_PATH=ci-nightly/nightly-report.json \
+          HBI_OBSERVATORY_JSON_PATH=ci-nightly/research-observatory.json \
+          HBI_OBSERVATORY_MD_PATH=ci-nightly/research-observatory.md \
+          HBI_V1_AUDIT_DIR=ci-nightly/research-v1 \
+          python -m hbi.nightly_job
+
       - name: Verify governance document
         run: |
           python - <<'PY'
@@ -45,6 +55,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: hbi-v1-integrity-${{ github.run_id }}
-          path: research-v1-ci/
+          path: |
+            research-v1-ci/
+            ci-nightly/
           if-no-files-found: error
           retention-days: 30
