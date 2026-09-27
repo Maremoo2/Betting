@@ -83,3 +83,44 @@ New features or models start as **challengers**. They can influence production o
 after point-in-time, untouched out-of-sample evaluation shows incremental value over
 the current champion **and the market-only baseline**. Hit rate alone is never a
 promotion criterion.
+
+
+## CLI data flow
+
+A complete local dry run can now be executed without any live provider:
+
+```bash
+hbi --db data/hbi.sqlite init-db
+hbi --db data/hbi.sqlite import-races examples/races.json
+hbi --db data/hbi.sqlite import-snapshots examples/snapshots.json \
+  --race-start 2026-09-27T18:00:00+00:00 \
+  --source-uri fixture://demo
+hbi --db data/hbi.sqlite import-results examples/results.json
+hbi --db data/hbi.sqlite export exports/ --format csv
+```
+
+When a real provider is connected, it should emit the same canonical objects rather
+than changing the modelling/database layer.
+
+### Optional Google Sheets mirror
+
+Install the optional dependency:
+
+```bash
+pip install -e ".[sheets]"
+```
+
+Then use a Google service-account credential file:
+
+```bash
+hbi --db data/hbi.sqlite sync-sheets \
+  --spreadsheet-id YOUR_SHEET_ID \
+  --credentials /secure/path/service-account.json
+```
+
+The mirror writes to new worksheets prefixed with `HBI_` by default. It does not
+overwrite an existing manually maintained `RACES`, `SNAPSHOTS` or
+`BETS_OUTCOMES` worksheet.
+
+See [docs/DATA_CONTRACT.md](docs/DATA_CONTRACT.md) for provider format and
+[docs/RESEARCH_PROTOCOL.md](docs/RESEARCH_PROTOCOL.md) for model governance.
