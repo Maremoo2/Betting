@@ -10,6 +10,7 @@ from uuid import uuid4
 
 from .decision import DecisionPolicy
 from .domain import Decision
+from .eligibility import evaluate_win_eligibility
 from .engine import CombinationPolicy, evaluate_race
 from .governance import governance_hash, load_governance
 from .probability import normalize_market_odds
@@ -292,8 +293,16 @@ def run_win_shadow_decision(
             reason="NO_FUNDAMENTAL_PREDICTIONS",
         )
 
-    common = set(market_odds) & set(fundamental)
-    if len(common) != len(market_odds) or len(common) != len(fundamental):
+    gate = evaluate_win_eligibility(
+        decision_time=current,
+        race_start_time=race_start_at,
+        market_observed_at=datetime.fromisoformat(source_market_time),
+        fundamental_shadow_eligible=True,
+        fundamental_selections=set(fundamental),
+        market_selections=set(market_odds),
+    )
+    if not gate.allowed:
+        reason = gate.reasons[0]
         _persist_decision_run(
             store,
             race_id=race_id,
@@ -302,7 +311,7 @@ def run_win_shadow_decision(
             decision_time=current,
             policy=rules,
             status="NOT_EXECUTABLE",
-            reason="INCOMPLETE_FULL_FIELD_ALIGNMENT",
+            reason=reason,
             fundamental_model_version=fundamental_model_version,
             source_market_observed_at=source_market_time,
             fundamental=fundamental,
@@ -316,7 +325,7 @@ def run_win_shadow_decision(
             decision_time=current,
             race_start_at=race_start_at,
             policy=rules,
-            reason="INCOMPLETE_FULL_FIELD_ALIGNMENT",
+            reason=reason,
         )
 
     evaluated = evaluate_race(
