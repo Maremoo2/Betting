@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from .json_provider import load_market_snapshots, load_race_cards, load_results
+from .manifest import persist_run_manifest
 from .pipeline import HBIPipeline
 from .storage import SQLiteStore
 
@@ -77,8 +78,17 @@ def run_once(*, db_path: str, mode: str) -> RunAudit:
         audit.results_settled = len(results)
 
     audit.status = "OK" if configured else "NOOP"
+    finished = datetime.now(UTC)
+    audit.finished_at = finished.isoformat()
+    persist_run_manifest(
+        store,
+        run_type="PREWATCH_" + mode,
+        started_at=datetime.fromisoformat(audit.started_at),
+        finished_at=finished,
+        status=audit.status,
+        metadata=asdict(audit),
+    )
     store.checkpoint()
-    audit.finished_at = datetime.now(UTC).isoformat()
     return audit
 
 
