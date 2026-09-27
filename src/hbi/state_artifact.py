@@ -4,6 +4,7 @@ import io
 import json
 import os
 import shutil
+import urllib.error
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -54,11 +55,33 @@ def restore_latest_state(
 
     artifacts.sort(key=lambda item: item["created_at"], reverse=True)
     latest = artifacts[0]
-    with urllib.request.urlopen(
-        _request(latest["archive_download_url"], token),
-        timeout=60,
-    ) as response:
-        archive = response.read()
+    archive_request = _request(latest["archive_download_url"], token)
+
+    class _NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            return None
+
+    opener = urllib.request.build_opener(_NoRedirect)
+    try:
+        with opener.open(archive_request, timeout=60) as response:
+            archive = response.read()
+    except urllib.error.HTTPError as exc:
+        if exc.code not in {301, 302, 303, 307, 308}:
+            raise
+        location = exc.headers.get("Location")
+        if not location:
+            raise RuntimeError("artifact download redirect missing Location header") from exc
+
+        # GitHub redirects artifact downloads to a signed object-storage URL. Do not
+        # forward the GitHub Authorization header to that host; some storage backends
+        # reject the request when both a signed URL and an unrelated bearer token are
+        # present.
+        clean_request = urllib.request.Request(
+            location,
+            headers={"User-Agent": "horse-betting-intelligence"},
+        )
+        with urllib.request.urlopen(clean_request, timeout=60) as response:
+            archive = response.read()
 
     target = Path(target_path)
     target.parent.mkdir(parents=True, exist_ok=True)
