@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from pathlib import Path
 
 from hbi.export import export_database_csv
@@ -21,9 +20,8 @@ def test_end_to_end_json_to_database_and_export(tmp_path):
         pipeline.persist_race_card(card)
 
     snapshots = load_market_snapshots(ROOT / "examples" / "snapshots.json")
-    start = datetime(2026, 9, 27, 18, 0, tzinfo=timezone.utc)
     for snapshot in snapshots:
-        pipeline.process_snapshot(snapshot, race_start_at=start, source_uri="fixture://market")
+        pipeline.process_snapshot(snapshot, source_uri="fixture://market")
 
     results = load_results(ROOT / "examples" / "results.json")
     for result in results:
