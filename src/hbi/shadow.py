@@ -1,23 +1,16 @@
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import dataclass
-from pathlib import Path
 from datetime import UTC, datetime, timedelta
 from hashlib import sha256
 from uuid import uuid4
 
 from .decision import DecisionPolicy
 from .domain import Decision
-from .eligibility import evaluate_win_eligibility
 from .engine import CombinationPolicy, evaluate_race
-from .governance import governance_hash, load_governance
 from .probability import normalize_market_odds
 from .storage import SQLiteStore
-
-ROOT = Path(__file__).parents[2]
-GOVERNANCE_PATH = ROOT / "docs" / "research_governance.json"
 
 
 @dataclass(frozen=True)
@@ -81,7 +74,6 @@ def _persist_decision_run(
     source_market_observed_at: str | None = None,
     fundamental: dict[str, float] | None = None,
     market: dict[str, float] | None = None,
-    market_odds: dict[str, float] | None = None,
     combined: dict[str, float] | None = None,
     conflict: float | None = None,
     ticket_count: int = 0,
@@ -91,15 +83,14 @@ def _persist_decision_run(
         decision_time,
         policy.target_minutes_to_start,
     )
-    decision_run_id = _decision_run_id(
-        race_id,
-        "V",
-        policy.model_version,
-        policy.target_minutes_to_start,
-    )
     store.insert_shadow_decision_run(
         {
-            "decision_run_id": decision_run_id,
+            "decision_run_id": _decision_run_id(
+                race_id,
+                "V",
+                policy.model_version,
+                policy.target_minutes_to_start,
+            ),
             "race_id": race_id,
             "provider_raceday_key": raceday_key,
             "product": "V",
@@ -129,35 +120,6 @@ def _persist_decision_run(
             ),
             "model_market_conflict_score": conflict,
             "ticket_count": ticket_count,
-        }
-    )
-    governance = load_governance(GOVERNANCE_PATH)
-    store.upsert_decision_provenance(
-        {
-            "decision_run_id": decision_run_id,
-            "market_odds_json": (
-                None if market_odds is None else json.dumps(market_odds, sort_keys=True)
-            ),
-            "combination_policy_json": json.dumps(
-                {
-                    "fundamental_weight": policy.fundamental_weight,
-                    "market_weight": policy.market_weight,
-                    "material_conflict_threshold": policy.material_conflict_threshold,
-                },
-                sort_keys=True,
-            ),
-            "decision_policy_json": json.dumps(
-                {
-                    "minimum_edge": policy.minimum_edge,
-                    "safety_margin": policy.safety_margin,
-                    "single_win_stake_nok": policy.single_win_stake_nok,
-                    "max_win_bets_per_race": policy.max_win_bets_per_race,
-                },
-                sort_keys=True,
-            ),
-            "code_sha": os.getenv("GITHUB_SHA"),
-            "governance_hash": governance_hash(governance),
-            "recorded_at_utc": decision_time.isoformat(),
         }
     )
 
@@ -251,7 +213,6 @@ def run_win_shadow_decision(
             source_market_observed_at=source_market_time,
             fundamental=fundamental,
             market=market,
-            market_odds=market_odds,
         )
         return _record_not_executable(
             store,
@@ -281,7 +242,6 @@ def run_win_shadow_decision(
             fundamental_model_version=fundamental_model_version,
             source_market_observed_at=source_market_time,
             market=market,
-            market_odds=market_odds,
         )
         return _record_not_executable(
             store,
@@ -293,16 +253,8 @@ def run_win_shadow_decision(
             reason="NO_FUNDAMENTAL_PREDICTIONS",
         )
 
-    gate = evaluate_win_eligibility(
-        decision_time=current,
-        race_start_time=race_start_at,
-        market_observed_at=datetime.fromisoformat(source_market_time),
-        fundamental_shadow_eligible=True,
-        fundamental_selections=set(fundamental),
-        market_selections=set(market_odds),
-    )
-    if not gate.allowed:
-        reason = gate.reasons[0]
+    common = set(market_odds) & set(fundamental)
+    if len(common) != len(market_odds) or len(common) != len(fundamental):
         _persist_decision_run(
             store,
             race_id=race_id,
@@ -311,12 +263,11 @@ def run_win_shadow_decision(
             decision_time=current,
             policy=rules,
             status="NOT_EXECUTABLE",
-            reason=reason,
+            reason="INCOMPLETE_FULL_FIELD_ALIGNMENT",
             fundamental_model_version=fundamental_model_version,
             source_market_observed_at=source_market_time,
             fundamental=fundamental,
             market=market,
-            market_odds=market_odds,
         )
         return _record_not_executable(
             store,
@@ -325,7 +276,7 @@ def run_win_shadow_decision(
             decision_time=current,
             race_start_at=race_start_at,
             policy=rules,
-            reason=reason,
+            reason="INCOMPLETE_FULL_FIELD_ALIGNMENT",
         )
 
     evaluated = evaluate_race(
@@ -364,7 +315,6 @@ def run_win_shadow_decision(
             source_market_observed_at=source_market_time,
             fundamental=evaluated.fundamental_probabilities,
             market=evaluated.market_probabilities,
-            market_odds=market_odds,
             combined=evaluated.combined_probabilities,
             conflict=evaluated.model_market_conflict_score,
         )
