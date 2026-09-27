@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import json
 import sqlite3
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from uuid import uuid4
 
 from .domain import MarketSnapshot
+from .prewatch import MaterialChange
 
 
 @dataclass
@@ -82,6 +85,24 @@ class SQLiteStore:
             )
             return cursor.rowcount == 1
 
+    def latest_market_snapshot(
+        self,
+        race_id: str,
+        selection_id: str,
+        *,
+        before: datetime | None = None,
+    ) -> sqlite3.Row | None:
+        query = (
+            "SELECT * FROM market_snapshots WHERE race_id=? AND selection_id=?"
+        )
+        params: list[object] = [race_id, selection_id]
+        if before is not None:
+            query += " AND captured_at_utc < ?"
+            params.append(before.isoformat())
+        query += " ORDER BY captured_at_utc DESC LIMIT 1"
+        with self.connect() as connection:
+            return connection.execute(query, params).fetchone()
+
     def insert_prediction(
         self,
         *,
@@ -98,6 +119,8 @@ class SQLiteStore:
         """Insert a frozen prediction; an existing prediction_id may never be rewritten."""
         if feature_as_of > created_at:
             raise ValueError("feature_as_of cannot be after prediction creation time")
+        if not 0 < probability <= 1:
+            raise ValueError("probability must be in (0, 1]")
         with self.connect() as connection:
             try:
                 connection.execute(
@@ -112,6 +135,119 @@ class SQLiteStore:
             except sqlite3.IntegrityError as exc:
                 raise ValueError(f"frozen prediction already exists: {prediction_id}") from exc
 
+    def insert_prewatch_event(
+        self,
+        *,
+        race_id: str,
+        captured_at: datetime,
+        change: MaterialChange,
+        policy_version: str = "v1",
+    ) -> str:
+        event_id = str(uuid4())
+        with self.connect() as connection:
+            connection.execute(
+                "INSERT INTO prewatch_events "
+                "(event_id,race_id,selection_id,captured_at_utc,action,reasons_json,"
+                "probability_move_pp,relative_odds_move_pct,pool_growth_pct,minutes_to_start,"
+                "policy_version) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                (
+                    event_id,
+                    race_id,
+                    change.selection_id,
+                    captured_at.isoformat(),
+                    change.action.value,
+                    json.dumps(change.reasons),
+                    change.probability_move_pp,
+                    change.relative_odds_move_pct,
+                    change.pool_growth_pct,
+                    change.minutes_to_start,
+                    policy_version,
+                ),
+            )
+        return event_id
+
+    def insert_review_flag(
+        self,
+        *,
+        flag_id: str,
+        race_id: str,
+        flag_type: str,
+        source_uri: str,
+        source_published_at: datetime,
+        captured_at: datetime,
+        selection_id: str | None = None,
+        note: str = "",
+        confidence: float = 1.0,
+    ) -> None:
+        if not 0 <= confidence <= 1:
+            raise ValueError("confidence must be in [0, 1]")
+        if source_published_at > captured_at:
+            raise ValueError("source_published_at cannot be after captured_at")
+        with self.connect() as connection:
+            connection.execute(
+                "INSERT INTO review_flags "
+                "(flag_id,race_id,selection_id,flag_type,note,source_uri,"
+                "source_published_at_utc,captured_at_utc,confidence) VALUES (?,?,?,?,?,?,?,?,?)",
+                (
+                    flag_id,
+                    race_id,
+                    selection_id,
+                    flag_type,
+                    note,
+                    source_uri,
+                    source_published_at.isoformat(),
+                    captured_at.isoformat(),
+                    confidence,
+                ),
+            )
+
+    def insert_decision(self, decision: dict[str, object]) -> None:
+        columns = (
+            "decision_id", "race_id", "selection_id", "decision_time_utc", "decision",
+            "fundamental_p", "market_p", "combined_p", "fair_odds", "available_price",
+            "minimum_price", "expected_close_price", "actual_close_price", "closing_line_value",
+            "model_market_conflict_score", "race_difficulty_score", "reject_reason", "stake_nok",
+        )
+        values = [decision.get(column) for column in columns]
+        with self.connect() as connection:
+            connection.execute(
+                f"INSERT INTO decisions ({','.join(columns)}) "
+                f"VALUES ({','.join('?' for _ in columns)})",
+                values,
+            )
+
+    def settle_outcome(
+        self,
+        *,
+        race_id: str,
+        winner_selection_id: str,
+        settled_at: datetime,
+        actual_close_price: float | None = None,
+        gross_return_nok: float | None = None,
+        net_pnl_nok: float | None = None,
+    ) -> None:
+        """Idempotently persist settlement data without changing frozen predictions."""
+        with self.connect() as connection:
+            connection.execute(
+                "INSERT INTO outcomes "
+                "(race_id,winner_selection_id,settled_at_utc,actual_close_price,"
+                "gross_return_nok,net_pnl_nok) VALUES (?,?,?,?,?,?) "
+                "ON CONFLICT(race_id) DO UPDATE SET "
+                "winner_selection_id=excluded.winner_selection_id,"
+                "settled_at_utc=excluded.settled_at_utc,"
+                "actual_close_price=excluded.actual_close_price,"
+                "gross_return_nok=excluded.gross_return_nok,"
+                "net_pnl_nok=excluded.net_pnl_nok",
+                (
+                    race_id,
+                    winner_selection_id,
+                    settled_at.isoformat(),
+                    actual_close_price,
+                    gross_return_nok,
+                    net_pnl_nok,
+                ),
+            )
+
     def fetch_market_snapshots(self, race_id: str, selection_id: str) -> list[sqlite3.Row]:
         with self.connect() as connection:
             return list(
@@ -122,7 +258,7 @@ class SQLiteStore:
                 )
             )
 
-    def count(self, table: str) -> int:
+    def fetch_table(self, table: str) -> list[dict[str, object]]:
         allowed = {
             "races", "runners", "evidence", "market_snapshots", "predictions",
             "race_diagnostics", "model_versions", "decisions", "review_flags",
@@ -131,4 +267,7 @@ class SQLiteStore:
         if table not in allowed:
             raise ValueError("unsupported table")
         with self.connect() as connection:
-            return int(connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])
+            return [dict(row) for row in connection.execute(f"SELECT * FROM {table}")]
+
+    def count(self, table: str) -> int:
+        return len(self.fetch_table(table))
