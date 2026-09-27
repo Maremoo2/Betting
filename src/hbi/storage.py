@@ -451,6 +451,116 @@ class SQLiteStore:
                 ),
             )
 
+    def insert_runner_fundamental_snapshot(
+        self,
+        snapshot: dict[str, object],
+    ) -> bool:
+        columns = (
+            "snapshot_id", "race_id", "selection_id", "observed_at_utc",
+            "feature_as_of_utc", "source_uri", "horse_name", "driver_or_jockey",
+            "trainer", "post_position", "extra_distance_m", "total_earnings", "age",
+            "sex", "record_volt", "record_auto", "history_total_starts",
+            "history_total_wins", "history_total_seconds", "history_total_thirds",
+            "history_total_earnings", "current_year_starts", "current_year_wins",
+            "current_year_seconds", "current_year_thirds", "current_year_earnings",
+            "scratched", "data_quality", "raw_json",
+        )
+        values = [snapshot.get(column) for column in columns]
+        with self.connect() as connection:
+            cursor = connection.execute(
+                f"INSERT OR IGNORE INTO runner_fundamental_snapshots "
+                f"({','.join(columns)}) VALUES ({','.join('?' for _ in columns)})",
+                values,
+            )
+            return cursor.rowcount == 1
+
+    def latest_runner_fundamentals(
+        self,
+        race_id: str,
+        *,
+        before: datetime | None = None,
+    ) -> list[dict[str, object]]:
+        query = "SELECT * FROM runner_fundamental_snapshots WHERE race_id=?"
+        params: list[object] = [race_id]
+        if before is not None:
+            query += " AND feature_as_of_utc<=?"
+            params.append(before.isoformat())
+        query += " ORDER BY selection_id, feature_as_of_utc DESC"
+        with self.connect() as connection:
+            rows = connection.execute(query, params)
+            output: dict[str, dict[str, object]] = {}
+            for row in rows:
+                selection = str(row["selection_id"])
+                if selection not in output:
+                    output[selection] = dict(row)
+            return list(output.values())
+
+    def insert_fundamental_model_run(self, run: dict[str, object]) -> bool:
+        columns = (
+            "run_id", "race_id", "model_name", "model_version", "role",
+            "feature_set_version", "created_at_utc", "feature_as_of_utc", "field_size",
+            "active_runners", "known_history_runners", "history_coverage",
+            "shadow_eligible", "status", "reason", "probabilities_json",
+            "metadata_json",
+        )
+        values = [run.get(column) for column in columns]
+        with self.connect() as connection:
+            cursor = connection.execute(
+                f"INSERT OR IGNORE INTO fundamental_model_runs "
+                f"({','.join(columns)}) VALUES ({','.join('?' for _ in columns)})",
+                values,
+            )
+            return cursor.rowcount == 1
+
+    def latest_fundamental_model_run(
+        self,
+        race_id: str,
+        *,
+        before: datetime | None = None,
+    ) -> dict[str, object] | None:
+        query = "SELECT * FROM fundamental_model_runs WHERE race_id=?"
+        params: list[object] = [race_id]
+        if before is not None:
+            query += " AND created_at_utc<=?"
+            params.append(before.isoformat())
+        query += " ORDER BY created_at_utc DESC LIMIT 1"
+        with self.connect() as connection:
+            row = connection.execute(query, params).fetchone()
+            return None if row is None else dict(row)
+
+    def upsert_model_version(
+        self,
+        *,
+        model_name: str,
+        version: str,
+        role: str,
+        training_cutoff_utc: str,
+        feature_set_version: str,
+        calibration_version: str,
+        created_at: datetime,
+        notes: str = "",
+    ) -> None:
+        with self.connect() as connection:
+            connection.execute(
+                "INSERT INTO model_versions "
+                "(model_name,version,role,training_cutoff_utc,feature_set_version,"
+                "calibration_version,created_at_utc,notes) VALUES (?,?,?,?,?,?,?,?) "
+                "ON CONFLICT(model_name,version) DO UPDATE SET "
+                "role=excluded.role,training_cutoff_utc=excluded.training_cutoff_utc,"
+                "feature_set_version=excluded.feature_set_version,"
+                "calibration_version=excluded.calibration_version,notes=excluded.notes",
+                (
+                    model_name,
+                    version,
+                    role,
+                    training_cutoff_utc,
+                    feature_set_version,
+                    calibration_version,
+                    created_at.isoformat(),
+                    notes,
+                ),
+            )
+
     def latest_predictions(
         self,
         race_id: str,
@@ -586,6 +696,7 @@ class SQLiteStore:
             "prewatch_events", "outcomes", "provider_race_refs",
             "provider_market_snapshots", "provider_fetch_audit", "shadow_tickets",
             "shadow_daily_reports", "provider_payloads",
+            "runner_fundamental_snapshots", "fundamental_model_runs",
         }
         if table not in allowed:
             raise ValueError("unsupported table")
@@ -599,6 +710,7 @@ class SQLiteStore:
             "prewatch_events", "outcomes", "schema_migrations", "provider_race_refs",
             "provider_market_snapshots", "provider_fetch_audit", "shadow_tickets",
             "shadow_daily_reports", "provider_payloads",
+            "runner_fundamental_snapshots", "fundamental_model_runs",
         }
         if table not in allowed:
             raise ValueError("unsupported table")
