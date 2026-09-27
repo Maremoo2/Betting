@@ -16,6 +16,12 @@ DEFAULT_EXPORT_TABLES = (
     "review_flags",
     "prewatch_events",
     "outcomes",
+    "provider_race_refs",
+    "provider_market_snapshots",
+    "provider_fetch_audit",
+    "provider_payloads",
+    "shadow_tickets",
+    "shadow_daily_reports",
 )
 
 
