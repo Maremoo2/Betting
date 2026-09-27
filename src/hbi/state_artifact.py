@@ -8,7 +8,6 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-
 API = "https://api.github.com"
 
 
@@ -42,7 +41,8 @@ def restore_latest_state(
         payload = json.loads(response.read().decode("utf-8"))
 
     artifacts = [
-        item for item in payload.get("artifacts", [])
+        item
+        for item in payload.get("artifacts", [])
         if not item.get("expired", False)
         and (
             branch is None
@@ -64,7 +64,8 @@ def restore_latest_state(
     target.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(io.BytesIO(archive)) as zf:
         candidates = [
-            name for name in zf.namelist()
+            name
+            for name in zf.namelist()
             if not name.endswith("/") and Path(name).name == target.name
         ]
         if not candidates:
