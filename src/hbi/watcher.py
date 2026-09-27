@@ -7,6 +7,7 @@ from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+from .fundamental import run_and_persist_fundamental
 from .rikstoto_collector import RikstotoCollector
 from .shadow import ShadowPolicy, run_win_shadow_decision
 from .storage import SQLiteStore
@@ -24,6 +25,10 @@ class WatcherAudit:
     discovered: int = 0
     due_races: int = 0
     snapshots_inserted: int = 0
+    fundamental_snapshots_inserted: int = 0
+    fundamental_runs: int = 0
+    fundamental_shadow_eligible: int = 0
+    fundamental_failures: int = 0
     fetch_failures: int = 0
     shadow_bets_created: int = 0
     not_executable: int = 0
@@ -97,6 +102,20 @@ def run_watcher(
         audit.snapshots_inserted += pool_inserted
         audit.fetch_failures += pool_failures
 
+        fundamental_inserted, fundamental_ok, _ = collector.collect_fundamentals(
+            raceday_key=str(race["provider_raceday_key"]),
+            race_number=int(race["race_number"]),
+            race_id=str(race["race_id"]),
+            observed_at=current,
+            products=[
+                *list(raw.get("single_leg_products") or []),
+                *list(raw.get("pools") or []),
+            ],
+        )
+        audit.fundamental_snapshots_inserted += fundamental_inserted
+        if not fundamental_ok:
+            audit.fundamental_failures += 1
+
     target_schedule: list[tuple[datetime, dict[str, object]]] = []
     for race in due:
         start = datetime.fromisoformat(str(race["start_time_utc"]))
@@ -135,6 +154,30 @@ def run_watcher(
         )
         audit.snapshots_inserted += pool_inserted
         audit.fetch_failures += pool_failures
+
+        fundamental_inserted, fundamental_ok, _ = collector.collect_fundamentals(
+            raceday_key=str(race["provider_raceday_key"]),
+            race_number=int(race["race_number"]),
+            race_id=str(race["race_id"]),
+            observed_at=live_now,
+            products=[
+                *list(raw.get("single_leg_products") or []),
+                *list(raw.get("pools") or []),
+            ],
+        )
+        audit.fundamental_snapshots_inserted += fundamental_inserted
+        if fundamental_ok:
+            fundamental_run = run_and_persist_fundamental(
+                store,
+                race_id=str(race["race_id"]),
+                created_at=live_now,
+            )
+            audit.fundamental_runs += 1
+            audit.fundamental_shadow_eligible += int(
+                fundamental_run.shadow_eligible
+            )
+        else:
+            audit.fundamental_failures += 1
 
         result = run_win_shadow_decision(
             store,
