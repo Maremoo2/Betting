@@ -6,7 +6,6 @@ from pathlib import Path
 
 from .storage import SQLiteStore
 
-
 DEFAULT_EXPORT_TABLES = (
     "races",
     "runners",
