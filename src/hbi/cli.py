@@ -12,11 +12,14 @@ from .storage import SQLiteStore
 
 
 DEFAULT_SCHEMA = Path(__file__).parents[2] / "db" / "schema.sql"
+DEFAULT_MIGRATIONS = Path(__file__).parents[2] / "db" / "migrations"
 
 
 def _store(path: str, schema: str | None = None) -> SQLiteStore:
     store = SQLiteStore(path)
     store.initialize(schema or DEFAULT_SCHEMA)
+    if DEFAULT_MIGRATIONS.exists():
+        store.apply_migrations(DEFAULT_MIGRATIONS)
     return store
 
 
