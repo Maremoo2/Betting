@@ -70,7 +70,9 @@ evidence.
 
 ## Champion / challenger
 
-Only the Champion influences production decisions. Challengers run in shadow.
+Only a validated `CHAMPION` may influence future production decisions. The current
+autonomous paper loop uses a separately labelled `SHADOW_CHAMPION`; challengers also
+run in shadow.
 Promotion requires an untouched sample and improvement on predictive calibration
 metrics; economic metrics are reviewed separately.
 
@@ -105,6 +107,9 @@ the market baseline?
 
 Implemented:
 - read-only Rikstoto provider with explicit endpoint-provenance levels
+- point-in-time Rikstoto runner/program fundamental snapshots
+- `FUNDAMENTAL_CHAMPION_V1` shadow Champion using market-free historical win records
+- full-field normalization and 80% history-coverage shadow eligibility gate
 - five-minute market watcher with best-effort T-4 timing and latency logging
 - immutable shadow ledger
 - Vinner shadow execution when full-field fundamental probabilities exist
@@ -125,6 +130,8 @@ Implemented:
 - CI tests
 
 Intentionally not yet implemented:
+- calibrated/learned production Fundamental Champion
+- validated incremental feature blocks for driver/trainer/form/earnings/record/etc.
 - validated current payout/dividend contracts for TV/T/DD/V4/V75/V85
 - autonomous shadow probability/ticket models for P/TV/T/DD/V4/V75/V85
 - learned champion model training

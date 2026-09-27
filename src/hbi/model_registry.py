@@ -6,6 +6,7 @@ from enum import StrEnum
 
 class ModelRole(StrEnum):
     CHAMPION = "CHAMPION"
+    SHADOW_CHAMPION = "SHADOW_CHAMPION"
     CHALLENGER = "CHALLENGER"
     RETIRED = "RETIRED"
 

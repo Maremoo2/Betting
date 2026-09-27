@@ -39,10 +39,14 @@ ideal T-4 timestamp. HBI records that miss instead of backdating the decision.
 Vinner is the first executable shadow product because V3.2 already has a horse-level
 p(win) architecture and a directly observable single-selection market price.
 
+The watcher now generates that market-free FUNDAMENTAL distribution automatically
+from `FUNDAMENTAL_CHAMPION_V1` when Rikstoto program history is available. The model
+uses no odds or betting percentages and is allowed to feed the paper-betting layer only
+when its history-coverage gate passes.
+
 The initial shadow combination policy is explicitly named
 `SHADOW_RESEARCH_V1_EQUAL_LOG_POOL`. Its equal fundamental/market weights are a
-research baseline, not a validated Benter coefficient estimate. It may create a paper
-bet only when a complete market-free FUNDAMENTAL distribution exists.
+research baseline, not a validated Benter coefficient estimate.
 
 Other products are collected so the project can learn their market structure without
 pretending that p(win) automatically gives a correct Plass/Tvilling/V75 probability.

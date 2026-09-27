@@ -23,7 +23,9 @@ feature as-of time are no later than the decision time.
 
 ## Champion / challenger
 
-The production Champion is frozen. Challengers run in shadow.
+The future production Champion is frozen once promoted. Until a calibrated model has
+earned that status, HBI may designate one `SHADOW_CHAMPION` to drive prospective
+paper decisions. Challengers remain shadow-only and cannot silently replace it.
 
 A Challenger may be promoted only after:
 
