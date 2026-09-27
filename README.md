@@ -124,3 +124,28 @@ overwrite an existing manually maintained `RACES`, `SNAPSHOTS` or
 
 See [docs/DATA_CONTRACT.md](docs/DATA_CONTRACT.md) for provider format and
 [docs/RESEARCH_PROTOCOL.md](docs/RESEARCH_PROTOCOL.md) for model governance.
+
+
+## GitHub-hosted hourly PRE-WATCH
+
+The repository now includes `.github/workflows/prewatch-hourly.yml`.
+
+After this workflow is merged to the default branch, GitHub Actions schedules the
+same operating cadence as the current PRE-WATCH concept:
+
+- 09:00 Europe/Oslo: `MORNING_DISCOVERY`
+- hourly from 10:00 through 21:00 Europe/Oslo: `HOURLY_WATCH`
+
+The workflow cron covers both CET and CEST and a Python timezone gate decides whether
+the current run belongs in the Oslo watch window.
+
+GitHub-hosted runners are ephemeral, so successful runs upload `data/hbi.sqlite` as
+an `hbi-state` artifact. The following run restores the latest state before doing
+new work. This gives the first GitHub-native persistent deployment without committing
+the binary database to source control.
+
+Until a live racing/market provider is configured, scheduled runs intentionally
+finish as audited `NOOP` runs instead of creating fake race data. The scheduler and
+persistence are therefore deployable before the provider layer.
+
+See [docs/GITHUB_ACTIONS.md](docs/GITHUB_ACTIONS.md).
