@@ -30,6 +30,7 @@ def restore_latest_state(
     token: str,
     target_path: str | Path,
     artifact_name: str = "hbi-state",
+    branch: str | None = None,
 ) -> bool:
     """Restore the newest non-expired HBI SQLite database artifact.
 
@@ -43,6 +44,10 @@ def restore_latest_state(
     artifacts = [
         item for item in payload.get("artifacts", [])
         if not item.get("expired", False)
+        and (
+            branch is None
+            or item.get("workflow_run", {}).get("head_branch") in (None, branch)
+        )
     ]
     if not artifacts:
         return False
@@ -73,6 +78,7 @@ def main() -> None:
     repository = os.environ.get("GITHUB_REPOSITORY")
     token = os.environ.get("GITHUB_TOKEN")
     target = os.environ.get("HBI_DB_PATH", "data/hbi.sqlite")
+    branch = os.environ.get("GITHUB_REF_NAME")
     if not repository or not token:
         raise SystemExit("GITHUB_REPOSITORY and GITHUB_TOKEN are required")
 
@@ -80,6 +86,7 @@ def main() -> None:
         repository=repository,
         token=token,
         target_path=target,
+        branch=branch,
     )
     print("STATE_RESTORE=RESTORED" if restored else "STATE_RESTORE=EMPTY")
 
