@@ -45,3 +45,25 @@ def github_output(decision: ScheduleDecision) -> str:
             f"reason={decision.reason}",
         )
     )
+
+
+def evaluate_shadow_watcher_schedule(now: datetime | None = None) -> ScheduleDecision:
+    """Gate the five-minute market watcher to 09:00-23:59 Europe/Oslo."""
+    current = now or datetime.now(UTC)
+    if current.tzinfo is None or current.utcoffset() is None:
+        raise ValueError("now must be timezone-aware")
+
+    local = current.astimezone(OSLO)
+    if 9 <= local.hour <= 23:
+        return ScheduleDecision(
+            True,
+            "SHADOW_MARKET_WATCH",
+            local,
+            "five-minute Oslo shadow watch window",
+        )
+    return ScheduleDecision(
+        False,
+        "SKIP",
+        local,
+        "outside 09:00-23:59 Oslo shadow watch window",
+    )
