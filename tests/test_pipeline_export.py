@@ -5,7 +5,6 @@ from hbi.json_provider import load_market_snapshots, load_race_cards, load_resul
 from hbi.pipeline import HBIPipeline
 from hbi.storage import SQLiteStore
 
-
 ROOT = Path(__file__).parents[1]
 SCHEMA = ROOT / "db" / "schema.sql"
 
