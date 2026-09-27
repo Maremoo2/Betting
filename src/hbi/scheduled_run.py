@@ -3,13 +3,12 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from .json_provider import load_market_snapshots, load_race_cards, load_results
 from .pipeline import HBIPipeline
 from .storage import SQLiteStore
-
 
 ROOT = Path(__file__).parents[2]
 DEFAULT_SCHEMA = ROOT / "db" / "schema.sql"
@@ -39,7 +38,7 @@ def _optional_path(name: str) -> Path | None:
 
 
 def run_once(*, db_path: str, mode: str) -> RunAudit:
-    audit = RunAudit(mode=mode, started_at=datetime.now(timezone.utc).isoformat())
+    audit = RunAudit(mode=mode, started_at=datetime.now(UTC).isoformat())
     store = SQLiteStore(db_path)
     store.initialize(DEFAULT_SCHEMA)
     if DEFAULT_MIGRATIONS.exists():
@@ -79,7 +78,7 @@ def run_once(*, db_path: str, mode: str) -> RunAudit:
 
     audit.status = "OK" if configured else "NOOP"
     store.checkpoint()
-    audit.finished_at = datetime.now(timezone.utc).isoformat()
+    audit.finished_at = datetime.now(UTC).isoformat()
     return audit
 
 
