@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "horse-betting-intelligence"
-version = "0.1.0"
+version = "0.2.0"
 description = "Benter-first horse betting research and decision-support foundation."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -12,6 +12,10 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.6"]
+sheets = ["gspread>=6.1", "google-auth>=2.35"]
+
+[project.scripts]
+hbi = "hbi.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/hbi"]

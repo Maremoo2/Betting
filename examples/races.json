@@ -1,0 +1,30 @@
+{
+  "races": [
+    {
+      "race": {
+        "race_id": "SE-TEST-2026-09-27-1",
+        "race_date": "2026-09-27",
+        "country": "SE",
+        "track": "TEST",
+        "race_no": 1,
+        "start_time_utc": "2026-09-27T18:00:00+00:00",
+        "discipline": "trot",
+        "distance_m": 2140,
+        "start_method": "auto",
+        "race_class": "demo",
+        "created_at_utc": "2026-09-27T12:00:00+00:00"
+      },
+      "runners": [
+        {
+          "race_id": "SE-TEST-2026-09-27-1",
+          "selection_id": "1",
+          "horse_name": "Example Horse",
+          "post_position": 1,
+          "driver_or_jockey": "Example Driver",
+          "trainer": "Example Trainer",
+          "scratched": 0
+        }
+      ]
+    }
+  ]
+}

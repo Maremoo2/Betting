@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -7,7 +7,7 @@ from hbi.prewatch import PreWatchAction, assess_material_change, market_residual
 
 
 def test_large_late_move_triggers_review():
-    t0 = datetime(2026, 9, 27, 18, 0, tzinfo=timezone.utc)
+    t0 = datetime(2026, 9, 27, 18, 0, tzinfo=UTC)
     start = t0 + timedelta(minutes=6)
     result = assess_material_change(
         MarketSnapshot("r1", "h1", t0, 6.0, 10000),
@@ -21,7 +21,7 @@ def test_large_late_move_triggers_review():
 
 
 def test_small_move_holds():
-    t0 = datetime(2026, 9, 27, 18, 0, tzinfo=timezone.utc)
+    t0 = datetime(2026, 9, 27, 18, 0, tzinfo=UTC)
     result = assess_material_change(
         MarketSnapshot("r1", "h1", t0, 4.0, 10000),
         MarketSnapshot("r1", "h1", t0 + timedelta(minutes=2), 3.95, 10500),
@@ -31,7 +31,7 @@ def test_small_move_holds():
 
 
 def test_material_event_forces_review_without_directional_assumption():
-    t0 = datetime(2026, 9, 27, 18, 0, tzinfo=timezone.utc)
+    t0 = datetime(2026, 9, 27, 18, 0, tzinfo=UTC)
     result = assess_material_change(
         MarketSnapshot("r1", "h1", t0, 4.0, 10000),
         MarketSnapshot("r1", "h1", t0 + timedelta(minutes=1), 4.0, 10100),

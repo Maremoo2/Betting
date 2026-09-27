@@ -1,5 +1,10 @@
 PRAGMA foreign_keys = ON;
 
+CREATE TABLE IF NOT EXISTS schema_migrations (
+    migration_id TEXT PRIMARY KEY,
+    applied_at_utc TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS races (
     race_id TEXT PRIMARY KEY,
     race_date TEXT NOT NULL,
