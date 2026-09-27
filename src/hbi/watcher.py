@@ -78,15 +78,17 @@ def run_watcher(
     # Capture an early snapshot first. This creates market-path history even when
     # GitHub starts late and the ideal T-4 decision cannot be hit exactly.
     for race in due:
+        raw = json.loads(str(race.get("raw_json") or "{}"))
+        single_products = set(raw.get("single_leg_products") or [])
         inserted, failures = collector.collect_market(
             raceday_key=str(race["provider_raceday_key"]),
             race_number=int(race["race_number"]),
             race_id=str(race["race_id"]),
             observed_at=current,
+            products=single_products,
         )
         audit.snapshots_inserted += inserted
         audit.fetch_failures += failures
-        raw = json.loads(str(race.get("raw_json") or "{}"))
         pool_inserted, pool_failures = collector.collect_pool_context(
             raceday_key=str(race["provider_raceday_key"]),
             products=list(raw.get("pools") or []),
@@ -115,15 +117,17 @@ def run_watcher(
             audit.not_executable += 1
             continue
 
+        raw = json.loads(str(race.get("raw_json") or "{}"))
+        single_products = set(raw.get("single_leg_products") or [])
         inserted, failures = collector.collect_market(
             raceday_key=str(race["provider_raceday_key"]),
             race_number=int(race["race_number"]),
             race_id=str(race["race_id"]),
             observed_at=live_now,
+            products=single_products,
         )
         audit.snapshots_inserted += inserted
         audit.fetch_failures += failures
-        raw = json.loads(str(race.get("raw_json") or "{}"))
         pool_inserted, pool_failures = collector.collect_pool_context(
             raceday_key=str(race["provider_raceday_key"]),
             products=list(raw.get("pools") or []),
