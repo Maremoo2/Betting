@@ -16,6 +16,18 @@ The project owner supplied a live response from:
 
 The response identifies `https://www.rikstoto.no` as both RikstotoHost and Host.
 
+### LIVE_SMOKE_VERIFIED
+
+A GitHub Actions live smoke run on 2026-09-27 verified:
+
+- `/api/racedays/{raceday}/starts`
+- current raceday discovery
+- current Vinner market rows
+
+The `/starts` payload is now the canonical live race field. It exposes start number,
+horse name/registration, driver, extra distance and scratch state without requiring
+the retired program contract.
+
 ### OPEN_SOURCE_OBSERVED
 
 Public third-party collectors contain concrete request code and historical response
@@ -60,8 +72,10 @@ Reference:
 - https://github.com/yngvebn/ngCliWebpackSample
 
 The old frontend used program additions to expose V-game investment percentages and
-win/place statistics. HBI treats these endpoints as optional: failure never invents a
-replacement value and never blocks the core V/P/TV/T collector.
+win/place statistics. Live smoke tests in September 2026 returned HTTP 404 for the old
+`/game/program/...` contracts across multiple Norwegian and Swedish cards. They are
+therefore **disabled from the live critical path**. The code may retain them for
+explicit historical research, but scheduled shadow runs do not call them by default.
 
 ## Current product capability
 
@@ -71,10 +85,10 @@ replacement value and never blocks the core V/P/TV/T collector.
 | Plass (P) | Yes | Not yet | Settlement engine supported for explicit future P tickets |
 | Tvilling (TV) | Yes | Not yet | Not until an official dividend contract is verified |
 | Trippel (T) | Yes | Not yet | Not until an official dividend contract is verified |
-| DD | Raw pool/program context when endpoint works | Not yet | Not yet |
-| V4/V4X | Raw pool/program context when endpoint works | Not yet | Not yet |
-| V64/V65 | Raw pool/program context when endpoint works | Not yet | Not yet |
-| V75/V85 | Raw pool/program context when endpoint works | Not yet | Not yet |
+| DD | Legacy pool context disabled by default | Not yet | Not yet |
+| V4/V4X | Legacy pool context disabled by default | Not yet | Not yet |
+| V64/V65 | Legacy pool context disabled by default | Not yet | Not yet |
+| V75/V85 | Legacy pool context disabled by default | Not yet | Not yet |
 
 This separation is deliberate. A product does not become shadow-executable merely
 because odds or betting percentages are available. It also needs a validated
@@ -99,15 +113,22 @@ The watcher also stores:
 This lets later research distinguish provider latency from model/runner latency.
 
 
-## Market-free program fundamentals
+## Canonical live field
 
-HBI also reads the base public program contract through
-`/api/game/program/{raceday}/{product}` when available. Historical Rikstoto frontend
-types show that this payload contains runner facts and horse annual statistics.
+HBI now uses:
 
-For the fundamental feature store HBI explicitly excludes `program/addition` fields
-such as win odds and investment percentages. The base program snapshot is timestamped
-and frozen before the T-4 decision.
+`/api/racedays/{raceday}/starts`
 
-The first model using this feed is documented in
-[Fundamental Shadow Champion v1](FUNDAMENTAL_CHAMPION_V1.md).
+as the canonical pre-race runner field. Every snapshot is timestamped when observed and
+stored point-in-time. No market variable is copied into the fundamental feature store.
+
+Rikstoto `/starts` does not currently expose the lifetime starts/wins needed by the
+first empirical-win shadow model. Therefore:
+
+- Swedish trot runners can be enriched from the separate public ATG read-only feed.
+- Norwegian runners are stored as `FIELD_ONLY_RIKSTOTO` until a verified independent
+  pre-race history source is available.
+- Missing history forces `CAUTION / NOT_EXECUTABLE`; it is never imputed from odds.
+
+See [ATG provider](ATG_PROVIDER.md) and
+[Fundamental Shadow Champion v1.1](FUNDAMENTAL_CHAMPION_V1.md).
