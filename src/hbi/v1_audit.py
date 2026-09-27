@@ -47,12 +47,18 @@ def _render_markdown(report: dict[str, object]) -> str:
         "",
         "## P0 integrity",
         "",
-        f"- Temporal integrity: **{temporal['status']}** "
-        f"({temporal['database']['checked_rows']} stored rows checked)",
-        f"- Runtime replay parity: **{replay['status']}** "
-        f"({replay['checked_decisions']} decisions replayed)",
-        f"- Settlement integrity: **{settlement['status']}** "
-        f"({settlement['checked_rows']} records checked)",
+        (
+            f"- Temporal integrity: **{temporal['status']}** "
+            f"({temporal['database']['checked_rows']} stored rows checked)"
+        ),
+        (
+            f"- Runtime replay parity: **{replay['status']}** "
+            f"({replay['checked_decisions']} decisions replayed)"
+        ),
+        (
+            f"- Settlement integrity: **{settlement['status']}** "
+            f"({settlement['checked_rows']} records checked)"
+        ),
         "",
         "## Learning plane",
         "",
@@ -69,8 +75,11 @@ def _render_markdown(report: dict[str, object]) -> str:
         f"- Real-money execution: {governance['real_money_execution']}",
         f"- Manual approval required: {governance['manual_approval_required']}",
         "",
-        "Engineering completion does not imply a proven betting edge. "
-        "Strategic validation requires prospective evidence and the configured P0/P1 gates.",
+        (
+            "Engineering completion does not imply a proven betting edge. "
+            "Strategic validation requires prospective evidence and the configured "
+            "P0/P1 gates."
+        ),
         "",
     ]
     return "\n".join(lines)
