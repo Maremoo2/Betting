@@ -9,6 +9,7 @@ from pathlib import Path
 from .challenger import sync_forward_events_from_evaluations
 from .governance import load_governance, validate_governance
 from .learning import build_learning_rows, learning_dataset_summary
+from .provider_integrity import run_provider_integrity
 from .replay_validation import run_runtime_replay_parity
 from .research_integrity import run_research_integrity_check
 from .settlement_integrity import run_settlement_integrity
@@ -34,6 +35,7 @@ def _write_learning_csv(rows: list[dict[str, object]], path: Path) -> None:
 def _render_markdown(report: dict[str, object]) -> str:
     governance = report["governance"]
     temporal = report["temporal_integrity"]
+    provider = report["provider_integrity"]
     replay = report["runtime_replay_parity"]
     settlement = report["settlement_integrity"]
     learning = report["learning_dataset"]
@@ -50,6 +52,10 @@ def _render_markdown(report: dict[str, object]) -> str:
         (
             f"- Temporal integrity: **{temporal['status']}** "
             f"({temporal['database']['checked_rows']} stored rows checked)"
+        ),
+        (
+            f"- Provider integrity: **{provider['status']}** "
+            f"({provider['checked_decisions']} decisions checked)"
         ),
         (
             f"- Runtime replay parity: **{replay['status']}** "
@@ -96,6 +102,7 @@ def run_v1_audit(
     governance_validation = validate_governance(governance)
     temporal = run_research_integrity_check(store)
     replay = run_runtime_replay_parity(store)
+    provider = run_provider_integrity(store)
     settlement = run_settlement_integrity(store, now=generated)
     learning_rows = build_learning_rows(store)
     learning_summary = learning_dataset_summary(learning_rows)
@@ -119,11 +126,13 @@ def run_v1_audit(
     hard_fail = (
         not governance_validation.valid
         or temporal["status"] == "FAIL"
+        or provider["status"] == "FAIL"
         or replay["status"] == "FAIL"
         or settlement["status"] == "FAIL"
     )
     evidence_pending = (
-        replay["status"] == "NO_EVIDENCE"
+        provider["status"] in {"NO_EVIDENCE", "WARN"}
+        or replay["status"] == "NO_EVIDENCE"
         or settlement["status"] == "WARN"
         or any(
             status != "PASS"
@@ -149,6 +158,7 @@ def run_v1_audit(
             "warnings": list(governance_validation.warnings),
         },
         "temporal_integrity": temporal,
+        "provider_integrity": provider,
         "runtime_replay_parity": replay,
         "settlement_integrity": settlement,
         "learning_dataset": learning_summary,
