@@ -1,0 +1,83 @@
+name: HBI Rikstoto 5m Shadow Watcher
+
+on:
+  schedule:
+    # Covers 09:00-21:59 Europe/Oslo across CET/CEST; Python gate filters exact local hours.
+    - cron: "*/5 7-22 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: hbi-state-writer
+  cancel-in-progress: false
+
+jobs:
+  shadow-watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install HBI
+        run: pip install -e ".[dev]"
+
+      - name: Oslo schedule gate
+        id: gate
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            echo "mode=MANUAL_SHADOW_WATCH" >> "$GITHUB_OUTPUT"
+          else
+            python - <<'PY' >> "$GITHUB_OUTPUT"
+          from hbi.schedule import evaluate_shadow_watcher_schedule, github_output
+          print(github_output(evaluate_shadow_watcher_schedule()))
+          PY
+          fi
+
+      - name: Restore previous HBI state
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HBI_DB_PATH: data/hbi.sqlite
+        run: python -m hbi.state_artifact
+
+      - name: Run 5-minute Rikstoto watcher
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          HBI_DB_PATH: data/hbi.sqlite
+          HBI_WATCHER_AUDIT_PATH: watcher-audit.json
+          # Research-only defaults. These create paper decisions, never real wagers.
+          HBI_SHADOW_WIN_STAKE_NOK: "25"
+          HBI_SHADOW_TARGET_MINUTES: "4"
+        run: python -m hbi.watcher
+
+      - name: Persist rolling state
+        if: steps.gate.outputs.should_run == 'true' && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hbi-state
+          path: |
+            data/hbi.sqlite
+            watcher-audit.json
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 9
+
+      - name: Upload watcher diagnostics on failure
+        if: steps.gate.outputs.should_run == 'true' && failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hbi-watcher-failure-${{ github.run_id }}
+          path: |
+            watcher-audit.json
+          if-no-files-found: ignore
+          retention-days: 7

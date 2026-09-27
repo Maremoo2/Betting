@@ -1,0 +1,103 @@
+name: HBI Nightly Shadow Settlement
+
+on:
+  schedule:
+    # One of these is 00:30 Europe/Oslo depending on CET/CEST. Local gate decides.
+    - cron: "30 22,23 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: hbi-state-writer
+  cancel-in-progress: false
+
+jobs:
+  settle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install HBI
+        run: pip install -e ".[dev]"
+
+      - name: Oslo nightly gate
+        id: gate
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          else
+            python - <<'PY' >> "$GITHUB_OUTPUT"
+          from datetime import UTC, datetime
+          from zoneinfo import ZoneInfo
+          local = datetime.now(UTC).astimezone(ZoneInfo("Europe/Oslo"))
+          print(f"should_run={'true' if local.hour == 0 else 'false'}")
+          print(f"local_time={local.isoformat()}")
+          PY
+          fi
+
+      - name: Restore latest HBI state
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HBI_DB_PATH: data/hbi.sqlite
+        run: python -m hbi.state_artifact
+
+      - name: Settle shadow tickets and build daily report
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          HBI_DB_PATH: data/hbi.sqlite
+          HBI_NIGHTLY_REPORT_PATH: nightly-report.json
+        run: python -m hbi.nightly_job
+
+      - name: Export audit database
+        if: steps.gate.outputs.should_run == 'true'
+        run: hbi --db data/hbi.sqlite export hbi-export --format csv
+
+      - name: Optional Google Sheets mirror
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          HBI_SPREADSHEET_ID: ${{ secrets.HBI_SPREADSHEET_ID }}
+          HBI_GOOGLE_CREDENTIALS_JSON: ${{ secrets.HBI_GOOGLE_CREDENTIALS_JSON }}
+        shell: bash
+        run: |
+          if [[ -z "$HBI_SPREADSHEET_ID" || -z "$HBI_GOOGLE_CREDENTIALS_JSON" ]]; then
+            echo "Sheets secrets not configured; skipping mirror."
+            exit 0
+          fi
+          pip install -e ".[sheets]"
+          CREDS="$RUNNER_TEMP/hbi-google-service-account.json"
+          printf '%s' "$HBI_GOOGLE_CREDENTIALS_JSON" > "$CREDS"
+          hbi --db data/hbi.sqlite sync-sheets             --spreadsheet-id "$HBI_SPREADSHEET_ID"             --credentials "$CREDS"
+
+      - name: Persist nightly state and report
+        if: steps.gate.outputs.should_run == 'true' && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hbi-state
+          path: |
+            data/hbi.sqlite
+            nightly-report.json
+            hbi-export/
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
+
+      - name: Upload settlement diagnostics on failure
+        if: steps.gate.outputs.should_run == 'true' && failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hbi-nightly-failure-${{ github.run_id }}
+          path: |
+            nightly-report.json
+          if-no-files-found: ignore
+          retention-days: 14

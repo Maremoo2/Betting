@@ -21,7 +21,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: hbi-prewatch-hourly
+  group: hbi-state-writer
   cancel-in-progress: false
 
 jobs:
