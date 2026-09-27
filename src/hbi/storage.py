@@ -673,6 +673,119 @@ class SQLiteStore:
                 values,
             )
 
+    def upsert_decision_provenance(self, record: dict[str, object]) -> None:
+        columns = (
+            "decision_run_id", "market_odds_json", "combination_policy_json",
+            "decision_policy_json", "code_sha", "governance_hash", "recorded_at_utc",
+        )
+        values = [record.get(column) for column in columns]
+        with self.connect() as connection:
+            connection.execute(
+                f"INSERT INTO decision_provenance ({','.join(columns)}) "
+                f"VALUES ({','.join('?' for _ in columns)}) "
+                "ON CONFLICT(decision_run_id) DO UPDATE SET "
+                "market_odds_json=excluded.market_odds_json,"
+                "combination_policy_json=excluded.combination_policy_json,"
+                "decision_policy_json=excluded.decision_policy_json,"
+                "code_sha=excluded.code_sha,"
+                "governance_hash=excluded.governance_hash,"
+                "recorded_at_utc=excluded.recorded_at_utc",
+                values,
+            )
+
+    def upsert_system_run_manifest(self, manifest: dict[str, object]) -> None:
+        columns = (
+            "run_id", "run_type", "started_at_utc", "finished_at_utc", "status",
+            "github_sha", "github_run_id", "model_version", "governance_hash",
+            "critical_code_hash", "db_schema_hash", "policy_json", "metadata_json",
+        )
+        values = [manifest.get(column) for column in columns]
+        with self.connect() as connection:
+            connection.execute(
+                f"INSERT INTO system_run_manifests ({','.join(columns)}) "
+                f"VALUES ({','.join('?' for _ in columns)}) "
+                "ON CONFLICT(run_id) DO UPDATE SET "
+                "finished_at_utc=excluded.finished_at_utc,status=excluded.status,"
+                "github_sha=excluded.github_sha,github_run_id=excluded.github_run_id,"
+                "model_version=excluded.model_version,"
+                "governance_hash=excluded.governance_hash,"
+                "critical_code_hash=excluded.critical_code_hash,"
+                "db_schema_hash=excluded.db_schema_hash,"
+                "policy_json=excluded.policy_json,metadata_json=excluded.metadata_json",
+                values,
+            )
+
+    def insert_integrity_audit(self, audit: dict[str, object]) -> bool:
+        columns = (
+            "audit_id", "audit_type", "generated_at_utc", "status", "checked_rows",
+            "failures", "warnings", "report_json", "github_sha",
+        )
+        values = [audit.get(column) for column in columns]
+        with self.connect() as connection:
+            cursor = connection.execute(
+                f"INSERT OR IGNORE INTO integrity_audits ({','.join(columns)}) "
+                f"VALUES ({','.join('?' for _ in columns)})",
+                values,
+            )
+            return cursor.rowcount == 1
+
+    def upsert_challenger(self, record: dict[str, object]) -> None:
+        columns = (
+            "challenger_id", "model_name", "model_version", "registered_at_utc",
+            "discovery_cutoff_utc", "forward_start_utc", "minimum_forward_races",
+            "status", "notes",
+        )
+        values = [record.get(column) for column in columns]
+        with self.connect() as connection:
+            connection.execute(
+                f"INSERT INTO challenger_registry ({','.join(columns)}) "
+                f"VALUES ({','.join('?' for _ in columns)}) "
+                "ON CONFLICT(challenger_id) DO UPDATE SET "
+                "model_name=excluded.model_name,model_version=excluded.model_version,"
+                "discovery_cutoff_utc=excluded.discovery_cutoff_utc,"
+                "forward_start_utc=excluded.forward_start_utc,"
+                "minimum_forward_races=excluded.minimum_forward_races,"
+                "status=excluded.status,notes=excluded.notes",
+                values,
+            )
+
+    def upsert_challenger_forward_event(self, record: dict[str, object]) -> None:
+        columns = (
+            "challenger_id", "race_id", "race_start_utc",
+            "evaluation_created_at_utc", "eligible", "reason",
+        )
+        values = [record.get(column) for column in columns]
+        with self.connect() as connection:
+            connection.execute(
+                f"INSERT INTO challenger_forward_events ({','.join(columns)}) "
+                f"VALUES ({','.join('?' for _ in columns)}) "
+                "ON CONFLICT(challenger_id,race_id) DO UPDATE SET "
+                "race_start_utc=excluded.race_start_utc,"
+                "evaluation_created_at_utc=excluded.evaluation_created_at_utc,"
+                "eligible=excluded.eligible,reason=excluded.reason",
+                values,
+            )
+
+    def upsert_counterfactual_run(self, record: dict[str, object]) -> None:
+        columns = (
+            "counterfactual_id", "race_id", "source_decision_run_id",
+            "created_at_utc", "hypothesis_name", "hypothesis_json", "result_json",
+            "research_only", "execution_authority",
+        )
+        values = [record.get(column) for column in columns]
+        with self.connect() as connection:
+            connection.execute(
+                f"INSERT INTO counterfactual_runs ({','.join(columns)}) "
+                f"VALUES ({','.join('?' for _ in columns)}) "
+                "ON CONFLICT(source_decision_run_id,hypothesis_name) DO UPDATE SET "
+                "created_at_utc=excluded.created_at_utc,"
+                "hypothesis_json=excluded.hypothesis_json,"
+                "result_json=excluded.result_json,"
+                "research_only=excluded.research_only,"
+                "execution_authority=excluded.execution_authority",
+                values,
+            )
+
     def create_shadow_ticket(self, ticket: dict[str, object]) -> bool:
         columns = (
             "ticket_id", "dedupe_key", "created_at_utc", "decision_time_utc", "race_id",
@@ -791,7 +904,9 @@ class SQLiteStore:
             "shadow_daily_reports", "provider_payloads",
             "runner_fundamental_snapshots", "fundamental_model_runs",
             "shadow_decision_runs", "race_research_evaluations",
-            "research_daily_reports",
+            "research_daily_reports", "decision_provenance",
+            "system_run_manifests", "integrity_audits", "challenger_registry",
+            "challenger_forward_events", "counterfactual_runs",
         }
         if table not in allowed:
             raise ValueError("unsupported table")
@@ -807,7 +922,9 @@ class SQLiteStore:
             "shadow_daily_reports", "provider_payloads",
             "runner_fundamental_snapshots", "fundamental_model_runs",
             "shadow_decision_runs", "race_research_evaluations",
-            "research_daily_reports",
+            "research_daily_reports", "decision_provenance",
+            "system_run_manifests", "integrity_audits", "challenger_registry",
+            "challenger_forward_events", "counterfactual_runs",
         }
         if table not in allowed:
             raise ValueError("unsupported table")

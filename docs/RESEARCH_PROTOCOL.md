@@ -82,3 +82,31 @@ market and combined metrics may have different N when data coverage differs.
 Model selection decisions must not be made from the same short prospective window
 used to discover a candidate feature. Observatory metrics are evidence for later
 pre-registered Champion/Challenger tests, not an automatic tuning signal.
+
+
+## P0 / P1 governance
+
+Current research authority is defined by `docs/research_governance.json`.
+
+P0 integrity gates cover temporal integrity, provider integrity, settlement integrity,
+and runtime replay parity. P1 statistical/forward validation is downstream of P0.
+
+A green operational workflow is not strategy validation.
+
+## Challenger forward clock
+
+A Challenger's untouched prospective sample starts no earlier than its registration
+and discovery cutoff. Races used to discover, choose or tune the Challenger do not
+count toward that forward clock.
+
+## Runtime parity
+
+Frozen decisions must be replayable from stored decision-time inputs and policy
+provenance through the same canonical probability/value code. A future historical
+backtest engine must call those same components rather than reimplement strategy logic.
+
+## Counterfactual research
+
+Counterfactuals are research-only. They may ask what a different threshold, weight or
+policy would have done on the frozen input state, but they never rewrite the original
+shadow decision and never receive execution authority.

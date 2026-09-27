@@ -1,0 +1,62 @@
+name: HBI V1 Research Integrity
+
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  v1-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install HBI
+        run: pip install -e ".[dev]"
+
+      - name: Run V1 system audit on a clean research database
+        run: |
+          python -m hbi.v1_audit \
+            --db /tmp/hbi-v1-integrity.sqlite \
+            --output-dir research-v1-ci
+
+      - name: Smoke nightly integration on an empty canonical database
+        run: |
+          mkdir -p ci-nightly
+          HBI_DB_PATH=/tmp/hbi-nightly.sqlite \
+          HBI_NIGHTLY_REPORT_PATH=ci-nightly/nightly-report.json \
+          HBI_OBSERVATORY_JSON_PATH=ci-nightly/research-observatory.json \
+          HBI_OBSERVATORY_MD_PATH=ci-nightly/research-observatory.md \
+          HBI_V1_AUDIT_DIR=ci-nightly/research-v1 \
+          python -m hbi.nightly_job
+
+      - name: Verify governance document
+        run: |
+          python - <<'PY'
+          from hbi.governance import load_governance, validate_governance
+          result = validate_governance(load_governance("docs/research_governance.json"))
+          if not result.valid:
+              raise SystemExit("\n".join(result.errors))
+          print("governance=PASS")
+          PY
+
+      - name: Upload V1 integrity evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hbi-v1-integrity-${{ github.run_id }}
+          path: |
+            research-v1-ci/
+            ci-nightly/
+          if-no-files-found: error
+          retention-days: 30

@@ -74,3 +74,21 @@ hashes, and uploads a unique artifact named
 The rolling `hbi-state` artifact remains separate and is still used for state
 continuity between scheduled runs. Immutable research backups are for audit/recovery,
 not as the normal state-restore source.
+
+
+## V1 integrity artifacts
+
+The nightly settlement workflow also produces `research-v1/` containing:
+
+- `v1-system-audit.json` / `.md`
+- deterministic research learning dataset JSON/CSV
+- temporal-integrity status
+- runtime replay-parity status
+- settlement-integrity status
+- Challenger forward-clock state
+
+These files are included in the immutable nightly research backup.
+
+The separate `HBI V1 Research Integrity` workflow runs the same engineering controls
+against a clean database on PRs and main. NO_EVIDENCE is an accepted engineering state
+for parity when no provenance-complete live decision exists yet; a mismatch is not.

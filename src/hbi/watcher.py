@@ -8,6 +8,8 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from .fundamental import run_and_persist_fundamental
+from .manifest import persist_run_manifest
+from .provenance import record_decision_provenance
 from .rikstoto_collector import RikstotoCollector
 from .shadow import ShadowPolicy, run_win_shadow_decision
 from .storage import SQLiteStore
@@ -187,6 +189,14 @@ def run_watcher(
             decision_time=live_now,
             policy=policy,
         )
+        record_decision_provenance(
+            store,
+            race_id=str(race["race_id"]),
+            shadow_model_version=policy.model_version,
+            target_minutes_to_start=policy.target_minutes_to_start,
+            policy=asdict(policy),
+            recorded_at=live_now,
+        )
         if result.status == "SHADOW_BET":
             audit.shadow_bets_created += result.created
         elif result.status == "NOT_EXECUTABLE":
@@ -194,9 +204,20 @@ def run_watcher(
         else:
             audit.passes += 1
 
-    store.checkpoint()
     audit.status = "OK"
-    audit.finished_at_utc = datetime.now(UTC).isoformat()
+    finished = datetime.now(UTC)
+    audit.finished_at_utc = finished.isoformat()
+    persist_run_manifest(
+        store,
+        run_type="WATCHER",
+        started_at=datetime.fromisoformat(audit.started_at_utc),
+        finished_at=finished,
+        status=audit.status,
+        model_version=policy.model_version,
+        policy=asdict(policy),
+        metadata=asdict(audit),
+    )
+    store.checkpoint()
     return audit
 
 

@@ -34,7 +34,7 @@ A read-only Rikstoto adapter is now implemented behind that boundary. Its endpoi
 provenance is explicit: user-verified, open-source-observed, or historical-frontend
 inferred. Provider failures are logged; missing values are never fabricated.
 
-## Current V3.2 foundation
+## Current V1 system foundation
 
 Implemented in this repository:
 
@@ -58,6 +58,16 @@ Implemented in this repository:
 - decision-price vs closing-price / CLV evaluation primitive
 - Brier/log-loss/calibration helpers
 - champion/challenger model governance
+- machine-readable P0/P1 research governance
+- future-mutation temporal-integrity regression audit
+- frozen runtime replay-parity audit
+- settlement reconciliation integrity audit
+- deterministic research learning dataset
+- run/code/policy/schema provenance manifests
+- challenger-specific forward-validation clocks
+- recommendation-only promotion readiness gate
+- research-only counterfactual engine
+- centralized input-eligibility gate before value evaluation
 - SQLite-compatible canonical schema
 - CI with Ruff + Pytest
 
@@ -213,3 +223,17 @@ The nightly workflow also creates a unique research backup containing SQLite, CS
 JSON and SHA-256 manifest files with requested 90-day artifact retention.
 
 See [docs/RESEARCH_OBSERVATORY.md](docs/RESEARCH_OBSERVATORY.md).
+
+
+## V1 completion semantics
+
+HBI V1 separates **engineering completion** from **strategic validation**. The platform
+can be engineering-complete while the strategy remains NOT_VALIDATED and continues to
+accumulate prospective shadow evidence.
+
+The canonical machine-readable status is
+`docs/research_governance.json`. See
+`docs/RESEARCH_GOVERNANCE.md` and `docs/V1_ACCEPTANCE_CRITERIA.md`.
+
+A new Challenger never inherits the sample that was used to discover it. Each
+Challenger receives its own prospective forward-validation clock.
