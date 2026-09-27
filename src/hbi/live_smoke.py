@@ -29,6 +29,9 @@ class LiveSmokeResult:
     selected_country: str | None = None
     selected_track: str | None = None
     selected_start_time_utc: str | None = None
+    starts_endpoint_ok: bool = False
+    starts_rows: int = 0
+    starts_sample_keys: list[str] = field(default_factory=list)
     fundamental_endpoint_ok: bool = False
     fundamental_snapshots: int = 0
     fundamental_model_status: str | None = None
@@ -134,6 +137,20 @@ def run_live_smoke() -> LiveSmokeResult:
                 break
 
         selected = successful or selected
+
+        starts_fetch = client.starts(selected.raceday_key)
+        if starts_fetch.success and isinstance(starts_fetch.payload, dict):
+            raw_starts = starts_fetch.payload.get("result")
+            if isinstance(raw_starts, dict):
+                race_rows = raw_starts.get(str(selected.race_number))
+                if race_rows is None:
+                    race_rows = raw_starts.get(selected.race_number)
+                if isinstance(race_rows, list):
+                    result.starts_endpoint_ok = True
+                    result.starts_rows = len(race_rows)
+                    if race_rows and isinstance(race_rows[0], dict):
+                        result.starts_sample_keys = sorted(race_rows[0].keys())
+
         result.selected_race_id = selected.race_id
         result.selected_raceday_key = selected.raceday_key
         result.selected_race_number = selected.race_number
