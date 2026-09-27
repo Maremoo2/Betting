@@ -47,8 +47,9 @@ Implemented in this repository:
 - persistent SQLite storage with idempotent snapshots and frozen predictions
 - provider-neutral race/market ingestion contracts
 - read-only Rikstoto raceday + V/P/TV/T market collection
-- point-in-time Rikstoto program fundamentals
-- market-free `FUNDAMENTAL_CHAMPION_V1` shadow probabilities
+- live-smoke-verified Rikstoto `/starts` canonical race fields
+- Swedish ATG market-free lifetime-history enrichment
+- market-free `FUNDAMENTAL_CHAMPION_V1_1` shadow probabilities
 - best-effort T-4 shadow watcher every five minutes
 - immutable shadow ticket ledger and nightly settlement/report
 - **market-only benchmark** for log-loss and Brier evaluation
@@ -80,8 +81,8 @@ The repository does **not** currently:
 - promote new features because of one profitable backtest
 
 The Rikstoto integration is read-only and intentionally contains no login, account,
-purchase or real-money submission code. Historical/inferred endpoints are optional
-and must fail closed when their contract is unavailable.
+purchase or real-money submission code. Historical/inferred endpoints are not part of the live critical path and must fail
+closed when their contract is unavailable.
 
 ## Research rule
 
@@ -176,14 +177,16 @@ Every HBI workflow that writes the persistent SQLite artifact uses the shared
 `hbi-state-writer` concurrency group, preventing two runs from restoring the same
 old database and overwriting each other.
 
-Automatic paper decisions currently start with **Vinner**. The watcher now captures
-market-free pre-race horse history from the Rikstoto program and creates a frozen
-`FUNDAMENTAL_CHAMPION_V1` full-field p(win) distribution before the T-4 value check.
+Automatic paper decisions currently start with **Vinner**. Rikstoto `/starts` is the
+canonical live field. For Swedish trot races, HBI enriches those runners from the
+public ATG racing-info feed with market-free lifetime starts/wins before creating a
+frozen `FUNDAMENTAL_CHAMPION_V1_1` full-field p(win) distribution.
 
-V1 is a **shadow Champion**, not a validated production model: it uses only
-empirical-Bayes-smoothed historical win records and requires at least 80% known history
-coverage before the betting layer may simulate a ticket. Plass, Tvilling, Trippel and
-multi-leg pool data are still collected without inventing product probabilities.
+V1.1 is a **shadow Champion**, not a validated production model. It requires at least
+80% known history coverage before the betting layer may simulate a ticket. Norwegian
+races are still captured automatically, but without a verified pre-race history source
+they correctly remain `CAUTION / NOT_EXECUTABLE` rather than receiving invented
+history. Plass, Tvilling and Trippel market data remain observational only.
 
 See [docs/RIKSTOTO_PROVIDER.md](docs/RIKSTOTO_PROVIDER.md) for endpoint provenance and
 [docs/SHADOW_BETTING.md](docs/SHADOW_BETTING.md) for decision/settlement rules.
