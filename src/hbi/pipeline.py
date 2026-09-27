@@ -42,11 +42,16 @@ class HBIPipeline:
         self,
         snapshot: MarketSnapshot,
         *,
-        race_start_at: datetime | None,
+        race_start_at: datetime | None = None,
         source_uri: str | None = None,
         material_event: str | None = None,
         policy_version: str = "v1",
     ) -> SnapshotProcessResult:
+        if race_start_at is None:
+            race = self.store.get_race(snapshot.race_id)
+            if race is not None:
+                race_start_at = datetime.fromisoformat(race["start_time_utc"])
+
         previous_row = self.store.latest_market_snapshot(
             snapshot.race_id,
             snapshot.selection_id,
