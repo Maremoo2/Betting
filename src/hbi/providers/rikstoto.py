@@ -7,7 +7,7 @@ import urllib.request
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from enum import StrEnum
-from typing import Any
+from typing import Any, ClassVar
 from zoneinfo import ZoneInfo
 
 OSLO = ZoneInfo("Europe/Oslo")
@@ -59,7 +59,7 @@ class RikstotoClient:
     BASE_URL = "https://www.rikstoto.no"
     API = f"{BASE_URL}/api"
 
-    ENDPOINTS: dict[str, EndpointConfidence] = {
+    ENDPOINTS: ClassVar[dict[str, EndpointConfidence]] = {
         "/settings/urls": EndpointConfidence.USER_VERIFIED,
         "/racedays/": EndpointConfidence.OPEN_SOURCE_OBSERVED,
         "/results/racedays/{from}/{to}/list": EndpointConfidence.OPEN_SOURCE_OBSERVED,
