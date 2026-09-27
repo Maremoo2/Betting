@@ -2,8 +2,8 @@ name: HBI Nightly Shadow Settlement
 
 on:
   schedule:
-    # One of these is 23:15 Europe/Oslo depending on CET/CEST. Local gate decides.
-    - cron: "15 21,22 * * *"
+    # One of these is 00:30 Europe/Oslo depending on CET/CEST. Local gate decides.
+    - cron: "30 22,23 * * *"
   workflow_dispatch:
 
 permissions:
@@ -40,7 +40,7 @@ jobs:
           from datetime import UTC, datetime
           from zoneinfo import ZoneInfo
           local = datetime.now(UTC).astimezone(ZoneInfo("Europe/Oslo"))
-          print(f"should_run={'true' if local.hour == 23 else 'false'}")
+          print(f"should_run={'true' if local.hour == 0 else 'false'}")
           print(f"local_time={local.isoformat()}")
           PY
           fi
