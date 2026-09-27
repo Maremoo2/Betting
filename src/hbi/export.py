@@ -22,6 +22,9 @@ DEFAULT_EXPORT_TABLES = (
     "provider_payloads",
     "runner_fundamental_snapshots",
     "fundamental_model_runs",
+    "shadow_decision_runs",
+    "race_research_evaluations",
+    "research_daily_reports",
     "shadow_tickets",
     "shadow_daily_reports",
 )
