@@ -72,7 +72,7 @@ def run_watcher(
 
     races = collector.discover(current)
     audit.discovered = len(races)
-    due = collector.due_races(now=current, min_minutes=1.0, max_minutes=9.0)
+    due = collector.due_races(now=current, min_minutes=1.0, max_minutes=8.0)
     audit.due_races = len(due)
 
     # Capture an early snapshot first. This creates market-path history even when
