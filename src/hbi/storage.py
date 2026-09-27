@@ -78,6 +78,13 @@ class SQLiteStore:
                 values,
             )
 
+    def get_race(self, race_id: str) -> sqlite3.Row | None:
+        with self.connect() as connection:
+            return connection.execute(
+                "SELECT * FROM races WHERE race_id=?",
+                (race_id,),
+            ).fetchone()
+
     def upsert_runner(self, runner: dict[str, object]) -> None:
         columns = (
             "race_id", "selection_id", "horse_name", "post_position", "driver_or_jockey",
