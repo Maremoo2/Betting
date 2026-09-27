@@ -86,6 +86,9 @@ class RikstotoClient:
         "/game/program/{raceday}/{product}": (
             EndpointConfidence.HISTORICAL_FRONTEND_INFERRED
         ),
+        "/game/program/{raceday}/{product}/trot": (
+            EndpointConfidence.OPEN_SOURCE_OBSERVED
+        ),
         "/game/program/{raceday}/{product}/addition": (
             EndpointConfidence.HISTORICAL_FRONTEND_INFERRED
         ),
@@ -192,6 +195,9 @@ class RikstotoClient:
 
     def program(self, raceday_key: str, product: str) -> FetchResult:
         return self._fetch(f"/game/program/{raceday_key}/{product}")
+
+    def trot_program(self, raceday_key: str, product: str = "VP") -> FetchResult:
+        return self._fetch(f"/game/program/{raceday_key}/{product}/trot")
 
     def program_addition(self, raceday_key: str, product: str) -> FetchResult:
         return self._fetch(f"/game/program/{raceday_key}/{product}/addition")
