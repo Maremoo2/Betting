@@ -72,3 +72,24 @@ def test_evaluation_metrics_reward_correct_probability():
     bad = {"a": 0.2, "b": 0.8}
     assert log_loss(good, "a") < log_loss(bad, "a")
     assert multiclass_brier(good, "a") < multiclass_brier(bad, "a")
+
+
+def test_model_market_conflict_is_zero_when_distributions_match():
+    from hbi.conflict import total_variation_conflict
+
+    distribution = {"a": 0.6, "b": 0.4}
+    assert total_variation_conflict(distribution, distribution) == 0.0
+
+
+def test_model_market_conflict_increases_with_disagreement():
+    from hbi.conflict import total_variation_conflict
+
+    low = total_variation_conflict(
+        {"a": 0.6, "b": 0.4},
+        {"a": 0.55, "b": 0.45},
+    )
+    high = total_variation_conflict(
+        {"a": 0.8, "b": 0.2},
+        {"a": 0.3, "b": 0.7},
+    )
+    assert high > low
