@@ -24,7 +24,7 @@ Rikstoto watch window. For a race roughly 1-8 minutes away it:
 
 1. restores the latest canonical HBI state;
 2. refreshes the Rikstoto raceday;
-3. captures available V/P/TV/T market data and optional multi-leg pool context;
+3. captures available V/P/TV/T market data and the canonical Rikstoto runner field;
 4. if the T-4 target is a few minutes ahead, waits inside the job;
 5. captures a fresh market snapshot at best-effort T-4;
 6. records actual timing/latency;
@@ -40,16 +40,20 @@ Vinner is the first executable shadow product because V3.2 already has a horse-l
 p(win) architecture and a directly observable single-selection market price.
 
 The watcher now generates that market-free FUNDAMENTAL distribution automatically
-from `FUNDAMENTAL_CHAMPION_V1` when Rikstoto program history is available. The model
-uses no odds or betting percentages and is allowed to feed the paper-betting layer only
-when its history-coverage gate passes.
+from `FUNDAMENTAL_CHAMPION_V1_1`. Rikstoto `/starts` defines the field; Swedish
+trot runners may be enriched with market-free ATG lifetime history. The model uses no
+odds or betting percentages and is allowed to feed the paper-betting layer only when
+its history-coverage gate passes. Norwegian field-only races currently fail that gate
+and remain `NOT_EXECUTABLE`.
 
 The initial shadow combination policy is explicitly named
 `SHADOW_RESEARCH_V1_EQUAL_LOG_POOL`. Its equal fundamental/market weights are a
 research baseline, not a validated Benter coefficient estimate.
 
-Other products are collected so the project can learn their market structure without
-pretending that p(win) automatically gives a correct Plass/Tvilling/V75 probability.
+Plass, Tvilling and Trippel market observations are collected so the project can learn
+their market structure without pretending that p(win) automatically gives the correct
+product probability. Historical multi-leg program endpoints are disabled by default
+after live 404 verification.
 
 ## Nightly settlement
 
