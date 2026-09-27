@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -6,7 +6,6 @@ import pytest
 from hbi.benchmark import closing_line_value, evaluate_against_market
 from hbi.domain import MarketSnapshot
 from hbi.storage import SQLiteStore
-
 
 SCHEMA = Path(__file__).parents[1] / "db" / "schema.sql"
 
@@ -32,7 +31,11 @@ def test_snapshot_insert_is_idempotent(tmp_path):
     store.initialize(SCHEMA)
     store.upsert_race(race_record())
     snapshot = MarketSnapshot(
-        "r1", "1", datetime(2026, 9, 27, 17, 55, tzinfo=timezone.utc), 4.0, 10000
+        "r1",
+        "1",
+        datetime(2026, 9, 27, 17, 55, tzinfo=UTC),
+        4.0,
+        10000,
     )
     assert store.insert_market_snapshot(snapshot)
     assert not store.insert_market_snapshot(snapshot)
@@ -43,18 +46,18 @@ def test_frozen_prediction_cannot_be_rewritten(tmp_path):
     store = SQLiteStore(tmp_path / "hbi.sqlite")
     store.initialize(SCHEMA)
     store.upsert_race(race_record())
-    created = datetime(2026, 9, 27, 17, 50, tzinfo=timezone.utc)
-    kwargs = dict(
-        prediction_id="p1",
-        race_id="r1",
-        selection_id="1",
-        created_at=created,
-        model_name="fundamental",
-        model_version="v1",
-        layer="FUNDAMENTAL",
-        probability=0.25,
-        feature_as_of=created,
-    )
+    created = datetime(2026, 9, 27, 17, 50, tzinfo=UTC)
+    kwargs = {
+        "prediction_id": "p1",
+        "race_id": "r1",
+        "selection_id": "1",
+        "created_at": created,
+        "model_name": "fundamental",
+        "model_version": "v1",
+        "layer": "FUNDAMENTAL",
+        "probability": 0.25,
+        "feature_as_of": created,
+    }
     store.insert_prediction(**kwargs)
     with pytest.raises(ValueError):
         store.insert_prediction(**{**kwargs, "probability": 0.40})
@@ -64,13 +67,18 @@ def test_prediction_rejects_future_feature(tmp_path):
     store = SQLiteStore(tmp_path / "hbi.sqlite")
     store.initialize(SCHEMA)
     store.upsert_race(race_record())
-    created = datetime(2026, 9, 27, 17, 50, tzinfo=timezone.utc)
+    created = datetime(2026, 9, 27, 17, 50, tzinfo=UTC)
     with pytest.raises(ValueError):
         store.insert_prediction(
-            prediction_id="p1", race_id="r1", selection_id="1", created_at=created,
-            model_name="fundamental", model_version="v1", layer="FUNDAMENTAL",
+            prediction_id="p1",
+            race_id="r1",
+            selection_id="1",
+            created_at=created,
+            model_name="fundamental",
+            model_version="v1",
+            layer="FUNDAMENTAL",
             probability=0.25,
-            feature_as_of=datetime(2026, 9, 27, 17, 51, tzinfo=timezone.utc),
+            feature_as_of=datetime(2026, 9, 27, 17, 51, tzinfo=UTC),
         )
 
 
