@@ -528,12 +528,17 @@ class SQLiteStore:
             )
             return [dict(row) for row in rows]
 
-    def shadow_tickets_for_date(self, iso_date: str) -> list[dict[str, object]]:
+    def shadow_tickets_between(
+        self,
+        start: datetime,
+        end: datetime,
+    ) -> list[dict[str, object]]:
         with self.connect() as connection:
             rows = connection.execute(
-                "SELECT * FROM shadow_tickets WHERE substr(decision_time_utc,1,10)=? "
+                "SELECT * FROM shadow_tickets "
+                "WHERE decision_time_utc>=? AND decision_time_utc<? "
                 "ORDER BY decision_time_utc",
-                (iso_date,),
+                (start.isoformat(), end.isoformat()),
             )
             return [dict(row) for row in rows]
 
