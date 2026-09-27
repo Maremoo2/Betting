@@ -59,7 +59,7 @@ class MarketFreeFundamentalChampionV1:
     VERSION = "FUNDAMENTAL_CHAMPION_V1"
     FEATURE_SET_VERSION = "RIKSTOTO_PROGRAM_CAREER_WIN_V1"
     CALIBRATION_VERSION = "UNVALIDATED_SHADOW_V1"
-    ROLE = ModelRole.CHAMPION
+    ROLE = ModelRole.SHADOW_CHAMPION
     LAYER = "FUNDAMENTAL"
 
     def __init__(self, policy: FundamentalChampionPolicy | None = None):
