@@ -395,14 +395,22 @@ def build_data_health(store: SQLiteStore, report_date: date) -> dict[str, object
     }
 
 
+def _metric_values(
+    rows: list[dict[str, object]],
+    key: str,
+) -> list[float]:
+    return [
+        float(row[key])
+        for row in rows
+        if row.get(key) is not None
+    ]
+
+
 def _aggregate_metric(
     rows: list[dict[str, object]],
     key: str,
 ) -> float | None:
-    values = [
-        float(row[key]) for row in rows if row.get(key) is not None
-    ]
-    return _mean(values)
+    return _mean(_metric_values(rows, key))
 
 
 def build_evaluation_summary(
@@ -467,17 +475,31 @@ def build_evaluation_summary(
         float(row["clv"]) for row in settled if row.get("clv") is not None
     ]
 
-    fundamental_log = _aggregate_metric(evaluations, "fundamental_log_loss")
-    market_log = _aggregate_metric(evaluations, "market_log_loss")
-    combined_log = _aggregate_metric(evaluations, "combined_log_loss")
-    fundamental_brier = _aggregate_metric(evaluations, "fundamental_brier")
-    market_brier = _aggregate_metric(evaluations, "market_brier")
-    combined_brier = _aggregate_metric(evaluations, "combined_brier")
+    fundamental_log_values = _metric_values(evaluations, "fundamental_log_loss")
+    market_log_values = _metric_values(evaluations, "market_log_loss")
+    combined_log_values = _metric_values(evaluations, "combined_log_loss")
+    fundamental_brier_values = _metric_values(evaluations, "fundamental_brier")
+    market_brier_values = _metric_values(evaluations, "market_brier")
+    combined_brier_values = _metric_values(evaluations, "combined_brier")
+
+    fundamental_log = _mean(fundamental_log_values)
+    market_log = _mean(market_log_values)
+    combined_log = _mean(combined_log_values)
+    fundamental_brier = _mean(fundamental_brier_values)
+    market_brier = _mean(market_brier_values)
+    combined_brier = _mean(combined_brier_values)
 
     return {
         "report_date": report_date.isoformat(),
         "race_evaluations_n": len(evaluations),
+        "decision_runs_n": len(decision_runs),
+        "evaluation_coverage": (
+            None if not decision_runs else len(evaluations) / len(decision_runs)
+        ),
         "outcomes_n": len(outcomes),
+        "fundamental_n": len(fundamental_log_values),
+        "market_n": len(market_log_values),
+        "combined_n": len(combined_log_values),
         "fundamental_log_loss": fundamental_log,
         "market_log_loss": market_log,
         "combined_log_loss": combined_log,
@@ -608,7 +630,12 @@ def render_markdown(
         "## Predictive evaluation",
         "",
         f"- Official outcomes available: {evaluation['outcomes_n']}",
-        f"- Frozen race evaluations: {evaluation['race_evaluations_n']}",
+        f"- Frozen race evaluations: {evaluation['race_evaluations_n']} / "
+        f"{evaluation['decision_runs_n']} decision runs "
+        f"(coverage {_fmt(evaluation['evaluation_coverage'])})",
+        f"- Metric N — fundamental / market / combined: "
+        f"{evaluation['fundamental_n']} / {evaluation['market_n']} / "
+        f"{evaluation['combined_n']}",
         f"- Log loss — fundamental / market / combined: "
         f"{_fmt(evaluation['fundamental_log_loss'])} / "
         f"{_fmt(evaluation['market_log_loss'])} / "
