@@ -10,13 +10,14 @@ from .storage import SQLiteStore
 class GoogleSheetsMirror:
     """Optional human-readable mirror of canonical HBI data.
 
-    The SQLite/Postgres database remains source of truth. This adapter deliberately
-    uses replace-style worksheet mirroring rather than allowing Sheets edits to
-    mutate historical point-in-time records.
+    The SQLite/Postgres database remains source of truth. By default this adapter
+    writes only to HBI_* worksheets so it cannot silently overwrite a pre-existing
+    manually maintained workbook schema such as RACES/SNAPSHOTS/BETS_OUTCOMES.
     """
 
     spreadsheet_id: str
     credentials_path: str
+    worksheet_prefix: str = "HBI_"
 
     def _spreadsheet(self):
         try:
@@ -37,11 +38,17 @@ class GoogleSheetsMirror:
     ) -> int:
         rows = store.fetch_table(table)
         spreadsheet = self._spreadsheet()
-        name = worksheet_name or table.upper()
+        name = worksheet_name or f"{self.worksheet_prefix}{table.upper()}"
+
         try:
+            import gspread
             worksheet = spreadsheet.worksheet(name)
-        except Exception:
-            worksheet = spreadsheet.add_worksheet(title=name, rows=max(100, len(rows) + 10), cols=40)
+        except gspread.WorksheetNotFound:
+            worksheet = spreadsheet.add_worksheet(
+                title=name,
+                rows=max(100, len(rows) + 10),
+                cols=40,
+            )
 
         worksheet.clear()
         if not rows:
