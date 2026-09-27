@@ -104,6 +104,12 @@ the market baseline?
 ## Current implementation status
 
 Implemented:
+- read-only Rikstoto provider with explicit endpoint-provenance levels
+- five-minute market watcher with best-effort T-4 timing and latency logging
+- immutable shadow ledger
+- Vinner shadow execution when full-field fundamental probabilities exist
+- official Vinner settlement, CLV and nightly paper P/L reporting
+- V/P/TV/T market collection plus optional multi-leg pool-context collection
 - point-in-time validator
 - market-free probability primitives
 - Benter-style probability combination primitive
@@ -119,9 +125,10 @@ Implemented:
 - CI tests
 
 Intentionally not yet implemented:
-- external race/market data ingestion
+- validated current payout/dividend contracts for TV/T/DD/V4/V75/V85
+- autonomous shadow probability/ticket models for P/TV/T/DD/V4/V75/V85
 - learned champion model training
 - learned closing-price model
 - automated feature extraction from LLMs
-- scheduled live market collection (requires an approved data source/API)
+- low-latency always-on collector (GitHub scheduling remains best-effort)
 - real-money execution
