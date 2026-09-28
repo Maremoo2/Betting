@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 from hbi.governance import load_governance
