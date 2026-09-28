@@ -12,6 +12,7 @@ from .learning import build_learning_rows, learning_dataset_summary
 from .provider_integrity import run_provider_integrity
 from .replay_validation import run_runtime_replay_parity
 from .research_integrity import run_research_integrity_check
+from .research_status import build_effective_research_status
 from .settlement_integrity import run_settlement_integrity
 from .storage import SQLiteStore
 
@@ -134,10 +135,6 @@ def run_v1_audit(
         provider["status"] in {"NO_EVIDENCE", "WARN"}
         or replay["status"] == "NO_EVIDENCE"
         or settlement["status"] == "WARN"
-        or any(
-            status != "PASS"
-            for status in (governance.get("p0") or {}).values()
-        )
     )
     engineering_status = (
         "FAIL"
@@ -164,6 +161,11 @@ def run_v1_audit(
         "learning_dataset": learning_summary,
         "challenger_forward_clocks": challenger_clocks,
     }
+    report["effective_research_status"] = build_effective_research_status(
+        governance=governance,
+        v1_audit=report,
+        generated_at=generated,
+    )
     report["markdown"] = _render_markdown(report)
 
     if output_dir is not None:
@@ -175,6 +177,14 @@ def run_v1_audit(
         )
         (output / "v1-system-audit.md").write_text(
             str(report["markdown"]),
+            encoding="utf-8",
+        )
+        (output / "research-status.json").write_text(
+            json.dumps(
+                report["effective_research_status"],
+                indent=2,
+                ensure_ascii=False,
+            ),
             encoding="utf-8",
         )
         (output / "research-learning-dataset.json").write_text(
