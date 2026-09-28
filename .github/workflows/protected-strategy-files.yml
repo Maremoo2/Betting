@@ -24,6 +24,13 @@ jobs:
           CHANGED="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
           printf '%s\n' "$CHANGED"
 
+          if git cat-file -e "origin/${{ github.base_ref }}:.github/workflows/protected-strategy-files.yml" 2>/dev/null; then
+            echo "bootstrap=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "bootstrap=true" >> "$GITHUB_OUTPUT"
+            echo "Bootstrap PR: protection workflow is not yet present on the base branch."
+          fi
+
           protected=false
           while IFS= read -r file; do
             case "$file" in
@@ -35,7 +42,7 @@ jobs:
           echo "protected_changed=$protected" >> "$GITHUB_OUTPUT"
 
       - name: Require explicit strategy approval
-        if: steps.protected.outputs.protected_changed == 'true'
+        if: steps.protected.outputs.protected_changed == 'true' && steps.protected.outputs.bootstrap != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -47,6 +54,10 @@ jobs:
             echo "::error::Protected strategy/governance files changed without strategy-change-approved label."
             exit 1
           fi
+
+      - name: Bootstrap protection
+        if: steps.protected.outputs.bootstrap == 'true'
+        run: echo "Protection installed. Future protected changes require strategy-change-approved."
 
       - name: No protected strategy changes
         if: steps.protected.outputs.protected_changed != 'true'
