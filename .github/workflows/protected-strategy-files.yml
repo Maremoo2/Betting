@@ -1,0 +1,64 @@
+name: Protected Strategy Files
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  protected-strategy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect protected strategy changes
+        id: protected
+        shell: bash
+        run: |
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          CHANGED="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
+          printf '%s\n' "$CHANGED"
+
+          if git cat-file -e "origin/${{ github.base_ref }}:.github/workflows/protected-strategy-files.yml" 2>/dev/null; then
+            echo "bootstrap=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "bootstrap=true" >> "$GITHUB_OUTPUT"
+            echo "Bootstrap PR: protection workflow is not yet present on the base branch."
+          fi
+
+          protected=false
+          while IFS= read -r file; do
+            case "$file" in
+              src/hbi/fundamental.py|src/hbi/probability.py|src/hbi/engine.py|src/hbi/decision.py|src/hbi/shadow.py|src/hbi/race_difficulty.py|src/hbi/eligibility.py|src/hbi/model_registry.py|src/hbi/promotion.py|docs/research_governance.json|docs/RESEARCH_GOVERNANCE.md)
+                protected=true
+                ;;
+            esac
+          done <<< "$CHANGED"
+          echo "protected_changed=$protected" >> "$GITHUB_OUTPUT"
+
+      - name: Require explicit strategy approval
+        if: steps.protected.outputs.protected_changed == 'true' && steps.protected.outputs.bootstrap != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          LABELS="$(gh pr view "${{ github.event.pull_request.number }}" --json labels --jq '.labels[].name')"
+          if printf '%s\n' "$LABELS" | grep -Fxq "strategy-change-approved"; then
+            echo "Protected strategy change has explicit approval label."
+          else
+            echo "::error::Protected strategy/governance files changed without strategy-change-approved label."
+            exit 1
+          fi
+
+      - name: Bootstrap protection
+        if: steps.protected.outputs.bootstrap == 'true'
+        run: echo "Protection installed. Future protected changes require strategy-change-approved."
+
+      - name: No protected strategy changes
+        if: steps.protected.outputs.protected_changed != 'true'
+        run: echo "No protected strategy/governance files changed."
