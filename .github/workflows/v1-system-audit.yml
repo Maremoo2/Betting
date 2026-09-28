@@ -1,0 +1,81 @@
+name: HBI V1 System Audit
+
+on:
+  schedule:
+    # One of these is 01:15 Europe/Oslo depending on CET/CEST; local gate filters.
+    - cron: "15 23,0 * * *"
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "src/hbi/**"
+      - "db/**"
+      - "docs/research_governance.json"
+      - "docs/RESEARCH_GOVERNANCE.md"
+      - "docs/V1_ACCEPTANCE_CRITERIA.md"
+      - ".github/workflows/v1-system-audit.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: hbi-v1-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install HBI
+        run: pip install -e ".[dev]"
+
+      - name: Determine audit mode
+        id: gate
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" != "schedule" ]]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          else
+            python - <<'PY' >> "$GITHUB_OUTPUT"
+          from datetime import UTC, datetime
+          from zoneinfo import ZoneInfo
+          local = datetime.now(UTC).astimezone(ZoneInfo("Europe/Oslo"))
+          print(f"should_run={'true' if local.hour == 1 else 'false'}")
+          print(f"local_time={local.isoformat()}")
+          PY
+          fi
+
+      - name: Restore latest HBI state
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HBI_DB_PATH: data/hbi.sqlite
+        run: python -m hbi.state_artifact
+
+      - name: Validate V1 engineering contract
+        if: steps.gate.outputs.should_run == 'true'
+        run: python -m hbi.v1_readiness | tee v1-readiness.json
+
+      - name: Run V1 system audit against restored state
+        if: steps.gate.outputs.should_run == 'true'
+        run: python -m hbi.v1_audit --db data/hbi.sqlite --output-dir research-v1
+
+      - name: Upload V1 audit evidence
+        if: steps.gate.outputs.should_run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hbi-v1-system-audit-${{ github.run_id }}
+          path: |
+            v1-readiness.json
+            research-v1/
+          if-no-files-found: error
+          retention-days: 90
