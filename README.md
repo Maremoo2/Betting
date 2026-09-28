@@ -231,9 +231,11 @@ HBI V1 separates **engineering completion** from **strategic validation**. The p
 can be engineering-complete while the strategy remains NOT_VALIDATED and continues to
 accumulate prospective shadow evidence.
 
-The canonical machine-readable status is
-`docs/research_governance.json`. See
-`docs/RESEARCH_GOVERNANCE.md` and `docs/V1_ACCEPTANCE_CRITERIA.md`.
+The static machine-readable policy authority is
+`docs/research_governance.json`. The latest real-state V1 audit derives
+`research-v1/research-status.json`, which is the current evidence view of P0
+integrity. See `docs/RESEARCH_GOVERNANCE.md`, `docs/RESEARCH_STATUS.md` and
+`docs/V1_ACCEPTANCE_CRITERIA.md`.
 
 A new Challenger never inherits the sample that was used to discover it. Each
 Challenger receives its own prospective forward-validation clock.
