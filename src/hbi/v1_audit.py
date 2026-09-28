@@ -11,8 +11,8 @@ from .governance import load_governance, validate_governance
 from .learning import build_learning_rows, learning_dataset_summary
 from .provider_integrity import run_provider_integrity
 from .replay_validation import run_runtime_replay_parity
-from .research_status import build_effective_research_status
 from .research_integrity import run_research_integrity_check
+from .research_status import build_effective_research_status
 from .settlement_integrity import run_settlement_integrity
 from .storage import SQLiteStore
 
