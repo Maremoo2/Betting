@@ -16,7 +16,7 @@ from hbi.replay_validation import run_runtime_replay_parity
 from hbi.research_integrity import future_mutation_invariance, run_research_integrity_check
 from hbi.settlement_integrity import run_settlement_integrity
 from hbi.storage import SQLiteStore
-from hbi.v1_audit import run_v1_audit
+from hbi.v1_audit import engineering_status_from_evidence, run_v1_audit
 
 ROOT = Path(__file__).parents[1]
 SCHEMA = ROOT / "db" / "schema.sql"
@@ -169,6 +169,34 @@ def test_promotion_never_bypasses_governance():
     assert assessment.recommendation_only
     assert assessment.manual_approval_required
     assert not assessment.execution_authority
+
+
+def test_v1_engineering_pass_uses_current_p0_evidence_not_static_policy_labels():
+    engineering, evidence = engineering_status_from_evidence(
+        governance_valid=True,
+        p0_statuses={
+            "temporal_integrity": "PASS",
+            "provider_integrity": "PASS",
+            "runtime_replay_parity": "PASS",
+            "settlement_integrity": "PASS",
+        },
+    )
+    assert engineering == "PASS"
+    assert evidence == "PASS"
+
+
+def test_v1_engineering_evidence_pending_is_dynamic():
+    engineering, evidence = engineering_status_from_evidence(
+        governance_valid=True,
+        p0_statuses={
+            "temporal_integrity": "PASS",
+            "provider_integrity": "WARN",
+            "runtime_replay_parity": "NO_EVIDENCE",
+            "settlement_integrity": "PASS",
+        },
+    )
+    assert engineering == "PASS_WITH_EVIDENCE_PENDING"
+    assert evidence == "EVIDENCE_PENDING"
 
 
 def test_empty_database_v1_audit_is_engineering_pass_with_evidence_pending(tmp_path):

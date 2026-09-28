@@ -44,6 +44,8 @@ def _render_markdown(report: dict[str, object]) -> str:
         "",
         f"- Generated: {report['generated_at_utc']}",
         f"- Engineering status: **{report['engineering_status']}**",
+        f"- V1 engineering complete: **{report['v1_engineering_complete']}**",
+        f"- Current P0 evidence: **{report['current_p0_evidence_status']}**",
         f"- Strategic validity: **{governance['strategic_validity']}**",
         f"- Operational validity: **{governance['operational_validity']}**",
         "",
@@ -91,6 +93,23 @@ def _render_markdown(report: dict[str, object]) -> str:
     return "\n".join(lines)
 
 
+
+
+def engineering_status_from_evidence(
+    *,
+    governance_valid: bool,
+    p0_statuses: dict[str, str],
+) -> tuple[str, str]:
+    if not governance_valid or any(
+        status == "FAIL" for status in p0_statuses.values()
+    ):
+        return "FAIL", "FAIL"
+    if any(
+        status in {"NO_EVIDENCE", "WARN"} for status in p0_statuses.values()
+    ):
+        return "PASS_WITH_EVIDENCE_PENDING", "EVIDENCE_PENDING"
+    return "PASS", "PASS"
+
 def run_v1_audit(
     store: SQLiteStore,
     *,
@@ -123,34 +142,26 @@ def run_v1_audit(
             }
         )
 
-    hard_fail = (
-        not governance_validation.valid
-        or temporal["status"] == "FAIL"
-        or provider["status"] == "FAIL"
-        or replay["status"] == "FAIL"
-        or settlement["status"] == "FAIL"
-    )
-    evidence_pending = (
-        provider["status"] in {"NO_EVIDENCE", "WARN"}
-        or replay["status"] == "NO_EVIDENCE"
-        or settlement["status"] == "WARN"
-        or any(
-            status != "PASS"
-            for status in (governance.get("p0") or {}).values()
+    actual_p0 = {
+        "temporal_integrity": str(temporal["status"]),
+        "provider_integrity": str(provider["status"]),
+        "runtime_replay_parity": str(replay["status"]),
+        "settlement_integrity": str(settlement["status"]),
+    }
+    engineering_status, current_p0_evidence_status = (
+        engineering_status_from_evidence(
+            governance_valid=governance_validation.valid,
+            p0_statuses=actual_p0,
         )
-    )
-    engineering_status = (
-        "FAIL"
-        if hard_fail
-        else "PASS_WITH_EVIDENCE_PENDING"
-        if evidence_pending
-        else "PASS"
     )
 
     report: dict[str, object] = {
         "schema_version": "HBI_V1_SYSTEM_AUDIT_V1",
         "generated_at_utc": generated.isoformat(),
         "engineering_status": engineering_status,
+        "v1_engineering_complete": engineering_status == "PASS",
+        "current_p0_evidence_status": current_p0_evidence_status,
+        "current_p0_evidence": actual_p0,
         "governance": governance,
         "governance_validation": {
             "valid": governance_validation.valid,
@@ -163,6 +174,11 @@ def run_v1_audit(
         "settlement_integrity": settlement,
         "learning_dataset": learning_summary,
         "challenger_forward_clocks": challenger_clocks,
+        "interpretation": (
+            "V1 engineering completion is determined by the implemented control plane "
+            "and current audit evidence. Strategic validity remains a separate research "
+            "claim and stays governed by untouched prospective evidence."
+        ),
     }
     report["markdown"] = _render_markdown(report)
 
