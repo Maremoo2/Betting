@@ -53,3 +53,15 @@ After the engineering implementation is merged, the expected status is:
 
 That is a successful V1 build. Evidence accumulation then happens through scheduled
 shadow runs rather than continued tuning of the frozen Champion.
+
+
+## Evidence-state rule
+
+Engineering completion is evaluated independently from the live P0 evidence state.
+
+The latest V1 audit writes `research-status.json`. If all four current P0 audits
+pass, the audit may report engineering `PASS` even if the static governance policy
+still uses conservative labels such as `SHADOW_VALIDATING`. A later failed real-state
+audit immediately makes the effective status non-PASS again.
+
+This does not change `strategic_validity=NOT_VALIDATED`.
