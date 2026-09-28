@@ -53,3 +53,22 @@ After the engineering implementation is merged, the expected status is:
 
 That is a successful V1 build. Evidence accumulation then happens through scheduled
 shadow runs rather than continued tuning of the frozen Champion.
+
+
+## Current evidence vs policy state
+
+The machine-readable governance document is a conservative policy authority and may
+retain statuses such as `ENGINEERING_PASS_EVIDENCE_ACCUMULATING` or
+`SHADOW_VALIDATING` until a later manual governance review.
+
+The V1 system audit must not treat those policy labels as if they were the current
+runtime evidence. Its engineering result is derived from the actual audit run:
+
+- temporal integrity;
+- provider integrity;
+- runtime replay parity;
+- settlement integrity.
+
+When all four current P0 audits are `PASS` and governance is valid, the system audit
+reports V1 engineering `PASS`. Strategic validity remains independent and can still
+be `NOT_VALIDATED`.
