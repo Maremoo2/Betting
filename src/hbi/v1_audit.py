@@ -93,6 +93,23 @@ def _render_markdown(report: dict[str, object]) -> str:
     return "\n".join(lines)
 
 
+
+
+def engineering_status_from_evidence(
+    *,
+    governance_valid: bool,
+    p0_statuses: dict[str, str],
+) -> tuple[str, str]:
+    if not governance_valid or any(
+        status == "FAIL" for status in p0_statuses.values()
+    ):
+        return "FAIL", "FAIL"
+    if any(
+        status in {"NO_EVIDENCE", "WARN"} for status in p0_statuses.values()
+    ):
+        return "PASS_WITH_EVIDENCE_PENDING", "EVIDENCE_PENDING"
+    return "PASS", "PASS"
+
 def run_v1_audit(
     store: SQLiteStore,
     *,
@@ -131,26 +148,11 @@ def run_v1_audit(
         "runtime_replay_parity": str(replay["status"]),
         "settlement_integrity": str(settlement["status"]),
     }
-    hard_fail = (
-        not governance_validation.valid
-        or any(status == "FAIL" for status in actual_p0.values())
-    )
-    evidence_pending = any(
-        status in {"NO_EVIDENCE", "WARN"} for status in actual_p0.values()
-    )
-    engineering_status = (
-        "FAIL"
-        if hard_fail
-        else "PASS_WITH_EVIDENCE_PENDING"
-        if evidence_pending
-        else "PASS"
-    )
-    current_p0_evidence_status = (
-        "FAIL"
-        if hard_fail
-        else "EVIDENCE_PENDING"
-        if evidence_pending
-        else "PASS"
+    engineering_status, current_p0_evidence_status = (
+        engineering_status_from_evidence(
+            governance_valid=governance_validation.valid,
+            p0_statuses=actual_p0,
+        )
     )
 
     report: dict[str, object] = {
