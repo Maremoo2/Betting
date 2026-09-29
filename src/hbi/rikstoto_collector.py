@@ -9,6 +9,7 @@ from uuid import uuid4
 from .domain import MarketSnapshot
 from .provider_capabilities import enrichment_candidates
 from .providers.atg import AtgClient, AtgFetchResult
+from .providers.pmu import PmuClient, PmuFetchResult
 from .providers.rikstoto import FetchResult, RikstotoClient, RikstotoRace
 from .storage import SQLiteStore
 
@@ -29,14 +30,16 @@ class RikstotoCollector:
         store: SQLiteStore,
         client: RikstotoClient | None = None,
         atg_client: AtgClient | None = None,
+        pmu_client: PmuClient | None = None,
     ):
         self.store = store
         self.client = client or RikstotoClient()
         self.atg_client = atg_client or AtgClient()
+        self.pmu_client = pmu_client or PmuClient()
 
     def _audit_provider(
         self,
-        fetch: FetchResult | AtgFetchResult,
+        fetch: FetchResult | AtgFetchResult | PmuFetchResult,
         fetched_at: datetime,
         *,
         provider: str,
