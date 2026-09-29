@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from hbi.providers.atg import AtgClient, AtgFetchResult
+from hbi.providers.pmu import PmuClient, PmuFetchResult
 from hbi.providers.rikstoto import FetchResult, RikstotoClient
 from hbi.rikstoto_collector import RikstotoCollector
 from hbi.storage import SQLiteStore
@@ -260,10 +261,113 @@ class FakeAtg(AtgClient):
         )
 
 
+
+class FakePmu(PmuClient):
+    def __init__(
+        self,
+        *,
+        country: str = "FR",
+        track: str = "Chantilly",
+        available: bool = False,
+        incomplete: bool = False,
+    ):
+        self.country = country
+        self.track = track
+        self.available = available
+        self.incomplete = incomplete
+
+    def programme(self, race_date):
+        if not self.available:
+            return PmuFetchResult(
+                url="https://example/pmu/programme",
+                payload=None,
+                success=False,
+                status_code=404,
+                latency_ms=1.0,
+                error="not available",
+            )
+        return PmuFetchResult(
+            url="https://example/pmu/programme",
+            payload={
+                "programme": {
+                    "reunions": [
+                        {
+                            "numOfficiel": 1,
+                            "hippodrome": {"libelleCourt": self.track},
+                            "pays": {"code": self.country},
+                            "courses": [{"numOrdre": 1}],
+                        }
+                    ]
+                }
+            },
+            success=True,
+            status_code=200,
+            latency_ms=1.0,
+        )
+
+    def participants(self, race_date, reunion_number, race_number):
+        if not self.available:
+            return PmuFetchResult(
+                url="https://example/pmu/participants",
+                payload=None,
+                success=False,
+                status_code=404,
+                latency_ms=1.0,
+                error="not available",
+            )
+        beta = {
+            "nom": "Beta",
+            "numPmu": 2,
+            "idCheval": "PMU-H2",
+            "age": 6,
+            "sexe": "HONGRE",
+            "entraineur": "Trainer B",
+            "nombreCourses": 30,
+            "nombreVictoires": 3,
+            "nombrePlaces": 12,
+            "nombrePlacesSecond": 4,
+            "nombrePlacesTroisieme": 5,
+            "gainsParticipant": {"gainsCarriere": 250000},
+        }
+        if self.incomplete:
+            beta["gainsParticipant"] = {}
+        return PmuFetchResult(
+            url="https://example/pmu/participants",
+            payload={
+                "participants": [
+                    {
+                        "nom": "Alpha",
+                        "numPmu": 1,
+                        "idCheval": "PMU-H1",
+                        "age": 5,
+                        "sexe": "MALE",
+                        "entraineur": "Trainer A",
+                        "nombreCourses": 20,
+                        "nombreVictoires": 8,
+                        "nombrePlaces": 13,
+                        "nombrePlacesSecond": 3,
+                        "nombrePlacesTroisieme": 2,
+                        "gainsParticipant": {"gainsCarriere": 500000},
+                    },
+                    beta,
+                ]
+            },
+            success=True,
+            status_code=200,
+            latency_ms=1.0,
+        )
+
+
+
 def test_rikstoto_raceday_parser_and_market_collection(tmp_path):
     store = SQLiteStore(tmp_path / "hbi.sqlite")
     store.initialize(SCHEMA)
-    collector = RikstotoCollector(store, FakeRikstoto())
+    collector = RikstotoCollector(
+        store,
+        FakeRikstoto(),
+        FakeAtg(),
+        FakePmu(),
+    )
 
     races = collector.discover(datetime(2026, 9, 27, 17, 0, tzinfo=UTC))
     assert len(races) == 1
@@ -320,7 +424,7 @@ def test_swedish_starts_are_enriched_with_market_free_atg_history(tmp_path):
         track="Färjestad",
         raceday_key="S1_NR_2026-09-27",
     )
-    collector = RikstotoCollector(store, rikstoto, FakeAtg())
+    collector = RikstotoCollector(store, rikstoto, FakeAtg(), FakePmu())
     race = collector.discover(datetime(2026, 9, 27, 17, 0, tzinfo=UTC))[0]
     observed = datetime(2026, 9, 27, 17, 56, tzinfo=UTC)
 
@@ -364,6 +468,7 @@ def test_danish_race_uses_same_capability_based_atg_enrichment(tmp_path):
         store,
         rikstoto,
         FakeAtg(country="DK", track="Charlottenlund"),
+        FakePmu(),
     )
     race = collector.discover(datetime(2026, 9, 27, 17, 0, tzinfo=UTC))[0]
     observed = datetime(2026, 9, 27, 17, 56, tzinfo=UTC)
@@ -395,6 +500,7 @@ def test_partial_provider_history_is_hidden_from_entire_active_field(tmp_path):
         store,
         rikstoto,
         FakeAtg(country="DK", track="Charlottenlund", incomplete=True),
+        FakePmu(),
     )
     race = collector.discover(datetime(2026, 9, 27, 17, 0, tzinfo=UTC))[0]
     observed = datetime(2026, 9, 27, 17, 56, tzinfo=UTC)
@@ -415,6 +521,83 @@ def test_partial_provider_history_is_hidden_from_entire_active_field(tmp_path):
         row["data_quality"] == "FIELD_ONLY_INCOMPLETE_ENRICHMENT"
         for row in rows
     )
+
+
+
+def test_french_race_uses_complete_pmu_history_when_atg_is_not_full(tmp_path):
+    store = SQLiteStore(tmp_path / "hbi.sqlite")
+    store.initialize(SCHEMA)
+    rikstoto = FakeRikstoto(
+        country="FR",
+        track="Chantilly",
+        raceday_key="F1_NR_2026-09-27",
+    )
+    collector = RikstotoCollector(
+        store,
+        rikstoto,
+        FakeAtg(country="SE", track="Färjestad"),
+        FakePmu(country="FR", track="Chantilly", available=True),
+    )
+    race = collector.discover(datetime(2026, 9, 27, 17, 0, tzinfo=UTC))[0]
+    observed = datetime(2026, 9, 27, 17, 56, tzinfo=UTC)
+
+    inserted, ok, _ = collector.collect_fundamentals(
+        raceday_key=race.raceday_key,
+        race_number=1,
+        race_id=race.race_id,
+        observed_at=observed,
+    )
+
+    assert ok
+    assert inserted == 2
+    rows = store.latest_runner_fundamentals(race.race_id, before=observed)
+    assert all(row["enrichment_provider"] == "pmu" for row in rows)
+    assert all(row["full_field_history_complete"] == 1 for row in rows)
+    assert all(row["data_quality"] == "FULL_FIELD_HISTORY_PMU" for row in rows)
+    alpha = next(row for row in rows if row["selection_id"] == "1")
+    assert alpha["history_total_starts"] == 20
+    assert alpha["history_total_wins"] == 8
+    assert alpha["history_total_seconds"] == 3
+    assert alpha["history_total_thirds"] == 2
+    assert alpha["identity_match_confidence"] == 0.99
+    assert "dernierRapport" not in str(alpha["raw_json"])
+
+
+def test_incomplete_pmu_history_fails_closed_for_entire_french_field(tmp_path):
+    store = SQLiteStore(tmp_path / "hbi.sqlite")
+    store.initialize(SCHEMA)
+    rikstoto = FakeRikstoto(
+        country="FR",
+        track="Chantilly",
+        raceday_key="F1_NR_2026-09-27",
+    )
+    collector = RikstotoCollector(
+        store,
+        rikstoto,
+        FakeAtg(country="SE", track="Färjestad"),
+        FakePmu(
+            country="FR",
+            track="Chantilly",
+            available=True,
+            incomplete=True,
+        ),
+    )
+    race = collector.discover(datetime(2026, 9, 27, 17, 0, tzinfo=UTC))[0]
+    observed = datetime(2026, 9, 27, 17, 56, tzinfo=UTC)
+
+    collector.collect_fundamentals(
+        raceday_key=race.raceday_key,
+        race_number=1,
+        race_id=race.race_id,
+        observed_at=observed,
+    )
+    rows = store.latest_runner_fundamentals(race.race_id, before=observed)
+
+    assert all(row["full_field_history_complete"] == 0 for row in rows)
+    assert all(row["history_total_starts"] is None for row in rows)
+    assert all(row["enrichment_provider"] is None for row in rows)
+
+
 
 def test_legacy_pool_endpoints_are_disabled_by_default(tmp_path):
     store = SQLiteStore(tmp_path / "hbi.sqlite")
