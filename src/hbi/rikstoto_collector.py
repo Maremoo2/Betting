@@ -543,6 +543,7 @@ class RikstotoCollector:
             country_code=str(race.get("country") or ""),
             track_name=str(race.get("track") or ""),
             race_number=race_number,
+            expected_start=start_time,
         )
         if resolved is None:
             return None, {}
