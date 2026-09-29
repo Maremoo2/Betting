@@ -52,6 +52,11 @@ class PmuProbe:
     history_item_keys: list[str] = field(default_factory=list)
     subject_history_participant_keys: list[str] = field(default_factory=list)
     participant_field_presence: dict[str, int] = field(default_factory=dict)
+    participant_field_types: dict[str, list[str]] = field(default_factory=dict)
+    rikstoto_pmu_match_count: int = 0
+    complete_contract_count: int = 0
+    unmatched_start_numbers: list[int] = field(default_factory=list)
+    incomplete_start_numbers: list[int] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
 
 
@@ -166,6 +171,42 @@ def run_probe() -> PmuProbe:
             key: sum(row.get(key) is not None for row in rows)
             for key in wanted
         }
+        probe.participant_field_types = {
+            key: sorted(
+                {
+                    type(row.get(key)).__name__
+                    for row in rows
+                    if row.get(key) is not None
+                }
+            )
+            for key in wanted
+        }
+
+        pmu_map = collector._pmu_runner_map(rows)
+        starts_fetch = collector.client.starts(race.raceday_key)
+        starts = collector._starts_for_race(
+            starts_fetch.payload,
+            race.race_number,
+        )
+        for start in starts:
+            if bool(start.get("isScratched")):
+                continue
+            try:
+                number = int(start.get("startNumber"))
+            except (TypeError, ValueError):
+                continue
+            matched, _, _ = collector._match_pmu_runner(
+                rikstoto_start=start,
+                by_name_start=pmu_map,
+            )
+            if matched is None:
+                probe.unmatched_start_numbers.append(number)
+                continue
+            probe.rikstoto_pmu_match_count += 1
+            if collector._extract_pmu_market_free(matched) is None:
+                probe.incomplete_start_numbers.append(number)
+            else:
+                probe.complete_contract_count += 1
 
         performances = pmu.performances(
             race.start_time.date(),
