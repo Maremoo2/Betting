@@ -19,6 +19,7 @@ on:
 permissions:
   contents: read
   actions: read
+  issues: read
 
 concurrency:
   group: hbi-state-writer
@@ -75,6 +76,15 @@ jobs:
       - name: Initialize / migrate database
         if: steps.gate.outputs.should_run == 'true'
         run: hbi --db data/hbi.sqlite init-db
+
+      - name: Import scheduled intelligence from GitHub inbox
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          hbi --db data/hbi.sqlite ingest-github-evidence-inbox \
+            --repository "${{ github.repository }}" \
+            --issue-number 18
 
       - name: Optional scheduled-intelligence evidence import
         if: steps.gate.outputs.should_run == 'true'
