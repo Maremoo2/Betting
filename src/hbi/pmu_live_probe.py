@@ -57,6 +57,7 @@ class PmuProbe:
     complete_contract_count: int = 0
     unmatched_start_numbers: list[int] = field(default_factory=list)
     incomplete_start_numbers: list[int] = field(default_factory=list)
+    name_pairs: list[dict[str, object]] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
 
 
@@ -183,6 +184,11 @@ def run_probe() -> PmuProbe:
         }
 
         pmu_map = collector._pmu_runner_map(rows)
+        pmu_by_number = {
+            int(row["numPmu"]): row
+            for row in rows
+            if row.get("numPmu") is not None
+        }
         starts_fetch = collector.client.starts(race.raceday_key)
         starts = collector._starts_for_race(
             starts_fetch.payload,
@@ -195,6 +201,18 @@ def run_probe() -> PmuProbe:
                 number = int(start.get("startNumber"))
             except (TypeError, ValueError):
                 continue
+            pmu_row = pmu_by_number.get(number)
+            probe.name_pairs.append(
+                {
+                    "startNumber": number,
+                    "rikstoto": str(start.get("horseName") or ""),
+                    "pmu": (
+                        None
+                        if pmu_row is None
+                        else str(pmu_row.get("nom") or "")
+                    ),
+                }
+            )
             matched, _, _ = collector._match_pmu_runner(
                 rikstoto_start=start,
                 by_name_start=pmu_map,
