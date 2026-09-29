@@ -117,21 +117,6 @@ def collect_decision_outcomes(
     api = client or RikstotoClient()
     now = settled_at or datetime.now(UTC)
     start, end = _day_bounds(report_date)
-    intelligence_rows = [
-        row
-        for row in store.fetch_table("intelligence_evidence")
-        if _in_window(row.get("observed_at_utc"), start, end)
-    ]
-    bridge_rows = [
-        row
-        for row in store.fetch_table("intelligence_bridge_imports")
-        if _in_window(row.get("imported_at_utc"), start, end)
-    ]
-    bridge_status_counts: dict[str, int] = {}
-    for row in bridge_rows:
-        status = str(row.get("status") or "UNKNOWN")
-        bridge_status_counts[status] = bridge_status_counts.get(status, 0) + 1
-
     decision_runs = [
         row
         for row in store.fetch_table("shadow_decision_runs")
@@ -335,6 +320,21 @@ def build_data_health(store: SQLiteStore, report_date: date) -> dict[str, object
     for row in fetch_failures:
         provider = str(row.get("provider") or "UNKNOWN")
         failures_by_provider[provider] = failures_by_provider.get(provider, 0) + 1
+
+    intelligence_rows = [
+        row
+        for row in store.fetch_table("intelligence_evidence")
+        if _in_window(row.get("observed_at_utc"), start, end)
+    ]
+    bridge_rows = [
+        row
+        for row in store.fetch_table("intelligence_bridge_imports")
+        if _in_window(row.get("imported_at_utc"), start, end)
+    ]
+    bridge_status_counts: dict[str, int] = {}
+    for row in bridge_rows:
+        status = str(row.get("status") or "UNKNOWN")
+        bridge_status_counts[status] = bridge_status_counts.get(status, 0) + 1
 
     decision_runs = [
         row
@@ -648,11 +648,15 @@ def render_markdown(
         f"- Mean history coverage: {_fmt(health['mean_history_coverage'])}",
         f"- ATG runner coverage: {_fmt(health['atg_runner_coverage'])}",
         f"- Provider fetch failures: {health['provider_fetch_failures']} / {health['provider_fetches']}",
-        f"- Intelligence evidence: {health['intelligence_evidence_rows']} "
-        f"(PIT-eligible {health['intelligence_pit_eligible_rows']}, "
-        f"production-eligible {health['intelligence_production_eligible_rows']})",
-        f"- Intelligence bridge imports: {health['intelligence_bridge_imports']} "
-        f"{health['intelligence_bridge_status_counts']}",
+        (
+            f"- Intelligence evidence: {health['intelligence_evidence_rows']} "
+            f"(PIT-eligible {health['intelligence_pit_eligible_rows']}, "
+            f"production-eligible {health['intelligence_production_eligible_rows']})"
+        ),
+        (
+            f"- Intelligence bridge imports: {health['intelligence_bridge_imports']} "
+            f"{health['intelligence_bridge_status_counts']}"
+        ),
         f"- Frozen T-4 decision runs: {health['decision_runs']} {health['decision_status_counts']}",
         f"- T-4 latency median / p95: {_fmt(health['t4_latency_seconds_median'], 1)}s / {_fmt(health['t4_latency_seconds_p95'], 1)}s",
         f"- Shadow settlement rate: {_fmt(health['settlement_rate'])}",
