@@ -4,7 +4,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Iterable
+from collections.abc import Iterable
 
 from .storage import SQLiteStore
 
@@ -120,7 +120,7 @@ def _parse_datetime(value: object, *, field: str, required: bool) -> datetime | 
             raise BridgeValidationError(f"MISSING_{field.upper()}")
         return None
     try:
-        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(text)
     except ValueError as exc:
         raise BridgeValidationError(f"INVALID_{field.upper()}") from exc
     if parsed.tzinfo is None or parsed.utcoffset() is None:
