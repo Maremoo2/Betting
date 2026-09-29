@@ -125,10 +125,14 @@ stored point-in-time. No market variable is copied into the fundamental feature 
 Rikstoto `/starts` does not currently expose the lifetime starts/wins needed by the
 first empirical-win shadow model. Therefore:
 
-- Swedish trot runners can be enriched from the separate public ATG read-only feed.
-- Norwegian runners are stored as `FIELD_ONLY_RIKSTOTO` until a verified independent
-  pre-race history source is available.
-- Missing history forces `CAUTION / NOT_EXECUTABLE`; it is never imputed from odds.
+- enrichment is capability-based rather than country-hard-coded;
+- Sweden and Denmark are live-verified for complete ATG full-field history;
+- Norway, France, Switzerland and Spain currently remain field-only on the tested
+  cards;
+- any country can become eligible race-by-race if every active runner passes the
+  strict identity + complete-history contract;
+- one missing active runner makes the whole race field-only;
+- missing history forces `CAUTION / NOT_EXECUTABLE`; it is never imputed from odds.
 
 See [ATG provider](ATG_PROVIDER.md) and
 [Fundamental Shadow Champion v1.1](FUNDAMENTAL_CHAMPION_V1.md).
