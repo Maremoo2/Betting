@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - "feature/live-fundamental-ingestion-v2"
+      - "feature/international-full-field-enrichment-v1"
 
 permissions:
   contents: read
