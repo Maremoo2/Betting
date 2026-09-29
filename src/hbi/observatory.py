@@ -281,7 +281,8 @@ def build_data_health(store: SQLiteStore, report_date: date) -> dict[str, object
     atg_history = [
         row
         for row in active_rows
-        if str(row.get("data_quality") or "") == "KNOWN_HISTORY_ATG"
+        if str(row.get("enrichment_provider") or "") == "atg"
+        and bool(row.get("full_field_history_complete"))
     ]
 
     market_rows = [

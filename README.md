@@ -48,7 +48,8 @@ Implemented in this repository:
 - provider-neutral race/market ingestion contracts
 - read-only Rikstoto raceday + V/P/TV/T market collection
 - live-smoke-verified Rikstoto `/starts` canonical race fields
-- Swedish ATG market-free lifetime-history enrichment
+- capability-based international ATG market-free enrichment
+- strict FULL_FIELD_ONLY admission; Sweden and Denmark currently live-verified
 - market-free `FUNDAMENTAL_CHAMPION_V1_1` shadow probabilities
 - best-effort T-4 shadow watcher every five minutes
 - immutable shadow ticket ledger and nightly settlement/report
@@ -190,9 +191,10 @@ Every HBI workflow that writes the persistent SQLite artifact uses the shared
 old database and overwriting each other.
 
 Automatic paper decisions currently start with **Vinner**. Rikstoto `/starts` is the
-canonical live field. For Swedish trot races, HBI enriches those runners from the
-public ATG racing-info feed with market-free lifetime starts/wins before creating a
-frozen `FUNDAMENTAL_CHAMPION_V1_1` full-field p(win) distribution.
+canonical live field. HBI then probes approved read-only enrichment providers. ATG is
+currently live-verified for complete Swedish and Danish fields. A race is admitted only
+when every active runner is safely matched and has the complete market-free history
+contract before creating the frozen `FUNDAMENTAL_CHAMPION_V1_1` p(win) distribution.
 
 V1.1 is a **shadow Champion**, not a validated production model. It requires at least
 80% known history coverage before the betting layer may simulate a ticket. Norwegian

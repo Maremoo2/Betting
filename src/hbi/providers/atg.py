@@ -31,9 +31,10 @@ class AtgRaceRef:
 class AtgClient:
     """Read-only client for public ATG racing information.
 
-    The client is used only to enrich Swedish runners with market-free pre-race
-    horse/trainer/history facts. Pool odds and betting percentages are intentionally
-    ignored by the fundamental adapter.
+    The client is used only to enrich runners with market-free pre-race
+    horse/trainer/history facts when the public ATG feed covers the exact race.
+    Pool odds and betting percentages are intentionally ignored by the fundamental
+    adapter.
     """
 
     CALENDAR_API = "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0"
@@ -115,6 +116,7 @@ class AtgClient:
         self,
         calendar: AtgFetchResult,
         *,
+        country_code: str,
         track_name: str,
         race_number: int,
         expected_start: datetime | None = None,
@@ -122,13 +124,16 @@ class AtgClient:
         if not calendar.success or not isinstance(calendar.payload, dict):
             return None
         target_track = self._normalize_name(track_name)
+        target_country = country_code.upper()
         candidates: list[AtgRaceRef] = []
+        fallback: list[AtgRaceRef] = []
         for track in calendar.payload.get("tracks") or []:
-            if not isinstance(track, dict) or track.get("countryCode") != "SE":
+            if not isinstance(track, dict):
+                continue
+            if str(track.get("countryCode") or "").upper() != target_country:
                 continue
             name = str(track.get("name") or "")
-            if self._normalize_name(name) != target_track:
-                continue
+            track_matches = self._normalize_name(name) == target_track
             for race in track.get("races") or []:
                 if not isinstance(race, dict):
                     continue
@@ -138,14 +143,26 @@ class AtgClient:
                     continue
                 if number != race_number or not race.get("id"):
                     continue
-                candidates.append(
-                    AtgRaceRef(
-                        race_id=str(race["id"]),
-                        track_name=name,
-                        race_number=number,
-                        start_time=self._parse_time(race.get("startTime")),
-                    )
+                ref = AtgRaceRef(
+                    race_id=str(race["id"]),
+                    track_name=name,
+                    race_number=number,
+                    start_time=self._parse_time(race.get("startTime")),
                 )
+                fallback.append(ref)
+                if track_matches:
+                    candidates.append(ref)
+
+        if not candidates and expected_start is not None:
+            expected = expected_start.astimezone(UTC)
+            close = [
+                item
+                for item in fallback
+                if item.start_time is not None
+                and abs((item.start_time - expected).total_seconds()) <= 600
+            ]
+            if len(close) == 1:
+                candidates = close
 
         if not candidates:
             return None

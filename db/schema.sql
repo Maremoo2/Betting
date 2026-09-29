@@ -288,6 +288,10 @@ CREATE TABLE IF NOT EXISTS runner_fundamental_snapshots (
     current_year_earnings REAL,
     scratched INTEGER NOT NULL DEFAULT 0,
     data_quality TEXT NOT NULL,
+    enrichment_provider TEXT,
+    identity_match_method TEXT,
+    identity_match_confidence REAL,
+    full_field_history_complete INTEGER NOT NULL DEFAULT 0,
     raw_json TEXT,
     UNIQUE(race_id, selection_id, observed_at_utc)
 );

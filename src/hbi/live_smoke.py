@@ -19,14 +19,18 @@ MIGRATIONS = ROOT / "db" / "migrations"
 @dataclass
 class RaceProbe:
     country: str
+    discipline: str
     track: str
     race_id: str
     race_number: int
     start_time_utc: str
     starts_ok: bool
+    active_runners: int
     fundamental_rows: int
-    known_history_rows: int
+    enriched_runners: int
+    full_field_history_complete: bool
     history_coverage: float
+    identity_methods: dict[str, int]
     model_status: str | None
     shadow_eligible: bool | None
     win_market_rows: int
@@ -37,8 +41,10 @@ class RaceProbe:
 class SmokeReport:
     observed_at_utc: str
     races_discovered: int = 0
-    norway: RaceProbe | None = None
-    sweden: RaceProbe | None = None
+    countries_discovered: list[str] = field(default_factory=list)
+    probes: list[RaceProbe] = field(default_factory=list)
+    full_data_countries: list[str] = field(default_factory=list)
+    field_only_countries: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
 
 
@@ -50,17 +56,17 @@ def _store(path: str | Path) -> SQLiteStore:
     return store
 
 
-def _pick(races, country: str, now: datetime):
-    candidates = [
-        race
-        for race in races
-        if race.country_code == country
-        and race.sport_type == "T"
-        and race.start_time > now
-        and "V" in race.single_leg_products
-    ]
-    candidates.sort(key=lambda race: race.start_time)
-    return candidates[0] if candidates else None
+def _pick_by_country(races, now: datetime):
+    chosen = {}
+    for race in sorted(races, key=lambda item: item.start_time):
+        if (
+            race.start_time <= now
+            or "V" not in race.single_leg_products
+            or not race.country_code
+        ):
+            continue
+        chosen.setdefault(race.country_code, race)
+    return list(chosen.values())
 
 
 def _probe(collector: RikstotoCollector, race, now: datetime) -> RaceProbe:
@@ -76,15 +82,20 @@ def _probe(collector: RikstotoCollector, race, now: datetime) -> RaceProbe:
         observed_at=now,
     )
     rows = collector.store.latest_runner_fundamentals(race.race_id, before=now)
-    known = sum(
-        1
-        for row in rows
-        if row.get("history_total_starts") is not None
+    active_rows = [row for row in rows if not bool(row.get("scratched"))]
+    enriched = [
+        row
+        for row in active_rows
+        if bool(row.get("full_field_history_complete"))
+        and row.get("history_total_starts") is not None
         and row.get("history_total_wins") is not None
-        and not bool(row.get("scratched"))
-    )
-    active = sum(1 for row in rows if not bool(row.get("scratched")))
-    coverage = 0.0 if active == 0 else known / active
+    ]
+    coverage = 0.0 if not active_rows else len(enriched) / len(active_rows)
+    full_complete = bool(active_rows) and len(enriched) == len(active_rows)
+    methods: dict[str, int] = {}
+    for row in active_rows:
+        method = str(row.get("identity_match_method") or "NONE")
+        methods[method] = methods.get(method, 0) + 1
 
     model_status = None
     shadow_eligible = None
@@ -112,14 +123,18 @@ def _probe(collector: RikstotoCollector, race, now: datetime) -> RaceProbe:
 
     return RaceProbe(
         country=race.country_code,
+        discipline="trot" if race.sport_type == "T" else "gallop",
         track=race.raceday_name or race.track_code,
         race_id=race.race_id,
         race_number=race.race_number,
         start_time_utc=race.start_time.isoformat(),
         starts_ok=ok,
+        active_runners=len(active_rows),
         fundamental_rows=inserted,
-        known_history_rows=known,
+        enriched_runners=len(enriched),
+        full_field_history_complete=full_complete,
         history_coverage=coverage,
+        identity_methods=methods,
         model_status=model_status,
         shadow_eligible=shadow_eligible,
         win_market_rows=market_rows,
@@ -136,25 +151,30 @@ def run_live_smoke() -> SmokeReport:
         collector = RikstotoCollector(store)
         races = collector.discover(now)
         report.races_discovered = len(races)
+        report.countries_discovered = sorted(
+            {race.country_code for race in races if race.country_code}
+        )
 
-        norway = _pick(races, "NO", now)
-        sweden = _pick(races, "SE", now)
+        selected = _pick_by_country(races, now)
+        if not selected:
+            report.errors.append("NO_FUTURE_WIN_RACES")
+            return report
 
-        if norway is None:
-            report.errors.append("NO_FUTURE_NORWEGIAN_WIN_RACE")
-        else:
-            report.norway = _probe(collector, norway, now)
-            if not report.norway.starts_ok or report.norway.fundamental_rows < 2:
-                report.errors.append("NORWAY_STARTS_FAILED")
+        for race in selected:
+            probe = _probe(collector, race, now)
+            report.probes.append(probe)
+            if probe.full_field_history_complete and probe.shadow_eligible:
+                report.full_data_countries.append(probe.country)
+            else:
+                report.field_only_countries.append(probe.country)
 
-        if sweden is None:
-            report.errors.append("NO_FUTURE_SWEDISH_WIN_RACE")
-        else:
-            report.sweden = _probe(collector, sweden, now)
-            if not report.sweden.starts_ok or report.sweden.fundamental_rows < 2:
-                report.errors.append("SWEDEN_STARTS_FAILED")
-            elif report.sweden.history_coverage < 0.80:
-                report.errors.append("SWEDEN_ATG_HISTORY_COVERAGE_BELOW_80_PCT")
+        report.full_data_countries = sorted(set(report.full_data_countries))
+        report.field_only_countries = sorted(set(report.field_only_countries))
+
+        if not report.full_data_countries:
+            report.errors.append("NO_FULL_FIELD_ENRICHMENT_VERIFIED")
+        if not any(probe.starts_ok and probe.win_market_rows > 0 for probe in report.probes):
+            report.errors.append("NO_RIKSTOTO_FIELD_AND_WIN_MARKET_VERIFIED")
 
     return report
 

@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 from .domain import MarketSnapshot
+from .provider_capabilities import enrichment_candidates
 from .providers.atg import AtgClient, AtgFetchResult
 from .providers.rikstoto import FetchResult, RikstotoClient, RikstotoRace
 from .storage import SQLiteStore
@@ -241,31 +242,186 @@ class RikstotoCollector:
             return None
 
     @staticmethod
+    def _normalize_identity(value: object) -> str:
+        return "".join(ch.upper() for ch in str(value or "") if ch.isalnum())
+
+    @classmethod
     def _atg_runner_maps(
+        cls,
         race_payload: dict[str, object],
-    ) -> tuple[dict[str, dict[str, object]], dict[str, dict[str, object]]]:
+    ) -> tuple[
+        dict[str, dict[str, object]],
+        dict[tuple[str, int], dict[str, object]],
+    ]:
         by_registration: dict[str, dict[str, object]] = {}
-        by_name: dict[str, dict[str, object]] = {}
+        by_name_start: dict[tuple[str, int], dict[str, object]] = {}
+        duplicate_registration: set[str] = set()
+        duplicate_name_start: set[tuple[str, int]] = set()
         starts = race_payload.get("starts")
         if not isinstance(starts, list):
-            return by_registration, by_name
+            return by_registration, by_name_start
+
         for start in starts:
             if not isinstance(start, dict):
                 continue
             horse = start.get("horse")
             if not isinstance(horse, dict):
                 continue
-            registration = horse.get("id")
+            registration = cls._normalize_identity(horse.get("id"))
             if registration:
-                by_registration[str(registration)] = start
-            name = horse.get("name")
+                if registration in by_registration:
+                    duplicate_registration.add(registration)
+                else:
+                    by_registration[registration] = start
+
+            try:
+                start_number = int(start.get("number"))
+            except (TypeError, ValueError):
+                continue
+            name = cls._normalize_identity(horse.get("name"))
             if name:
-                normalized = "".join(
-                    ch.lower() for ch in str(name) if ch.isalnum()
-                )
-                if normalized:
-                    by_name[normalized] = start
-        return by_registration, by_name
+                key = (name, start_number)
+                if key in by_name_start:
+                    duplicate_name_start.add(key)
+                else:
+                    by_name_start[key] = start
+
+        for key in duplicate_registration:
+            by_registration.pop(key, None)
+        for key in duplicate_name_start:
+            by_name_start.pop(key, None)
+        return by_registration, by_name_start
+
+    @classmethod
+    def _match_atg_runner(
+        cls,
+        *,
+        rikstoto_start: dict[str, object],
+        by_registration: dict[str, dict[str, object]],
+        by_name_start: dict[tuple[str, int], dict[str, object]],
+    ) -> tuple[dict[str, object] | None, str | None, float | None]:
+        registration = cls._normalize_identity(
+            rikstoto_start.get("horseRegistrationNumber")
+        )
+        if registration and registration in by_registration:
+            return by_registration[registration], "REGISTRATION_ID", 1.0
+
+        try:
+            start_number = int(rikstoto_start.get("startNumber"))
+        except (TypeError, ValueError):
+            return None, None, None
+        name = cls._normalize_identity(rikstoto_start.get("horseName"))
+        if name:
+            match = by_name_start.get((name, start_number))
+            if match is not None:
+                return match, "NAME_AND_START_NUMBER", 0.98
+        return None, None, None
+
+    @classmethod
+    def _extract_atg_market_free(
+        cls,
+        start: dict[str, object] | None,
+    ) -> dict[str, object] | None:
+        if not isinstance(start, dict):
+            return None
+        horse = start.get("horse")
+        if not isinstance(horse, dict):
+            return None
+        stats = horse.get("statistics")
+        if not isinstance(stats, dict):
+            return None
+        life = stats.get("life")
+        if not isinstance(life, dict):
+            return None
+
+        try:
+            history_starts = int(life.get("starts"))
+            history_wins = cls._atg_placement(life, 1)
+            history_seconds = cls._atg_placement(life, 2)
+            history_thirds = cls._atg_placement(life, 3)
+            history_earnings = float(life.get("earnings"))
+            age = int(horse.get("age"))
+        except (TypeError, ValueError):
+            return None
+        sex_raw = horse.get("sex")
+        sex = None if sex_raw is None else str(sex_raw).strip()
+        trainer = horse.get("trainer")
+        if not isinstance(trainer, dict):
+            return None
+        trainer_name = " ".join(
+            part
+            for part in (
+                str(trainer.get("firstName") or "").strip(),
+                str(trainer.get("lastName") or "").strip(),
+            )
+            if part
+        )
+        if (
+            history_wins is None
+            or history_seconds is None
+            or history_thirds is None
+            or history_starts < 0
+            or history_wins < 0
+            or history_seconds < 0
+            or history_thirds < 0
+            or history_wins > history_starts
+            or not sex
+            or not trainer_name
+        ):
+            return None
+
+        return {
+            "horse_id": horse.get("id"),
+            "horse_name": horse.get("name"),
+            "age": age,
+            "sex": sex,
+            "trainer": trainer_name,
+            "history_starts": history_starts,
+            "history_wins": history_wins,
+            "history_seconds": history_seconds,
+            "history_thirds": history_thirds,
+            "history_earnings": history_earnings,
+            "start_number": start.get("number"),
+            "distance": start.get("distance"),
+        }
+
+    def _atg_enrichment(
+        self,
+        *,
+        race: dict[str, object],
+        race_number: int,
+        observed_at: datetime,
+    ) -> tuple[str | None, dict[str, dict[str, object]], dict[tuple[str, int], dict[str, object]]]:
+        country = str(race.get("country") or "")
+        discipline = str(race.get("discipline") or "")
+        candidates = enrichment_candidates(country=country, discipline=discipline)
+        if not any(item.provider == "atg" for item in candidates):
+            return None, {}, {}
+
+        try:
+            start_time = datetime.fromisoformat(str(race["start_time_utc"]))
+        except (TypeError, ValueError):
+            return None, {}, {}
+
+        calendar = self.atg_client.calendar_day(start_time.date())
+        self._audit_provider(calendar, observed_at, provider="atg")
+        resolved = self.atg_client.resolve_race(
+            calendar,
+            country_code=country,
+            track_name=str(race.get("track") or ""),
+            race_number=race_number,
+            expected_start=start_time,
+        )
+        if resolved is None:
+            return None, {}, {}
+
+        game = self.atg_client.race_game(resolved.race_id)
+        self._audit_provider(game, observed_at, provider="atg")
+        race_payload = self.atg_client.race_payload(game)
+        if race_payload is None:
+            return None, {}, {}
+        by_registration, by_name_start = self._atg_runner_maps(race_payload)
+        return game.url, by_registration, by_name_start
 
     def collect_fundamentals(
         self,
@@ -276,17 +432,14 @@ class RikstotoCollector:
         observed_at: datetime,
         products: list[str] | None = None,
     ) -> tuple[int, bool, str | None]:
-        """Capture the live field from Rikstoto and enrich Swedish trot runners via ATG.
+        """Capture the Rikstoto field and enrich only complete active fields.
 
-        Rikstoto /starts is the canonical live field. It is live-smoke verified and
-        contains horse identity, driver, extra distance and scratch state. The retired
-        /game/program contract is intentionally not used here.
-
-        For Swedish trot races only, public ATG pre-race racing-info is used to enrich
-        the field with market-free lifetime horse history. No pools, odds or investment
-        percentages are copied into the fundamental feature store.
+        Provider discovery is capability-based. Partial enrichment is preserved only as
+        provenance/debug evidence; model-facing history is exposed on an all-or-nothing
+        basis. Every active runner must be safely identity-matched and have the complete
+        market-free history contract before any runner in the race receives history.
         """
-        del products  # availability no longer determines the fundamental source
+        del products
 
         starts_fetch = self.client.starts(raceday_key)
         self._audit(starts_fetch, observed_at)
@@ -318,41 +471,17 @@ class RikstotoCollector:
 
         race_row = self.store.get_race(race_id)
         race = None if race_row is None else dict(race_row)
-        country = str(race.get("country") or "") if race else ""
-        track = str(race.get("track") or "") if race else ""
-        discipline = str(race.get("discipline") or "") if race else ""
         atg_source: str | None = None
         atg_by_registration: dict[str, dict[str, object]] = {}
-        atg_by_name: dict[str, dict[str, object]] = {}
+        atg_by_name_start: dict[tuple[str, int], dict[str, object]] = {}
+        if race is not None:
+            atg_source, atg_by_registration, atg_by_name_start = self._atg_enrichment(
+                race=race,
+                race_number=race_number,
+                observed_at=observed_at,
+            )
 
-        if race and country == "SE" and discipline == "trot":
-            try:
-                race_date = datetime.fromisoformat(
-                    str(race["start_time_utc"])
-                ).date()
-                expected_start = datetime.fromisoformat(str(race["start_time_utc"]))
-                calendar = self.atg_client.calendar_day(race_date)
-                self._audit_provider(calendar, observed_at, provider="atg")
-                resolved = self.atg_client.resolve_race(
-                    calendar,
-                    track_name=track,
-                    race_number=race_number,
-                    expected_start=expected_start,
-                )
-                if resolved is not None:
-                    game = self.atg_client.race_game(resolved.race_id)
-                    self._audit_provider(game, observed_at, provider="atg")
-                    race_payload = self.atg_client.race_payload(game)
-                    if race_payload is not None:
-                        atg_source = game.url
-                        atg_by_registration, atg_by_name = self._atg_runner_maps(
-                            race_payload
-                        )
-            except (TypeError, ValueError):
-                # Field capture remains valid even if enrichment metadata is malformed.
-                atg_source = None
-
-        inserted = 0
+        staged: list[dict[str, object]] = []
         for start in starts:
             value = start.get("startNumber")
             if value is None:
@@ -361,127 +490,97 @@ class RikstotoCollector:
                 start_number = int(value)
             except (TypeError, ValueError):
                 continue
-            selection_id = str(start_number)
+
             is_scratched = bool(start.get("isScratched")) or start_number in scratched
-            horse_name = str(start.get("horseName") or selection_id)
-            registration = start.get("horseRegistrationNumber")
-            driver_name = start.get("driverName")
-
-            atg_start: dict[str, object] | None = None
-            if registration is not None:
-                atg_start = atg_by_registration.get(str(registration))
-            if atg_start is None:
-                normalized = "".join(
-                    ch.lower() for ch in horse_name if ch.isalnum()
-                )
-                atg_start = atg_by_name.get(normalized)
-
-            horse: dict[str, object] = {}
-            trainer_name: str | None = None
-            history_starts: int | None = None
-            history_wins: int | None = None
-            history_seconds: int | None = None
-            history_thirds: int | None = None
-            history_earnings: float | None = None
-            age: int | None = None
-            sex: str | None = None
-
-            if isinstance(atg_start, dict):
-                raw_horse = atg_start.get("horse")
-                if isinstance(raw_horse, dict):
-                    horse = raw_horse
-                    raw_stats = horse.get("statistics")
-                    stats = raw_stats if isinstance(raw_stats, dict) else {}
-                    raw_life = stats.get("life")
-                    life = raw_life if isinstance(raw_life, dict) else {}
-                    try:
-                        history_starts = (
-                            None
-                            if life.get("starts") is None
-                            else int(life.get("starts"))
-                        )
-                    except (TypeError, ValueError):
-                        history_starts = None
-                    history_wins = self._atg_placement(life, 1)
-                    history_seconds = self._atg_placement(life, 2)
-                    history_thirds = self._atg_placement(life, 3)
-                    try:
-                        history_earnings = (
-                            None
-                            if life.get("earnings") is None
-                            else float(life.get("earnings"))
-                        )
-                    except (TypeError, ValueError):
-                        history_earnings = None
-                    try:
-                        age = None if horse.get("age") is None else int(horse.get("age"))
-                    except (TypeError, ValueError):
-                        age = None
-                    sex = None if horse.get("sex") is None else str(horse.get("sex"))
-                    raw_trainer = horse.get("trainer")
-                    if isinstance(raw_trainer, dict):
-                        trainer_name = " ".join(
-                            part
-                            for part in (
-                                str(raw_trainer.get("firstName") or "").strip(),
-                                str(raw_trainer.get("lastName") or "").strip(),
-                            )
-                            if part
-                        ) or None
-
-            data_quality = (
-                "KNOWN_HISTORY_ATG"
-                if history_starts is not None and history_wins is not None
-                else "FIELD_ONLY_RIKSTOTO"
+            atg_start, match_method, match_confidence = self._match_atg_runner(
+                rikstoto_start=start,
+                by_registration=atg_by_registration,
+                by_name_start=atg_by_name_start,
             )
-            source_uri = atg_source or starts_fetch.url
+            extracted = self._extract_atg_market_free(atg_start)
+            staged.append(
+                {
+                    "start": start,
+                    "start_number": start_number,
+                    "selection_id": str(start_number),
+                    "horse_name": str(start.get("horseName") or start_number),
+                    "registration": start.get("horseRegistrationNumber"),
+                    "driver_name": start.get("driverName"),
+                    "is_scratched": is_scratched,
+                    "atg_start": atg_start,
+                    "match_method": match_method,
+                    "match_confidence": match_confidence,
+                    "extracted": extracted,
+                }
+            )
+
+        active = [item for item in staged if not bool(item["is_scratched"])]
+        full_field_complete = bool(active) and all(
+            item["extracted"] is not None
+            and item["match_confidence"] is not None
+            and float(item["match_confidence"]) >= 0.98
+            for item in active
+        )
+
+        inserted = 0
+        for item in staged:
+            start = item["start"]
+            assert isinstance(start, dict)
+            extracted = (
+                item["extracted"]
+                if full_field_complete and not bool(item["is_scratched"])
+                else None
+            )
+            safe = extracted if isinstance(extracted, dict) else {}
+            trainer_name = safe.get("trainer")
+            source_uri = atg_source if full_field_complete and atg_source else starts_fetch.url
+            data_quality = (
+                "FULL_FIELD_HISTORY_ATG"
+                if full_field_complete and not bool(item["is_scratched"])
+                else "FIELD_ONLY_RIKSTOTO"
+                if atg_source is None
+                else "FIELD_ONLY_INCOMPLETE_ENRICHMENT"
+            )
 
             self.store.upsert_runner(
                 {
                     "race_id": race_id,
-                    "selection_id": selection_id,
-                    "horse_name": horse_name,
-                    "post_position": start_number,
-                    "driver_or_jockey": driver_name,
+                    "selection_id": item["selection_id"],
+                    "horse_name": item["horse_name"],
+                    "post_position": item["start_number"],
+                    "driver_or_jockey": item["driver_name"],
                     "trainer": trainer_name,
-                    "scratched": int(is_scratched),
+                    "scratched": int(bool(item["is_scratched"])),
                 }
             )
 
             sanitized = {
                 "rikstoto": {
-                    "startNumber": start_number,
-                    "horseName": horse_name,
-                    "horseRegistrationNumber": registration,
-                    "driverName": driver_name,
+                    "startNumber": item["start_number"],
+                    "horseName": item["horse_name"],
+                    "horseRegistrationNumber": item["registration"],
+                    "driverName": item["driver_name"],
                     "driverLicenseNumber": start.get("driverLicenseNumber"),
                     "extraDistance": start.get("extraDistance"),
-                    "isScratched": is_scratched,
+                    "isScratched": bool(item["is_scratched"]),
                     "raceNumber": start.get("raceNumber"),
                     "raceKey": start.get("raceKey"),
                 },
-                "atg_market_free": (
-                    None
-                    if not isinstance(atg_start, dict)
-                    else {
-                        "horseId": horse.get("id"),
-                        "horseName": horse.get("name"),
-                        "age": age,
-                        "sex": sex,
-                        "trainer": trainer_name,
-                        "lifeStarts": history_starts,
-                        "lifeWins": history_wins,
-                        "lifeSeconds": history_seconds,
-                        "lifeThirds": history_thirds,
-                        "lifeEarnings": history_earnings,
-                        "startNumber": atg_start.get("number"),
-                        "distance": atg_start.get("distance"),
-                    }
-                ),
+                "enrichment": {
+                    "provider": "atg" if atg_source else None,
+                    "fullFieldHistoryComplete": full_field_complete,
+                    "identityMatchMethod": item["match_method"],
+                    "identityMatchConfidence": item["match_confidence"],
+                    "marketFree": (
+                        None
+                        if not isinstance(item["extracted"], dict)
+                        else item["extracted"]
+                    ),
+                },
             }
             snapshot_id = hashlib.sha256(
                 (
-                    f"{race_id}|{selection_id}|{observed_at.isoformat()}|"
+                    f"{race_id}|{item['selection_id']}|{observed_at.isoformat()}|"
                     f"{json.dumps(sanitized, sort_keys=True, default=str)}"
                 ).encode()
             ).hexdigest()
@@ -490,32 +589,36 @@ class RikstotoCollector:
                     {
                         "snapshot_id": snapshot_id,
                         "race_id": race_id,
-                        "selection_id": selection_id,
+                        "selection_id": item["selection_id"],
                         "observed_at_utc": observed_at.isoformat(),
                         "feature_as_of_utc": observed_at.isoformat(),
                         "source_uri": source_uri,
-                        "horse_name": horse_name,
-                        "driver_or_jockey": driver_name,
+                        "horse_name": item["horse_name"],
+                        "driver_or_jockey": item["driver_name"],
                         "trainer": trainer_name,
-                        "post_position": start_number,
+                        "post_position": item["start_number"],
                         "extra_distance_m": start.get("extraDistance"),
-                        "total_earnings": history_earnings,
-                        "age": age,
-                        "sex": sex,
+                        "total_earnings": safe.get("history_earnings"),
+                        "age": safe.get("age"),
+                        "sex": safe.get("sex"),
                         "record_volt": None,
                         "record_auto": None,
-                        "history_total_starts": history_starts,
-                        "history_total_wins": history_wins,
-                        "history_total_seconds": history_seconds,
-                        "history_total_thirds": history_thirds,
-                        "history_total_earnings": history_earnings,
+                        "history_total_starts": safe.get("history_starts"),
+                        "history_total_wins": safe.get("history_wins"),
+                        "history_total_seconds": safe.get("history_seconds"),
+                        "history_total_thirds": safe.get("history_thirds"),
+                        "history_total_earnings": safe.get("history_earnings"),
                         "current_year_starts": None,
                         "current_year_wins": None,
                         "current_year_seconds": None,
                         "current_year_thirds": None,
                         "current_year_earnings": None,
-                        "scratched": int(is_scratched),
+                        "scratched": int(bool(item["is_scratched"])),
                         "data_quality": data_quality,
+                        "enrichment_provider": "atg" if atg_source else None,
+                        "identity_match_method": item["match_method"],
+                        "identity_match_confidence": item["match_confidence"],
+                        "full_field_history_complete": int(full_field_complete),
                         "raw_json": json.dumps(
                             sanitized,
                             ensure_ascii=False,
