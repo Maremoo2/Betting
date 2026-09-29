@@ -1,7 +1,6 @@
 # Scheduled Intelligence -> HBI Evidence Bridge v1
 
-The bridge connects ChatGPT pre-watch/research automation to the HBI research database
-without allowing an LLM to overwrite canonical race, market, model or betting state.
+The bridge connects ChatGPT pre-watch/research to the HBI research database without allowing an LLM to overwrite canonical race, market, model or betting state. Scheduled ChatGPT runs produce a structured evidence payload in the project conversation; an interactive authorized ChatGPT session relays that payload to the GitHub staging inbox. Scheduled runs do not attempt GitHub mutations because connector safety can block unattended writes.
 
 ## Authority boundary
 
@@ -198,3 +197,19 @@ Bad rows are recorded as rejected with a reason such as:
 - missing source URI or claim
 
 Rejected intelligence cannot modify canonical market/model/betting state.
+
+
+## Scheduled transport boundary
+
+Scheduled ChatGPT runs must not claim that they wrote directly to GitHub. When new resolvable evidence exists, the run emits:
+
+```text
+HBI_EVIDENCE_PAYLOAD_V1
+[ ...validated-shape candidate rows... ]
+```
+
+in the project conversation. The next interactive authorized ChatGPT turn may deduplicate and append that payload to GitHub Issue #18. The existing HBI workflow then imports the issue, performs canonical race/runner resolution, validates timestamps and PIT status, and records accepted/rejected rows.
+
+This is deliberately human-in-the-loop. A scheduled connector write failure is therefore no longer a bridge failure; no scheduled GitHub write is attempted. Evidence is not considered staged until the interactive relay succeeds.
+
+The transport boundary does not weaken model governance: imported rows remain `research_only=1` and `production_feature_eligible=0`.
