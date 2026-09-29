@@ -487,7 +487,15 @@ class SQLiteStore:
             "identity_match_method", "identity_match_confidence",
             "full_field_history_complete", "raw_json",
         )
-        values = [snapshot.get(column) for column in columns]
+        values = [
+            (
+                0
+                if column == "full_field_history_complete"
+                and snapshot.get(column) is None
+                else snapshot.get(column)
+            )
+            for column in columns
+        ]
         with self.connect() as connection:
             cursor = connection.execute(
                 f"INSERT OR IGNORE INTO runner_fundamental_snapshots "
