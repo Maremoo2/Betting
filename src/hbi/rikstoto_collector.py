@@ -394,13 +394,12 @@ class RikstotoCollector:
         race: dict[str, object],
         race_number: int,
         observed_at: datetime,
-    ) -> tuple[str | None, dict[str, dict[str, object]], dict[tuple[str, int], dict[str, object]]]:
+    ) -> tuple[
+        str | None,
+        dict[str, dict[str, object]],
+        dict[tuple[str, int], dict[str, object]],
+    ]:
         country = str(race.get("country") or "")
-        discipline = str(race.get("discipline") or "")
-        candidates = enrichment_candidates(country=country, discipline=discipline)
-        if not any(item.provider == "atg" for item in candidates):
-            return None, {}, {}
-
         try:
             start_time = datetime.fromisoformat(str(race["start_time_utc"]))
         except (TypeError, ValueError):
@@ -426,6 +425,219 @@ class RikstotoCollector:
         by_registration, by_name_start = self._atg_runner_maps(race_payload)
         return game.url, by_registration, by_name_start
 
+    @classmethod
+    def _pmu_runner_map(
+        cls,
+        rows: list[dict[str, object]],
+    ) -> dict[tuple[str, int], dict[str, object]]:
+        output: dict[tuple[str, int], dict[str, object]] = {}
+        duplicates: set[tuple[str, int]] = set()
+        for row in rows:
+            name = cls._normalize_identity(row.get("nom"))
+            try:
+                start_number = int(row.get("numPmu"))
+            except (TypeError, ValueError):
+                continue
+            key = (name, start_number)
+            if not name:
+                continue
+            if key in output:
+                duplicates.add(key)
+            else:
+                output[key] = row
+        for key in duplicates:
+            output.pop(key, None)
+        return output
+
+    @classmethod
+    def _match_pmu_runner(
+        cls,
+        *,
+        rikstoto_start: dict[str, object],
+        by_name_start: dict[tuple[str, int], dict[str, object]],
+    ) -> tuple[dict[str, object] | None, str | None, float | None]:
+        try:
+            start_number = int(rikstoto_start.get("startNumber"))
+        except (TypeError, ValueError):
+            return None, None, None
+        name = cls._normalize_identity(rikstoto_start.get("horseName"))
+        if not name:
+            return None, None, None
+        match = by_name_start.get((name, start_number))
+        if match is None:
+            return None, None, None
+        return match, "NAME_AND_START_NUMBER", 0.99
+
+    @staticmethod
+    def _pmu_earnings(row: dict[str, object]) -> float | None:
+        gains = row.get("gainsParticipant")
+        if not isinstance(gains, dict):
+            return None
+        value = gains.get("gainsCarriere")
+        try:
+            return None if value is None else float(value)
+        except (TypeError, ValueError):
+            return None
+
+    @classmethod
+    def _extract_pmu_market_free(
+        cls,
+        row: dict[str, object] | None,
+    ) -> dict[str, object] | None:
+        if not isinstance(row, dict):
+            return None
+        try:
+            history_starts = int(row.get("nombreCourses"))
+            history_wins = int(row.get("nombreVictoires"))
+            history_seconds = int(row.get("nombrePlacesSecond"))
+            history_thirds = int(row.get("nombrePlacesTroisieme"))
+            age = int(row.get("age"))
+        except (TypeError, ValueError):
+            return None
+        earnings = cls._pmu_earnings(row)
+        sex = str(row.get("sexe") or "").strip()
+        trainer = str(row.get("entraineur") or "").strip()
+        if (
+            earnings is None
+            or history_starts < 0
+            or history_wins < 0
+            or history_seconds < 0
+            or history_thirds < 0
+            or history_wins > history_starts
+            or history_wins + history_seconds + history_thirds > history_starts
+            or age <= 0
+            or not sex
+            or not trainer
+        ):
+            return None
+        return {
+            "horse_id": row.get("idCheval"),
+            "horse_name": row.get("nom"),
+            "age": age,
+            "sex": sex,
+            "trainer": trainer,
+            "history_starts": history_starts,
+            "history_wins": history_wins,
+            "history_seconds": history_seconds,
+            "history_thirds": history_thirds,
+            "history_earnings": earnings,
+            "start_number": row.get("numPmu"),
+        }
+
+    def _pmu_enrichment(
+        self,
+        *,
+        race: dict[str, object],
+        race_number: int,
+        observed_at: datetime,
+    ) -> tuple[str | None, dict[tuple[str, int], dict[str, object]]]:
+        try:
+            start_time = datetime.fromisoformat(str(race["start_time_utc"]))
+        except (TypeError, ValueError):
+            return None, {}
+
+        programme = self.pmu_client.programme(start_time.date())
+        self._audit_provider(programme, observed_at, provider="pmu")
+        resolved = self.pmu_client.resolve_race(
+            programme,
+            country_code=str(race.get("country") or ""),
+            track_name=str(race.get("track") or ""),
+            race_number=race_number,
+        )
+        if resolved is None:
+            return None, {}
+
+        participants = self.pmu_client.participants(
+            start_time.date(),
+            resolved.reunion_number,
+            resolved.race_number,
+        )
+        self._audit_provider(participants, observed_at, provider="pmu")
+        rows = self.pmu_client.participant_rows(participants)
+        if not rows:
+            return None, {}
+        return participants.url, self._pmu_runner_map(rows)
+
+    def _try_provider(
+        self,
+        *,
+        provider: str,
+        race: dict[str, object],
+        race_number: int,
+        observed_at: datetime,
+        active_starts: list[dict[str, object]],
+    ) -> tuple[
+        bool,
+        str | None,
+        dict[str, tuple[dict[str, object], str, float]],
+        dict[str, dict[str, object]],
+    ]:
+        matched: dict[str, tuple[dict[str, object], str, float]] = {}
+        diagnostics: dict[str, dict[str, object]] = {}
+
+        if provider == "atg":
+            source, by_registration, by_name_start = self._atg_enrichment(
+                race=race,
+                race_number=race_number,
+                observed_at=observed_at,
+            )
+            if source is None:
+                return False, None, matched, diagnostics
+            for start in active_starts:
+                selection = str(start.get("startNumber"))
+                raw, method, confidence = self._match_atg_runner(
+                    rikstoto_start=start,
+                    by_registration=by_registration,
+                    by_name_start=by_name_start,
+                )
+                extracted = self._extract_atg_market_free(raw)
+                diagnostics[selection] = {
+                    "matched": raw is not None,
+                    "method": method,
+                    "confidence": confidence,
+                    "completeContract": extracted is not None,
+                }
+                if (
+                    extracted is not None
+                    and method is not None
+                    and confidence is not None
+                    and confidence >= 0.98
+                ):
+                    matched[selection] = (extracted, method, confidence)
+            return len(matched) == len(active_starts), source, matched, diagnostics
+
+        if provider == "pmu":
+            source, by_name_start = self._pmu_enrichment(
+                race=race,
+                race_number=race_number,
+                observed_at=observed_at,
+            )
+            if source is None:
+                return False, None, matched, diagnostics
+            for start in active_starts:
+                selection = str(start.get("startNumber"))
+                raw, method, confidence = self._match_pmu_runner(
+                    rikstoto_start=start,
+                    by_name_start=by_name_start,
+                )
+                extracted = self._extract_pmu_market_free(raw)
+                diagnostics[selection] = {
+                    "matched": raw is not None,
+                    "method": method,
+                    "confidence": confidence,
+                    "completeContract": extracted is not None,
+                }
+                if (
+                    extracted is not None
+                    and method is not None
+                    and confidence is not None
+                    and confidence >= 0.98
+                ):
+                    matched[selection] = (extracted, method, confidence)
+            return len(matched) == len(active_starts), source, matched, diagnostics
+
+        return False, None, matched, diagnostics
+
     def collect_fundamentals(
         self,
         *,
@@ -435,13 +647,7 @@ class RikstotoCollector:
         observed_at: datetime,
         products: list[str] | None = None,
     ) -> tuple[int, bool, str | None]:
-        """Capture the Rikstoto field and enrich only complete active fields.
-
-        Provider discovery is capability-based. Partial enrichment is preserved only as
-        provenance/debug evidence; model-facing history is exposed on an all-or-nothing
-        basis. Every active runner must be safely identity-matched and have the complete
-        market-free history contract before any runner in the race receives history.
-        """
+        """Capture Rikstoto field and expose only complete one-provider enrichment."""
         del products
 
         starts_fetch = self.client.starts(raceday_key)
@@ -469,38 +675,20 @@ class RikstotoCollector:
             race_number=race_number,
             observed_at=observed_at,
             source_uri=starts_fetch.url,
-            payload=starts_fetch.payload if isinstance(starts_fetch.payload, dict) else {},
+            payload=(
+                starts_fetch.payload
+                if isinstance(starts_fetch.payload, dict)
+                else {}
+            ),
         )
-
-        race_row = self.store.get_race(race_id)
-        race = None if race_row is None else dict(race_row)
-        atg_source: str | None = None
-        atg_by_registration: dict[str, dict[str, object]] = {}
-        atg_by_name_start: dict[tuple[str, int], dict[str, object]] = {}
-        if race is not None:
-            atg_source, atg_by_registration, atg_by_name_start = self._atg_enrichment(
-                race=race,
-                race_number=race_number,
-                observed_at=observed_at,
-            )
 
         staged: list[dict[str, object]] = []
         for start in starts:
-            value = start.get("startNumber")
-            if value is None:
-                continue
             try:
-                start_number = int(value)
+                start_number = int(start.get("startNumber"))
             except (TypeError, ValueError):
                 continue
-
             is_scratched = bool(start.get("isScratched")) or start_number in scratched
-            atg_start, match_method, match_confidence = self._match_atg_runner(
-                rikstoto_start=start,
-                by_registration=atg_by_registration,
-                by_name_start=atg_by_name_start,
-            )
-            extracted = self._extract_atg_market_free(atg_start)
             staged.append(
                 {
                     "start": start,
@@ -510,45 +698,86 @@ class RikstotoCollector:
                     "registration": start.get("horseRegistrationNumber"),
                     "driver_name": start.get("driverName"),
                     "is_scratched": is_scratched,
-                    "atg_start": atg_start,
-                    "match_method": match_method,
-                    "match_confidence": match_confidence,
-                    "extracted": extracted,
                 }
             )
 
-        active = [item for item in staged if not bool(item["is_scratched"])]
-        full_field_complete = bool(active) and all(
-            item["extracted"] is not None
-            and item["match_confidence"] is not None
-            and float(item["match_confidence"]) >= 0.98
-            for item in active
-        )
+        active_starts = [
+            item["start"]
+            for item in staged
+            if not bool(item["is_scratched"]) and isinstance(item["start"], dict)
+        ]
+        race_row = self.store.get_race(race_id)
+        race = None if race_row is None else dict(race_row)
+        selected_provider: str | None = None
+        selected_source: str | None = None
+        selected_matches: dict[
+            str,
+            tuple[dict[str, object], str, float],
+        ] = {}
+        attempts: dict[str, dict[str, dict[str, object]]] = {}
 
+        if race is not None and active_starts:
+            candidates = enrichment_candidates(
+                country=str(race.get("country") or ""),
+                discipline=str(race.get("discipline") or ""),
+            )
+            for candidate in candidates:
+                complete, source, matches, diagnostics = self._try_provider(
+                    provider=candidate.provider,
+                    race=race,
+                    race_number=race_number,
+                    observed_at=observed_at,
+                    active_starts=active_starts,
+                )
+                attempts[candidate.provider] = diagnostics
+                if complete:
+                    selected_provider = candidate.provider
+                    selected_source = source
+                    selected_matches = matches
+                    break
+
+        full_field_complete = (
+            bool(active_starts)
+            and selected_provider is not None
+            and len(selected_matches) == len(active_starts)
+        )
         inserted = 0
+
         for item in staged:
             start = item["start"]
             assert isinstance(start, dict)
+            selection = str(item["selection_id"])
+            match = selected_matches.get(selection)
             extracted = (
-                item["extracted"]
-                if full_field_complete and not bool(item["is_scratched"])
+                match[0]
+                if full_field_complete
+                and match is not None
+                and not bool(item["is_scratched"])
                 else None
             )
             safe = extracted if isinstance(extracted, dict) else {}
+            match_method = None if match is None else match[1]
+            match_confidence = None if match is None else match[2]
             trainer_name = safe.get("trainer")
-            source_uri = atg_source if full_field_complete and atg_source else starts_fetch.url
-            data_quality = (
-                "FULL_FIELD_HISTORY_ATG"
-                if full_field_complete and not bool(item["is_scratched"])
-                else "FIELD_ONLY_RIKSTOTO"
-                if atg_source is None
-                else "FIELD_ONLY_INCOMPLETE_ENRICHMENT"
+            source_uri = (
+                selected_source
+                if full_field_complete and selected_source
+                else starts_fetch.url
             )
+
+            if bool(item["is_scratched"]):
+                data_quality = "SCRATCHED"
+            elif full_field_complete and selected_provider is not None:
+                data_quality = f"FULL_FIELD_HISTORY_{selected_provider.upper()}"
+            elif attempts:
+                data_quality = "FIELD_ONLY_INCOMPLETE_ENRICHMENT"
+            else:
+                data_quality = "FIELD_ONLY_RIKSTOTO"
 
             self.store.upsert_runner(
                 {
                     "race_id": race_id,
-                    "selection_id": item["selection_id"],
+                    "selection_id": selection,
                     "horse_name": item["horse_name"],
                     "post_position": item["start_number"],
                     "driver_or_jockey": item["driver_name"],
@@ -570,20 +799,20 @@ class RikstotoCollector:
                     "raceKey": start.get("raceKey"),
                 },
                 "enrichment": {
-                    "provider": "atg" if atg_source else None,
+                    "provider": selected_provider,
                     "fullFieldHistoryComplete": full_field_complete,
-                    "identityMatchMethod": item["match_method"],
-                    "identityMatchConfidence": item["match_confidence"],
-                    "marketFree": (
-                        None
-                        if not isinstance(item["extracted"], dict)
-                        else item["extracted"]
-                    ),
+                    "identityMatchMethod": match_method,
+                    "identityMatchConfidence": match_confidence,
+                    "marketFree": extracted,
+                    "attempts": {
+                        provider: diagnostics.get(selection)
+                        for provider, diagnostics in attempts.items()
+                    },
                 },
             }
             snapshot_id = hashlib.sha256(
                 (
-                    f"{race_id}|{item['selection_id']}|{observed_at.isoformat()}|"
+                    f"{race_id}|{selection}|{observed_at.isoformat()}|"
                     f"{json.dumps(sanitized, sort_keys=True, default=str)}"
                 ).encode()
             ).hexdigest()
@@ -592,7 +821,7 @@ class RikstotoCollector:
                     {
                         "snapshot_id": snapshot_id,
                         "race_id": race_id,
-                        "selection_id": item["selection_id"],
+                        "selection_id": selection,
                         "observed_at_utc": observed_at.isoformat(),
                         "feature_as_of_utc": observed_at.isoformat(),
                         "source_uri": source_uri,
@@ -618,9 +847,9 @@ class RikstotoCollector:
                         "current_year_earnings": None,
                         "scratched": int(bool(item["is_scratched"])),
                         "data_quality": data_quality,
-                        "enrichment_provider": "atg" if atg_source else None,
-                        "identity_match_method": item["match_method"],
-                        "identity_match_confidence": item["match_confidence"],
+                        "enrichment_provider": selected_provider,
+                        "identity_match_method": match_method,
+                        "identity_match_confidence": match_confidence,
                         "full_field_history_complete": int(full_field_complete),
                         "raw_json": json.dumps(
                             sanitized,
