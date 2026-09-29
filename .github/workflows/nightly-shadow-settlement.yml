@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
   actions: read
+  issues: read
 
 concurrency:
   group: hbi-state-writer
@@ -51,6 +52,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HBI_DB_PATH: data/hbi.sqlite
         run: python -m hbi.state_artifact
+
+      - name: Import scheduled intelligence from GitHub inbox
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          hbi --db data/hbi.sqlite ingest-github-evidence-inbox \
+            --repository "${{ github.repository }}" \
+            --issue-number 18
 
       - name: Optional scheduled-intelligence evidence import
         if: steps.gate.outputs.should_run == 'true'
