@@ -8,6 +8,15 @@ import urllib.request
 from dataclasses import dataclass
 from datetime import date
 from typing import Any
+import unicodedata
+
+
+@dataclass(frozen=True)
+class PmuRaceRef:
+    reunion_number: int
+    race_number: int
+    track_name: str
+    country_code: str | None
 
 
 @dataclass(frozen=True)
@@ -112,6 +121,84 @@ class PmuClient:
         if not isinstance(values, list):
             return []
         return [item for item in values if isinstance(item, dict)]
+
+    @staticmethod
+    def _normalize_name(value: object) -> str:
+        raw = unicodedata.normalize("NFKD", str(value or ""))
+        ascii_value = "".join(
+            ch for ch in raw if not unicodedata.combining(ch)
+        )
+        return "".join(
+            ch.lower() for ch in ascii_value if ch.isalnum()
+        )
+
+    @staticmethod
+    def _track_name(reunion: dict[str, object]) -> str:
+        value = reunion.get("hippodrome")
+        if isinstance(value, dict):
+            return str(
+                value.get("libelleCourt")
+                or value.get("libelleLong")
+                or value.get("libelle")
+                or ""
+            )
+        return str(value or reunion.get("libelle") or "")
+
+    @staticmethod
+    def _country_code(reunion: dict[str, object]) -> str | None:
+        value = reunion.get("pays")
+        if isinstance(value, dict):
+            raw = value.get("code") or value.get("codeIso") or value.get("libelleCourt")
+        else:
+            raw = value
+        if raw is None:
+            return None
+        return str(raw).upper()
+
+    def resolve_race(
+        self,
+        programme: PmuFetchResult,
+        *,
+        country_code: str,
+        track_name: str,
+        race_number: int,
+    ) -> PmuRaceRef | None:
+        target_track = self._normalize_name(track_name)
+        target_country = country_code.upper()
+        candidates: list[PmuRaceRef] = []
+
+        for reunion in self.reunions(programme):
+            track = self._track_name(reunion)
+            if self._normalize_name(track) != target_track:
+                continue
+            country = self._country_code(reunion)
+            if country is not None and country != target_country:
+                continue
+            try:
+                reunion_number = int(reunion.get("numOfficiel"))
+            except (TypeError, ValueError):
+                continue
+            courses = reunion.get("courses")
+            if not isinstance(courses, list):
+                continue
+            for course in courses:
+                if not isinstance(course, dict):
+                    continue
+                try:
+                    number = int(course.get("numOrdre"))
+                except (TypeError, ValueError):
+                    continue
+                if number == race_number:
+                    candidates.append(
+                        PmuRaceRef(
+                            reunion_number=reunion_number,
+                            race_number=number,
+                            track_name=track,
+                            country_code=country,
+                        )
+                    )
+
+        return candidates[0] if len(candidates) == 1 else None
 
     @staticmethod
     def participant_rows(fetch: PmuFetchResult) -> list[dict[str, object]]:
