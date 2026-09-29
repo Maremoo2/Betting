@@ -52,7 +52,27 @@ class SQLiteStore:
                 migration_id = path.name
                 if migration_id in known:
                     continue
-                connection.executescript(path.read_text(encoding="utf-8"))
+                if migration_id == "0006_international_full_field_enrichment.sql":
+                    existing_columns = {
+                        row[1]
+                        for row in connection.execute(
+                            "PRAGMA table_info(runner_fundamental_snapshots)"
+                        )
+                    }
+                    additions = {
+                        "enrichment_provider": "TEXT",
+                        "identity_match_method": "TEXT",
+                        "identity_match_confidence": "REAL",
+                        "full_field_history_complete": "INTEGER NOT NULL DEFAULT 0",
+                    }
+                    for column, declaration in additions.items():
+                        if column not in existing_columns:
+                            connection.execute(
+                                f"ALTER TABLE runner_fundamental_snapshots "
+                                f"ADD COLUMN {column} {declaration}"
+                            )
+                else:
+                    connection.executescript(path.read_text(encoding="utf-8"))
                 connection.execute(
                     "INSERT INTO schema_migrations (migration_id,applied_at_utc) "
                     "VALUES (?,?)",
