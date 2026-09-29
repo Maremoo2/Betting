@@ -5,8 +5,10 @@ from datetime import datetime
 from pathlib import Path
 
 from .export import export_database_csv, export_database_json
+from .intelligence_bridge import ingest_intelligence_rows
 from .json_provider import load_market_snapshots, load_race_cards, load_results
 from .pipeline import HBIPipeline
+from .sheets_inbox import GoogleSheetsEvidenceInbox
 from .sheets_mirror import GoogleSheetsMirror
 from .storage import SQLiteStore
 
@@ -69,6 +71,27 @@ def cmd_export(args: argparse.Namespace) -> None:
         print(f"exported database to {args.output}")
 
 
+def cmd_ingest_evidence_inbox(args: argparse.Namespace) -> None:
+    store = _store(args.db, args.schema)
+    inbox = GoogleSheetsEvidenceInbox(
+        spreadsheet_id=args.spreadsheet_id,
+        credentials_path=args.credentials,
+        worksheet_name=args.worksheet,
+    )
+    summary = ingest_intelligence_rows(
+        store,
+        inbox.read_rows(),
+        source_sheet=args.worksheet,
+    )
+    store.checkpoint()
+    print(
+        "intelligence inbox "
+        f"seen={summary.seen} accepted={summary.accepted} "
+        f"rejected={summary.rejected} duplicates={summary.duplicates} "
+        f"pit_eligible={summary.pit_eligible}"
+    )
+
+
 def cmd_sync_sheets(args: argparse.Namespace) -> None:
     store = _store(args.db, args.schema)
     mirror = GoogleSheetsMirror(
@@ -106,6 +129,12 @@ def build_parser() -> argparse.ArgumentParser:
     export.add_argument("output")
     export.add_argument("--format", choices=("csv", "json"), default="csv")
     export.set_defaults(func=cmd_export)
+
+    evidence = sub.add_parser("ingest-evidence-inbox")
+    evidence.add_argument("--spreadsheet-id", required=True)
+    evidence.add_argument("--credentials", required=True)
+    evidence.add_argument("--worksheet", default="HBI_EVIDENCE_INBOX")
+    evidence.set_defaults(func=cmd_ingest_evidence_inbox)
 
     sheets = sub.add_parser("sync-sheets")
     sheets.add_argument("--spreadsheet-id", required=True)
