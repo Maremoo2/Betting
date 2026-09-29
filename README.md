@@ -237,3 +237,5 @@ The canonical machine-readable status is
 
 A new Challenger never inherits the sample that was used to discover it. Each
 Challenger receives its own prospective forward-validation clock.
+
+International ingestion: see [FULL_FIELD_ONLY provider capabilities](docs/INTERNATIONAL_FUNDAMENTALS.md).

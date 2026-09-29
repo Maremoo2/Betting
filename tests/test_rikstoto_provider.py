@@ -177,11 +177,13 @@ class FakeAtg(AtgClient):
                 "tracks": [
                     {
                         "countryCode": "SE",
+                        "sport": "trot",
                         "name": "Färjestad",
                         "races": [
                             {
                                 "id": "2026-09-27_22_1",
                                 "number": 1,
+                                "status": "upcoming",
                                 "startTime": "2026-09-27T18:00:00+00:00",
                             }
                         ],
@@ -199,6 +201,11 @@ class FakeAtg(AtgClient):
             payload={
                 "races": [
                     {
+                        "id": race_id,
+                        "sport": "trot",
+                        "status": "upcoming",
+                        "startTime": "2026-09-27T18:00:00+00:00",
+                        "track": {"countryCode": "SE"},
                         "starts": [
                             {
                                 "number": 1,
@@ -214,6 +221,7 @@ class FakeAtg(AtgClient):
                                         "lastName": "A",
                                     },
                                     "statistics": {
+                                        "years": {"2026": {"starts": 0, "earnings": 0}},
                                         "life": {
                                             "starts": 20,
                                             "earnings": 500000,
@@ -236,6 +244,7 @@ class FakeAtg(AtgClient):
                                         "lastName": "B",
                                     },
                                     "statistics": {
+                                        "years": {"2026": {"starts": 0, "earnings": 0}},
                                         "life": {
                                             "starts": 30,
                                             "earnings": 250000,
@@ -254,7 +263,8 @@ class FakeAtg(AtgClient):
 def test_rikstoto_raceday_parser_and_market_collection(tmp_path):
     store = SQLiteStore(tmp_path / "hbi.sqlite")
     store.initialize(SCHEMA)
-    collector = RikstotoCollector(store, FakeRikstoto())
+    collector = RikstotoCollector(store, FakeRikstoto(), FakeAtg(),
+                                  clock=lambda: datetime(2026, 9, 27, 17, 56, tzinfo=UTC))
 
     races = collector.discover(datetime(2026, 9, 27, 17, 0, tzinfo=UTC))
     assert len(races) == 1
@@ -282,7 +292,8 @@ def test_naive_rikstoto_timestamps_are_interpreted_as_oslo():
 def test_norwegian_starts_populate_field_without_fake_history(tmp_path):
     store = SQLiteStore(tmp_path / "hbi.sqlite")
     store.initialize(SCHEMA)
-    collector = RikstotoCollector(store, FakeRikstoto())
+    collector = RikstotoCollector(store, FakeRikstoto(), FakeAtg(),
+                                  clock=lambda: datetime(2026, 9, 27, 17, 56, tzinfo=UTC))
     race = collector.discover(datetime(2026, 9, 27, 17, 0, tzinfo=UTC))[0]
     observed = datetime(2026, 9, 27, 17, 56, tzinfo=UTC)
 
@@ -311,7 +322,8 @@ def test_swedish_starts_are_enriched_with_market_free_atg_history(tmp_path):
         track="Färjestad",
         raceday_key="S1_NR_2026-09-27",
     )
-    collector = RikstotoCollector(store, rikstoto, FakeAtg())
+    collector = RikstotoCollector(store, rikstoto, FakeAtg(),
+                                  clock=lambda: datetime(2026, 9, 27, 17, 56, tzinfo=UTC))
     race = collector.discover(datetime(2026, 9, 27, 17, 0, tzinfo=UTC))[0]
     observed = datetime(2026, 9, 27, 17, 56, tzinfo=UTC)
 
@@ -341,7 +353,8 @@ def test_swedish_starts_are_enriched_with_market_free_atg_history(tmp_path):
 def test_legacy_pool_endpoints_are_disabled_by_default(tmp_path):
     store = SQLiteStore(tmp_path / "hbi.sqlite")
     store.initialize(SCHEMA)
-    collector = RikstotoCollector(store, FakeRikstoto())
+    collector = RikstotoCollector(store, FakeRikstoto(), FakeAtg(),
+                                  clock=lambda: datetime(2026, 9, 27, 17, 56, tzinfo=UTC))
     inserted, failures = collector.collect_pool_context(
         raceday_key="BJ_NR_2026-09-27",
         products=["V75"],

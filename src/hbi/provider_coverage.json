@@ -1,0 +1,130 @@
+{
+  "contract": "FULL_FIELD_ONLY_V1",
+  "combinations": [
+    {
+      "provider": "atg",
+      "country": "SE",
+      "discipline": "trot",
+      "status": "VERIFIED",
+      "evidence": "docs/evidence/international-live-smoke-2026-09-29.json"
+    },
+    {
+      "provider": "atg",
+      "country": "DK",
+      "discipline": "trot",
+      "status": "VERIFIED",
+      "evidence": "docs/evidence/international-live-smoke-2026-09-29.json"
+    },
+    {
+      "provider": "atg",
+      "country": "NO",
+      "discipline": "trot",
+      "status": "VERIFIED",
+      "evidence": "docs/evidence/international-live-smoke-2026-09-29.json"
+    },
+    {
+      "provider": "atg",
+      "country": "FR",
+      "discipline": "trot",
+      "status": "VERIFIED",
+      "reason": "Requires full-field LeTROT career-count corroboration on every fetch",
+      "evidence": "docs/evidence/international-live-smoke-2026-09-29.json"
+    },
+    {
+      "provider": "letrot",
+      "country": "FR",
+      "discipline": "trot",
+      "status": "CORROBORATION_ONLY",
+      "reason": "Public career counts available; no standalone seconds/thirds schema",
+      "evidence": "docs/evidence/provider-research-2026-09-29.json"
+    },
+    {
+      "provider": "france_galop",
+      "country": "FR",
+      "discipline": "gallop",
+      "status": "BLOCKED",
+      "reason": "Public field available; horse history redirects to sign-in",
+      "evidence": "docs/evidence/provider-research-2026-09-29.json"
+    },
+    {
+      "provider": "atg",
+      "country": "GB",
+      "discipline": "gallop",
+      "status": "UNVERIFIED",
+      "reason": "No live-verified complete Rikstoto + ATG field in this release",
+      "evidence": "docs/evidence/provider-research-2026-09-29.json"
+    },
+    {
+      "provider": "atg",
+      "country": "FI",
+      "discipline": "trot",
+      "status": "UNVERIFIED",
+      "reason": "No live-verified complete Rikstoto + ATG field in this release",
+      "evidence": "docs/evidence/provider-research-2026-09-29.json"
+    },
+    {
+      "provider": "atg",
+      "country": "ZA",
+      "discipline": "gallop",
+      "status": "UNVERIFIED",
+      "reason": "No live-verified complete Rikstoto + ATG field in this release",
+      "evidence": "docs/evidence/provider-research-2026-09-29.json"
+    },
+    {
+      "provider": "atg",
+      "country": "NO",
+      "discipline": "gallop",
+      "status": "UNVERIFIED",
+      "reason": "No live-verified complete Rikstoto + ATG field in this release",
+      "evidence": "docs/evidence/provider-research-2026-09-29.json"
+    },
+    {
+      "provider": "atg",
+      "country": "SE",
+      "discipline": "gallop",
+      "status": "UNVERIFIED",
+      "reason": "No live-verified complete Rikstoto + ATG field in this release",
+      "evidence": "docs/evidence/provider-research-2026-09-29.json"
+    },
+    {
+      "provider": "atg",
+      "country": "CH",
+      "discipline": "trot",
+      "status": "UNVERIFIED",
+      "reason": "No usable matched future race verified",
+      "evidence": "docs/evidence/provider-research-2026-09-29.json"
+    },
+    {
+      "provider": "atg",
+      "country": "ES",
+      "discipline": "gallop",
+      "status": "UNVERIFIED",
+      "reason": "No usable matched future race verified",
+      "evidence": "docs/evidence/provider-research-2026-09-29.json"
+    },
+    {
+      "provider": "atg",
+      "country": "HK",
+      "discipline": "gallop",
+      "status": "UNVERIFIED",
+      "reason": "No usable matched future race verified",
+      "evidence": "docs/evidence/provider-research-2026-09-29.json"
+    },
+    {
+      "provider": "atg",
+      "country": "US",
+      "discipline": "trot",
+      "status": "UNVERIFIED",
+      "reason": "No usable matched future race verified",
+      "evidence": "docs/evidence/provider-research-2026-09-29.json"
+    },
+    {
+      "provider": "atg",
+      "country": "CA",
+      "discipline": "gallop",
+      "status": "UNVERIFIED",
+      "reason": "No usable matched future race verified",
+      "evidence": "docs/evidence/provider-research-2026-09-29.json"
+    }
+  ]
+}

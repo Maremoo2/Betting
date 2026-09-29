@@ -1,0 +1,1955 @@
+{
+  "observed_at_utc": "2026-09-29T15:35:32.533991+00:00",
+  "races_discovered": 222,
+  "probes": [
+    {
+      "contract": "FULL_FIELD_ONLY_V1",
+      "provider": "atg",
+      "country": "FR",
+      "discipline": "trot",
+      "provider_race_id": "2026-09-29_63_4",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-29_63_4",
+      "observed_at_utc": "2026-09-29T15:35:37.300982+00:00",
+      "source_published_at_utc": null,
+      "timestamp_basis": "FETCH_COMPLETED",
+      "race_start_utc": "2026-09-29T15:49:00+00:00",
+      "runners": [
+        {
+          "selection_id": "2",
+          "horse_name": "Handsome Boy",
+          "rikstoto_registration": "TMP-F4-20260929-04-02",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "3",
+          "horse_name": "Kaya Dream",
+          "rikstoto_registration": "TMP-F4-20260929-04-03",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "4",
+          "horse_name": "Falto Des Landiers",
+          "rikstoto_registration": "TMP-F4-20260929-04-04",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "5",
+          "horse_name": "Icare Williams",
+          "rikstoto_registration": "TMP-F4-20260929-04-05",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "6",
+          "horse_name": "Imagine D'atout",
+          "rikstoto_registration": "TMP-F4-20260929-04-06",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "7",
+          "horse_name": "Igo Clea",
+          "rikstoto_registration": "TMP-F4-20260929-04-07",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "8",
+          "horse_name": "Imperial Coglais",
+          "rikstoto_registration": "TMP-F4-20260929-04-08",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "9",
+          "horse_name": "Ivanof",
+          "rikstoto_registration": "TMP-F4-20260929-04-09",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "10",
+          "horse_name": "Ikuro Jiel",
+          "rikstoto_registration": "TMP-F4-20260929-04-10",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "11",
+          "horse_name": "Hold Up Des Ventes",
+          "rikstoto_registration": "TMP-F4-20260929-04-11",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "12",
+          "horse_name": "Hollywood Du Bois",
+          "rikstoto_registration": "TMP-F4-20260929-04-12",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "13",
+          "horse_name": "Jupiter De Play",
+          "rikstoto_registration": "TMP-F4-20260929-04-13",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "14",
+          "horse_name": "Jakartas Des Pres",
+          "rikstoto_registration": "TMP-F4-20260929-04-14",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        }
+      ],
+      "probe_only": false,
+      "reasons": [
+        "PROVIDER_RACE_IDENTITY_OR_TIME"
+      ],
+      "active_selections": [
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "passed": false,
+      "matched_complete_runners": 13,
+      "active_runners": 13,
+      "collection_started_at_utc": "2026-09-29T15:35:36.822927+00:00",
+      "race_id": "RIKSTOTO:F4_NR_2026-09-29:4",
+      "track": "Paris-Vincennes",
+      "registry_status": "VERIFIED",
+      "shadow_eligible": false
+    },
+    {
+      "contract": "FULL_FIELD_ONLY_V1",
+      "provider": "atg",
+      "country": "FR",
+      "discipline": "gallop",
+      "provider_race_id": null,
+      "source_uri": null,
+      "observed_at_utc": "2026-09-29T15:35:38.060280+00:00",
+      "source_published_at_utc": null,
+      "timestamp_basis": "FETCH_COMPLETED",
+      "race_start_utc": "2026-09-29T16:00:00+00:00",
+      "runners": [
+        {
+          "selection_id": "1",
+          "horse_name": "Rouge Perriers (FR)",
+          "rikstoto_registration": "TMP-F1-20260929-08-01",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "2",
+          "horse_name": "Mirabilia (FR)",
+          "rikstoto_registration": "TMP-F1-20260929-08-02",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "3",
+          "horse_name": "Akmanovkha (FR)",
+          "rikstoto_registration": "TMP-F1-20260929-08-03",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "4",
+          "horse_name": "Seven Blues (FR)",
+          "rikstoto_registration": "TMP-F1-20260929-08-04",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "5",
+          "horse_name": "Miss Gatsby (FR)",
+          "rikstoto_registration": "TMP-F1-20260929-08-05",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "7",
+          "horse_name": "Sky Nova (IE)",
+          "rikstoto_registration": "TMP-F1-20260929-08-07",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "8",
+          "horse_name": "Societyqueen (FR)",
+          "rikstoto_registration": "TMP-F1-20260929-08-08",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "9",
+          "horse_name": "Rocking Roxanne (GB)",
+          "rikstoto_registration": "TMP-F1-20260929-08-09",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "10",
+          "horse_name": "Egeria (IE)",
+          "rikstoto_registration": "TMP-F1-20260929-08-10",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        }
+      ],
+      "probe_only": true,
+      "reasons": [
+        "NO_PROVIDER_RACE",
+        "ACTIVE_FIELD_MISMATCH",
+        "INCOMPLETE_RUNNER_HISTORY_OR_IDENTITY"
+      ],
+      "active_selections": [
+        "1",
+        "10",
+        "2",
+        "3",
+        "4",
+        "5",
+        "7",
+        "8",
+        "9"
+      ],
+      "passed": false,
+      "matched_complete_runners": 0,
+      "active_runners": 9,
+      "collection_started_at_utc": "2026-09-29T15:35:37.656576+00:00",
+      "race_id": "RIKSTOTO:F1_NR_2026-09-29:8",
+      "track": "Chantilly",
+      "registry_status": "UNVERIFIED",
+      "shadow_eligible": false
+    },
+    {
+      "contract": "FULL_FIELD_ONLY_V1",
+      "provider": "atg",
+      "country": "NO",
+      "discipline": "trot",
+      "provider_race_id": "2026-09-29_78_1",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-29_78_1",
+      "observed_at_utc": "2026-09-29T15:35:38.742213+00:00",
+      "source_published_at_utc": null,
+      "timestamp_basis": "FETCH_COMPLETED",
+      "race_start_utc": "2026-09-29T17:00:00+00:00",
+      "runners": [
+        {
+          "selection_id": "1",
+          "horse_name": "Fiores Big Dream",
+          "rikstoto_registration": "578001020235315",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "2",
+          "horse_name": "Goes Ahead",
+          "rikstoto_registration": "578001020235035",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "3",
+          "horse_name": "Batoutofhell",
+          "rikstoto_registration": "578001020235269",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "4",
+          "horse_name": "Karen Roe",
+          "rikstoto_registration": "578001020235302",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "5",
+          "horse_name": "Diablo Hill",
+          "rikstoto_registration": "578001020225019",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "6",
+          "horse_name": "Readly's R.T.",
+          "rikstoto_registration": "578001020235271",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "7",
+          "horse_name": "Crusher",
+          "rikstoto_registration": "578001020235151",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "8",
+          "horse_name": "Re Sonans (S)",
+          "rikstoto_registration": "75200211S231987",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "9",
+          "horse_name": "Id Querbella",
+          "rikstoto_registration": "578001020235054",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        }
+      ],
+      "probe_only": false,
+      "reasons": [
+        "INCOMPLETE_RUNNER_HISTORY_OR_IDENTITY"
+      ],
+      "active_selections": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "passed": false,
+      "matched_complete_runners": 8,
+      "active_runners": 9,
+      "collection_started_at_utc": "2026-09-29T15:35:38.298644+00:00",
+      "race_id": "RIKSTOTO:BJ_NR_2026-09-29:1",
+      "track": "Bjerke",
+      "registry_status": "VERIFIED",
+      "shadow_eligible": false
+    },
+    {
+      "contract": "FULL_FIELD_ONLY_V1",
+      "provider": "atg",
+      "country": "SE",
+      "discipline": "trot",
+      "provider_race_id": "2026-09-29_8_7",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-29_8_7",
+      "observed_at_utc": "2026-09-29T15:35:39.445837+00:00",
+      "source_published_at_utc": null,
+      "timestamp_basis": "FETCH_COMPLETED",
+      "race_start_utc": "2026-09-29T18:36:00+00:00",
+      "runners": [
+        {
+          "selection_id": "1",
+          "horse_name": "Mr Birdman",
+          "rikstoto_registration": "TMP-S2-20260929-07-01",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": 763293
+        },
+        {
+          "selection_id": "2",
+          "horse_name": "Abel Lock",
+          "rikstoto_registration": "TMP-S2-20260929-07-02",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": 772333
+        },
+        {
+          "selection_id": "3",
+          "horse_name": "Miyagi",
+          "rikstoto_registration": "TMP-S2-20260929-07-03",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": 788846
+        },
+        {
+          "selection_id": "4",
+          "horse_name": "Cross Lane",
+          "rikstoto_registration": "TMP-S2-20260929-07-04",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": 779954
+        },
+        {
+          "selection_id": "5",
+          "horse_name": "Extreme A.F.",
+          "rikstoto_registration": "TMP-S2-20260929-07-05",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": 768385
+        },
+        {
+          "selection_id": "6",
+          "horse_name": "Global Bodyguard",
+          "rikstoto_registration": "TMP-S2-20260929-07-06",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": 757730
+        },
+        {
+          "selection_id": "7",
+          "horse_name": "Flight Sequence",
+          "rikstoto_registration": "TMP-S2-20260929-07-07",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": 785221
+        },
+        {
+          "selection_id": "9",
+          "horse_name": "Shadow Moon",
+          "rikstoto_registration": "TMP-S2-20260929-07-09",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": 786502
+        },
+        {
+          "selection_id": "10",
+          "horse_name": "Fusion Eagra",
+          "rikstoto_registration": "TMP-S2-20260929-07-10",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": 779317
+        }
+      ],
+      "probe_only": false,
+      "reasons": [],
+      "active_selections": [
+        "1",
+        "10",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "9"
+      ],
+      "passed": true,
+      "matched_complete_runners": 9,
+      "active_runners": 9,
+      "collection_started_at_utc": "2026-09-29T15:35:38.972939+00:00",
+      "race_id": "RIKSTOTO:S2_NR_2026-09-29:7",
+      "track": "Axevalla",
+      "registry_status": "VERIFIED",
+      "shadow_eligible": true
+    },
+    {
+      "contract": "FULL_FIELD_ONLY_V1",
+      "provider": "atg",
+      "country": "ES",
+      "discipline": "gallop",
+      "provider_race_id": null,
+      "source_uri": null,
+      "observed_at_utc": "2026-09-29T15:35:40.093371+00:00",
+      "source_published_at_utc": null,
+      "timestamp_basis": "FETCH_COMPLETED",
+      "race_start_utc": "2026-09-30T08:57:00+00:00",
+      "runners": [
+        {
+          "selection_id": "1",
+          "horse_name": "Sir Polo (IE)",
+          "rikstoto_registration": "TMP-F2-20260930-01-01",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "2",
+          "horse_name": "Sanber",
+          "rikstoto_registration": "TMP-F2-20260930-01-02",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "3",
+          "horse_name": "Philau",
+          "rikstoto_registration": "TMP-F2-20260930-01-03",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "4",
+          "horse_name": "Shangar (IE)",
+          "rikstoto_registration": "TMP-F2-20260930-01-04",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "5",
+          "horse_name": "Party Zone (ES)",
+          "rikstoto_registration": "TMP-F2-20260930-01-05",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "6",
+          "horse_name": "Save Your Breath (GB)",
+          "rikstoto_registration": "TMP-F2-20260930-01-06",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "7",
+          "horse_name": "Sweet Wish",
+          "rikstoto_registration": "TMP-F2-20260930-01-07",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        }
+      ],
+      "probe_only": true,
+      "reasons": [
+        "NO_PROVIDER_RACE",
+        "ACTIVE_FIELD_MISMATCH",
+        "INCOMPLETE_RUNNER_HISTORY_OR_IDENTITY"
+      ],
+      "active_selections": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "passed": false,
+      "matched_complete_runners": 0,
+      "active_runners": 7,
+      "collection_started_at_utc": "2026-09-29T15:35:39.687190+00:00",
+      "race_id": "RIKSTOTO:F2_NR_2026-09-30:1",
+      "track": "San Sebastian",
+      "registry_status": "UNVERIFIED",
+      "shadow_eligible": false
+    },
+    {
+      "contract": "FULL_FIELD_ONLY_V1",
+      "provider": "atg",
+      "country": "FR",
+      "discipline": "trot",
+      "provider_race_id": "2026-09-30_62_1",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-30_62_1",
+      "observed_at_utc": "2026-09-29T15:35:46.074305+00:00",
+      "source_published_at_utc": null,
+      "timestamp_basis": "FETCH_COMPLETED",
+      "race_start_utc": "2026-09-30T11:55:00+00:00",
+      "runners": [
+        {
+          "selection_id": "1",
+          "horse_name": "Light My Fire",
+          "rikstoto_registration": "TMP-F1-20260930-01-01",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "2",
+          "horse_name": "Kamehameha",
+          "rikstoto_registration": "TMP-F1-20260930-01-02",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "3",
+          "horse_name": "Rikita Jp",
+          "rikstoto_registration": "TMP-F1-20260930-01-03",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "4",
+          "horse_name": "Hurricane Carter",
+          "rikstoto_registration": "TMP-F1-20260930-01-04",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "5",
+          "horse_name": "Jilord Viva",
+          "rikstoto_registration": "TMP-F1-20260930-01-05",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "6",
+          "horse_name": "Invictus Madiba",
+          "rikstoto_registration": "TMP-F1-20260930-01-06",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "7",
+          "horse_name": "L'as Desbois",
+          "rikstoto_registration": "TMP-F1-20260930-01-07",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "8",
+          "horse_name": "Horatius D'ela",
+          "rikstoto_registration": "TMP-F1-20260930-01-08",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "9",
+          "horse_name": "Ibiscus Man",
+          "rikstoto_registration": "TMP-F1-20260930-01-09",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "10",
+          "horse_name": "Gendreen",
+          "rikstoto_registration": "TMP-F1-20260930-01-10",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "11",
+          "horse_name": "Hannibal Tuilerie",
+          "rikstoto_registration": "TMP-F1-20260930-01-11",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "12",
+          "horse_name": "Jabalpur",
+          "rikstoto_registration": "TMP-F1-20260930-01-12",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "13",
+          "horse_name": "Harley Gema",
+          "rikstoto_registration": "TMP-F1-20260930-01-13",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "14",
+          "horse_name": "Ideal Ligneries",
+          "rikstoto_registration": "TMP-F1-20260930-01-14",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "15",
+          "horse_name": "Inmarosa",
+          "rikstoto_registration": "TMP-F1-20260930-01-15",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        }
+      ],
+      "probe_only": false,
+      "reasons": [],
+      "active_selections": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "passed": true,
+      "matched_complete_runners": 15,
+      "active_runners": 15,
+      "corroboration": {
+        "provider": "letrot",
+        "passed": true,
+        "runners": [
+          {
+            "selection_id": "1",
+            "horse_id": "ZmN8ZQYHCwAD",
+            "source_uri": "https://www.letrot.com/stats/chevaux/light-my-fire/ZmN8ZQYHCwAD/courses",
+            "observed_at_utc": "2026-09-29T15:35:42.225771+00:00",
+            "career_starts": 32,
+            "career_wins": 6,
+            "atg_career_starts": 32,
+            "atg_career_wins": 6,
+            "passed": true
+          },
+          {
+            "selection_id": "2",
+            "horse_id": "ZmJbYgIBBAMT",
+            "source_uri": "https://www.letrot.com/stats/chevaux/kamehameha/ZmJbYgIBBAMT/courses",
+            "observed_at_utc": "2026-09-29T15:35:42.442819+00:00",
+            "career_starts": 41,
+            "career_wins": 5,
+            "atg_career_starts": 41,
+            "atg_career_wins": 5,
+            "passed": true
+          },
+          {
+            "selection_id": "3",
+            "horse_id": "ZGJaZgYCBwIE",
+            "source_uri": "https://www.letrot.com/stats/chevaux/rikita-jp/ZGJaZgYCBwIE/courses",
+            "observed_at_utc": "2026-09-29T15:35:42.970908+00:00",
+            "career_starts": 36,
+            "career_wins": 9,
+            "atg_career_starts": 36,
+            "atg_career_wins": 9,
+            "passed": true
+          },
+          {
+            "selection_id": "4",
+            "horse_id": "ZWV7YwADAwMc",
+            "source_uri": "https://www.letrot.com/stats/chevaux/hurricane-carter/ZWV7YwADAwMc/courses",
+            "observed_at_utc": "2026-09-29T15:35:43.173208+00:00",
+            "career_starts": 48,
+            "career_wins": 19,
+            "atg_career_starts": 48,
+            "atg_career_wins": 19,
+            "passed": true
+          },
+          {
+            "selection_id": "5",
+            "horse_id": "ZWt8ZgsABwEf",
+            "source_uri": "https://www.letrot.com/stats/chevaux/jilord-viva/ZWt8ZgsABwEf/courses",
+            "observed_at_utc": "2026-09-29T15:35:43.656458+00:00",
+            "career_starts": 65,
+            "career_wins": 10,
+            "atg_career_starts": 65,
+            "atg_career_wins": 10,
+            "passed": true
+          },
+          {
+            "selection_id": "6",
+            "horse_id": "ZWpbZQUFBwoV",
+            "source_uri": "https://www.letrot.com/stats/chevaux/invictus-madiba/ZWpbZQUFBwoV/courses",
+            "observed_at_utc": "2026-09-29T15:35:43.871809+00:00",
+            "career_starts": 81,
+            "career_wins": 4,
+            "atg_career_starts": 81,
+            "atg_career_wins": 4,
+            "passed": true
+          },
+          {
+            "selection_id": "7",
+            "horse_id": "ZmN8ZgEJAgEB",
+            "source_uri": "https://www.letrot.com/stats/chevaux/l-as-desbois/ZmN8ZgEJAgEB/courses",
+            "observed_at_utc": "2026-09-29T15:35:44.077767+00:00",
+            "career_starts": 35,
+            "career_wins": 8,
+            "atg_career_starts": 35,
+            "atg_career_wins": 8,
+            "passed": true
+          },
+          {
+            "selection_id": "8",
+            "horse_id": "ZWV6ZQUGBgsX",
+            "source_uri": "https://www.letrot.com/stats/chevaux/horatius-d-ela/ZWV6ZQUGBgsX/courses",
+            "observed_at_utc": "2026-09-29T15:35:44.275515+00:00",
+            "career_starts": 92,
+            "career_wins": 15,
+            "atg_career_starts": 92,
+            "atg_career_wins": 15,
+            "passed": true
+          },
+          {
+            "selection_id": "9",
+            "horse_id": "ZWpbZQUFBQYc",
+            "source_uri": "https://www.letrot.com/stats/chevaux/ibiscus-man/ZWpbZQUFBQYc/courses",
+            "observed_at_utc": "2026-09-29T15:35:44.533039+00:00",
+            "career_starts": 79,
+            "career_wins": 11,
+            "atg_career_starts": 79,
+            "atg_career_wins": 11,
+            "passed": true
+          },
+          {
+            "selection_id": "10",
+            "horse_id": "ZWR8ZQsHBgsH",
+            "source_uri": "https://www.letrot.com/stats/chevaux/gendreen/ZWR8ZQsHBgsH/courses",
+            "observed_at_utc": "2026-09-29T15:35:44.731383+00:00",
+            "career_starts": 109,
+            "career_wins": 17,
+            "atg_career_starts": 109,
+            "atg_career_wins": 17,
+            "passed": true
+          },
+          {
+            "selection_id": "11",
+            "horse_id": "ZWV7bAIGAwcT",
+            "source_uri": "https://www.letrot.com/stats/chevaux/hannibal-tuilerie/ZWV7bAIGAwcT/courses",
+            "observed_at_utc": "2026-09-29T15:35:44.957493+00:00",
+            "career_starts": 106,
+            "career_wins": 17,
+            "atg_career_starts": 106,
+            "atg_career_wins": 17,
+            "passed": true
+          },
+          {
+            "selection_id": "12",
+            "horse_id": "ZWt8ZAUHAAsa",
+            "source_uri": "https://www.letrot.com/stats/chevaux/jabalpur/ZWt8ZAUHAAsa/courses",
+            "observed_at_utc": "2026-09-29T15:35:45.155037+00:00",
+            "career_starts": 53,
+            "career_wins": 12,
+            "atg_career_starts": 53,
+            "atg_career_wins": 12,
+            "passed": true
+          },
+          {
+            "selection_id": "13",
+            "horse_id": "ZWV7bAcAAgoR",
+            "source_uri": "https://www.letrot.com/stats/chevaux/harley-gema/ZWV7bAcAAgoR/courses",
+            "observed_at_utc": "2026-09-29T15:35:45.376720+00:00",
+            "career_starts": 76,
+            "career_wins": 16,
+            "atg_career_starts": 76,
+            "atg_career_wins": 16,
+            "passed": true
+          },
+          {
+            "selection_id": "14",
+            "horse_id": "ZWpbZAQHBAAf",
+            "source_uri": "https://www.letrot.com/stats/chevaux/ideal-ligneries/ZWpbZAQHBAAf/courses",
+            "observed_at_utc": "2026-09-29T15:35:45.856234+00:00",
+            "career_starts": 66,
+            "career_wins": 8,
+            "atg_career_starts": 66,
+            "atg_career_wins": 8,
+            "passed": true
+          },
+          {
+            "selection_id": "15",
+            "horse_id": "ZWpbZgoCCgID",
+            "source_uri": "https://www.letrot.com/stats/chevaux/inmarosa/ZWpbZgoCCgID/courses",
+            "observed_at_utc": "2026-09-29T15:35:46.073252+00:00",
+            "career_starts": 81,
+            "career_wins": 7,
+            "atg_career_starts": 81,
+            "atg_career_wins": 7,
+            "passed": true
+          }
+        ],
+        "reason": null,
+        "race_start_utc": "2026-09-30T11:55:00+00:00"
+      },
+      "collection_started_at_utc": "2026-09-29T15:35:40.277610+00:00",
+      "race_id": "RIKSTOTO:F1_NR_2026-09-30:1",
+      "track": "Laval",
+      "registry_status": "VERIFIED",
+      "shadow_eligible": true
+    },
+    {
+      "contract": "FULL_FIELD_ONLY_V1",
+      "provider": "atg",
+      "country": "NO",
+      "discipline": "trot",
+      "provider_race_id": null,
+      "source_uri": null,
+      "observed_at_utc": "2026-09-29T15:35:47.186257+00:00",
+      "source_published_at_utc": null,
+      "timestamp_basis": "FETCH_COMPLETED",
+      "race_start_utc": "2026-09-30T14:52:00+00:00",
+      "runners": [
+        {
+          "selection_id": "1",
+          "horse_name": "Turina",
+          "rikstoto_registration": "578001020180014",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "2",
+          "horse_name": "Alvin Ø.K.",
+          "rikstoto_registration": "578001020170133",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "3",
+          "horse_name": "Kolli Jodin",
+          "rikstoto_registration": "578001020190451",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "4",
+          "horse_name": "Odspika",
+          "rikstoto_registration": "578001020210022",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "5",
+          "horse_name": "Ravinas Festus",
+          "rikstoto_registration": "578001020210065",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "6",
+          "horse_name": "Mo Stine",
+          "rikstoto_registration": "578001020180350",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "7",
+          "horse_name": "Troll Sterk Bork",
+          "rikstoto_registration": "578001020190073",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "9",
+          "horse_name": "Lykkje Paula",
+          "rikstoto_registration": "578001020180198",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "10",
+          "horse_name": "Rapp Are",
+          "rikstoto_registration": "578001020210215",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "11",
+          "horse_name": "Langlands Spika",
+          "rikstoto_registration": "578001020170188",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "12",
+          "horse_name": "G. Elden",
+          "rikstoto_registration": "578001020200329",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        }
+      ],
+      "probe_only": false,
+      "reasons": [
+        "NO_PROVIDER_RACE",
+        "ACTIVE_FIELD_MISMATCH",
+        "INCOMPLETE_RUNNER_HISTORY_OR_IDENTITY"
+      ],
+      "active_selections": [
+        "1",
+        "10",
+        "11",
+        "12",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "9"
+      ],
+      "passed": false,
+      "matched_complete_runners": 0,
+      "active_runners": 11,
+      "collection_started_at_utc": "2026-09-29T15:35:46.460780+00:00",
+      "race_id": "RIKSTOTO:FO_NR_2026-09-30:1",
+      "track": "Forus",
+      "registry_status": "VERIFIED",
+      "shadow_eligible": false
+    },
+    {
+      "contract": "FULL_FIELD_ONLY_V1",
+      "provider": "atg",
+      "country": "DK",
+      "discipline": "trot",
+      "provider_race_id": "2026-10-01_54_1",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-01_54_1",
+      "observed_at_utc": "2026-09-29T15:35:48.005219+00:00",
+      "source_published_at_utc": null,
+      "timestamp_basis": "FETCH_COMPLETED",
+      "race_start_utc": "2026-10-01T15:00:00+00:00",
+      "runners": [
+        {
+          "selection_id": "1",
+          "horse_name": "Mathi Epice",
+          "rikstoto_registration": "TMP-S4-20261001-01-01",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "2",
+          "horse_name": "Inbetween Days",
+          "rikstoto_registration": "TMP-S4-20261001-01-02",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "3",
+          "horse_name": "Konrad",
+          "rikstoto_registration": "TMP-S4-20261001-01-03",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "4",
+          "horse_name": "Lion d'Amerique",
+          "rikstoto_registration": "TMP-S4-20261001-01-04",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "5",
+          "horse_name": "Kalistone",
+          "rikstoto_registration": "TMP-S4-20261001-01-05",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "6",
+          "horse_name": "Karl Herman",
+          "rikstoto_registration": "TMP-S4-20261001-01-06",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "7",
+          "horse_name": "Melody",
+          "rikstoto_registration": "TMP-S4-20261001-01-07",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "8",
+          "horse_name": "Karat Shadow",
+          "rikstoto_registration": "TMP-S4-20261001-01-08",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        }
+      ],
+      "probe_only": false,
+      "reasons": [],
+      "active_selections": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "passed": true,
+      "matched_complete_runners": 8,
+      "active_runners": 8,
+      "collection_started_at_utc": "2026-09-29T15:35:47.480731+00:00",
+      "race_id": "RIKSTOTO:S4_NR_2026-10-01:1",
+      "track": "Ålborg",
+      "registry_status": "VERIFIED",
+      "shadow_eligible": true
+    },
+    {
+      "contract": "FULL_FIELD_ONLY_V1",
+      "provider": "atg",
+      "country": "NO",
+      "discipline": "gallop",
+      "provider_race_id": "2026-10-01_79_1",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-01_79_1",
+      "observed_at_utc": "2026-09-29T15:35:48.795844+00:00",
+      "source_published_at_utc": null,
+      "timestamp_basis": "FETCH_COMPLETED",
+      "race_start_utc": "2026-10-01T15:30:00+00:00",
+      "runners": [
+        {
+          "selection_id": "1",
+          "horse_name": "Tellme Y (SWE)",
+          "rikstoto_registration": "752SWE00003536T",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "2",
+          "horse_name": "Indio Picaro",
+          "rikstoto_registration": "578NOR230000303",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "3",
+          "horse_name": "Buffon",
+          "rikstoto_registration": "578NOR230000304",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "4",
+          "horse_name": "Hard To Impress (IRE)",
+          "rikstoto_registration": "372IRE45398556T",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "5",
+          "horse_name": "Baatman (SWE)",
+          "rikstoto_registration": "752SWE00003543T",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "6",
+          "horse_name": "Young Royal (SWE)",
+          "rikstoto_registration": "752SWE00003603T",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        }
+      ],
+      "probe_only": true,
+      "reasons": [
+        "INCOMPLETE_RUNNER_HISTORY_OR_IDENTITY"
+      ],
+      "active_selections": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "passed": false,
+      "matched_complete_runners": 2,
+      "active_runners": 6,
+      "collection_started_at_utc": "2026-09-29T15:35:48.213513+00:00",
+      "race_id": "RIKSTOTO:OV_NR_2026-10-01:1",
+      "track": "Øvrevoll",
+      "registry_status": "UNVERIFIED",
+      "shadow_eligible": false
+    },
+    {
+      "contract": "FULL_FIELD_ONLY_V1",
+      "provider": "atg",
+      "country": "NO",
+      "discipline": "trot",
+      "provider_race_id": null,
+      "source_uri": null,
+      "observed_at_utc": "2026-09-29T15:35:49.438247+00:00",
+      "source_published_at_utc": null,
+      "timestamp_basis": "FETCH_COMPLETED",
+      "race_start_utc": "2026-10-01T15:45:00+00:00",
+      "runners": [
+        {
+          "selection_id": "1",
+          "horse_name": "Latika West",
+          "rikstoto_registration": "578001020205430",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "2",
+          "horse_name": "G.G. Finca",
+          "rikstoto_registration": "578001020215260",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "3",
+          "horse_name": "Indy's Warranty",
+          "rikstoto_registration": "578001020235017",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "4",
+          "horse_name": "Solide Tooma (S)",
+          "rikstoto_registration": "75200211S221424",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "5",
+          "horse_name": "Maserati M.B.",
+          "rikstoto_registration": "578001020225079",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        }
+      ],
+      "probe_only": false,
+      "reasons": [
+        "NO_PROVIDER_RACE",
+        "ACTIVE_FIELD_MISMATCH",
+        "INCOMPLETE_RUNNER_HISTORY_OR_IDENTITY"
+      ],
+      "active_selections": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "passed": false,
+      "matched_complete_runners": 0,
+      "active_runners": 5,
+      "collection_started_at_utc": "2026-09-29T15:35:48.961484+00:00",
+      "race_id": "RIKSTOTO:KL_NR_2026-10-01:1",
+      "track": "Klosterskogen",
+      "registry_status": "VERIFIED",
+      "shadow_eligible": false
+    },
+    {
+      "contract": "FULL_FIELD_ONLY_V1",
+      "provider": "atg",
+      "country": "NO",
+      "discipline": "trot",
+      "provider_race_id": null,
+      "source_uri": null,
+      "observed_at_utc": "2026-09-29T15:35:50.093188+00:00",
+      "source_published_at_utc": null,
+      "timestamp_basis": "FETCH_COMPLETED",
+      "race_start_utc": "2026-10-02T16:05:00+00:00",
+      "runners": [
+        {
+          "selection_id": "1",
+          "horse_name": "Uberg Nor",
+          "rikstoto_registration": "578001020230345",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "2",
+          "horse_name": "Sitje Odin",
+          "rikstoto_registration": "578001020210441",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "3",
+          "horse_name": "Illefin",
+          "rikstoto_registration": "578001020210292",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "4",
+          "horse_name": "Smedsrud Wikki",
+          "rikstoto_registration": "578001020180176",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "5",
+          "horse_name": "Godvilja R.S.",
+          "rikstoto_registration": "578001020210454",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "6",
+          "horse_name": "Brenne Bruno",
+          "rikstoto_registration": "578001020220157",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        }
+      ],
+      "probe_only": false,
+      "reasons": [
+        "NO_PROVIDER_RACE",
+        "ACTIVE_FIELD_MISMATCH",
+        "INCOMPLETE_RUNNER_HISTORY_OR_IDENTITY"
+      ],
+      "active_selections": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "passed": false,
+      "matched_complete_runners": 0,
+      "active_runners": 6,
+      "collection_started_at_utc": "2026-09-29T15:35:49.723015+00:00",
+      "race_id": "RIKSTOTO:MO_NR_2026-10-02:1",
+      "track": "Momarken",
+      "registry_status": "VERIFIED",
+      "shadow_eligible": false
+    },
+    {
+      "contract": "FULL_FIELD_ONLY_V1",
+      "provider": "atg",
+      "country": "NO",
+      "discipline": "trot",
+      "provider_race_id": "2026-10-03_78_1",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-03_78_1",
+      "observed_at_utc": "2026-09-29T15:35:50.977983+00:00",
+      "source_published_at_utc": null,
+      "timestamp_basis": "FETCH_COMPLETED",
+      "race_start_utc": "2026-10-03T16:30:00+00:00",
+      "runners": [
+        {
+          "selection_id": "1",
+          "horse_name": "Maharasha (S)",
+          "rikstoto_registration": "75200211S201146",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "2",
+          "horse_name": "Coral Coger* (S)",
+          "rikstoto_registration": "75200211S202897",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "3",
+          "horse_name": "Konstantia Sisu (S)",
+          "rikstoto_registration": "75200211S201204",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "4",
+          "horse_name": "Kaffeåchampagne* (S)",
+          "rikstoto_registration": "75200211S201230",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "5",
+          "horse_name": "Zero Hugs'n Kisses",
+          "rikstoto_registration": "578001020205012",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "6",
+          "horse_name": "Daim Brodda* (S)",
+          "rikstoto_registration": "75200211S201777",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "7",
+          "horse_name": "Hearts",
+          "rikstoto_registration": "578001020185284",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        }
+      ],
+      "probe_only": false,
+      "reasons": [
+        "INCOMPLETE_RUNNER_HISTORY_OR_IDENTITY"
+      ],
+      "active_selections": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "passed": false,
+      "matched_complete_runners": 2,
+      "active_runners": 7,
+      "collection_started_at_utc": "2026-09-29T15:35:50.253759+00:00",
+      "race_id": "RIKSTOTO:BJ_NR_2026-10-03:1",
+      "track": "Bjerke",
+      "registry_status": "VERIFIED",
+      "shadow_eligible": false
+    },
+    {
+      "contract": "FULL_FIELD_ONLY_V1",
+      "provider": "atg",
+      "country": "NO",
+      "discipline": "trot",
+      "provider_race_id": "2026-09-29_78_2",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-29_78_2",
+      "observed_at_utc": "2026-09-29T15:35:51.656673+00:00",
+      "source_published_at_utc": null,
+      "timestamp_basis": "FETCH_COMPLETED",
+      "race_start_utc": "2026-09-29T17:20:00+00:00",
+      "runners": [
+        {
+          "selection_id": "1",
+          "horse_name": "Prinsesse C.K.",
+          "rikstoto_registration": "578001020200556",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "2",
+          "horse_name": "Værdalingen",
+          "rikstoto_registration": "578001020120561",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "3",
+          "horse_name": "Zevs E.L.",
+          "rikstoto_registration": "578001020210483",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "4",
+          "horse_name": "Vesle Sandra",
+          "rikstoto_registration": "578001020190498",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "5",
+          "horse_name": "Mjølner Desverre",
+          "rikstoto_registration": "578001020220315",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        },
+        {
+          "selection_id": "6",
+          "horse_name": "M.L´s Rakkaren",
+          "rikstoto_registration": "578001020210507",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 1.0,
+          "schema_ok": true,
+          "reason": null,
+          "provider_horse_id": null
+        }
+      ],
+      "probe_only": false,
+      "reasons": [],
+      "active_selections": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "passed": true,
+      "matched_complete_runners": 6,
+      "active_runners": 6,
+      "collection_started_at_utc": "2026-09-29T15:35:51.187778+00:00",
+      "race_id": "RIKSTOTO:BJ_NR_2026-09-29:2",
+      "track": "Bjerke",
+      "registry_status": "VERIFIED",
+      "shadow_eligible": true
+    },
+    {
+      "contract": "FULL_FIELD_ONLY_V1",
+      "provider": "atg",
+      "country": "ES",
+      "discipline": "gallop",
+      "provider_race_id": null,
+      "source_uri": null,
+      "observed_at_utc": "2026-09-29T15:35:52.419979+00:00",
+      "source_published_at_utc": null,
+      "timestamp_basis": "FETCH_COMPLETED",
+      "race_start_utc": "2026-09-30T09:24:00+00:00",
+      "runners": [
+        {
+          "selection_id": "1",
+          "horse_name": "Cudillero (ES)",
+          "rikstoto_registration": "TMP-F2-20260930-02-01",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "2",
+          "horse_name": "Laguna (ES)",
+          "rikstoto_registration": "TMP-F2-20260930-02-02",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "3",
+          "horse_name": "Kokushoku (IE)",
+          "rikstoto_registration": "TMP-F2-20260930-02-03",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "4",
+          "horse_name": "Going Commando (IE)",
+          "rikstoto_registration": "TMP-F2-20260930-02-04",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "5",
+          "horse_name": "Krasny Bor (GB)",
+          "rikstoto_registration": "TMP-F2-20260930-02-05",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "6",
+          "horse_name": "Ring Of Diamonds (IE)",
+          "rikstoto_registration": "TMP-F2-20260930-02-06",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "7",
+          "horse_name": "Woodwooded",
+          "rikstoto_registration": "TMP-F2-20260930-02-07",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "8",
+          "horse_name": "Eclair Lane (IE)",
+          "rikstoto_registration": "TMP-F2-20260930-02-08",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        }
+      ],
+      "probe_only": true,
+      "reasons": [
+        "NO_PROVIDER_RACE",
+        "ACTIVE_FIELD_MISMATCH",
+        "INCOMPLETE_RUNNER_HISTORY_OR_IDENTITY"
+      ],
+      "active_selections": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "passed": false,
+      "matched_complete_runners": 0,
+      "active_runners": 8,
+      "collection_started_at_utc": "2026-09-29T15:35:52.053698+00:00",
+      "race_id": "RIKSTOTO:F2_NR_2026-09-30:2",
+      "track": "San Sebastian",
+      "registry_status": "UNVERIFIED",
+      "shadow_eligible": false
+    },
+    {
+      "contract": "FULL_FIELD_ONLY_V1",
+      "provider": "atg",
+      "country": "ES",
+      "discipline": "gallop",
+      "provider_race_id": null,
+      "source_uri": null,
+      "observed_at_utc": "2026-09-29T15:35:52.917443+00:00",
+      "source_published_at_utc": null,
+      "timestamp_basis": "FETCH_COMPLETED",
+      "race_start_utc": "2026-09-30T09:59:00+00:00",
+      "runners": [
+        {
+          "selection_id": "1",
+          "horse_name": "Dapango (DE)",
+          "rikstoto_registration": "TMP-F2-20260930-03-01",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "2",
+          "horse_name": "Haussmannien",
+          "rikstoto_registration": "TMP-F2-20260930-03-02",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "3",
+          "horse_name": "Beria (GB)",
+          "rikstoto_registration": "TMP-F2-20260930-03-03",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "4",
+          "horse_name": "Bailen (ES)",
+          "rikstoto_registration": "TMP-F2-20260930-03-04",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "5",
+          "horse_name": "Penrhead",
+          "rikstoto_registration": "TMP-F2-20260930-03-05",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "6",
+          "horse_name": "Revenue (IE)",
+          "rikstoto_registration": "TMP-F2-20260930-03-06",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "7",
+          "horse_name": "Early Life",
+          "rikstoto_registration": "TMP-F2-20260930-03-07",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "8",
+          "horse_name": "Zalamera (IE)",
+          "rikstoto_registration": "TMP-F2-20260930-03-08",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        },
+        {
+          "selection_id": "9",
+          "horse_name": "T'es Chic",
+          "rikstoto_registration": "TMP-F2-20260930-03-09",
+          "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+          "match_confidence": 0.0,
+          "schema_ok": false,
+          "reason": "IDENTITY_NOT_UNIQUE_OR_MISMATCH"
+        }
+      ],
+      "probe_only": true,
+      "reasons": [
+        "NO_PROVIDER_RACE",
+        "ACTIVE_FIELD_MISMATCH",
+        "INCOMPLETE_RUNNER_HISTORY_OR_IDENTITY"
+      ],
+      "active_selections": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "passed": false,
+      "matched_complete_runners": 0,
+      "active_runners": 9,
+      "collection_started_at_utc": "2026-09-29T15:35:52.633314+00:00",
+      "race_id": "RIKSTOTO:F2_NR_2026-09-30:3",
+      "track": "San Sebastian",
+      "registry_status": "UNVERIFIED",
+      "shadow_eligible": false
+    }
+  ],
+  "verified_countries": [
+    "SE",
+    "FR",
+    "DK",
+    "NO"
+  ],
+  "errors": []
+}

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -21,7 +23,8 @@ class SQLiteStore:
 
     path: str | Path
 
-    def connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def connect(self) -> Iterator[sqlite3.Connection]:
         if str(self.path) != ":memory:":
             Path(self.path).parent.mkdir(parents=True, exist_ok=True)
         connection = sqlite3.connect(str(self.path), timeout=5.0)
@@ -30,7 +33,11 @@ class SQLiteStore:
         connection.execute("PRAGMA busy_timeout = 5000")
         if str(self.path) != ":memory:":
             connection.execute("PRAGMA journal_mode = WAL")
-        return connection
+        try:
+            with connection:
+                yield connection
+        finally:
+            connection.close()
 
     def initialize(self, schema_path: str | Path) -> None:
         schema = Path(schema_path).read_text(encoding="utf-8")
