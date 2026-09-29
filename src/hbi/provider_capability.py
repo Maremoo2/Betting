@@ -249,7 +249,7 @@ def full_field_gate(store, race_id: str, rows: list[dict], decision_time: dateti
         if (
             set(e["active_selections"]) != {r["selection_id"] for r in active}
             or any(r["feature_as_of_utc"] != e["observed_at_utc"] for r in active)
-            or any(r["data_quality"] != "KNOWN_HISTORY_ATG" for r in active)
+            or any(r["data_quality"] != "FULL_FIELD_HISTORY_ATG" for r in active)
         ):
             return "FULL_FIELD_ONLY_COHORT_MISMATCH"
     except (KeyError, TypeError, ValueError):

@@ -450,8 +450,9 @@ class RikstotoCollector:
                         ) or None
 
             data_quality = (
-                "KNOWN_HISTORY_ATG"
+                "FULL_FIELD_HISTORY_ATG"
                 if history_starts is not None and history_wins is not None
+                else "FIELD_ONLY_INCOMPLETE_ENRICHMENT" if atg_source
                 else "FIELD_ONLY_RIKSTOTO"
             )
             source_uri = atg_source or starts_fetch.url
@@ -544,6 +545,12 @@ class RikstotoCollector:
                         "current_year_earnings": None,
                         "scratched": int(is_scratched),
                         "data_quality": data_quality,
+                        "enrichment_provider": "atg" if atg_source else None,
+                        "identity_match_method": next((r["match_method"] for r in evidence["runners"]
+                                                       if r["selection_id"] == selection_id), None),
+                        "identity_match_confidence": next((r["match_confidence"] for r in evidence["runners"]
+                                                           if r["selection_id"] == selection_id), None),
+                        "full_field_history_complete": int(evidence["passed"]),
                         "raw_json": json.dumps(
                             sanitized,
                             ensure_ascii=False,

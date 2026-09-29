@@ -93,3 +93,21 @@ Automation may update research evidence and reports. It must not silently modify
 - promotion status.
 
 Strategy-code protection is enforced separately in GitHub CI.
+
+
+## Scheduled intelligence boundary
+
+Scheduled ChatGPT/pre-watch research is an evidence scout, not a strategy writer.
+
+Qualitative findings enter HBI only through the append-only
+`HBI_EVIDENCE_INBOX` staging worksheet and the validated
+`intelligence_evidence` table. The bridge may preserve hypotheses and sourced
+observations for later research, but Bridge v1 always stores them as:
+
+- `research_only = 1`
+- `production_feature_eligible = 0`
+
+The scheduled intelligence layer cannot directly modify canonical market snapshots,
+official outcomes, predictions, decisions, staking, settlement, Champion parameters
+or promotion status. A qualitative signal can influence a future production model only
+after normal point-in-time, out-of-sample and Champion/Challenger validation.

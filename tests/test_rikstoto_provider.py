@@ -167,6 +167,11 @@ class FakeRikstoto(RikstotoClient):
 
 
 class FakeAtg(AtgClient):
+    def __init__(self, *, country="SE", track="Färjestad", incomplete=False):
+        self.country = country
+        self.track = track
+        self.incomplete = incomplete
+
     def calendar_day(self, race_date):
         return AtgFetchResult(
             url="https://example/atg/calendar",
@@ -176,9 +181,9 @@ class FakeAtg(AtgClient):
             payload={
                 "tracks": [
                     {
-                        "countryCode": "SE",
+                        "countryCode": self.country,
                         "sport": "trot",
-                        "name": "Färjestad",
+                        "name": self.track,
                         "races": [
                             {
                                 "id": "2026-09-27_22_1",
@@ -205,7 +210,7 @@ class FakeAtg(AtgClient):
                         "sport": "trot",
                         "status": "upcoming",
                         "startTime": "2026-09-27T18:00:00+00:00",
-                        "track": {"countryCode": "SE"},
+                        "track": {"countryCode": self.country},
                         "starts": [
                             {
                                 "number": 1,
@@ -246,7 +251,7 @@ class FakeAtg(AtgClient):
                                     "statistics": {
                                         "years": {"2026": {"starts": 0, "earnings": 0}},
                                         "life": {
-                                            "starts": 30,
+                                            "starts": None if self.incomplete else 30,
                                             "earnings": 250000,
                                             "placement": {"1": 3, "2": 4, "3": 5},
                                         }
@@ -342,7 +347,10 @@ def test_swedish_starts_are_enriched_with_market_free_atg_history(tmp_path):
     assert alpha["history_total_starts"] == 20
     assert alpha["history_total_wins"] == 8
     assert alpha["history_total_earnings"] == 500000
-    assert alpha["data_quality"] == "KNOWN_HISTORY_ATG"
+    assert alpha["data_quality"] == "FULL_FIELD_HISTORY_ATG"
+    assert alpha["enrichment_provider"] == "atg"
+    assert alpha["identity_match_confidence"] == 1.0
+    assert alpha["full_field_history_complete"] == 1
     assert beta["history_total_starts"] == 30
     assert beta["history_total_wins"] == 3
     assert "odds" not in str(alpha["raw_json"]).lower()
@@ -362,3 +370,70 @@ def test_legacy_pool_endpoints_are_disabled_by_default(tmp_path):
     )
     assert inserted == 0
     assert failures == 0
+
+
+def test_danish_race_uses_same_capability_based_atg_enrichment(tmp_path):
+    store = SQLiteStore(tmp_path / "hbi.sqlite")
+    store.initialize(SCHEMA)
+    rikstoto = FakeRikstoto(
+        country="DK",
+        track="Charlottenlund",
+        raceday_key="CL_NR_2026-09-27",
+    )
+    collector = RikstotoCollector(
+        store,
+        rikstoto,
+        FakeAtg(country="DK", track="Charlottenlund"),
+        clock=lambda: datetime(2026, 9, 27, 17, 56, tzinfo=UTC),
+    )
+    race = collector.discover(datetime(2026, 9, 27, 17, 0, tzinfo=UTC))[0]
+    observed = datetime(2026, 9, 27, 17, 56, tzinfo=UTC)
+
+    inserted, ok, _ = collector.collect_fundamentals(
+        raceday_key=race.raceday_key,
+        race_number=1,
+        race_id=race.race_id,
+        observed_at=observed,
+    )
+
+    assert ok
+    assert inserted == 2
+    rows = store.latest_runner_fundamentals(race.race_id, before=observed)
+    assert all(row["full_field_history_complete"] == 1 for row in rows)
+    assert all(row["enrichment_provider"] == "atg" for row in rows)
+    assert all(row["history_total_starts"] is not None for row in rows)
+
+
+def test_partial_provider_history_is_hidden_from_entire_active_field(tmp_path):
+    store = SQLiteStore(tmp_path / "hbi.sqlite")
+    store.initialize(SCHEMA)
+    rikstoto = FakeRikstoto(
+        country="DK",
+        track="Charlottenlund",
+        raceday_key="CL_NR_2026-09-27",
+    )
+    collector = RikstotoCollector(
+        store,
+        rikstoto,
+        FakeAtg(country="DK", track="Charlottenlund", incomplete=True),
+        clock=lambda: datetime(2026, 9, 27, 17, 56, tzinfo=UTC),
+    )
+    race = collector.discover(datetime(2026, 9, 27, 17, 0, tzinfo=UTC))[0]
+    observed = datetime(2026, 9, 27, 17, 56, tzinfo=UTC)
+
+    collector.collect_fundamentals(
+        raceday_key=race.raceday_key,
+        race_number=1,
+        race_id=race.race_id,
+        observed_at=observed,
+    )
+    rows = store.latest_runner_fundamentals(race.race_id, before=observed)
+
+    assert len(rows) == 2
+    assert all(row["full_field_history_complete"] == 0 for row in rows)
+    assert all(row["history_total_starts"] is None for row in rows)
+    assert all(row["history_total_wins"] is None for row in rows)
+    assert all(
+        row["data_quality"] == "FIELD_ONLY_INCOMPLETE_ENRICHMENT"
+        for row in rows
+    )

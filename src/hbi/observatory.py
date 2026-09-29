@@ -281,7 +281,8 @@ def build_data_health(store: SQLiteStore, report_date: date) -> dict[str, object
     atg_history = [
         row
         for row in active_rows
-        if str(row.get("data_quality") or "") == "KNOWN_HISTORY_ATG"
+        if str(row.get("enrichment_provider") or "") == "atg"
+        and bool(row.get("full_field_history_complete"))
     ]
 
     market_rows = [
@@ -319,6 +320,21 @@ def build_data_health(store: SQLiteStore, report_date: date) -> dict[str, object
     for row in fetch_failures:
         provider = str(row.get("provider") or "UNKNOWN")
         failures_by_provider[provider] = failures_by_provider.get(provider, 0) + 1
+
+    intelligence_rows = [
+        row
+        for row in store.fetch_table("intelligence_evidence")
+        if _in_window(row.get("observed_at_utc"), start, end)
+    ]
+    bridge_rows = [
+        row
+        for row in store.fetch_table("intelligence_bridge_imports")
+        if _in_window(row.get("imported_at_utc"), start, end)
+    ]
+    bridge_status_counts: dict[str, int] = {}
+    for row in bridge_rows:
+        status = str(row.get("status") or "UNKNOWN")
+        bridge_status_counts[status] = bridge_status_counts.get(status, 0) + 1
 
     decision_runs = [
         row
@@ -381,6 +397,16 @@ def build_data_health(store: SQLiteStore, report_date: date) -> dict[str, object
             None if not fetches else len(fetch_failures) / len(fetches)
         ),
         "provider_fetch_failures_by_provider": failures_by_provider,
+        "intelligence_evidence_rows": len(intelligence_rows),
+        "intelligence_pit_eligible_rows": sum(
+            bool(row.get("pit_eligible")) for row in intelligence_rows
+        ),
+        "intelligence_production_eligible_rows": sum(
+            bool(row.get("production_feature_eligible"))
+            for row in intelligence_rows
+        ),
+        "intelligence_bridge_imports": len(bridge_rows),
+        "intelligence_bridge_status_counts": bridge_status_counts,
         "decision_runs": len(decision_runs),
         "decision_status_counts": status_counts,
         "t4_latency_seconds_mean": _mean(latencies),
@@ -622,6 +648,15 @@ def render_markdown(
         f"- Mean history coverage: {_fmt(health['mean_history_coverage'])}",
         f"- ATG runner coverage: {_fmt(health['atg_runner_coverage'])}",
         f"- Provider fetch failures: {health['provider_fetch_failures']} / {health['provider_fetches']}",
+        (
+            f"- Intelligence evidence: {health['intelligence_evidence_rows']} "
+            f"(PIT-eligible {health['intelligence_pit_eligible_rows']}, "
+            f"production-eligible {health['intelligence_production_eligible_rows']})"
+        ),
+        (
+            f"- Intelligence bridge imports: {health['intelligence_bridge_imports']} "
+            f"{health['intelligence_bridge_status_counts']}"
+        ),
         f"- Frozen T-4 decision runs: {health['decision_runs']} {health['decision_status_counts']}",
         f"- T-4 latency median / p95: {_fmt(health['t4_latency_seconds_median'], 1)}s / {_fmt(health['t4_latency_seconds_p95'], 1)}s",
         f"- Shadow settlement rate: {_fmt(health['settlement_rate'])}",

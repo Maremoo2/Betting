@@ -83,7 +83,11 @@ def _store(tmp_path):
                 "history_total_starts": 20,
                 "history_total_wins": wins,
                 "scratched": 0,
-                "data_quality": "KNOWN_HISTORY_ATG",
+                "data_quality": "FULL_FIELD_HISTORY_ATG",
+                "enrichment_provider": "atg",
+                "identity_match_method": "REGISTRATION_ID",
+                "identity_match_confidence": 1.0,
+                "full_field_history_complete": 1,
             }
         )
 

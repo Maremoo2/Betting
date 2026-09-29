@@ -16,14 +16,15 @@ The canonical live field is the Rikstoto `/racedays/{raceday}/starts` payload ca
 before the decision. It supplies horse identity, registration number, driver, extra
 distance and scratch state.
 
-For **Swedish trot races**, the same field is matched to the public ATG racing-info
-feed. HBI copies only market-free horse/trainer/history facts. The live smoke test on
-2026-09-27 matched all 11 runners in the selected Mantorp race and produced 100%
-history coverage.
+The same field is offered to capability-based read-only enrichment providers. ATG is
+the primary enrichment provider. Sweden, Denmark, Norway and France trot have live-verified
+full-field history; French fields require LeTROT corroboration on every collection.
 
-For **Norwegian races**, the current verified Rikstoto field does not expose lifetime
-start/win history. Those runners are still stored point-in-time, but are labelled
-`FIELD_ONLY_RIKSTOTO` and are not shadow-bet eligible.
+HBI exposes enrichment to the model on an all-or-nothing basis. Every active runner
+must be safely identity matched and have the complete provider history contract.
+Otherwise every active runner's model-facing history is withheld and the race remains
+field-only. Country approval never overrides runtime field checks. See
+[the current provider contract and evidence](INTERNATIONAL_FUNDAMENTALS.md).
 
 The current v1.1 probability formula intentionally uses only:
 
@@ -89,10 +90,15 @@ Predictions are frozen. The model cannot rewrite a T-4 prediction after the resu
 The model can generate a complete probability vector even when some runner history is
 missing, but the betting layer may not use every such vector.
 
-Default v1.1 gate:
+Default v1.1 model gate remains:
 
 - at least 2 active runners
 - historical start/win statistics known for at least 80% of active runners
+
+The international collector is stricter than the model gate: it exposes provider
+history only when **100% of active runners** pass identity and complete-history checks.
+Therefore provider-enriched live races reach the model with either 100% or 0% history
+coverage; partial international fields cannot become executable.
 
 Below that threshold the run is stored as `CAUTION / LOW_HISTORY_COVERAGE` and the
 shadow layer records `NOT_EXECUTABLE` instead of manufacturing a paper bet.
