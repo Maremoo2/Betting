@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from .provider_capability import capability
+
 
 @dataclass(frozen=True)
 class EnrichmentCandidate:
@@ -20,11 +22,11 @@ def enrichment_candidates(*, country: str, discipline: str) -> tuple[EnrichmentC
     race_type = (discipline or "").lower()
 
     candidates: list[EnrichmentCandidate] = []
-    if country_code and race_type in {"trot", "gallop"}:
+    if capability("atg", country_code, race_type)["status"] == "VERIFIED":
         candidates.append(
             EnrichmentCandidate(
                 provider="atg",
-                reason="public_racing_info_runtime_capability_probe",
+                reason="reviewed_provider_with_runtime_full_field_gate",
             )
         )
     return tuple(candidates)

@@ -51,7 +51,7 @@ Implemented in this repository:
 - read-only Rikstoto raceday + V/P/TV/T market collection
 - live-smoke-verified Rikstoto `/starts` canonical race fields
 - capability-based international ATG market-free enrichment
-- strict FULL_FIELD_ONLY admission; Sweden and Denmark currently live-verified
+- strict FULL_FIELD_ONLY admission; Sweden, Denmark, Norway and France trot live-verified
 - market-free `FUNDAMENTAL_CHAMPION_V1_1` shadow probabilities
 - best-effort T-4 shadow watcher every five minutes
 - immutable shadow ticket ledger and nightly settlement/report
@@ -141,9 +141,9 @@ available:
 
 **Current implementation:** Rikstoto is the canonical race/market source. ATG is used
 as a read-only market-free enrichment source only when the entire active field can be
-matched safely. Sweden and Denmark are currently live-verified for full-field
-enrichment. Other countries are observed but fail closed when complete history cannot
-be proven.
+matched safely. Sweden, Denmark, Norway and France trot are live-verified for full-field
+enrichment. French fields also require LeTROT career-count corroboration. Other
+combinations remain disabled until reviewed full-field live verification.
 
 The international target is not "support every country". The target is:
 
@@ -828,3 +828,5 @@ The canonical machine-readable status is
 
 A new Challenger never inherits the sample that was used to discover it. Each
 Challenger receives its own prospective forward-validation clock.
+
+International ingestion: see [FULL_FIELD_ONLY provider capabilities](docs/INTERNATIONAL_FUNDAMENTALS.md).

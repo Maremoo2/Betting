@@ -17,14 +17,14 @@ before the decision. It supplies horse identity, registration number, driver, ex
 distance and scratch state.
 
 The same field is offered to capability-based read-only enrichment providers. ATG is
-currently the implemented enrichment provider. Sweden and Denmark are live-verified
-for complete full-field history.
+the primary enrichment provider. Sweden, Denmark, Norway and France trot have live-verified
+full-field history; French fields require LeTROT corroboration on every collection.
 
 HBI exposes enrichment to the model on an all-or-nothing basis. Every active runner
 must be safely identity matched and have the complete provider history contract.
 Otherwise every active runner's model-facing history is withheld and the race remains
-field-only. This currently keeps tested Norway, France, Switzerland and Spain races
-out of shadow execution while allowing verified Swedish and Danish races.
+field-only. Country approval never overrides runtime field checks. See
+[the current provider contract and evidence](INTERNATIONAL_FUNDAMENTALS.md).
 
 The current v1.1 probability formula intentionally uses only:
 

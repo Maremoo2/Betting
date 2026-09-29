@@ -126,11 +126,11 @@ Rikstoto `/starts` does not currently expose the lifetime starts/wins needed by 
 first empirical-win shadow model. Therefore:
 
 - enrichment is capability-based rather than country-hard-coded;
-- Sweden and Denmark are live-verified for complete ATG full-field history;
-- Norway, France, Switzerland and Spain currently remain field-only on the tested
-  cards;
-- any country can become eligible race-by-race if every active runner passes the
-  strict identity + complete-history contract;
+- Sweden, Denmark, Norway and France trot are live-verified for complete ATG fields;
+- French fields additionally require full-field LeTROT career-count corroboration;
+- Switzerland, Spain and other unverified combinations remain disabled;
+- a reviewed provider/country combination still requires every active runner to pass
+  the strict identity, complete-history and PIT cohort contract on every fetch;
 - one missing active runner makes the whole race field-only;
 - missing history forces `CAUTION / NOT_EXECUTABLE`; it is never imputed from odds.
 

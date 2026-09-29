@@ -8,6 +8,7 @@ import urllib.request
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from typing import Any
+from zoneinfo import ZoneInfo
 
 
 @dataclass(frozen=True)
@@ -31,10 +32,9 @@ class AtgRaceRef:
 class AtgClient:
     """Read-only client for public ATG racing information.
 
-    The client is used only to enrich runners with market-free pre-race
-    horse/trainer/history facts when the public ATG feed covers the exact race.
-    Pool odds and betting percentages are intentionally ignored by the fundamental
-    adapter.
+    The client enriches capability-verified runners with market-free pre-race
+    horse/trainer/history facts. Pool odds and betting percentages are intentionally
+    ignored by the fundamental adapter.
     """
 
     CALENDAR_API = "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0"
@@ -109,32 +109,41 @@ class AtgClient:
         except ValueError:
             return None
         if parsed.tzinfo is None or parsed.utcoffset() is None:
-            return None
+            # ATG racing-info/calendar wall times are Europe/Stockholm.
+            parsed = parsed.replace(tzinfo=ZoneInfo("Europe/Stockholm"))
         return parsed.astimezone(UTC)
 
     def resolve_race(
         self,
         calendar: AtgFetchResult,
         *,
-        country_code: str,
         track_name: str,
         race_number: int,
         expected_start: datetime | None = None,
+        country: str = "SE",
+        discipline: str = "trot",
     ) -> AtgRaceRef | None:
         if not calendar.success or not isinstance(calendar.payload, dict):
             return None
+        aliases = {("FR", "parisvincennes"): "vincennes", ("NO", "øvrevoll"): "ovrevoll"}
         target_track = self._normalize_name(track_name)
-        target_country = country_code.upper()
+        target_track = aliases.get((country, target_track), target_track)
         candidates: list[AtgRaceRef] = []
-        fallback: list[AtgRaceRef] = []
-        for track in calendar.payload.get("tracks") or []:
-            if not isinstance(track, dict):
+        tracks = calendar.payload.get("tracks")
+        if not isinstance(tracks, list):
+            return None
+        for track in tracks:
+            if not isinstance(track, dict) or track.get("countryCode") != country:
                 continue
-            if str(track.get("countryCode") or "").upper() != target_country:
+            if track.get("sport") != discipline:
                 continue
             name = str(track.get("name") or "")
-            track_matches = self._normalize_name(name) == target_track
-            for race in track.get("races") or []:
+            if self._normalize_name(name) != target_track:
+                continue
+            races = track.get("races")
+            if not isinstance(races, list):
+                continue
+            for race in races:
                 if not isinstance(race, dict):
                     continue
                 try:
@@ -143,46 +152,29 @@ class AtgClient:
                     continue
                 if number != race_number or not race.get("id"):
                     continue
-                ref = AtgRaceRef(
-                    race_id=str(race["id"]),
-                    track_name=name,
-                    race_number=number,
-                    start_time=self._parse_time(race.get("startTime")),
+                start = self._parse_time(race.get("startTime"))
+                if (expected_start is None or start is None
+                        or abs((start - expected_start).total_seconds()) > 300
+                        or race.get("status") != "upcoming"):
+                    continue
+                candidates.append(
+                    AtgRaceRef(
+                        race_id=str(race["id"]),
+                        track_name=name,
+                        race_number=number,
+                        start_time=self._parse_time(race.get("startTime")),
+                    )
                 )
-                fallback.append(ref)
-                if track_matches:
-                    candidates.append(ref)
 
-        if not candidates and expected_start is not None:
-            expected = expected_start.astimezone(UTC)
-            close = [
-                item
-                for item in fallback
-                if item.start_time is not None
-                and abs((item.start_time - expected).total_seconds()) <= 600
-            ]
-            if len(close) == 1:
-                candidates = close
-
-        if not candidates:
+        if len(candidates) != 1:
             return None
-        if expected_start is None or len(candidates) == 1:
-            return candidates[0]
-        expected = expected_start.astimezone(UTC)
-        return min(
-            candidates,
-            key=lambda item: (
-                abs((item.start_time - expected).total_seconds())
-                if item.start_time is not None
-                else float("inf")
-            ),
-        )
+        return candidates[0]
 
     @staticmethod
     def race_payload(fetch: AtgFetchResult) -> dict[str, Any] | None:
         if not fetch.success or not isinstance(fetch.payload, dict):
             return None
         races = fetch.payload.get("races")
-        if not isinstance(races, list) or not races or not isinstance(races[0], dict):
+        if not isinstance(races, list) or len(races) != 1 or not isinstance(races[0], dict):
             return None
         return races[0]

@@ -11,6 +11,7 @@ from .domain import Decision
 from .eligibility import evaluate_win_eligibility
 from .engine import CombinationPolicy, evaluate_race
 from .probability import normalize_market_odds
+from .provider_capability import full_field_gate
 from .storage import SQLiteStore
 
 
@@ -155,6 +156,17 @@ def run_win_shadow_decision(
             ),
         )
 
+    gate_reason = full_field_gate(
+        store, race_id, store.latest_runner_fundamentals(race_id, before=current), current,
+    )
+    if gate_reason:
+        _persist_decision_run(
+            store, race_id=race_id, raceday_key=provider_raceday_key,
+            race_start_at=race_start_at, decision_time=current, policy=rules,
+            status="NOT_EXECUTABLE", reason=gate_reason,
+        )
+        return ShadowRunResult(race_id, 0, "NOT_EXECUTABLE", gate_reason)
+
     rows = store.latest_provider_market(race_id, "V")
     if not rows:
         _persist_decision_run(
@@ -186,6 +198,18 @@ def run_win_shadow_decision(
     source_market_time = str(rows[0]["observed_at_utc"])
 
     fundamental_run = store.latest_fundamental_model_run(race_id, before=current)
+    if race_id.startswith("RIKSTOTO:"):
+        cohort = store.latest_runner_fundamentals(race_id, before=current)
+        feature_time = max((r["feature_as_of_utc"] for r in cohort
+                            if not r.get("scratched")), default=None)
+        if fundamental_run is None or fundamental_run["feature_as_of_utc"] != feature_time:
+            reason = "FULL_FIELD_ONLY_MODEL_COHORT_MISMATCH"
+            _persist_decision_run(
+                store, race_id=race_id, raceday_key=provider_raceday_key,
+                race_start_at=race_start_at, decision_time=current, policy=rules,
+                status="NOT_EXECUTABLE", reason=reason,
+            )
+            return ShadowRunResult(race_id, 0, "NOT_EXECUTABLE", reason)
     fundamental_model_version = (
         None
         if fundamental_run is None
@@ -230,6 +254,9 @@ def run_win_shadow_decision(
         layer=rules.fundamental_layer,
         before=current,
     )
+    if race_id.startswith("RIKSTOTO:") and fundamental_run is not None:
+        # Use exactly the gated model cohort, never per-runner predictions from mixed runs.
+        fundamental = json.loads(str(fundamental_run["probabilities_json"]))
     if not fundamental:
         _persist_decision_run(
             store,
