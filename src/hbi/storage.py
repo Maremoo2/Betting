@@ -816,6 +816,65 @@ class SQLiteStore:
                 values,
             )
 
+    def resolve_provider_race(
+        self,
+        *,
+        provider: str,
+        provider_raceday_key: str,
+        race_number: int,
+    ) -> str | None:
+        with self.connect() as connection:
+            row = connection.execute(
+                "SELECT race_id FROM provider_race_refs "
+                "WHERE provider=? AND provider_raceday_key=? AND race_number=?",
+                (provider, provider_raceday_key, race_number),
+            ).fetchone()
+            return None if row is None else str(row["race_id"])
+
+    def runner_exists(self, race_id: str, selection_id: str) -> bool:
+        with self.connect() as connection:
+            row = connection.execute(
+                "SELECT 1 FROM runners WHERE race_id=? AND selection_id=? LIMIT 1",
+                (race_id, selection_id),
+            ).fetchone()
+            return row is not None
+
+    def insert_intelligence_evidence(self, record: dict[str, object]) -> bool:
+        columns = (
+            "intelligence_id", "race_id", "selection_id", "provider",
+            "provider_raceday_key", "race_number", "observed_at_utc", "event_type",
+            "claim_text", "source_uri", "source_type", "source_timestamp_utc",
+            "source_time_basis", "confidence", "materiality", "evidence_status",
+            "prewatch_score", "policy_version", "extractor", "pit_eligible",
+            "research_only", "production_feature_eligible", "raw_json",
+            "created_at_utc",
+        )
+        values = [record.get(column) for column in columns]
+        with self.connect() as connection:
+            cursor = connection.execute(
+                f"INSERT OR IGNORE INTO intelligence_evidence ({','.join(columns)}) "
+                f"VALUES ({','.join('?' for _ in columns)})",
+                values,
+            )
+            return cursor.rowcount == 1
+
+    def record_intelligence_bridge_import(
+        self,
+        record: dict[str, object],
+    ) -> bool:
+        columns = (
+            "inbox_id", "imported_at_utc", "source_sheet", "source_row", "status",
+            "reason", "intelligence_id", "race_id", "raw_json",
+        )
+        values = [record.get(column) for column in columns]
+        with self.connect() as connection:
+            cursor = connection.execute(
+                f"INSERT OR IGNORE INTO intelligence_bridge_imports "
+                f"({','.join(columns)}) VALUES ({','.join('?' for _ in columns)})",
+                values,
+            )
+            return cursor.rowcount == 1
+
     def create_shadow_ticket(self, ticket: dict[str, object]) -> bool:
         columns = (
             "ticket_id", "dedupe_key", "created_at_utc", "decision_time_utc", "race_id",
@@ -937,6 +996,7 @@ class SQLiteStore:
             "research_daily_reports", "decision_provenance",
             "system_run_manifests", "integrity_audits", "challenger_registry",
             "challenger_forward_events", "counterfactual_runs",
+            "intelligence_evidence", "intelligence_bridge_imports",
         }
         if table not in allowed:
             raise ValueError("unsupported table")
@@ -955,6 +1015,7 @@ class SQLiteStore:
             "research_daily_reports", "decision_provenance",
             "system_run_manifests", "integrity_audits", "challenger_registry",
             "challenger_forward_events", "counterfactual_runs",
+            "intelligence_evidence", "intelligence_bridge_imports",
         }
         if table not in allowed:
             raise ValueError("unsupported table")

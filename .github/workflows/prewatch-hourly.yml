@@ -19,6 +19,7 @@ on:
 permissions:
   contents: read
   actions: read
+  issues: read
 
 concurrency:
   group: hbi-state-writer
@@ -75,6 +76,34 @@ jobs:
       - name: Initialize / migrate database
         if: steps.gate.outputs.should_run == 'true'
         run: hbi --db data/hbi.sqlite init-db
+
+      - name: Import scheduled intelligence from GitHub inbox
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          hbi --db data/hbi.sqlite ingest-github-evidence-inbox \
+            --repository "${{ github.repository }}" \
+            --issue-number 18
+
+      - name: Optional scheduled-intelligence evidence import
+        if: steps.gate.outputs.should_run == 'true'
+        env:
+          HBI_SPREADSHEET_ID: ${{ secrets.HBI_SPREADSHEET_ID }}
+          HBI_GOOGLE_CREDENTIALS_JSON: ${{ secrets.HBI_GOOGLE_CREDENTIALS_JSON }}
+        shell: bash
+        run: |
+          if [[ -z "$HBI_SPREADSHEET_ID" || -z "$HBI_GOOGLE_CREDENTIALS_JSON" ]]; then
+            echo "Sheets secrets not configured; skipping intelligence inbox import."
+            exit 0
+          fi
+          pip install -e ".[sheets]"
+          CREDS="$RUNNER_TEMP/hbi-google-service-account.json"
+          printf '%s' "$HBI_GOOGLE_CREDENTIALS_JSON" > "$CREDS"
+          hbi --db data/hbi.sqlite ingest-evidence-inbox \
+            --spreadsheet-id "$HBI_SPREADSHEET_ID" \
+            --credentials "$CREDS" \
+            --worksheet "HBI_EVIDENCE_INBOX"
 
       - name: Run HBI PRE-WATCH
         if: steps.gate.outputs.should_run == 'true'

@@ -2,6 +2,8 @@
 
 A Benter-first horse-racing research and decision-support system.
 
+Scheduled ChatGPT research is connected through a narrow **research-only evidence bridge**: qualitative pre-watch findings enter an append-only GitHub issue inbox (with an optional Google Sheets mirror) and are validated into canonical SQLite research records, but the LLM cannot overwrite odds, results, probabilities, decisions, stakes or settlement. See [docs/INTELLIGENCE_BRIDGE.md](docs/INTELLIGENCE_BRIDGE.md).
+
 The project separates:
 
 - a **market-free fundamental model**
