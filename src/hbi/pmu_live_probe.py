@@ -43,6 +43,8 @@ class PmuProbe:
     programme_ok: bool
     reunion_number: int | None = None
     pmu_track: str | None = None
+    pmu_country_raw: object | None = None
+    pmu_course_keys: list[str] = field(default_factory=list)
     participant_count: int = 0
     participant_keys: list[str] = field(default_factory=list)
     performance_participant_count: int = 0
@@ -119,6 +121,17 @@ def run_probe() -> PmuProbe:
             return probe
         probe.reunion_number = reunion_number
         probe.pmu_track = _track_name(reunion)
+        probe.pmu_country_raw = reunion.get("pays")
+        courses = reunion.get("courses")
+        if isinstance(courses, list):
+            matching_courses = [
+                item
+                for item in courses
+                if isinstance(item, dict)
+                and item.get("numOrdre") == race.race_number
+            ]
+            if matching_courses:
+                probe.pmu_course_keys = sorted(matching_courses[0])
 
         participants = pmu.participants(
             race.start_time.date(),
