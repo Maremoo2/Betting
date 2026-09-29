@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - "feature/international-full-field-enrichment-v1"
+      - "feature/pmu-france-full-field-v1"
 
 permissions:
   contents: read
