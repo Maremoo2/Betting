@@ -6,7 +6,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import Any
 import unicodedata
 
@@ -153,7 +153,36 @@ class PmuClient:
             raw = value
         if raw is None:
             return None
-        return str(raw).upper()
+        code = str(raw).upper()
+        iso3_to_iso2 = {
+            "FRA": "FR",
+            "CHE": "CH",
+            "ESP": "ES",
+            "DNK": "DK",
+            "SWE": "SE",
+            "NOR": "NO",
+            "USA": "US",
+            "DEU": "DE",
+            "GBR": "GB",
+            "ITA": "IT",
+            "BEL": "BE",
+            "NLD": "NL",
+        }
+        return iso3_to_iso2.get(code, code)
+
+    @staticmethod
+    def _course_start(course: dict[str, object]) -> datetime | None:
+        value = course.get("heureDepart")
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            return None
+        if numeric > 10_000_000_000:
+            numeric /= 1000.0
+        try:
+            return datetime.fromtimestamp(numeric, tz=UTC)
+        except (OverflowError, OSError, ValueError):
+            return None
 
     def resolve_race(
         self,
@@ -162,6 +191,7 @@ class PmuClient:
         country_code: str,
         track_name: str,
         race_number: int,
+        expected_start: datetime | None = None,
     ) -> PmuRaceRef | None:
         target_track = self._normalize_name(track_name)
         target_country = country_code.upper()
@@ -188,15 +218,29 @@ class PmuClient:
                     number = int(course.get("numOrdre"))
                 except (TypeError, ValueError):
                     continue
-                if number == race_number:
-                    candidates.append(
-                        PmuRaceRef(
-                            reunion_number=reunion_number,
-                            race_number=number,
-                            track_name=track,
-                            country_code=country,
+                if number != race_number:
+                    continue
+                if expected_start is not None:
+                    course_start = self._course_start(course)
+                    if (
+                        course_start is not None
+                        and abs(
+                            (
+                                course_start
+                                - expected_start.astimezone(UTC)
+                            ).total_seconds()
                         )
+                        > 600
+                    ):
+                        continue
+                candidates.append(
+                    PmuRaceRef(
+                        reunion_number=reunion_number,
+                        race_number=number,
+                        track_name=track,
+                        country_code=country,
                     )
+                )
 
         return candidates[0] if len(candidates) == 1 else None
 
