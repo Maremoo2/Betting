@@ -11,10 +11,12 @@ Canonical source of truth:
 HBI SQLite
 ```
 
-Google Sheets is not the betting database. The worksheet
-`HBI_EVIDENCE_INBOX` is an append-only staging inbox for structured qualitative
-research evidence. HBI validates and imports accepted rows into
-`intelligence_evidence`.
+GitHub issue #18 (`HBI Intelligence Evidence Inbox (machine staging)`) is the
+primary machine transport because GitHub Actions can read it with the built-in
+`GITHUB_TOKEN` and no external credential. The worksheet `HBI_EVIDENCE_INBOX`
+remains an optional human-readable staging/mirror path when Google Sheets credentials
+are configured. Neither transport is the betting database. HBI validates staged rows
+and imports accepted evidence into `intelligence_evidence`.
 
 The old manually maintained RACES/SNAPSHOTS/BETS_OUTCOMES tabs may remain useful for
 historical reference or dashboards, but they are not authoritative over canonical HBI
@@ -27,7 +29,9 @@ official/public sources
         |
 scheduled ChatGPT intelligence scout
         |
-HBI_EVIDENCE_INBOX (staging only)
+GitHub issue #18 comments (primary staging)
+        |
+optional HBI_EVIDENCE_INBOX mirror
         |
 HBI validation / race identity resolution / PIT checks
         |
@@ -49,9 +53,27 @@ The bridge never writes directly to:
 - settlement;
 - model promotion.
 
-## Worksheet contract
+## Primary GitHub issue transport
 
-The staging worksheet is `HBI_EVIDENCE_INBOX`.
+The scheduled scout posts an append-only comment to repository issue #18 using this
+envelope:
+
+```text
+HBI_INTELLIGENCE_BRIDGE_V1
+{...one JSON evidence row...}
+```
+
+A JSON array is also accepted. Comments without the exact bridge envelope are ignored.
+The hourly and nightly workflows import issue #18 with `issues: read` permission and
+the built-in GitHub Actions token. This makes the core bridge independent of Google
+Sheets secrets.
+
+Historical machine evidence comments should not be edited to rewrite an observation.
+A correction is appended as a new row with a new `inbox_id`.
+
+## Optional worksheet contract
+
+The optional staging/mirror worksheet is `HBI_EVIDENCE_INBOX`.
 
 Columns:
 
@@ -143,8 +165,9 @@ This allows later research such as:
 
 ## Import behavior
 
-The hourly HBI PRE-WATCH workflow and nightly settlement workflow attempt an inbox
-import when Google Sheets secrets are configured.
+The hourly HBI PRE-WATCH workflow and nightly settlement workflow always attempt the
+GitHub issue inbox import. They also attempt the Google Sheets inbox import when Sheets
+secrets are configured.
 
 The importer:
 
