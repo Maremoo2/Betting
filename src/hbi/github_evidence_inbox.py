@@ -33,7 +33,7 @@ class GitHubEvidenceInbox:
         except urllib.error.URLError as exc:
             raise RuntimeError(f"GitHub evidence inbox fetch failed: {exc}") from exc
         if not isinstance(payload, list):
-            raise RuntimeError("GitHub evidence inbox returned a non-list payload")
+            raise TypeError("GitHub evidence inbox returned a non-list payload")
         return [row for row in payload if isinstance(row, dict)]
 
     def read_rows(self) -> list[dict[str, object]]:
