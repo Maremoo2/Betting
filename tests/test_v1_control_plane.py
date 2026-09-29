@@ -381,6 +381,61 @@ def test_settlement_integrity_reconciles_pnl_and_winner(tmp_path):
     )
 
 
+def test_pending_ticket_with_outcome_is_warning_inside_settlement_grace(tmp_path):
+    store = _store(tmp_path)
+    _frozen_decision(store)
+    store.settle_outcome(
+        race_id="r1",
+        winner_selection_id="1",
+        settled_at=datetime(2026, 9, 27, 18, 10, tzinfo=UTC),
+    )
+    store.create_shadow_ticket(
+        {
+            "ticket_id": "pending-t1",
+            "dedupe_key": "pending-d1",
+            "created_at_utc": "2026-09-27T17:56:00+00:00",
+            "decision_time_utc": "2026-09-27T17:56:00+00:00",
+            "race_id": "r1",
+            "provider": "rikstoto",
+            "provider_raceday_key": "MP_NR_2026-09-27",
+            "product": "V",
+            "decision": "BET",
+            "status": "SHADOW_BET",
+            "selections_json": '["1"]',
+            "stake_nok": 25.0,
+            "number_of_rows": 1,
+            "available_price": 2.5,
+            "model_version": "SHADOW_RESEARCH_V1_EQUAL_LOG_POOL",
+            "target_minutes_to_start": 4.0,
+            "actual_minutes_to_start": 4.0,
+            "execution_latency_seconds": 0.0,
+        }
+    )
+
+    inside = run_settlement_integrity(
+        store,
+        now=datetime(2026, 9, 27, 20, 0, tzinfo=UTC),
+        grace_hours=24.0,
+    )
+    assert inside["status"] == "WARN"
+    assert not inside["failures"]
+    assert any(
+        item["reason"] == "official_outcome_exists_but_ticket_pending_within_grace"
+        for item in inside["warnings"]
+    )
+
+    late = run_settlement_integrity(
+        store,
+        now=datetime(2026, 9, 29, 0, 0, tzinfo=UTC),
+        grace_hours=24.0,
+    )
+    assert late["status"] == "FAIL"
+    assert any(
+        item["reason"] == "official_outcome_exists_but_ticket_unsettled_after_grace"
+        for item in late["failures"]
+    )
+
+
 def test_learning_dataset_preserves_frozen_decision(tmp_path):
     store = _store(tmp_path)
     _frozen_decision(store)
