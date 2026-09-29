@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
@@ -313,7 +314,7 @@ class RikstotoCollector:
             start_number = int(rikstoto_start.get("startNumber"))
         except (TypeError, ValueError):
             return None, None, None
-        name = cls._normalize_identity(rikstoto_start.get("horseName"))
+        name = cls._normalize_pmu_horse_name(rikstoto_start.get("horseName"))
         if name:
             match = by_name_start.get((name, start_number))
             if match is not None:
@@ -426,6 +427,15 @@ class RikstotoCollector:
         return game.url, by_registration, by_name_start
 
     @classmethod
+    def _normalize_pmu_horse_name(cls, value: object) -> str:
+        without_country_suffix = re.sub(
+            r"\s*\([A-Za-z]{2,3}\)\s*$",
+            "",
+            str(value or "").strip(),
+        )
+        return cls._normalize_identity(without_country_suffix)
+
+    @classmethod
     def _pmu_runner_map(
         cls,
         rows: list[dict[str, object]],
@@ -433,7 +443,7 @@ class RikstotoCollector:
         output: dict[tuple[str, int], dict[str, object]] = {}
         duplicates: set[tuple[str, int]] = set()
         for row in rows:
-            name = cls._normalize_identity(row.get("nom"))
+            name = cls._normalize_pmu_horse_name(row.get("nom"))
             try:
                 start_number = int(row.get("numPmu"))
             except (TypeError, ValueError):
