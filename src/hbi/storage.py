@@ -463,7 +463,9 @@ class SQLiteStore:
             "history_total_wins", "history_total_seconds", "history_total_thirds",
             "history_total_earnings", "current_year_starts", "current_year_wins",
             "current_year_seconds", "current_year_thirds", "current_year_earnings",
-            "scratched", "data_quality", "raw_json",
+            "scratched", "data_quality", "enrichment_provider",
+            "identity_match_method", "identity_match_confidence",
+            "full_field_history_complete", "raw_json",
         )
         values = [snapshot.get(column) for column in columns]
         with self.connect() as connection:
