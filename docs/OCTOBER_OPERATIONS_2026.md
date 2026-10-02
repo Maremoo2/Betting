@@ -58,6 +58,16 @@ ticket `8c02c3e9-b0d7-4714-ba88-05f53e70e183`:
 `official_outcome_exists_but_ticket_unsettled_after_grace`.
 It remains **OPEN** until official data and settlement reconciliation establish a fix.
 
+Investigation confirmed that Rikstoto's `winOdds` contains only the winning
+dividend for this race: #6 at 2.15 with `payoutStatus=Dividends`. The complete
+official result (`isComplete=true`) records #4 in third place. The old settlement
+code incorrectly required a winning-dividend entry for the losing selection.
+The repair settles a proven loss at zero return after checking a complete result
+and published winner dividend. Missing loser closing odds/CLV remain null.
+Unconfirmed results, absent selections and ambiguous finish-zero/scratch cases
+remain pending. The normal state-writer workflow also runs when settlement code
+is merged, to reconcile the live backlog and preserve the updated state.
+
 The [nightly run for 1 October](https://github.com/Maremoo2/Betting/actions/runs/36936237329)
 reported zero tickets created that day, zero settlements and one pending historical
 ticket, with zero fetch failures. A successful workflow exit therefore does not

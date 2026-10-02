@@ -176,7 +176,7 @@ class SettlementClient(RikstotoClient):
             payload={
                 "result": {
                     "finalOdds": {
-                        "winOdds": {"1": {"1": {"odds": 2.5}}},
+                        "winOdds": {"1": {"1": {"odds": 2.5, "payoutStatus": "Dividends"}}},
                         "placeOdds": {},
                     }
                 }
@@ -192,6 +192,7 @@ class SettlementClient(RikstotoClient):
             error=None,
             payload={
                 "result": {
+                    "isComplete": True,
                     "results": [
                         {"startNumber": 1, "place": 1},
                         {"startNumber": 2, "place": 2},
