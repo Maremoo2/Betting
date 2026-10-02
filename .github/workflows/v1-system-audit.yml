@@ -76,6 +76,10 @@ jobs:
           --start 2026-10-01 --end 2026-10-07
           --output research-v1/october-operations.json
 
+      - name: Build evidence-driven October tracker
+        if: steps.gate.outputs.should_run == 'true' && always()
+        run: python -m hbi.october_tracker --db data/hbi.sqlite --output-dir research-v1
+
       - name: Upload V1 audit evidence
         if: steps.gate.outputs.should_run == 'true' && always()
         uses: actions/upload-artifact@v4

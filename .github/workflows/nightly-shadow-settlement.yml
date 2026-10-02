@@ -99,6 +99,10 @@ jobs:
         if: steps.gate.outputs.should_run == 'true'
         run: hbi --db data/hbi.sqlite export hbi-export --format csv
 
+      - name: Build evidence-driven October tracker
+        if: steps.gate.outputs.should_run == 'true'
+        run: python -m hbi.october_tracker --db data/hbi.sqlite --output-dir research-v1
+
       - name: Export canonical database as JSON
         if: steps.gate.outputs.should_run == 'true'
         run: |

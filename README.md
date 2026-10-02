@@ -832,3 +832,7 @@ A new Challenger never inherits the sample that was used to discover it. Each
 Challenger receives its own prospective forward-validation clock.
 
 International ingestion: see [FULL_FIELD_ONLY provider capabilities](docs/INTERNATIONAL_FUNDAMENTALS.md).
+
+October progress: [evidence-driven tracker and dashboard](docs/OCTOBER_TRACKER.md),
+generated daily from production state with country filters, milestone blockers,
+paired model scores and verified-price paper results.
