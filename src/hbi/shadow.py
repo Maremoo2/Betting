@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 from hashlib import sha256
 from uuid import uuid4
 
+from .contender_gate import Contender, Pricing, Quote, review_contenders
 from .decision import DecisionPolicy
 from .domain import Decision
 from .eligibility import evaluate_win_eligibility
@@ -336,15 +337,49 @@ def run_win_shadow_decision(
             safety_margin=rules.safety_margin,
         ),
     )
+    contender_report = review_contenders(
+        contenders=[Contender(selection, winner_odds=odds)
+                    for selection, odds in market_odds.items()],
+        pricing={selection: Pricing(
+            p_win=a.probability, fair_odds=a.fair_odds,
+            minimum_odds=max(a.minimum_price, (1 + rules.minimum_edge) / a.probability),
+            decision=a.decision.value, priced_at=current,
+        ) for selection, a in evaluated.assessments.items()},
+        latest_quotes={str(row["selection_key"]): Quote(
+            float(row["odds_decimal"]), datetime.fromisoformat(str(row["observed_at_utc"])),
+        ) for row in rows if str(row["selection_key"]) in market_odds},
+        decision_time=current, race_start=race_start_at,
+    )
+    store.insert_provider_payload(
+        payload_id=f"contender:{frozen_id}", provider="hbi",
+        category="CONTENDER_GATE_V2_1", provider_raceday_key=provider_raceday_key,
+        observed_at=current, source_uri=f"hbi:shadow:{frozen_id}", product="V",
+        payload={"race_id": race_id, "decision_run_id": frozen_id,
+                 **contender_report.to_dict()},
+    )
+    if not contender_report.allowed:
+        reason = "|".join(contender_report.errors)
+        _persist_decision_run(
+            store, race_id=race_id, raceday_key=provider_raceday_key,
+            race_start_at=race_start_at, decision_time=current, policy=rules,
+            status="NOT_EXECUTABLE", reason=reason,
+        )
+        return ShadowRunResult(race_id, 0, "NOT_EXECUTABLE", reason)
+    executable_selections = {
+        row["selection"] for row in contender_report.runners
+        if row["pricing"] and row["pricing"]["decision"] == Decision.BET
+    }
     candidates = [
         (selection, assessment)
         for selection, assessment in evaluated.assessments.items()
-        if assessment.decision == Decision.BET
+        if selection in executable_selections
     ]
     candidates.sort(key=lambda item: item[1].expected_value, reverse=True)
     candidates = candidates[: rules.max_win_bets_per_race]
 
     if not candidates:
+        status = "WATCH" if contender_report.winner_status == "WATCH" else "PASS"
+        reason = "CONTENDERS_AWAIT_PRICE_OR_REVIEW" if status == "WATCH" else "NO_VALUE_BET"
         _persist_decision_run(
             store,
             race_id=race_id,
@@ -352,8 +387,8 @@ def run_win_shadow_decision(
             race_start_at=race_start_at,
             decision_time=current,
             policy=rules,
-            status="PASS",
-            reason="NO_VALUE_BET",
+            status=status,
+            reason=reason,
             fundamental_model_version=fundamental_model_version,
             source_market_observed_at=source_market_time,
             fundamental=evaluated.fundamental_probabilities,
@@ -364,8 +399,8 @@ def run_win_shadow_decision(
         return ShadowRunResult(
             race_id=race_id,
             created=0,
-            status="PASS",
-            reason="NO_VALUE_BET",
+            status=status,
+            reason=reason,
         )
 
     actual_minutes, latency = _timing(

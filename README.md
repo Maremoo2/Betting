@@ -55,6 +55,8 @@ Implemented in this repository:
 - market-free `FUNDAMENTAL_CHAMPION_V1_1` shadow probabilities
 - best-effort T-4 shadow watcher every five minutes
 - immutable shadow ticket ledger and nightly settlement/report
+- [V2.1 Contender Gate](docs/CONTENDER_GATE_V2_1.md): mandatory pricing audit,
+  late-price WATCH downgrade, and separate Winner/coupon consistency review
 - Research Observatory v1 with data-health, calibration, model-vs-market and CLV/P&L reporting
 - immutable nightly SQLite + CSV + JSON research backups with integrity hashes
 - **market-only benchmark** for log-loss and Brier evaluation
