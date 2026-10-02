@@ -1,11 +1,28 @@
 from copy import deepcopy
 from datetime import UTC, datetime, timedelta
+from io import BytesIO
 
 import pytest
 from test_provider_capability import inputs
 
 from hbi.providers.atg import AtgFetchResult
 from hbi.providers.letrot import EmbeddedData, LeTrotClient
+
+
+def test_public_page_over_two_mb_is_not_silently_truncated(monkeypatch):
+    class Response(BytesIO):
+        status = 200
+        url = "https://www.letrot.com/courses/2026-10-02/7500/1"
+
+    page = b" " * 2_100_000 + b'<race-detail :payload="{&quot;race&quot;:{}}"></race-detail>'
+    monkeypatch.setattr("urllib.request.urlopen", lambda *a, **kw: Response(page))
+    result = LeTrotClient().fetch("/courses/2026-10-02/7500/1", "race-detail", ":payload")
+    assert result.success
+    assert result.payload == {"race": {}}
+    monkeypatch.setattr(LeTrotClient, "MAX_PAGE_BYTES", 100)
+    result = LeTrotClient().fetch("/courses/2026-10-02/7500/1", "race-detail", ":payload")
+    assert not result.success
+    assert "bounded response size" in result.error
 
 NOW = datetime(2026, 9, 27, 17, 56, tzinfo=UTC)
 

@@ -28,6 +28,7 @@ class EmbeddedData(HTMLParser):
 
 class LeTrotClient:
     BASE = "https://www.letrot.com"
+    MAX_PAGE_BYTES = 8_000_000
 
     def fetch(self, path: str, tag: str, attribute: str) -> AtgFetchResult:
         if not re.fullmatch(r"/(?:courses|stats/chevaux)/[A-Za-z0-9/_-]+", path):
@@ -42,7 +43,11 @@ class LeTrotClient:
                 if not response.url.startswith(self.BASE + "/"):
                     raise ValueError("External redirect; no public history contract")
                 parser = EmbeddedData(tag, attribute)
-                parser.feed(response.read(2_000_000).decode("utf-8"))
+                raw = response.read(self.MAX_PAGE_BYTES + 1)
+                if len(raw) > self.MAX_PAGE_BYTES:
+                    raise ValueError("Public page exceeds bounded response size")
+                parser.feed(raw.decode("utf-8"))
+                parser.close()
                 if len(parser.values) != 1 or not isinstance(parser.values[0], dict):
                     raise ValueError("Missing or ambiguous embedded public schema")
                 return AtgFetchResult(
