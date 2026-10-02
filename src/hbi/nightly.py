@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
@@ -62,6 +63,20 @@ def _finish_map(complete: dict[str, object]) -> dict[str, int]:
     return output
 
 
+def _confirmed_win_dividends(result: dict, race_number: int, winners: set[str]) -> bool:
+    """A published winning dividend confirms the result without pricing losing horses."""
+    try:
+        entries = result["finalOdds"]["winOdds"][str(race_number)]
+        return bool(winners) and all(
+            entries[w]["payoutStatus"] == "Dividends"
+            and math.isfinite(float(entries[w]["odds"]))
+            and float(entries[w]["odds"]) > 0
+            for w in winners
+        )
+    except (KeyError, TypeError, ValueError, OverflowError):
+        return False
+
+
 def settle_open_shadow_tickets(
     store: SQLiteStore,
     *,
@@ -116,16 +131,25 @@ def settle_open_shadow_tickets(
         product = str(ticket["product"])
 
         if product == "V":
+            winners = {number for number, finish in finishes.items() if finish == 1}
+            finish = finishes.get(selection)
+            if (
+                complete.get("isComplete") is not True
+                or finish is None or finish <= 0
+                or not _confirmed_win_dividends(raceday_result, race_number, winners)
+            ):
+                pending += 1
+                continue
             price = _final_odds(
                 raceday_result,
                 product_key="winOdds",
                 race_number=race_number,
                 selection=selection,
             )
-            if not finishes or price is None:
+            won = finish == 1
+            if won and price is None:
                 pending += 1
                 continue
-            won = finishes.get(selection) == 1
             gross = stake * price if won else 0.0
         elif product == "P":
             final_odds = raceday_result.get("finalOdds")
@@ -160,7 +184,7 @@ def settle_open_shadow_tickets(
         close = price
         decision_price = ticket.get("available_price")
         clv = None
-        if decision_price is not None and close is not None:
+        if decision_price is not None and close is not None and close > 1:
             clv = closing_line_value(float(decision_price), float(close))
         net = gross - stake
         store.settle_shadow_ticket(
