@@ -69,6 +69,13 @@ jobs:
         if: steps.gate.outputs.should_run == 'true'
         run: python -m hbi.v1_audit --db data/hbi.sqlite --output-dir research-v1
 
+      - name: Report October operational coverage even when integrity fails
+        if: steps.gate.outputs.should_run == 'true' && always()
+        run: >-
+          python -m hbi.operations_report --db data/hbi.sqlite
+          --start 2026-10-01 --end 2026-10-07
+          --output research-v1/october-operations.json
+
       - name: Upload V1 audit evidence
         if: steps.gate.outputs.should_run == 'true' && always()
         uses: actions/upload-artifact@v4
