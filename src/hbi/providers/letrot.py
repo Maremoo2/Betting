@@ -30,6 +30,14 @@ class LeTrotClient:
     BASE = "https://www.letrot.com"
     MAX_PAGE_BYTES = 8_000_000
 
+    @staticmethod
+    def _track_name(name: str) -> str:
+        normalized = AtgClient._normalize_name(name)
+        # Public LeTROT race pages identify Vincennes' grande piste;
+        # its calendar and ATG identify the parent hippodrome. Exact aliases only.
+        return {"vincennesgp": "vincennes"}.get(
+            normalized, normalized)
+
     def fetch(self, path: str, tag: str, attribute: str) -> AtgFetchResult:
         if not re.fullmatch(r"/(?:courses|stats/chevaux)/[A-Za-z0-9/_-]+", path):
             raise ValueError("LeTROT path outside public allowlist")
@@ -88,7 +96,7 @@ class LeTrotClient:
             meetings = [
                 m
                 for m in calendar.payload["meetings"]
-                if AtgClient._normalize_name(m["nomHippodrome"]) == AtgClient._normalize_name(track)
+                if self._track_name(m["nomHippodrome"]) == self._track_name(track)
             ]
             if len(meetings) != 1:
                 raise ValueError("MEETING_IDENTITY_NOT_UNIQUE")
@@ -105,8 +113,7 @@ class LeTrotClient:
                 or race["numCourse"] != race_number
                 or race["dateCourse"] != day
                 or race["discipline"] not in {"A", "M"}
-                or AtgClient._normalize_name(race["nomHippodrome"])
-                != AtgClient._normalize_name(track)
+                or self._track_name(race["nomHippodrome"]) != self._track_name(track)
                 or abs((start - expected_start).total_seconds()) > 300
                 or clock() >= start
             ):

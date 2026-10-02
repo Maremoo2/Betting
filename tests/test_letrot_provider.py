@@ -100,6 +100,28 @@ def test_full_career_corroboration_is_market_free():
     assert "rapportProbable" not in str(result)
 
 
+def test_vincennes_grande_piste_exact_alias_preserves_full_field_checks():
+    client = FakeLeTrot()
+    original = client.fetch
+    client.race["nomHippodrome"] = "VINCENNES - GP"
+
+    def fetch(path, tag, attribute):
+        if tag == "meeting-day":
+            return AtgFetchResult("https://www.letrot.com" + path, {
+                "meetings": [{"nomHippodrome": "VINCENNES", "numHippodrome": "7500"}]
+            }, True, 200, 1)
+        return original(path, tag, attribute)
+
+    client.fetch = fetch
+    matched = {str(s["number"]): s for s in inputs()["payload"]["starts"]}
+    args = {"track": "Vincennes", "race_number": 1,
+            "expected_start": NOW + timedelta(minutes=4), "matched": matched,
+            "audit": lambda *a, **kw: None, "clock": lambda: NOW}
+    assert client.corroborate(**args)["passed"]
+    client.race["nomHippodrome"] = "Vincennes Unknown"
+    assert not client.corroborate(**args)["passed"]
+
+
 @pytest.mark.parametrize(
     "mutation",
     [
