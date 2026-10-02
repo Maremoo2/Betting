@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 from datetime import datetime
 from pathlib import Path
 
+from .contender_gate import Contender, Pricing, Quote, review_contenders
 from .export import export_database_csv, export_database_json
 from .github_evidence_inbox import GitHubEvidenceInbox
 from .intelligence_bridge import ingest_intelligence_rows
@@ -29,6 +31,33 @@ def _store(path: str, schema: str | None = None) -> SQLiteStore:
 def cmd_init(args: argparse.Namespace) -> None:
     _store(args.db, args.schema)
     print(f"initialized {args.db}")
+
+
+def cmd_review_contenders(args: argparse.Namespace) -> None:
+    """Review a supplied complete field/coupon leg; never submit a wager."""
+    try:
+        data = json.loads(Path(args.file).read_text(encoding="utf-8"))
+        report = review_contenders(
+            contenders=[Contender(**row) for row in data["active_field"]],
+            pricing={selection: Pricing(**{**row, "priced_at": datetime.fromisoformat(
+                row["priced_at"])}) for selection, row in data["pricing"].items()},
+            latest_quotes={selection: Quote(**{**row, "observed_at": datetime.fromisoformat(
+                row["observed_at"])}) for selection, row in data["latest_quotes"].items()},
+            decision_time=datetime.fromisoformat(data["decision_time"]),
+            race_start=datetime.fromisoformat(data["race_start"]),
+            ticket_selections=(set(data["ticket_selections"])
+                               if "ticket_selections" in data else None),
+            omission_reasons=data.get("omission_reasons", {}),
+        )
+        output = {"race_id": data["race_id"], **report.to_dict()}
+    except (ValueError, TypeError, KeyError, AttributeError) as exc:
+        output = {"allowed": False, "winner_status": "BLOCKED",
+                  "errors": [f"INVALID_CONTENDER_INPUT:{exc}"]}
+    rendered = json.dumps(output, indent=2, ensure_ascii=False, allow_nan=False)
+    Path(args.output).write_text(rendered + "\n", encoding="utf-8")
+    print(rendered)
+    if not output["allowed"]:
+        raise SystemExit(2)
 
 
 def cmd_import_races(args: argparse.Namespace) -> None:
@@ -133,6 +162,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--db", default="data/hbi.sqlite")
     parser.add_argument("--schema", default=None)
     sub = parser.add_subparsers(dest="command", required=True)
+
+    contender = sub.add_parser("review-contenders")
+    contender.add_argument("file")
+    contender.add_argument("--output", required=True)
+    contender.set_defaults(func=cmd_review_contenders)
 
     init = sub.add_parser("init-db")
     init.set_defaults(func=cmd_init)
