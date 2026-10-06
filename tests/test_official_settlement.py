@@ -71,3 +71,38 @@ def test_absent_selection_is_not_assumed_to_have_lost(tmp_path):
     store = _store(tmp_path)
     ticket(store, "99")
     assert settle_open_shadow_tickets(store, client=ResultsClient()).settled == 0
+
+
+class DisqualifiedClient(ResultsClient):
+    finish = 0
+    marker = "Dsk"
+    participation_odds = 18
+
+    def complete_results(self, *args):
+        fetch = super().complete_results(*args)
+        fetch.payload["result"]["results"][1].update(
+            kmTime=self.marker, odds=self.participation_odds)
+        return fetch
+
+
+def test_verified_disqualification_settles_loss_without_invented_closing(tmp_path):
+    store = _store(tmp_path)
+    ticket(store)
+    result = settle_open_shadow_tickets(store, client=DisqualifiedClient())
+    assert result.settled == 1 and result.pending == 0
+    row = store.fetch_table("shadow_tickets")[0]
+    assert row["net_pnl_nok"] == -25 and row["gross_return_nok"] == 0
+    assert row["closing_price"] is None and row["clv"] is None
+
+
+@pytest.mark.parametrize("attribute,value", [
+    ("marker", "Str"), ("marker", ""), ("marker", None),
+    ("participation_odds", 0), ("participation_odds", float("nan")),
+    ("complete", False), ("payout_status", "Pending"),
+])
+def test_ambiguous_or_unconfirmed_zero_finish_still_pending(tmp_path, attribute, value):
+    store = _store(tmp_path)
+    ticket(store)
+    client = DisqualifiedClient()
+    setattr(client, attribute, value)
+    assert settle_open_shadow_tickets(store, client=client).pending == 1

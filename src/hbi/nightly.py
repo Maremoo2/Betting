@@ -77,6 +77,26 @@ def _confirmed_win_dividends(result: dict, race_number: int, winners: set[str]) 
         return False
 
 
+def _confirmed_disqualification(complete: dict, selection: str) -> bool:
+    """Only the live-verified Dsk marker with positive participation odds is a loss.
+
+    Plain finish zero and Str are ambiguous/scratch states, never inferred losses.
+    """
+    rows = complete.get("results")
+    if not isinstance(rows, list):
+        return False
+    matches = [r for r in rows if isinstance(r, dict) and str(r.get("startNumber")) == selection]
+    if len(matches) != 1:
+        return False
+    row = matches[0]
+    try:
+        price = float(row["odds"])
+        return (row.get("place") == 0 and row.get("kmTime") == "Dsk"
+                and math.isfinite(price) and price > 0)
+    except (KeyError, TypeError, ValueError, OverflowError):
+        return False
+
+
 def settle_open_shadow_tickets(
     store: SQLiteStore,
     *,
@@ -135,7 +155,8 @@ def settle_open_shadow_tickets(
             finish = finishes.get(selection)
             if (
                 complete.get("isComplete") is not True
-                or finish is None or finish <= 0
+                or finish is None or (finish <= 0 and not _confirmed_disqualification(
+                    complete, selection))
                 or not _confirmed_win_dividends(raceday_result, race_number, winners)
             ):
                 pending += 1
