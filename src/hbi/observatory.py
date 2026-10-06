@@ -113,20 +113,21 @@ def collect_decision_outcomes(
     client: RikstotoClient | None = None,
     settled_at: datetime | None = None,
 ) -> OutcomeCollection:
-    """Persist official winners for all frozen decision runs on one Oslo racing day."""
+    """Collect the report day and retry earlier frozen races with missing outcomes."""
     api = client or RikstotoClient()
     now = settled_at or datetime.now(UTC)
     start, end = _day_bounds(report_date)
-    decision_runs = [
-        row
-        for row in store.fetch_table("shadow_decision_runs")
-        if _in_window(row.get("race_start_time_utc"), start, end)
-    ]
     outcomes = {
         str(row["race_id"]): row
         for row in store.fetch_table("outcomes")
     }
-
+    decision_runs = [
+        row
+        for row in store.fetch_table("shadow_decision_runs")
+        if _in_window(row.get("race_start_time_utc"), start, end)
+        or (str(row["race_id"]) not in outcomes and _in_window(
+            row.get("race_start_time_utc"), datetime(1970, 1, 1, tzinfo=UTC), min(start, now)))
+    ]
     unique: dict[str, dict[str, object]] = {}
     for row in decision_runs:
         unique.setdefault(str(row["race_id"]), row)
@@ -147,7 +148,12 @@ def collect_decision_outcomes(
             failed += 1
             pending += 1
             continue
-        winner = _winner_from_complete(api.result_object(fetch))
+        complete = api.result_object(fetch)
+        if (not _in_window(decision.get("race_start_time_utc"), start, end)
+                and complete.get("isComplete") is not True):
+            pending += 1
+            continue
+        winner = _winner_from_complete(complete)
         if winner is None:
             pending += 1
             continue
@@ -180,10 +186,15 @@ def materialize_race_evaluations(
         str(row["race_id"]): row
         for row in store.fetch_table("outcomes")
     }
+    existing = {(row["race_id"], row["shadow_model_version"])
+                for row in store.fetch_table("race_research_evaluations")}
     decision_runs = [
         row
         for row in store.fetch_table("shadow_decision_runs")
         if _in_window(row.get("race_start_time_utc"), start, end)
+        or ((row["race_id"], row["shadow_model_version"]) not in existing
+            and row["race_id"] in outcomes and _in_window(
+                row.get("race_start_time_utc"), datetime(1970, 1, 1, tzinfo=UTC), min(start, now)))
     ]
 
     written = 0
