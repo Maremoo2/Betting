@@ -208,6 +208,8 @@ def test_empty_database_v1_audit_is_engineering_pass_with_evidence_pending(tmp_p
     assert report["engineering_status"] == "PASS_WITH_EVIDENCE_PENDING"
     assert report["temporal_integrity"]["status"] == "PASS"
     assert report["runtime_replay_parity"]["status"] == "NO_EVIDENCE"
+    assert report["strategic_focus"]["selected_chain_link"] == "provider_integrity"
+    assert report["strategic_focus"]["execution_authority"] is False
 
 
 
