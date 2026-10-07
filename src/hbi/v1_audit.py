@@ -14,6 +14,7 @@ from .replay_validation import run_runtime_replay_parity
 from .research_integrity import run_research_integrity_check
 from .settlement_integrity import run_settlement_integrity
 from .storage import SQLiteStore
+from .strategic_governance import build_strategic_focus
 
 ROOT = Path(__file__).parents[2]
 SCHEMA = ROOT / "db" / "schema.sql"
@@ -39,6 +40,7 @@ def _render_markdown(report: dict[str, object]) -> str:
     replay = report["runtime_replay_parity"]
     settlement = report["settlement_integrity"]
     learning = report["learning_dataset"]
+    focus = report["strategic_focus"]
     lines = [
         "# HBI V1 System Audit",
         "",
@@ -82,6 +84,13 @@ def _render_markdown(report: dict[str, object]) -> str:
         f"- Adaptive switching: {governance['adaptive_switching_enabled']}",
         f"- Real-money execution: {governance['real_money_execution']}",
         f"- Manual approval required: {governance['manual_approval_required']}",
+        "",
+        "## Strategic focus",
+        "",
+        f"- Weakest/current chain link: **{focus['selected_chain_link']}**",
+        f"- Diagnosis: {focus['diagnosis']}",
+        f"- Proximate objective: **{focus['proximate_objective']}**",
+        f"- Re-diagnose: {focus['re_diagnose_when']}",
         "",
         (
             "Engineering completion does not imply a proven betting edge. "
@@ -148,6 +157,11 @@ def run_v1_audit(
         "runtime_replay_parity": str(replay["status"]),
         "settlement_integrity": str(settlement["status"]),
     }
+    strategic_focus = build_strategic_focus(
+        p0_statuses=actual_p0,
+        evaluated_rows=int(learning_summary.get("evaluated_rows") or 0),
+        challenger_clocks=challenger_clocks,
+    )
     engineering_status, current_p0_evidence_status = (
         engineering_status_from_evidence(
             governance_valid=governance_validation.valid,
@@ -174,6 +188,7 @@ def run_v1_audit(
         "settlement_integrity": settlement,
         "learning_dataset": learning_summary,
         "challenger_forward_clocks": challenger_clocks,
+        "strategic_focus": strategic_focus.as_dict(),
         "interpretation": (
             "V1 engineering completion is determined by the implemented control plane "
             "and current audit evidence. Strategic validity remains a separate research "
