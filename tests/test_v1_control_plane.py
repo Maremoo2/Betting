@@ -57,6 +57,14 @@ def test_governance_is_machine_readable_and_safe():
     assert governance["manual_approval_required"] is True
 
 
+def test_governance_rejects_calendar_driven_strategy_progression():
+    governance = load_governance(GOVERNANCE)
+    governance["strategic_governance"]["next_step_policy"] = "CALENDAR_DRIVEN"
+    result = validate_governance(governance)
+    assert not result.valid
+    assert "next_step_policy_must_be_evidence_driven" in result.errors
+
+
 def test_future_mutation_invariance_passes():
     report = future_mutation_invariance()
     assert report["status"] == "PASS"
@@ -208,6 +216,8 @@ def test_empty_database_v1_audit_is_engineering_pass_with_evidence_pending(tmp_p
     assert report["engineering_status"] == "PASS_WITH_EVIDENCE_PENDING"
     assert report["temporal_integrity"]["status"] == "PASS"
     assert report["runtime_replay_parity"]["status"] == "NO_EVIDENCE"
+    assert report["strategic_focus"]["selected_chain_link"] == "provider_integrity"
+    assert report["strategic_focus"]["execution_authority"] is False
 
 
 
