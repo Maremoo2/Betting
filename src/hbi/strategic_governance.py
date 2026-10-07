@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 from collections.abc import Mapping, Sequence
+from dataclasses import asdict, dataclass
 
 STRATEGIC_FOCUS_SCHEMA_VERSION = "HBI_STRATEGIC_FOCUS_V1"
 
