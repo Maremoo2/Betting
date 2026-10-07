@@ -3,7 +3,6 @@ from hbi.strategic_governance import (
     validate_hypothesis,
 )
 
-
 PASS_P0 = {
     "temporal_integrity": "PASS",
     "provider_integrity": "PASS",
