@@ -1,4 +1,7 @@
-from hbi.strategic_governance import build_strategic_focus, validate_hypothesis
+from hbi.strategic_governance import (
+    build_strategic_focus,
+    validate_hypothesis,
+)
 
 
 PASS_P0 = {
