@@ -10,5 +10,7 @@
 /src/hbi/eligibility.py @Maremoo2
 /src/hbi/model_registry.py @Maremoo2
 /src/hbi/promotion.py @Maremoo2
+/src/hbi/governance.py @Maremoo2
+/src/hbi/strategic_governance.py @Maremoo2
 /docs/research_governance.json @Maremoo2
 /docs/RESEARCH_GOVERNANCE.md @Maremoo2
