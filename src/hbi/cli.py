@@ -49,7 +49,8 @@ def cmd_review_contenders(args: argparse.Namespace) -> None:
                                if "ticket_selections" in data else None),
             omission_reasons=data.get("omission_reasons", {}),
         )
-        output = {"race_id": data["race_id"], **report.to_dict()}
+        output = {"race_id": data["race_id"], **report.to_dict(),
+                  "standard": "LEGACY_RESEARCH_V2.1", "v33_approved": False}
     except (ValueError, TypeError, KeyError, AttributeError) as exc:
         output = {"allowed": False, "winner_status": "BLOCKED",
                   "errors": [f"INVALID_CONTENDER_INPUT:{exc}"]}
@@ -163,7 +164,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--schema", default=None)
     sub = parser.add_subparsers(dest="command", required=True)
 
-    contender = sub.add_parser("review-contenders")
+    betting = sub.add_parser("review-betting", help="Active Betting V3.3 decision layer")
+    betting.add_argument("file")
+    betting.add_argument("--batch", required=True)
+    betting.add_argument("--output", required=True)
+    betting.set_defaults(func=cmd_review_betting)
+
+    contender = sub.add_parser("review-contenders", help="Legacy V2.1 research replay only")
     contender.add_argument("file")
     contender.add_argument("--output", required=True)
     contender.set_defaults(func=cmd_review_contenders)
@@ -208,6 +215,12 @@ def build_parser() -> argparse.ArgumentParser:
     sheets.set_defaults(func=cmd_sync_sheets)
 
     return parser
+
+
+def cmd_review_betting(args: argparse.Namespace) -> None:
+    from betting.cli import main as betting_main
+
+    betting_main(["review", args.file, "--batch", args.batch, "--output", args.output])
 
 
 def main() -> None:

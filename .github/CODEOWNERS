@@ -1,6 +1,9 @@
 # HBI strategy / governance ownership.
 # Changes to these paths require explicit owner review and the strategy-change-approved label.
 
+/src/betting/ @Maremoo2
+/docs/BETTING_V3_3.md @Maremoo2
+
 /src/hbi/fundamental.py @Maremoo2
 /src/hbi/probability.py @Maremoo2
 /src/hbi/engine.py @Maremoo2

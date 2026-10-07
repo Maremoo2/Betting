@@ -1,0 +1,124 @@
+{
+  "race_id": "race",
+  "active_field": [
+    "1",
+    "2"
+  ],
+  "identity_matches": {
+    "1": {
+      "status": "EXACT",
+      "confidence": 1,
+      "provider_id": "1"
+    },
+    "2": {
+      "status": "EXACT",
+      "confidence": 1,
+      "provider_id": "2"
+    }
+  },
+  "decision_time": "2026-10-07T12:56:00+00:00",
+  "race_start": "2026-10-07T13:00:00+00:00",
+  "fundamental": {
+    "market_free": true,
+    "model_version": "external-calibrated-interval-v1",
+    "observed_at": "2026-10-07T12:50:00+00:00",
+    "priced_at": "2026-10-07T12:55:00+00:00",
+    "probabilities": {
+      "1": {
+        "p_low": 0.35,
+        "p_mid": 0.4,
+        "p_high": 0.45
+      },
+      "2": {
+        "p_low": 0.55,
+        "p_mid": 0.6,
+        "p_high": 0.65
+      }
+    }
+  },
+  "cases": {
+    "1": {
+      "qualified": true,
+      "reason": "form",
+      "minimum_price": 3
+    },
+    "2": {
+      "qualified": false,
+      "reason": "no independent case",
+      "minimum_price": 2
+    }
+  },
+  "decision_snapshot": {
+    "WIN": {
+      "race_id": "race",
+      "snapshot_id": "win-1",
+      "observed_at": "2026-10-07T12:55:50+00:00",
+      "odds": {
+        "1": 2.8,
+        "2": 2
+      }
+    },
+    "collective": {
+      "V4": {
+        "race_id": "race",
+        "product": "V4",
+        "snapshot_id": "V4",
+        "observed_at": "2026-10-07T12:55:45+00:00",
+        "shares": {
+          "1": 60,
+          "2": 40
+        }
+      },
+      "V65": {
+        "race_id": "race",
+        "product": "V65",
+        "snapshot_id": "V65",
+        "observed_at": "2026-10-07T12:55:45+00:00",
+        "shares": {
+          "1": 60,
+          "2": 40
+        }
+      }
+    }
+  },
+  "place": {
+    "market_free": true,
+    "model_version": "separate-place-v1",
+    "paid_places": 1,
+    "observed_at": "2026-10-07T12:50:00+00:00",
+    "priced_at": "2026-10-07T12:55:00+00:00",
+    "probabilities": {
+      "1": {
+        "p_low": 0.35,
+        "p_mid": 0.4,
+        "p_high": 0.45
+      },
+      "2": {
+        "p_low": 0.55,
+        "p_mid": 0.6,
+        "p_high": 0.65
+      }
+    },
+    "cases": {
+      "1": {
+        "qualified": true,
+        "reason": "place case",
+        "minimum_price": 3
+      },
+      "2": {
+        "qualified": false,
+        "reason": "no case",
+        "minimum_price": 2
+      }
+    },
+    "snapshot": {
+      "race_id": "race",
+      "snapshot_id": "place-1",
+      "observed_at": "2026-10-07T12:55:50+00:00",
+      "odds": {
+        "1": 3.1,
+        "2": 2
+      }
+    }
+  }
+}

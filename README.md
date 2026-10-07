@@ -2,6 +2,14 @@
 
 A Benter-first horse-racing research and decision-support system.
 
+**Active betting standard: Betting V3.3.** Use `betting review` or `hbi review-betting`.
+Full-field probability intervals and an independent PLACE model are required inputs;
+they are never inferred from HBI/PRE-WATCH scores. Divergence is evidence only.
+See [the V3.3 contract and prospective workflow](docs/BETTING_V3_3.md).
+The frozen Champion/watcher continues as a historical research comparator; its V2.1
+paper decisions are not V3.3 approvals. `hbi review-contenders` is the legacy V2.1
+replay interface. No V3.3 decision can submit a real wager.
+
 Scheduled ChatGPT research is connected through a narrow **research-only evidence bridge**: qualitative pre-watch findings enter an append-only GitHub issue inbox (with an optional Google Sheets mirror) and are validated into canonical SQLite research records, but the LLM cannot overwrite odds, results, probabilities, decisions, stakes or settlement. See [docs/INTELLIGENCE_BRIDGE.md](docs/INTELLIGENCE_BRIDGE.md).
 
 The project separates:
