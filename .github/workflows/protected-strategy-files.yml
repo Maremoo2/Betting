@@ -34,7 +34,7 @@ jobs:
           protected=false
           while IFS= read -r file; do
             case "$file" in
-              src/hbi/provider_capabilities.py|src/hbi/provider_capability.py|src/hbi/provider_coverage.json|src/hbi/providers/letrot.py|src/hbi/fundamental.py|src/hbi/probability.py|src/hbi/engine.py|src/hbi/decision.py|src/hbi/shadow.py|src/hbi/race_difficulty.py|src/hbi/eligibility.py|src/hbi/contender_gate.py|src/hbi/model_registry.py|src/hbi/promotion.py|src/hbi/governance.py|src/hbi/strategic_governance.py|docs/research_governance.json|docs/RESEARCH_GOVERNANCE.md)
+              src/betting/*|docs/BETTING_V3_3.md|src/hbi/provider_capabilities.py|src/hbi/provider_capability.py|src/hbi/provider_coverage.json|src/hbi/providers/letrot.py|src/hbi/fundamental.py|src/hbi/probability.py|src/hbi/engine.py|src/hbi/decision.py|src/hbi/shadow.py|src/hbi/race_difficulty.py|src/hbi/eligibility.py|src/hbi/contender_gate.py|src/hbi/model_registry.py|src/hbi/promotion.py|src/hbi/governance.py|src/hbi/strategic_governance.py|docs/research_governance.json|docs/RESEARCH_GOVERNANCE.md)
                 protected=true
                 ;;
             esac
