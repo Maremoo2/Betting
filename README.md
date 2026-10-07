@@ -626,6 +626,10 @@ which untouched eligible races accumulate can move them.
 The critical path is currently **data + prospective evidence**, not adding more model
 complexity.
 
+`build next step` is evidence-driven: the system audit selects the weakest current critical
+chain link and one proximate objective. Calendar dates are planning windows only; they do
+not authorize roadmap progression when a harder bottleneck remains open.
+
 ---
 
 ### Research/source hierarchy behind this roadmap
@@ -640,6 +644,12 @@ HBI intentionally distinguishes methodological evidence from product marketing.
 - The project's Benter-first V3/V3.2 architecture and current point-in-time research
   protocol.
 
+**Strategic governance**
+
+- Richard Rumelt, *Good Strategy/Bad Strategy*: used for diagnosis -> guiding policy ->
+  proximate objective -> coherent actions, chain-link/bottleneck focus, explicit defer
+  choices and create/destroy hypothesis discipline. Rumelt has no authority over
+  p(win), fair odds, model weights, staking or claims that racing markets are beatable.
 **Supporting model architecture**
 
 - the Ventus horse-racing paper: useful as supporting evidence for separating
