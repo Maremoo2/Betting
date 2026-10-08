@@ -72,3 +72,9 @@ runtime evidence. Its engineering result is derived from the actual audit run:
 When all four current P0 audits are `PASS` and governance is valid, the system audit
 reports V1 engineering `PASS`. Strategic validity remains independent and can still
 be `NOT_VALIDATED`.
+
+The latest V1 audit also writes `research-status.json`, an automatically derived
+effective status artifact based on the current audit results. A later failed
+real-state audit is reflected in that artifact without changing the static
+governance policy. Neither a passing audit nor this artifact grants execution or
+promotion authority.

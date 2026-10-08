@@ -92,3 +92,13 @@ These files are included in the immutable nightly research backup.
 The separate `HBI V1 Research Integrity` workflow runs the same engineering controls
 against a clean database on PRs and main. NO_EVIDENCE is an accepted engineering state
 for parity when no provenance-complete live decision exists yet; a mismatch is not.
+
+
+## Effective research status
+
+The independent V1 System Audit restores the latest real HBI state and writes
+`research-v1/research-status.json`. This file is derived from the latest temporal,
+provider, runtime-replay and settlement audits. It is current evidence, not a strategy
+configuration, and it never grants betting or promotion authority.
+
+Static policy remains in `docs/research_governance.json`.
