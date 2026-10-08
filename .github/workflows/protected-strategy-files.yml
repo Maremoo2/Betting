@@ -1,4 +1,4 @@
-name: HBI Protected Strategy Files
+name: Protected Strategy Files
 
 on:
   pull_request:
@@ -9,71 +9,56 @@ permissions:
   pull-requests: read
 
 jobs:
-  protected-strategy-files:
+  protected-strategy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Detect protected changes
+      - name: Detect protected strategy changes
         id: protected
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         shell: bash
         run: |
-          git diff --name-only "$BASE_SHA" "$HEAD_SHA" > /tmp/changed.txt
-          cat /tmp/changed.txt
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          CHANGED="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
+          printf '%s\n' "$CHANGED"
 
-          python - <<'PY' >> "$GITHUB_OUTPUT"
-          from pathlib import Path
+          if git cat-file -e "origin/${{ github.base_ref }}:.github/workflows/protected-strategy-files.yml" 2>/dev/null; then
+            echo "bootstrap=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "bootstrap=true" >> "$GITHUB_OUTPUT"
+            echo "Bootstrap PR: protection workflow is not yet present on the base branch."
+          fi
 
-          protected = {
-              "src/hbi/fundamental.py",
-              "src/hbi/probability.py",
-              "src/hbi/engine.py",
-              "src/hbi/decision.py",
-              "src/hbi/shadow.py",
-              "src/hbi/race_difficulty.py",
-              "src/hbi/governance.py",
-              "src/hbi/promotion.py",
-              "docs/research_governance.json",
-          }
-          changed = {
-              line.strip()
-              for line in Path("/tmp/changed.txt").read_text().splitlines()
-              if line.strip()
-          }
-          hits = sorted(changed & protected)
-          print(f"protected_changed={'true' if hits else 'false'}")
-          print("protected_files=" + ",".join(hits))
-          PY
+          protected=false
+          while IFS= read -r file; do
+            case "$file" in
+              src/betting/*|docs/BETTING_V3_3.md|src/hbi/provider_capabilities.py|src/hbi/provider_capability.py|src/hbi/provider_coverage.json|src/hbi/providers/letrot.py|src/hbi/fundamental.py|src/hbi/probability.py|src/hbi/engine.py|src/hbi/decision.py|src/hbi/shadow.py|src/hbi/race_difficulty.py|src/hbi/eligibility.py|src/hbi/contender_gate.py|src/hbi/model_registry.py|src/hbi/promotion.py|src/hbi/governance.py|src/hbi/strategic_governance.py|docs/research_governance.json|docs/RESEARCH_GOVERNANCE.md)
+                protected=true
+                ;;
+            esac
+          done <<< "$CHANGED"
+          echo "protected_changed=$protected" >> "$GITHUB_OUTPUT"
 
       - name: Require explicit strategy approval
-        if: steps.protected.outputs.protected_changed == 'true'
+        if: steps.protected.outputs.protected_changed == 'true' && steps.protected.outputs.bootstrap != 'true'
         env:
-          LABELS_JSON: ${{ toJson(github.event.pull_request.labels.*.name) }}
-          PROTECTED_FILES: ${{ steps.protected.outputs.protected_files }}
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
-          python - <<'PY'
-          import json
-          import os
-          import sys
+          LABELS="$(gh pr view "${{ github.event.pull_request.number }}" --json labels --jq '.labels[].name')"
+          if printf '%s\n' "$LABELS" | grep -Fxq "strategy-change-approved"; then
+            echo "Protected strategy change has explicit approval label."
+          else
+            echo "::error::Protected strategy/governance files changed without strategy-change-approved label."
+            exit 1
+          fi
 
-          labels = set(json.loads(os.environ.get("LABELS_JSON", "[]")))
-          required = "strategy-change-approved"
-          protected = os.environ.get("PROTECTED_FILES", "")
-          print(f"Protected HBI files changed: {protected}")
-          if required not in labels:
-              print(
-                  "BLOCKED: add the 'strategy-change-approved' PR label only after "
-                  "explicitly reviewing the model/governance change."
-              )
-              sys.exit(1)
-          print("Explicit strategy-change approval label present.")
-          PY
+      - name: Bootstrap protection
+        if: steps.protected.outputs.bootstrap == 'true'
+        run: echo "Protection installed. Future protected changes require strategy-change-approved."
 
-      - name: Confirm no protected strategy change
+      - name: No protected strategy changes
         if: steps.protected.outputs.protected_changed != 'true'
-        run: echo "No protected HBI strategy/governance files changed."
+        run: echo "No protected strategy/governance files changed."

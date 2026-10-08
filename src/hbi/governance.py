@@ -61,6 +61,40 @@ def validate_governance(payload: dict[str, Any]) -> GovernanceValidation:
     if payload.get("manual_approval_required") is not True:
         errors.append("manual_approval_must_be_true")
 
+    strategic = payload.get("strategic_governance")
+    if not isinstance(strategic, dict):
+        errors.append("strategic_governance_missing")
+        strategic = {}
+    if strategic.get("framework") != "RUMELT_KERNEL_V1":
+        errors.append("unexpected_strategic_governance_framework")
+    if strategic.get("source_role") != "STRATEGIC_GOVERNANCE":
+        errors.append("rumelt_source_role_must_be_strategic_governance")
+    if strategic.get("next_step_policy") != "EVIDENCE_DRIVEN_WEAKEST_CRITICAL_LINK":
+        errors.append("next_step_policy_must_be_evidence_driven")
+    for key in (
+        "single_proximate_objective",
+        "calendar_cannot_certify_progress",
+        "create_destroy_required_for_challenger_hypotheses",
+    ):
+        if strategic.get(key) is not True:
+            errors.append(f"strategic_governance_must_enable:{key}")
+    for key in ("production_probability_authority", "execution_authority"):
+        if strategic.get(key) is not False:
+            errors.append(f"strategic_governance_must_disable:{key}")
+
+    source_roles = payload.get("source_roles")
+    if not isinstance(source_roles, dict):
+        errors.append("source_roles_missing")
+        source_roles = {}
+    expected_source_roles = {
+        "BENTER": "PRIMARY_BETTING_METHODOLOGY",
+        "RUMELT": "STRATEGIC_GOVERNANCE",
+        "VENTUS": "SUPPORTING_MODEL_ARCHITECTURE",
+    }
+    for source, role in expected_source_roles.items():
+        if source_roles.get(source) != role:
+            errors.append(f"unexpected_source_role:{source}")
+
     p0 = payload.get("p0")
     p1 = payload.get("p1")
     if not isinstance(p0, dict):

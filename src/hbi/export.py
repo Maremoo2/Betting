@@ -31,6 +31,8 @@ DEFAULT_EXPORT_TABLES = (
     "challenger_registry",
     "challenger_forward_events",
     "counterfactual_runs",
+    "intelligence_evidence",
+    "intelligence_bridge_imports",
     "shadow_tickets",
     "shadow_daily_reports",
 )

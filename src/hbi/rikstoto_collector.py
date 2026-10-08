@@ -5,9 +5,12 @@ import json
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
+from zoneinfo import ZoneInfo
 
 from .domain import MarketSnapshot
+from .provider_capability import CONTRACT, capability, resolve_field
 from .providers.atg import AtgClient, AtgFetchResult
+from .providers.letrot import LeTrotClient
 from .providers.rikstoto import FetchResult, RikstotoClient, RikstotoRace
 from .storage import SQLiteStore
 
@@ -28,7 +31,15 @@ class RikstotoCollector:
         store: SQLiteStore,
         client: RikstotoClient | None = None,
         atg_client: AtgClient | None = None,
+        *,
+        clock=None,
+        capability_probe: bool = False,
+        letrot_client: LeTrotClient | None = None,
     ):
+        self.clock = clock or (lambda: datetime.now(UTC))
+        self.capability_probe = capability_probe
+        self.letrot_client = letrot_client or LeTrotClient()
+        self.last_capability = None
         self.store = store
         self.client = client or RikstotoClient()
         self.atg_client = atg_client or AtgClient()
@@ -240,33 +251,6 @@ class RikstotoCollector:
         except (TypeError, ValueError):
             return None
 
-    @staticmethod
-    def _atg_runner_maps(
-        race_payload: dict[str, object],
-    ) -> tuple[dict[str, dict[str, object]], dict[str, dict[str, object]]]:
-        by_registration: dict[str, dict[str, object]] = {}
-        by_name: dict[str, dict[str, object]] = {}
-        starts = race_payload.get("starts")
-        if not isinstance(starts, list):
-            return by_registration, by_name
-        for start in starts:
-            if not isinstance(start, dict):
-                continue
-            horse = start.get("horse")
-            if not isinstance(horse, dict):
-                continue
-            registration = horse.get("id")
-            if registration:
-                by_registration[str(registration)] = start
-            name = horse.get("name")
-            if name:
-                normalized = "".join(
-                    ch.lower() for ch in str(name) if ch.isalnum()
-                )
-                if normalized:
-                    by_name[normalized] = start
-        return by_registration, by_name
-
     def collect_fundamentals(
         self,
         *,
@@ -276,25 +260,19 @@ class RikstotoCollector:
         observed_at: datetime,
         products: list[str] | None = None,
     ) -> tuple[int, bool, str | None]:
-        """Capture the live field from Rikstoto and enrich Swedish trot runners via ATG.
-
-        Rikstoto /starts is the canonical live field. It is live-smoke verified and
-        contains horse identity, driver, extra distance and scratch state. The retired
-        /game/program contract is intentionally not used here.
-
-        For Swedish trot races only, public ATG pre-race racing-info is used to enrich
-        the field with market-free lifetime horse history. No pools, odds or investment
-        percentages are copied into the fundamental feature store.
-        """
+        """Capture canonical field; enrich only an entirely verified pre-race cohort."""
         del products  # availability no longer determines the fundamental source
 
+        collection_started_at = self.clock()
+        requested_at = observed_at
         starts_fetch = self.client.starts(raceday_key)
+        observed_at = max(requested_at, self.clock())
         self._audit(starts_fetch, observed_at)
         starts = self._starts_for_race(starts_fetch.payload, race_number)
-        if not starts_fetch.success or not starts:
-            return 0, False, starts_fetch.url
+
 
         scratched_fetch = self.client.scratched(raceday_key)
+        observed_at = max(requested_at, self.clock())
         self._audit(scratched_fetch, observed_at)
         scratched = (
             self._scratched_for_race(scratched_fetch.payload, race_number)
@@ -322,35 +300,84 @@ class RikstotoCollector:
         track = str(race.get("track") or "") if race else ""
         discipline = str(race.get("discipline") or "") if race else ""
         atg_source: str | None = None
-        atg_by_registration: dict[str, dict[str, object]] = {}
-        atg_by_name: dict[str, dict[str, object]] = {}
-
-        if race and country == "SE" and discipline == "trot":
+        race_payload = None
+        resolved = None
+        expected_start = datetime.fromisoformat(str(race["start_time_utc"])) if race else observed_at
+        if (race and (self.capability_probe or
+                capability("atg", country, discipline)["status"] == "VERIFIED")):
             try:
-                race_date = datetime.fromisoformat(
-                    str(race["start_time_utc"])
-                ).date()
-                expected_start = datetime.fromisoformat(str(race["start_time_utc"]))
-                calendar = self.atg_client.calendar_day(race_date)
-                self._audit_provider(calendar, observed_at, provider="atg")
+                calendar = self.atg_client.calendar_day(expected_start.astimezone(ZoneInfo("Europe/Stockholm")).date())
+                self._audit_provider(calendar, self.clock(), provider="atg")
                 resolved = self.atg_client.resolve_race(
-                    calendar,
-                    track_name=track,
-                    race_number=race_number,
-                    expected_start=expected_start,
+                    calendar, track_name=track, race_number=race_number,
+                    expected_start=expected_start, country=country, discipline=discipline,
                 )
                 if resolved is not None:
                     game = self.atg_client.race_game(resolved.race_id)
-                    self._audit_provider(game, observed_at, provider="atg")
+                    self._audit_provider(game, self.clock(), provider="atg")
                     race_payload = self.atg_client.race_payload(game)
-                    if race_payload is not None:
-                        atg_source = game.url
-                        atg_by_registration, atg_by_name = self._atg_runner_maps(
-                            race_payload
-                        )
-            except (TypeError, ValueError):
-                # Field capture remains valid even if enrichment metadata is malformed.
-                atg_source = None
+                    atg_source = game.url
+            except (TypeError, ValueError, KeyError):
+                race_payload = None
+        observed_at = max(requested_at, self.clock())
+        scratch_payload = scratched_fetch.payload
+        scratch_result = (scratch_payload.get("result")
+                          if isinstance(scratch_payload, dict) else None)
+        # Empty dict means no scratches anywhere; a malformed/missing result is unknown.
+        scratch_ok = (scratched_fetch.success and isinstance(scratch_result, dict)
+                      and all(isinstance(v, list) and all(type(n) is int for n in v)
+                              for v in scratch_result.values()))
+        raw_result = starts_fetch.payload.get("result") if isinstance(
+            starts_fetch.payload, dict) else None
+        raw_starts = raw_result.get(str(race_number)) if isinstance(raw_result, dict) else None
+        canonical_schema_ok = isinstance(raw_starts, list) and len(raw_starts) == len(starts)
+        matched, evidence = resolve_field(
+            starts=starts, scratches=scratched, scratch_ok=scratch_ok and starts_fetch.success and canonical_schema_ok,
+            payload=race_payload, country=country, discipline=discipline,
+            race_number=race_number, expected_start=expected_start, observed_at=observed_at,
+            provider_race_id=resolved.race_id if resolved else None, source_uri=atg_source,
+            probe=self.capability_probe,
+        )
+        if country == "FR" and discipline == "trot" and matched:
+            corroboration = self.letrot_client.corroborate(
+                track=(race_payload.get("track") or {}).get("name", track),
+                race_number=race_number, expected_start=expected_start,
+                matched=matched, audit=self._audit_provider, clock=self.clock,
+            )
+            evidence["corroboration"] = corroboration
+            if not corroboration["passed"]:
+                evidence["reasons"].append("LETROT_FULL_FIELD_CORROBORATION_FAILED")
+                evidence["passed"] = False
+                matched = {}
+        observed_at = max(requested_at, self.clock())
+        cutoffs = [expected_start]
+        if race_payload:
+            provider_start = self.atg_client._parse_time(race_payload.get("startTime"))
+            if provider_start is not None:
+                cutoffs.append(provider_start)
+        french_start = evidence.get("corroboration", {}).get("race_start_utc")
+        if french_start:
+            cutoffs.append(datetime.fromisoformat(french_start))
+        expected_start = min(cutoffs)
+        evidence["race_start_utc"] = expected_start.isoformat()
+        evidence["collection_started_at_utc"] = collection_started_at.isoformat()
+        evidence["observed_at_utc"] = observed_at.isoformat()
+        if (observed_at - collection_started_at).total_seconds() > 120:
+            evidence["reasons"].append("COLLECTION_WINDOW_TOO_LONG")
+            evidence["passed"] = False
+            matched = {}
+        if observed_at >= expected_start:
+            evidence["reasons"].append("FETCH_COMPLETED_AFTER_START")
+            evidence["passed"] = False
+            matched = {}
+        self.last_capability = evidence
+        self.store.insert_provider_payload(
+            payload_id=str(uuid4()), provider="atg", category=CONTRACT,
+            provider_raceday_key=race_id, race_number=race_number,
+            observed_at=observed_at, source_uri=atg_source or starts_fetch.url, payload=evidence,
+        )
+        if not starts_fetch.success or not starts:
+            return 0, False, starts_fetch.url
 
         inserted = 0
         for start in starts:
@@ -367,14 +394,7 @@ class RikstotoCollector:
             registration = start.get("horseRegistrationNumber")
             driver_name = start.get("driverName")
 
-            atg_start: dict[str, object] | None = None
-            if registration is not None:
-                atg_start = atg_by_registration.get(str(registration))
-            if atg_start is None:
-                normalized = "".join(
-                    ch.lower() for ch in horse_name if ch.isalnum()
-                )
-                atg_start = atg_by_name.get(normalized)
+            atg_start = matched.get(selection_id)
 
             horse: dict[str, object] = {}
             trainer_name: str | None = None
@@ -430,8 +450,9 @@ class RikstotoCollector:
                         ) or None
 
             data_quality = (
-                "KNOWN_HISTORY_ATG"
+                "FULL_FIELD_HISTORY_ATG"
                 if history_starts is not None and history_wins is not None
+                else "FIELD_ONLY_INCOMPLETE_ENRICHMENT" if atg_source
                 else "FIELD_ONLY_RIKSTOTO"
             )
             source_uri = atg_source or starts_fetch.url
@@ -449,6 +470,10 @@ class RikstotoCollector:
             )
 
             sanitized = {
+                "capability_contract": CONTRACT,
+                "cohort_observed_at_utc": observed_at.isoformat(),
+                "identity": next((r for r in evidence["runners"]
+                                  if r["selection_id"] == selection_id), None),
                 "rikstoto": {
                     "startNumber": start_number,
                     "horseName": horse_name,
@@ -474,6 +499,10 @@ class RikstotoCollector:
                         "lifeSeconds": history_seconds,
                         "lifeThirds": history_thirds,
                         "lifeEarnings": history_earnings,
+                        "yearCrosscheck": {
+                            year: {key: values.get(key) for key in ("starts", "earnings")}
+                            for year, values in horse["statistics"]["years"].items()
+                        },
                         "startNumber": atg_start.get("number"),
                         "distance": atg_start.get("distance"),
                     }
@@ -516,6 +545,12 @@ class RikstotoCollector:
                         "current_year_earnings": None,
                         "scratched": int(is_scratched),
                         "data_quality": data_quality,
+                        "enrichment_provider": "atg" if atg_source else None,
+                        "identity_match_method": next((r["match_method"] for r in evidence["runners"]
+                                                       if r["selection_id"] == selection_id), None),
+                        "identity_match_confidence": next((r["match_confidence"] for r in evidence["runners"]
+                                                           if r["selection_id"] == selection_id), None),
+                        "full_field_history_complete": int(evidence["passed"]),
                         "raw_json": json.dumps(
                             sanitized,
                             ensure_ascii=False,

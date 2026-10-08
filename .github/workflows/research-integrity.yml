@@ -24,6 +24,9 @@ jobs:
       - name: Install HBI
         run: pip install -e ".[dev]"
 
+      - name: Verify V1 engineering completion contract
+        run: python -m hbi.v1_readiness | tee v1-readiness.json
+
       - name: Run V1 system audit on a clean research database
         run: |
           python -m hbi.v1_audit \
@@ -56,6 +59,7 @@ jobs:
         with:
           name: hbi-v1-integrity-${{ github.run_id }}
           path: |
+            v1-readiness.json
             research-v1-ci/
             ci-nightly/
           if-no-files-found: error

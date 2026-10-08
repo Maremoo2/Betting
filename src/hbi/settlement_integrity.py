@@ -23,6 +23,10 @@ def run_settlement_integrity(
     }
     decisions = store.fetch_table("shadow_decision_runs")
     tickets = store.fetch_table("shadow_tickets")
+    race_starts = {
+        str(row["race_id"]): datetime.fromisoformat(str(row["start_time_utc"]))
+        for row in store.fetch_table("races")
+    }
 
     failures: list[dict[str, object]] = []
     warnings: list[dict[str, object]] = []
@@ -58,12 +62,24 @@ def run_settlement_integrity(
 
         if status != "SETTLED":
             if race_id in outcomes:
-                failures.append(
-                    {
-                        "ticket_id": ticket["ticket_id"],
-                        "reason": "official_outcome_exists_but_ticket_unsettled",
-                    }
-                )
+                race_start = race_starts.get(race_id)
+                if (
+                    race_start is not None
+                    and race_start + timedelta(hours=grace_hours) <= current
+                ):
+                    failures.append(
+                        {
+                            "ticket_id": ticket["ticket_id"],
+                            "reason": "official_outcome_exists_but_ticket_unsettled_after_grace",
+                        }
+                    )
+                else:
+                    warnings.append(
+                        {
+                            "ticket_id": ticket["ticket_id"],
+                            "reason": "official_outcome_exists_but_ticket_pending_within_grace",
+                        }
+                    )
             continue
 
         checked += 1

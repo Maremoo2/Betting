@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -107,6 +108,61 @@ def test_shadow_decision_can_create_frozen_paper_bet(tmp_path):
     }
     assert json.loads(decision["market_probabilities_json"])
     assert json.loads(decision["combined_probabilities_json"])
+    audits = store.fetch_table("provider_payloads")
+    report = json.loads(next(r["payload_json"] for r in audits
+                             if r["category"] == "CONTENDER_GATE_V2_1"))
+    assert report["allowed"]
+    assert {r["selection"] for r in report["runners"]} == {"1", "2"}
+    assert all(r["pricing"] for r in report["runners"])
+
+
+def test_shadow_cannot_finalize_partial_assessments(tmp_path, monkeypatch):
+    from hbi import shadow
+
+    original = shadow.evaluate_race
+
+    def partial(**kwargs):
+        result = original(**kwargs)
+        return replace(result, assessments={})
+
+    monkeypatch.setattr(shadow, "evaluate_race", partial)
+    store = _store(tmp_path)
+    _market(store)
+    created = datetime(2026, 9, 27, 17, 50, tzinfo=UTC)
+    for selection, probability in (("1", .7), ("2", .3)):
+        store.insert_prediction(
+            prediction_id=f"p-{selection}", race_id="r1", selection_id=selection,
+            created_at=created, model_name="fundamental", model_version="test",
+            layer="FUNDAMENTAL", probability=probability, feature_as_of=created,
+        )
+    result = shadow.run_win_shadow_decision(
+        store, race_id="r1", provider_raceday_key="BJ_NR_2026-09-27",
+        race_start_at=datetime(2026, 9, 27, 18, tzinfo=UTC),
+        decision_time=datetime(2026, 9, 27, 17, 56, tzinfo=UTC),
+    )
+    assert result.status == "NOT_EXECUTABLE"
+    assert "UNPRICED_CONTENDER" in result.reason
+    assert not store.fetch_table("shadow_tickets")
+
+
+def test_shadow_stale_price_cannot_create_bet(tmp_path):
+    store = _store(tmp_path)
+    _market(store)
+    created = datetime(2026, 9, 27, 17, 50, tzinfo=UTC)
+    for selection, probability in (("1", .7), ("2", .3)):
+        store.insert_prediction(
+            prediction_id=f"p-{selection}", race_id="r1", selection_id=selection,
+            created_at=created, model_name="fundamental", model_version="test",
+            layer="FUNDAMENTAL", probability=probability, feature_as_of=created,
+        )
+    result = run_win_shadow_decision(
+        store, race_id="r1", provider_raceday_key="BJ_NR_2026-09-27",
+        race_start_at=datetime(2026, 9, 27, 18, tzinfo=UTC),
+        decision_time=datetime(2026, 9, 27, 17, 59, tzinfo=UTC),
+        policy=ShadowPolicy(material_conflict_threshold=100),
+    )
+    assert result.status == "WATCH"
+    assert not store.fetch_table("shadow_tickets")
 
 
 class SettlementClient(RikstotoClient):
@@ -120,7 +176,7 @@ class SettlementClient(RikstotoClient):
             payload={
                 "result": {
                     "finalOdds": {
-                        "winOdds": {"1": {"1": {"odds": 2.5}}},
+                        "winOdds": {"1": {"1": {"odds": 2.5, "payoutStatus": "Dividends"}}},
                         "placeOdds": {},
                     }
                 }
@@ -136,6 +192,7 @@ class SettlementClient(RikstotoClient):
             error=None,
             payload={
                 "result": {
+                    "isComplete": True,
                     "results": [
                         {"startNumber": 1, "place": 1},
                         {"startNumber": 2, "place": 2},
@@ -225,3 +282,47 @@ def test_first_t4_decision_is_frozen_across_repeated_watcher_runs(tmp_path):
     assert second.status == "NOT_EXECUTABLE"
     assert store.count("shadow_decision_runs") == 1
     assert store.count("shadow_tickets") == 1
+
+
+
+def test_shadow_decision_fails_closed_when_market_snapshot_is_after_decision(tmp_path):
+    store = _store(tmp_path)
+    observed = datetime(2026, 9, 27, 17, 57, tzinfo=UTC)
+    for selection, odds in (("1", 3.0), ("2", 2.0)):
+        store.insert_provider_market_snapshot(
+            snapshot_id=f"future-{selection}",
+            provider="rikstoto",
+            race_id="r1",
+            product="V",
+            selection_key=selection,
+            observed_at=observed,
+            provider_updated_at=observed,
+            source_uri="https://example/win",
+            odds_decimal=odds,
+        )
+    created = datetime(2026, 9, 27, 17, 50, tzinfo=UTC)
+    for selection, probability in (("1", 0.7), ("2", 0.3)):
+        store.insert_prediction(
+            prediction_id=f"future-p-{selection}",
+            race_id="r1",
+            selection_id=selection,
+            created_at=created,
+            model_name="fundamental",
+            model_version="test",
+            layer="FUNDAMENTAL",
+            probability=probability,
+            feature_as_of=created,
+        )
+
+    result = run_win_shadow_decision(
+        store,
+        race_id="r1",
+        provider_raceday_key="BJ_NR_2026-09-27",
+        race_start_at=datetime(2026, 9, 27, 18, 0, tzinfo=UTC),
+        decision_time=datetime(2026, 9, 27, 17, 56, tzinfo=UTC),
+    )
+
+    assert result.status == "NOT_EXECUTABLE"
+    assert result.reason == "MARKET_AFTER_DECISION"
+    decision = store.fetch_table("shadow_decision_runs")[0]
+    assert decision["reason"] == "MARKET_AFTER_DECISION"

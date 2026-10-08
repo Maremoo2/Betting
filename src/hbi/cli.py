@@ -1,12 +1,18 @@
 from __future__ import annotations
 
 import argparse
+import json
+import os
 from datetime import datetime
 from pathlib import Path
 
+from .contender_gate import Contender, Pricing, Quote, review_contenders
 from .export import export_database_csv, export_database_json
+from .github_evidence_inbox import GitHubEvidenceInbox
+from .intelligence_bridge import ingest_intelligence_rows
 from .json_provider import load_market_snapshots, load_race_cards, load_results
 from .pipeline import HBIPipeline
+from .sheets_inbox import GoogleSheetsEvidenceInbox
 from .sheets_mirror import GoogleSheetsMirror
 from .storage import SQLiteStore
 
@@ -25,6 +31,34 @@ def _store(path: str, schema: str | None = None) -> SQLiteStore:
 def cmd_init(args: argparse.Namespace) -> None:
     _store(args.db, args.schema)
     print(f"initialized {args.db}")
+
+
+def cmd_review_contenders(args: argparse.Namespace) -> None:
+    """Review a supplied complete field/coupon leg; never submit a wager."""
+    try:
+        data = json.loads(Path(args.file).read_text(encoding="utf-8"))
+        report = review_contenders(
+            contenders=[Contender(**row) for row in data["active_field"]],
+            pricing={selection: Pricing(**{**row, "priced_at": datetime.fromisoformat(
+                row["priced_at"])}) for selection, row in data["pricing"].items()},
+            latest_quotes={selection: Quote(**{**row, "observed_at": datetime.fromisoformat(
+                row["observed_at"])}) for selection, row in data["latest_quotes"].items()},
+            decision_time=datetime.fromisoformat(data["decision_time"]),
+            race_start=datetime.fromisoformat(data["race_start"]),
+            ticket_selections=(set(data["ticket_selections"])
+                               if "ticket_selections" in data else None),
+            omission_reasons=data.get("omission_reasons", {}),
+        )
+        output = {"race_id": data["race_id"], **report.to_dict(),
+                  "standard": "LEGACY_RESEARCH_V2.1", "v33_approved": False}
+    except (ValueError, TypeError, KeyError, AttributeError) as exc:
+        output = {"allowed": False, "winner_status": "BLOCKED",
+                  "errors": [f"INVALID_CONTENDER_INPUT:{exc}"]}
+    rendered = json.dumps(output, indent=2, ensure_ascii=False, allow_nan=False)
+    Path(args.output).write_text(rendered + "\n", encoding="utf-8")
+    print(rendered)
+    if not output["allowed"]:
+        raise SystemExit(2)
 
 
 def cmd_import_races(args: argparse.Namespace) -> None:
@@ -69,6 +103,51 @@ def cmd_export(args: argparse.Namespace) -> None:
         print(f"exported database to {args.output}")
 
 
+def cmd_ingest_github_evidence_inbox(args: argparse.Namespace) -> None:
+    token = os.environ.get(args.token_env)
+    if not token:
+        raise RuntimeError(f"missing GitHub token environment variable: {args.token_env}")
+    store = _store(args.db, args.schema)
+    inbox = GitHubEvidenceInbox(
+        repository=args.repository,
+        issue_number=args.issue_number,
+        token=token,
+    )
+    summary = ingest_intelligence_rows(
+        store,
+        inbox.read_rows(),
+        source_sheet=f"github-issue:{args.issue_number}",
+    )
+    store.checkpoint()
+    print(
+        "github intelligence inbox "
+        f"seen={summary.seen} accepted={summary.accepted} "
+        f"rejected={summary.rejected} duplicates={summary.duplicates} "
+        f"pit_eligible={summary.pit_eligible}"
+    )
+
+
+def cmd_ingest_evidence_inbox(args: argparse.Namespace) -> None:
+    store = _store(args.db, args.schema)
+    inbox = GoogleSheetsEvidenceInbox(
+        spreadsheet_id=args.spreadsheet_id,
+        credentials_path=args.credentials,
+        worksheet_name=args.worksheet,
+    )
+    summary = ingest_intelligence_rows(
+        store,
+        inbox.read_rows(),
+        source_sheet=args.worksheet,
+    )
+    store.checkpoint()
+    print(
+        "intelligence inbox "
+        f"seen={summary.seen} accepted={summary.accepted} "
+        f"rejected={summary.rejected} duplicates={summary.duplicates} "
+        f"pit_eligible={summary.pit_eligible}"
+    )
+
+
 def cmd_sync_sheets(args: argparse.Namespace) -> None:
     store = _store(args.db, args.schema)
     mirror = GoogleSheetsMirror(
@@ -84,6 +163,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--db", default="data/hbi.sqlite")
     parser.add_argument("--schema", default=None)
     sub = parser.add_subparsers(dest="command", required=True)
+
+    betting = sub.add_parser("review-betting", help="Active Betting V3.3 decision layer")
+    betting.add_argument("file")
+    betting.add_argument("--batch", required=True)
+    betting.add_argument("--output", required=True)
+    betting.set_defaults(func=cmd_review_betting)
+
+    contender = sub.add_parser("review-contenders", help="Legacy V2.1 research replay only")
+    contender.add_argument("file")
+    contender.add_argument("--output", required=True)
+    contender.set_defaults(func=cmd_review_contenders)
 
     init = sub.add_parser("init-db")
     init.set_defaults(func=cmd_init)
@@ -107,12 +197,30 @@ def build_parser() -> argparse.ArgumentParser:
     export.add_argument("--format", choices=("csv", "json"), default="csv")
     export.set_defaults(func=cmd_export)
 
+    github_evidence = sub.add_parser("ingest-github-evidence-inbox")
+    github_evidence.add_argument("--repository", required=True)
+    github_evidence.add_argument("--issue-number", required=True, type=int)
+    github_evidence.add_argument("--token-env", default="GITHUB_TOKEN")
+    github_evidence.set_defaults(func=cmd_ingest_github_evidence_inbox)
+
+    evidence = sub.add_parser("ingest-evidence-inbox")
+    evidence.add_argument("--spreadsheet-id", required=True)
+    evidence.add_argument("--credentials", required=True)
+    evidence.add_argument("--worksheet", default="HBI_EVIDENCE_INBOX")
+    evidence.set_defaults(func=cmd_ingest_evidence_inbox)
+
     sheets = sub.add_parser("sync-sheets")
     sheets.add_argument("--spreadsheet-id", required=True)
     sheets.add_argument("--credentials", required=True)
     sheets.set_defaults(func=cmd_sync_sheets)
 
     return parser
+
+
+def cmd_review_betting(args: argparse.Namespace) -> None:
+    from betting.cli import main as betting_main
+
+    betting_main(["review", args.file, "--batch", args.batch, "--output", args.output])
 
 
 def main() -> None:

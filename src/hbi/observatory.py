@@ -113,20 +113,21 @@ def collect_decision_outcomes(
     client: RikstotoClient | None = None,
     settled_at: datetime | None = None,
 ) -> OutcomeCollection:
-    """Persist official winners for all frozen decision runs on one Oslo racing day."""
+    """Collect the report day and retry earlier frozen races with missing outcomes."""
     api = client or RikstotoClient()
     now = settled_at or datetime.now(UTC)
     start, end = _day_bounds(report_date)
-    decision_runs = [
-        row
-        for row in store.fetch_table("shadow_decision_runs")
-        if _in_window(row.get("race_start_time_utc"), start, end)
-    ]
     outcomes = {
         str(row["race_id"]): row
         for row in store.fetch_table("outcomes")
     }
-
+    decision_runs = [
+        row
+        for row in store.fetch_table("shadow_decision_runs")
+        if _in_window(row.get("race_start_time_utc"), start, end)
+        or (str(row["race_id"]) not in outcomes and _in_window(
+            row.get("race_start_time_utc"), datetime(1970, 1, 1, tzinfo=UTC), min(start, now)))
+    ]
     unique: dict[str, dict[str, object]] = {}
     for row in decision_runs:
         unique.setdefault(str(row["race_id"]), row)
@@ -147,7 +148,12 @@ def collect_decision_outcomes(
             failed += 1
             pending += 1
             continue
-        winner = _winner_from_complete(api.result_object(fetch))
+        complete = api.result_object(fetch)
+        if (not _in_window(decision.get("race_start_time_utc"), start, end)
+                and complete.get("isComplete") is not True):
+            pending += 1
+            continue
+        winner = _winner_from_complete(complete)
         if winner is None:
             pending += 1
             continue
@@ -180,10 +186,15 @@ def materialize_race_evaluations(
         str(row["race_id"]): row
         for row in store.fetch_table("outcomes")
     }
+    existing = {(row["race_id"], row["shadow_model_version"])
+                for row in store.fetch_table("race_research_evaluations")}
     decision_runs = [
         row
         for row in store.fetch_table("shadow_decision_runs")
         if _in_window(row.get("race_start_time_utc"), start, end)
+        or ((row["race_id"], row["shadow_model_version"]) not in existing
+            and row["race_id"] in outcomes and _in_window(
+                row.get("race_start_time_utc"), datetime(1970, 1, 1, tzinfo=UTC), min(start, now)))
     ]
 
     written = 0
@@ -281,7 +292,8 @@ def build_data_health(store: SQLiteStore, report_date: date) -> dict[str, object
     atg_history = [
         row
         for row in active_rows
-        if str(row.get("data_quality") or "") == "KNOWN_HISTORY_ATG"
+        if str(row.get("enrichment_provider") or "") == "atg"
+        and bool(row.get("full_field_history_complete"))
     ]
 
     market_rows = [
@@ -319,6 +331,21 @@ def build_data_health(store: SQLiteStore, report_date: date) -> dict[str, object
     for row in fetch_failures:
         provider = str(row.get("provider") or "UNKNOWN")
         failures_by_provider[provider] = failures_by_provider.get(provider, 0) + 1
+
+    intelligence_rows = [
+        row
+        for row in store.fetch_table("intelligence_evidence")
+        if _in_window(row.get("observed_at_utc"), start, end)
+    ]
+    bridge_rows = [
+        row
+        for row in store.fetch_table("intelligence_bridge_imports")
+        if _in_window(row.get("imported_at_utc"), start, end)
+    ]
+    bridge_status_counts: dict[str, int] = {}
+    for row in bridge_rows:
+        status = str(row.get("status") or "UNKNOWN")
+        bridge_status_counts[status] = bridge_status_counts.get(status, 0) + 1
 
     decision_runs = [
         row
@@ -381,6 +408,16 @@ def build_data_health(store: SQLiteStore, report_date: date) -> dict[str, object
             None if not fetches else len(fetch_failures) / len(fetches)
         ),
         "provider_fetch_failures_by_provider": failures_by_provider,
+        "intelligence_evidence_rows": len(intelligence_rows),
+        "intelligence_pit_eligible_rows": sum(
+            bool(row.get("pit_eligible")) for row in intelligence_rows
+        ),
+        "intelligence_production_eligible_rows": sum(
+            bool(row.get("production_feature_eligible"))
+            for row in intelligence_rows
+        ),
+        "intelligence_bridge_imports": len(bridge_rows),
+        "intelligence_bridge_status_counts": bridge_status_counts,
         "decision_runs": len(decision_runs),
         "decision_status_counts": status_counts,
         "t4_latency_seconds_mean": _mean(latencies),
@@ -622,6 +659,15 @@ def render_markdown(
         f"- Mean history coverage: {_fmt(health['mean_history_coverage'])}",
         f"- ATG runner coverage: {_fmt(health['atg_runner_coverage'])}",
         f"- Provider fetch failures: {health['provider_fetch_failures']} / {health['provider_fetches']}",
+        (
+            f"- Intelligence evidence: {health['intelligence_evidence_rows']} "
+            f"(PIT-eligible {health['intelligence_pit_eligible_rows']}, "
+            f"production-eligible {health['intelligence_production_eligible_rows']})"
+        ),
+        (
+            f"- Intelligence bridge imports: {health['intelligence_bridge_imports']} "
+            f"{health['intelligence_bridge_status_counts']}"
+        ),
         f"- Frozen T-4 decision runs: {health['decision_runs']} {health['decision_status_counts']}",
         f"- T-4 latency median / p95: {_fmt(health['t4_latency_seconds_median'], 1)}s / {_fmt(health['t4_latency_seconds_p95'], 1)}s",
         f"- Shadow settlement rate: {_fmt(health['settlement_rate'])}",

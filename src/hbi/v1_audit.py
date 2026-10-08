@@ -12,8 +12,10 @@ from .learning import build_learning_rows, learning_dataset_summary
 from .provider_integrity import run_provider_integrity
 from .replay_validation import run_runtime_replay_parity
 from .research_integrity import run_research_integrity_check
+from .research_status import build_effective_research_status
 from .settlement_integrity import run_settlement_integrity
 from .storage import SQLiteStore
+from .strategic_governance import build_strategic_focus
 
 ROOT = Path(__file__).parents[2]
 SCHEMA = ROOT / "db" / "schema.sql"
@@ -39,11 +41,14 @@ def _render_markdown(report: dict[str, object]) -> str:
     replay = report["runtime_replay_parity"]
     settlement = report["settlement_integrity"]
     learning = report["learning_dataset"]
+    focus = report["strategic_focus"]
     lines = [
         "# HBI V1 System Audit",
         "",
         f"- Generated: {report['generated_at_utc']}",
         f"- Engineering status: **{report['engineering_status']}**",
+        f"- V1 engineering complete: **{report['v1_engineering_complete']}**",
+        f"- Current P0 evidence: **{report['current_p0_evidence_status']}**",
         f"- Strategic validity: **{governance['strategic_validity']}**",
         f"- Operational validity: **{governance['operational_validity']}**",
         "",
@@ -81,6 +86,13 @@ def _render_markdown(report: dict[str, object]) -> str:
         f"- Real-money execution: {governance['real_money_execution']}",
         f"- Manual approval required: {governance['manual_approval_required']}",
         "",
+        "## Strategic focus",
+        "",
+        f"- Weakest/current chain link: **{focus['selected_chain_link']}**",
+        f"- Diagnosis: {focus['diagnosis']}",
+        f"- Proximate objective: **{focus['proximate_objective']}**",
+        f"- Re-diagnose: {focus['re_diagnose_when']}",
+        "",
         (
             "Engineering completion does not imply a proven betting edge. "
             "Strategic validation requires prospective evidence and the configured "
@@ -90,6 +102,23 @@ def _render_markdown(report: dict[str, object]) -> str:
     ]
     return "\n".join(lines)
 
+
+
+
+def engineering_status_from_evidence(
+    *,
+    governance_valid: bool,
+    p0_statuses: dict[str, str],
+) -> tuple[str, str]:
+    if not governance_valid or any(
+        status == "FAIL" for status in p0_statuses.values()
+    ):
+        return "FAIL", "FAIL"
+    if any(
+        status in {"NO_EVIDENCE", "WARN"} for status in p0_statuses.values()
+    ):
+        return "PASS_WITH_EVIDENCE_PENDING", "EVIDENCE_PENDING"
+    return "PASS", "PASS"
 
 def run_v1_audit(
     store: SQLiteStore,
@@ -123,34 +152,31 @@ def run_v1_audit(
             }
         )
 
-    hard_fail = (
-        not governance_validation.valid
-        or temporal["status"] == "FAIL"
-        or provider["status"] == "FAIL"
-        or replay["status"] == "FAIL"
-        or settlement["status"] == "FAIL"
+    actual_p0 = {
+        "temporal_integrity": str(temporal["status"]),
+        "provider_integrity": str(provider["status"]),
+        "runtime_replay_parity": str(replay["status"]),
+        "settlement_integrity": str(settlement["status"]),
+    }
+    strategic_focus = build_strategic_focus(
+        p0_statuses=actual_p0,
+        evaluated_rows=int(learning_summary.get("evaluated_rows") or 0),
+        challenger_clocks=challenger_clocks,
     )
-    evidence_pending = (
-        provider["status"] in {"NO_EVIDENCE", "WARN"}
-        or replay["status"] == "NO_EVIDENCE"
-        or settlement["status"] == "WARN"
-        or any(
-            status != "PASS"
-            for status in (governance.get("p0") or {}).values()
+    engineering_status, current_p0_evidence_status = (
+        engineering_status_from_evidence(
+            governance_valid=governance_validation.valid,
+            p0_statuses=actual_p0,
         )
-    )
-    engineering_status = (
-        "FAIL"
-        if hard_fail
-        else "PASS_WITH_EVIDENCE_PENDING"
-        if evidence_pending
-        else "PASS"
     )
 
     report: dict[str, object] = {
         "schema_version": "HBI_V1_SYSTEM_AUDIT_V1",
         "generated_at_utc": generated.isoformat(),
         "engineering_status": engineering_status,
+        "v1_engineering_complete": engineering_status == "PASS",
+        "current_p0_evidence_status": current_p0_evidence_status,
+        "current_p0_evidence": actual_p0,
         "governance": governance,
         "governance_validation": {
             "valid": governance_validation.valid,
@@ -163,7 +189,18 @@ def run_v1_audit(
         "settlement_integrity": settlement,
         "learning_dataset": learning_summary,
         "challenger_forward_clocks": challenger_clocks,
+        "strategic_focus": strategic_focus.as_dict(),
+        "interpretation": (
+            "V1 engineering completion is determined by the implemented control plane "
+            "and current audit evidence. Strategic validity remains a separate research "
+            "claim and stays governed by untouched prospective evidence."
+        ),
     }
+    report["effective_research_status"] = build_effective_research_status(
+        governance=governance,
+        v1_audit=report,
+        generated_at=generated,
+    )
     report["markdown"] = _render_markdown(report)
 
     if output_dir is not None:
@@ -175,6 +212,14 @@ def run_v1_audit(
         )
         (output / "v1-system-audit.md").write_text(
             str(report["markdown"]),
+            encoding="utf-8",
+        )
+        (output / "research-status.json").write_text(
+            json.dumps(
+                report["effective_research_status"],
+                indent=2,
+                ensure_ascii=False,
+            ),
             encoding="utf-8",
         )
         (output / "research-learning-dataset.json").write_text(

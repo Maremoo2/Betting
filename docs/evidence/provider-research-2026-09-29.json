@@ -1,0 +1,240 @@
+{
+  "observed_at_utc": "2026-09-29T15:35:53.375837+00:00",
+  "atg_candidates": [
+    {
+      "country": "SE",
+      "discipline": "trot",
+      "track": "Axevalla",
+      "race_id": "2026-09-29_8_1",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-29_8_1",
+      "observed_at_utc": "2026-09-29T15:35:53.713120+00:00",
+      "active_runners": 12,
+      "complete_schema_runners": 12,
+      "schema_errors": [],
+      "canonical_future_meetings": [
+        "Axevalla",
+        "Bergsåker",
+        "Boden",
+        "Bollnäs",
+        "Bollnäs/Kalmar",
+        "Hagmyren",
+        "Jägersro",
+        "Kalmar",
+        "Rättvik",
+        "Solvalla",
+        "Solvalla/Jägersro",
+        "Årjäng",
+        "Örebro",
+        "Örebro/Bergsåker"
+      ],
+      "outcome": "SCHEMA_PROBE_ONLY_NO_FULL_FIELD_APPROVAL"
+    },
+    {
+      "country": "FR",
+      "discipline": "trot",
+      "track": "Vincennes",
+      "race_id": "2026-09-29_63_4",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-29_63_4",
+      "observed_at_utc": "2026-09-29T15:35:53.813857+00:00",
+      "active_runners": 13,
+      "complete_schema_runners": 13,
+      "schema_errors": [],
+      "canonical_future_meetings": [
+        "Chantilly",
+        "Laval",
+        "Paris-Vincennes"
+      ],
+      "outcome": "SCHEMA_PROBE_ONLY_NO_FULL_FIELD_APPROVAL"
+    },
+    {
+      "country": "GB",
+      "discipline": "gallop",
+      "track": "Bath",
+      "race_id": "2026-09-29_71_6",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-29_71_6",
+      "observed_at_utc": "2026-09-29T15:35:53.899620+00:00",
+      "active_runners": 11,
+      "complete_schema_runners": 2,
+      "schema_errors": [
+        "LIFETIME_BELOW_YEAR_TOTALS"
+      ],
+      "canonical_future_meetings": [],
+      "outcome": "SCHEMA_PROBE_ONLY_NO_FULL_FIELD_APPROVAL"
+    },
+    {
+      "country": "NO",
+      "discipline": "trot",
+      "track": "Bjerke",
+      "race_id": "2026-09-29_78_1",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-29_78_1",
+      "observed_at_utc": "2026-09-29T15:35:53.993370+00:00",
+      "active_runners": 9,
+      "complete_schema_runners": 9,
+      "schema_errors": [],
+      "canonical_future_meetings": [
+        "Bjerke",
+        "Forus",
+        "Klosterskogen",
+        "Momarken",
+        "Øvrevoll"
+      ],
+      "outcome": "SCHEMA_PROBE_ONLY_NO_FULL_FIELD_APPROVAL"
+    },
+    {
+      "country": "FI",
+      "discipline": "trot",
+      "track": "Vermo",
+      "race_id": "2026-09-30_60_1",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-30_60_1",
+      "observed_at_utc": "2026-09-29T15:35:54.156524+00:00",
+      "active_runners": 15,
+      "complete_schema_runners": 15,
+      "schema_errors": [],
+      "canonical_future_meetings": [],
+      "outcome": "SCHEMA_PROBE_ONLY_NO_FULL_FIELD_APPROVAL"
+    },
+    {
+      "country": "ZA",
+      "discipline": "gallop",
+      "track": "Fairview",
+      "race_id": "2026-09-30_89_1",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-30_89_1",
+      "observed_at_utc": "2026-09-29T15:35:54.244862+00:00",
+      "active_runners": 6,
+      "complete_schema_runners": 6,
+      "schema_errors": [],
+      "canonical_future_meetings": [],
+      "outcome": "SCHEMA_PROBE_ONLY_NO_FULL_FIELD_APPROVAL"
+    },
+    {
+      "country": "NO",
+      "discipline": "gallop",
+      "track": "Övrevoll",
+      "race_id": "2026-10-01_79_1",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-01_79_1",
+      "observed_at_utc": "2026-09-29T15:35:54.392467+00:00",
+      "active_runners": 6,
+      "complete_schema_runners": 6,
+      "schema_errors": [],
+      "canonical_future_meetings": [
+        "Bjerke",
+        "Forus",
+        "Klosterskogen",
+        "Momarken",
+        "Øvrevoll"
+      ],
+      "outcome": "SCHEMA_PROBE_ONLY_NO_FULL_FIELD_APPROVAL"
+    },
+    {
+      "country": "DK",
+      "discipline": "trot",
+      "track": "Ålborg",
+      "race_id": "2026-10-01_54_1",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-01_54_1",
+      "observed_at_utc": "2026-09-29T15:35:54.504477+00:00",
+      "active_runners": 8,
+      "complete_schema_runners": 8,
+      "schema_errors": [],
+      "canonical_future_meetings": [
+        "Ålborg"
+      ],
+      "outcome": "SCHEMA_PROBE_ONLY_NO_FULL_FIELD_APPROVAL"
+    },
+    {
+      "country": "SE",
+      "discipline": "gallop",
+      "track": "Göteborg Galopp",
+      "race_id": "2026-10-03_45_1",
+      "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-03_45_1",
+      "observed_at_utc": "2026-09-29T15:35:54.757234+00:00",
+      "active_runners": 15,
+      "complete_schema_runners": 15,
+      "schema_errors": [],
+      "canonical_future_meetings": [
+        "Axevalla",
+        "Bergsåker",
+        "Boden",
+        "Bollnäs",
+        "Bollnäs/Kalmar",
+        "Hagmyren",
+        "Jägersro",
+        "Kalmar",
+        "Rättvik",
+        "Solvalla",
+        "Solvalla/Jägersro",
+        "Årjäng",
+        "Örebro",
+        "Örebro/Bergsåker"
+      ],
+      "outcome": "SCHEMA_PROBE_ONLY_NO_FULL_FIELD_APPROVAL"
+    }
+  ],
+  "french_probes": [
+    {
+      "url": "https://www.letrot.com/courses/2026-09-30",
+      "observed_at_utc": "2026-09-29T15:35:54.757234+00:00",
+      "method": "GET",
+      "status": 200,
+      "final_host": "www.letrot.com",
+      "redirected": false,
+      "outcome": "PUBLIC_HTML_ONLY_NOT_A_VERIFIED_HISTORY_CONTRACT"
+    },
+    {
+      "url": "https://www.letrot.com/courses/2026-09-30/5305/1",
+      "observed_at_utc": "2026-09-29T15:35:55.021596+00:00",
+      "method": "GET",
+      "status": 200,
+      "final_host": "www.letrot.com",
+      "redirected": false,
+      "outcome": "PUBLIC_HTML_ONLY_NOT_A_VERIFIED_HISTORY_CONTRACT"
+    },
+    {
+      "url": "https://www.letrot.com/stats/chevaux/light-my-fire/ZmN8ZQYHCwAD/courses",
+      "observed_at_utc": "2026-09-29T15:35:55.498897+00:00",
+      "method": "GET",
+      "status": 200,
+      "final_host": "www.letrot.com",
+      "redirected": false,
+      "outcome": "PUBLIC_CAREER_COUNTS_CORROBORATION_CANDIDATE",
+      "career_starts": 32,
+      "career_wins": 6
+    },
+    {
+      "url": "https://www.france-galop.com/fr/courses/demain",
+      "observed_at_utc": "2026-09-29T15:35:55.722395+00:00",
+      "method": "GET",
+      "status": 200,
+      "final_host": "www.france-galop.com",
+      "redirected": false,
+      "outcome": "PUBLIC_HTML_ONLY_NOT_A_VERIFIED_HISTORY_CONTRACT"
+    },
+    {
+      "url": "https://www.france-galop.com/fr/courses/reunion/20260930/VkxiV2ZvOGdDdHJBdkdMNFJmcTkydz09",
+      "observed_at_utc": "2026-09-29T15:35:56.260422+00:00",
+      "method": "GET",
+      "status": 200,
+      "final_host": "www.france-galop.com",
+      "redirected": false,
+      "outcome": "PUBLIC_HTML_ONLY_NOT_A_VERIFIED_HISTORY_CONTRACT"
+    },
+    {
+      "url": "https://www.france-galop.com/fr/course/detail/2026/O/aDBKeVNYOGJ1ZnY4a2t6eUwwL3RqQT09",
+      "observed_at_utc": "2026-09-29T15:35:56.746454+00:00",
+      "method": "GET",
+      "status": 200,
+      "final_host": "www.france-galop.com",
+      "redirected": false,
+      "outcome": "PUBLIC_HTML_ONLY_NOT_A_VERIFIED_HISTORY_CONTRACT"
+    },
+    {
+      "url": "https://www.france-galop.com/fr/cheval/TzZiZml3QzhKNkhSRTVkZGdTM2FvUT09",
+      "observed_at_utc": "2026-09-29T15:35:57.195022+00:00",
+      "method": "GET",
+      "status": 200,
+      "final_host": "francegalopext.ciamlogin.com",
+      "redirected": true,
+      "outcome": "AUTHENTICATION_REQUIRED"
+    }
+  ],
+  "registry_modified": false
+}

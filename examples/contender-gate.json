@@ -1,0 +1,22 @@
+{
+  "race_id": "SYNTHETIC:contender-regression",
+  "decision_time": "2026-10-01T12:00:00+00:00",
+  "race_start": "2026-10-01T12:04:00+00:00",
+  "active_field": [
+    {"selection": "1", "winner_odds": 2.0, "system_share_percent": 50},
+    {"selection": "2", "winner_odds": 3.0, "system_share_percent": 37.5},
+    {"selection": "5", "winner_odds": 7.78, "system_share_percent": 12.5}
+  ],
+  "pricing": {
+    "1": {"p_win": 0.5, "fair_odds": 2.0, "minimum_odds": 2.1, "decision": "PASS", "priced_at": "2026-10-01T12:00:00+00:00"},
+    "2": {"p_win": 0.35, "fair_odds": 2.857142857142857, "minimum_odds": 3.1, "decision": "WATCH", "priced_at": "2026-10-01T12:00:00+00:00"},
+    "5": {"p_win": 0.15, "fair_odds": 6.666666666666667, "minimum_odds": 7.0, "decision": "BET", "priced_at": "2026-10-01T12:00:00+00:00"}
+  },
+  "latest_quotes": {
+    "1": {"odds": 2.0, "observed_at": "2026-10-01T12:00:00+00:00"},
+    "2": {"odds": 3.0, "observed_at": "2026-10-01T12:00:00+00:00"},
+    "5": {"odds": 7.78, "observed_at": "2026-10-01T12:00:00+00:00"}
+  },
+  "ticket_selections": ["1", "2"],
+  "omission_reasons": {"5": "Synthetic allocation example: coupon budget allocated to 1 and 2; Winner assessed separately."}
+}
