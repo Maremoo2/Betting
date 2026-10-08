@@ -1,5 +1,7 @@
 # HBI strategy / governance ownership.
 # Changes to these paths require explicit owner review and the strategy-change-approved label.
+# GitHub CODEOWNERS is advisory unless branch protection requires reviews.
+# The Protected Strategy Files workflow provides the hard CI gate.
 
 /src/betting/ @Maremoo2
 /docs/BETTING_V3_3.md @Maremoo2
