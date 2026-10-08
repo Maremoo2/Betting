@@ -39,6 +39,25 @@ table (number, horse, driver, WIN, PLACE min/max, scratches), start time and V/P
 turnover. Collective shares and source update times remain in the CSV/JSON files.
 The ZIP also includes the original frozen `pre.jsonl` and `freeze.json`.
 
+Archive V2 also displays every collective pool separately in PRE.md: product,
+canonical pool ID, leg ordinal from the provider's race-number list, pool turnover,
+source URL/update time, full-field shares, normalized pWIN/pCOL, delta in percentage
+points and R. COLLECTIVE.csv has one row per runner per pool with explicit
+meeting/race/product/leg identifiers, market values, scratches, provenance and
+snapshot type. Different pools are never averaged or collapsed. Scratched runners
+remain visible with empty probability/share fields and are excluded from normalization.
+Machine CSV/JSON retains full precision; Markdown rounds calculated values to six
+decimals. Existing V1 freezes remain immutable and have UNKNOWN leg/product metadata
+in this new view; re-extract a separate V2 batch from its raw market cache instead
+of inventing missing identifiers or rewriting the old freeze.
+
+Observed quality patterns are flagged, not corrected: VP_TURNOVER_IDENTICAL,
+PLACE_RANGE_COLLAPSED_ALL_ACTIVE and, for affected Swedish races,
+SE_PLACE_SEMANTICS_UNVERIFIED. PLACE semantics remain unverified; these fields must
+not be treated as independent Norwegian/French PLACE evidence or p(place).
+No M0–M6/MODERATE/EXTREME thresholds are invented. Archive collection beyond the
+new five-day integrity sample is on hold pending the user's PRE-WINNER review.
+
 `post` then retrieves the public `/results/raceDays/{day}/raceresults` summary,
 including actual WIN/PLACE/TWIN/DUO/TRIPLE dividends with selection and payout
 status. It writes separate `POST.md`, `POST.csv`, `DIVIDENDS.csv`, `POST-upload.zip`

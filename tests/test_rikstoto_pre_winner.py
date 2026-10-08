@@ -23,7 +23,9 @@ def archive():
     place = [{"startNumber": n, "minOdds": 1.5, "maxOdds": 2,
               "lastUpdated": "2025-12-26T12:05:00"} for n in (1, 2, 3)]
     pk = key + "#V4#1"
-    pools = {pk: {"raceKey": key+"#1", "raceNumber": 1, "updatedTime": "2025-12-26T12:01:15",
+    pools = {pk: {"raceKey": key+"#1", "raceNumber": 1, "product": "V4", "leg": 1,
+                  "pool_start_race": 1, "pool_race_numbers": [1, 2, 3, 4],
+                  "updatedTime": "2025-12-26T12:01:15",
                   "investmentDistribution": [{"startNumber": n, "percentage": p}
                                               for n, p in ((1, 60), (2, 30), (3, 10))]}}
     totals = [{"raceDay": key, "product": p, "raceNumber": 1, "poolKey": key+f"#{p}#1",
@@ -279,3 +281,40 @@ def test_published_dividend_display_does_not_qualify_settlement(archive):
 def test_summary_endpoint_forbidden_before_post(tmp_path):
     with pytest.raises(ValueError, match="PRE"):
         ArchiveClient(tmp_path).get("/results/raceDays/F2_NR_2025-12-26/raceresults")
+
+
+def test_collective_products_stay_separate_and_visible(tmp_path, archive):
+    from rikstoto_crawler.exports import export
+
+    first = next(iter(archive[7].values()))
+    second = deepcopy(first)
+    second.update(product="V65", pool_race_numbers=[1, 2, 3, 4, 5, 6])
+    second["investmentDistribution"][0]["percentage"] = 30
+    second["source"] = {"url": "https://www.rikstoto.no/api/verified", "fetched_at": "now",
+                        "body_sha256": "hash"}
+    pk = archive[0]["raceDay"] + "#V65#1"
+    archive[7][pk] = second
+    archive[8].append({"poolKey": pk, "totalInvestment": 9876500})
+    row = extract_race(*archive)
+    assert len(row["collective"]) == 2
+    assert row["collective"][pk]["leg"] == 1
+    freeze(tmp_path, [row])
+    export(tmp_path)
+    text = (tmp_path / "exports/PRE.md").read_text(encoding="utf-8")
+    assert "V4 — Avdeling 1" in text and "V65 — Avdeling 1" in text
+    assert "Andel %" in text and "98765.0" in text and "Δ pp" in text
+    assert "https://www.rikstoto.no/api/verified" in text
+
+
+def test_bad_leg_rejected_and_place_quality_patterns_flagged(archive):
+    pool = next(iter(archive[7].values()))
+    pool["leg"] = 2
+    with pytest.raises(ValueError, match="NO_COMPLETE_COLLECTIVE_POOL"):
+        extract_race(*archive)
+    pool["leg"] = 1
+    for r in archive[6]:
+        r["maxOdds"] = r["minOdds"]
+    row = extract_race(*archive)
+    assert set(row["data_quality_flags"]) == {"VP_TURNOVER_IDENTICAL",
+        "PLACE_RANGE_COLLAPSED_ALL_ACTIVE", "SE_PLACE_SEMANTICS_UNVERIFIED"}
+    assert not row["place_semantics_verified"]

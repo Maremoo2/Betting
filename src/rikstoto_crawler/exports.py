@@ -97,6 +97,10 @@ def collect_display(root, *, client=None):
     return {"displayed": len(displays), "rejected": len(rejected)}
 
 
+def rounded(value):
+    return round(value, 6) if value is not None else None
+
+
 def text_cell(value):
     return str(value if value is not None else "").replace("|", "\\|").replace("\n", " ")
 
@@ -138,6 +142,10 @@ def export(root, *, stage="pre"):
             sections.append(f"\n## {row['date']} — {row['track']} — Løp {row['race_number']}\n\n"
                             f"Start: {row['race_start']}. Omsetning V/P NOK: "
                             f"{row['turnover']['V']['nok']} / {row['turnover']['P']['nok']}\n")
+            sections.append(f"Meeting ID: {row['raceday_key']}; Race ID: {row['race_id']}; "
+                            f"snapshot: {row['snapshot_kind']}.\n\n"
+                            "Data quality: " + (", ".join(row.get("data_quality_flags", ["LEGACY_FLAGS_NOT_RECORDED"])) or "NO_PATTERN_FLAGS")
+                            + ". PLACE semantics verified: " + str(row.get("place_semantics_verified", False)) + "\n")
             visible = []
             for n in sorted(row["runners"], key=lambda n: row["runners"][n].get("win_odds", 1e9)):
                 r = row["runners"][n]
@@ -150,16 +158,39 @@ def export(root, *, stage="pre"):
                                 row["turnover"]["P"]["nok"]])
             sections.append(table(["Nr", "Hest", "Kusk", "Vinner", "Min", "Maks", "Strøket"], visible))
             for pool, data in row["collective"].items():
-                for n in row["active_field"]:
-                    collective_rows.append([row["race_id"], pool, n, data["raw_shares"][n],
-                                            row["pWIN"][n], data["pCOL"][n], data["updated_at"],
-                                            data["win_skew_seconds"], data["contemporaneous"]])
+                product, leg = data.get("product", "UNKNOWN"), data.get("leg")
+                source = data.get("source") or {}
+                sections.append(f"\n### {product} — Avdeling {leg if leg is not None else 'UNKNOWN'}\n\n"
+                                f"Pool ID: {pool}; pool NOK: {row['collective_turnover'][pool]['nok']}; "
+                                f"updated: {data['updated_at']}; WIN skew: {data['win_skew_seconds']}s; "
+                                f"contemporaneous: {data['contemporaneous']}.\n\n"
+                                f"Source: {source.get('url', 'LEGACY_SOURCE_IN_JSON')}\n")
+                pool_table = []
+                for n in sorted(row["runners"], key=int):
+                    runner = row["runners"][n]
+                    share, pw, pc = data["raw_shares"].get(n), row["pWIN"].get(n), data["pCOL"].get(n)
+                    delta, ratio = (pc - pw, pc / pw) if pc is not None and pw is not None else (None, None)
+                    pool_table.append([n, runner["horse_name"], share, rounded(pw), rounded(pc),
+                                       rounded(delta * 100 if delta is not None else None), rounded(ratio), runner["scratched"]])
+                    collective_rows.append([row["raceday_key"], row["race_id"], product, leg, pool,
+                        data.get("pool_start_race"), n, runner["horse_name"], runner.get("win_odds"),
+                        runner.get("place_min"), runner.get("place_max"), row["turnover"]["V"]["nok"],
+                        row["turnover"]["P"]["nok"], share, row["collective_turnover"][pool]["nok"],
+                        runner["scratched"], row["snapshot_kind"], pw, pc, delta, ratio,
+                        data["updated_at"], data["win_skew_seconds"], data["contemporaneous"],
+                        source.get("url"), source.get("fetched_at"), source.get("body_sha256"),
+                        ";".join(row.get("data_quality_flags", []))])
+                sections.append(table(["Nr", "Hest", "Andel %", "pWIN", "pCOL", "Δ pp", "R", "Strøket"], pool_table))
         (destination / "PRE.md").write_text("\n".join(sections) + "\n", encoding="utf-8")
         csv_file(destination / "PRE.csv", ["race_id", "date", "country", "track", "start",
                  "number", "horse", "driver", "WIN", "PLACE_min", "PLACE_max", "scratched",
                  "WIN_updated", "PLACE_updated", "V_turnover_NOK", "P_turnover_NOK"], markets)
-        csv_file(destination / "COLLECTIVE.csv", ["race_id", "pool", "number", "share_percent",
-                 "pWIN", "pCOL", "updated_at", "WIN_skew_seconds", "contemporaneous"], collective_rows)
+        csv_file(destination / "COLLECTIVE.csv", ["meeting_id", "race_id", "product", "leg", "pool_id",
+                 "pool_start_race", "horse_no", "horse", "win_odds", "place_min", "place_max",
+                 "win_pool_NOK", "place_pool_NOK", "collective_share", "collective_pool_NOK",
+                 "scratched", "snapshot_type", "pWIN", "pCOL", "delta", "R", "updated_at",
+                 "WIN_skew_seconds", "contemporaneous", "source_url", "fetched_at", "body_sha256",
+                 "data_quality_flags"], collective_rows)
         bundle(destination / "PRE-upload.zip", [destination / "PRE.md", destination / "PRE.csv",
                destination / "COLLECTIVE.csv", root / "pre.jsonl", root / "freeze.json"])
         outputs.append(str(destination / "PRE-upload.zip"))

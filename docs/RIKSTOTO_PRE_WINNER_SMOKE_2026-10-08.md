@@ -43,6 +43,28 @@ Separate PRE/POST Markdown, CSV and upload ZIPs are available under each archive
 `exports/` directory. PRE file hashes remained unchanged. Ruff and 261 tests passed
 after integration with the latest main branch.
 
+## Collective V2 integrity sample, 5–9 January
+
+Re-extracted only the five-day cached public market scope into a NEW output:
+`research-local/rikstoto-pre-winner/test-jan05-09-collective-v2/`. Meeting-level
+stability payloads were refetched; no POST endpoints were requested for this batch.
+Earlier January archives already existed, but no new full-month crawl was run.
+
+32/42 sampled races accepted: NO6, SE12, FR14; no fetch errors. Four abandoned
+races, four missing collective pools and two incomplete WIN/PLACE fields rejected.
+The existing expansion gate stays blocked (76.2%); no thresholds changed.
+33 independent pools: V4=20, V65=5, V64=6, V75=2. One race has two pools. All12
+Swedish accepted races show identical V/P turnover and collapsed PLACE ranges,
+explicitly flagged as unverified PLACE semantics. These observations establish
+market extraction coverage, not complete PRE-WINNER protocol validation.
+
+V2 PRE SHA-256: `42d80a07085b09037039b8a373fa289759401715002d7fc4006232b1643e198e`.
+PRE.md now includes each pool's product/leg/share/turnover/source and calculated
+pWIN/pCOL/delta/R. Separate CSV keeps one runner/pool row and full precision.
+Old PRE freezes remain unchanged. Ruff and263 tests passed, including dual-pool
+separation, wrong-leg rejection and Swedish-pattern flagging. Further January
+collection is on hold for the user's integrity review.
+
 Local reproducible archives (ignored by Git):
 
 - `research-local/rikstoto-pre-winner/historical-sample-v2/`
