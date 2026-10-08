@@ -859,3 +859,7 @@ International ingestion: see [FULL_FIELD_ONLY provider capabilities](docs/INTERN
 October progress: [evidence-driven tracker and dashboard](docs/OCTOBER_TRACKER.md),
 generated daily from production state with country filters, milestone blockers,
 paired model scores and verified-price paper results.
+
+## PRE-WINNER bulk research
+
+[PRE-WINNER Engine v1.0](docs/PRE_WINNER_ENGINE_V1.md) processes weekly crawler PRE archives into one frozen upload ZIP, with exclusive signal tiers, timing cohorts, QC and hashes.

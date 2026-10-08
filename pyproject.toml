@@ -18,9 +18,10 @@ sheets = ["gspread>=6.1", "google-auth>=2.35"]
 hbi = "hbi.cli:main"
 betting = "betting.cli:main"
 rikstoto-pre-winner = "rikstoto_crawler.cli:main"
+pre-winner = "pre_winner.__main__:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/hbi", "src/betting", "src/rikstoto_crawler"]
+packages = ["src/hbi", "src/betting", "src/rikstoto_crawler", "src/pre_winner"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
