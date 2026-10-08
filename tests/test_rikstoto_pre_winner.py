@@ -394,3 +394,23 @@ def test_weekly_iso_boundary_and_separate_results(tmp_path, archive):
             if data["stage"] == "POST":
                 assert data["full_result_verified_races"] == 1
                 assert "PRE.csv" not in package.namelist()
+
+
+def test_stability_ignores_only_runner_order_not_values(archive):
+    from rikstoto_crawler.job import market_stability_digest
+
+    first = {"body": {"result": list(archive[7].values()), "success": True}}
+    second = deepcopy(first)
+    second["body"]["result"][0]["investmentDistribution"].reverse()
+    assert market_stability_digest(first) == market_stability_digest(second)
+    second["body"]["result"][0]["investmentDistribution"][0]["percentage"] += 1
+    assert market_stability_digest(first) != market_stability_digest(second)
+    win = {"body": {"result": archive[5]}}
+    reordered = deepcopy(win)
+    reordered["body"]["result"].reverse()
+    assert market_stability_digest(win) == market_stability_digest(reordered)
+    reordered["body"]["result"][0]["odds"] += 1
+    assert market_stability_digest(win) != market_stability_digest(reordered)
+    reordered["body"]["result"].append(reordered["body"]["result"][0])
+    with pytest.raises(ValueError, match="ambiguous runner"):
+        market_stability_digest(reordered)

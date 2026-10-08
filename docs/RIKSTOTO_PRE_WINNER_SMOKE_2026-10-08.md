@@ -89,6 +89,37 @@ including ISO year boundaries, per-week result counts, PRE/POST isolation and
 partial-week reporting. Packaging is automatic on sample/POST commands and also
 available as the offline `weekly` command.
 
+## Authorized full January weekly replay
+
+After the user requested all January, reprocessed cached public market payloads
+with new metadata and live meeting-sample stability checks into
+`research-local/rikstoto-pre-winner/january-2026-weekly-v3/`. Observed all31 dates;
+544/664 accepted (SE229/NO145/FR170), no fetch errors, all104 meeting checks stable.
+684 independent pools: V4=370,V65=120,V75=70,V64=84,V85=40.
+Timing cohorts: PRIMARY92 pools, SECONDARY35, EXCLUDE557. 92 races have any PRIMARY
+pool;73 have all pools PRIMARY. PRE file SHA-256:
+`99284fd7f019b30c86f467a3fff8b714abc3dc0f077953c87416b18a591537b5`.
+
+The first replay exposed false stability failures from provider array reordering:
+14 meeting samples (affecting75 races) differed only in runner order. Preserved that
+469-race frozen attempt under `january-2026-weekly-v2/`; never edited its freeze.
+Fixed comparison by canonical race/start-number identity while retaining every value
+and original raw hashes. Regression verifies reordering passes, actual share/odds
+changes and duplicate identities fail. Replayed into a new immutable V3 archive.
+
+PRE freeze and timing report completed BEFORE importing the earlier same-day POST
+cache. Rejoined366 full results;178 quarantined (170 incomplete,8 identity mismatch).
+All544 published result/dividend summaries available separately. This is cached
+historical evidence with original acquisition timestamps, not fresh production
+settlement. No provider or Champion activation.
+
+Five PRE and five POST upload ZIPs: W01=78 races, W02=117, W03=134, W04=112,W05=103.
+W01 only includes Jan1–4 and W05 only Jan26–31; out-of-month calendar-week dates are
+listed missing. W02–W04 cover all seven dates in the existing NO/SE/FR supported
+pool scope, not every Rikstoto race/product. Verified every ZIP member hash, PRE/POST
+separation and unchanged source PRE hash. Upload index:
+`exports/weekly/LAST_OPP_JANUAR.md`. Ruff and272 tests passed.
+
 Local reproducible archives (ignored by Git):
 
 - `research-local/rikstoto-pre-winner/historical-sample-v2/`

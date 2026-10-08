@@ -55,8 +55,9 @@ Observed quality patterns are flagged, not corrected: VP_TURNOVER_IDENTICAL,
 PLACE_RANGE_COLLAPSED_ALL_ACTIVE and, for affected Swedish races,
 SE_PLACE_SEMANTICS_UNVERIFIED. PLACE semantics remain unverified; these fields must
 not be treated as independent Norwegian/French PLACE evidence or p(place).
-No M0–M6/MODERATE/EXTREME thresholds are invented. Archive collection beyond the
-new five-day integrity sample is on hold pending the user's PRE-WINNER review.
+No M0–M6/MODERATE/EXTREME thresholds are invented. After the five-day review and
+weekly-package implementation, the user authorized a full January replay. This
+does not authorize model promotion or real-money execution.
 
 `post` then retrieves the public `/results/raceDays/{day}/raceresults` summary,
 including actual WIN/PLACE/TWIN/DUO/TRIPLE dividends with selection and payout
@@ -210,6 +211,13 @@ check archive stability. **Stability of a finished historical archive is not pro
 of exact bet-close timing or executable pre-race availability.** The API does not
 provide a universal finality certificate. Snapshot kind is HISTORICAL_TERMINAL_ARCHIVE;
 `executable=false` and `prospective=false` are mandatory.
+
+Stability comparison preserves all payload fields/values, but sorts identity-keyed
+WIN/PLACE runner arrays and collective race/runner arrays before comparing. Public
+Rikstoto responses can reorder runners without changing their market observations.
+Duplicate identities or changed prices/shares/timestamps still fail closed. Original
+raw payload SHA-256 hashes remain byte/order-sensitive provenance and are unchanged;
+semantic stability comparison does not replace them.
 
 Multi-race shares lock at the first leg; WIN for a later leg can be hours later.
 Preserve these source timestamps and WIN/collective skew. <=60 seconds is labelled
