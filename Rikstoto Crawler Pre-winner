@@ -1,1 +1,9 @@
+"""Rikstoto Crawler Pre-winner entry point. See docs/RIKSTOTO_PRE_WINNER.md.
 
+Adapted from Maremoo2/MSFT-crawler: scoped fetching, retry/cache, pure extraction,
+checkpoint/resume and structured output. No production DB or wager execution.
+"""
+from rikstoto_crawler.cli import main
+
+if __name__ == "__main__":
+    main()

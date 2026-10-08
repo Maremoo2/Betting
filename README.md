@@ -2,6 +2,9 @@
 
 A Benter-first horse-racing research and decision-support system.
 
+Historical market collection: [Rikstoto Crawler Pre-winner](docs/RIKSTOTO_PRE_WINNER.md).
+It masks results until PRE freeze and keeps archive research separate from live decisions.
+
 **Active betting standard: Betting V3.3.** Use `betting review` or `hbi review-betting`.
 Full-field probability intervals and an independent PLACE model are required inputs;
 they are never inferred from HBI/PRE-WATCH scores. Divergence is evidence only.
