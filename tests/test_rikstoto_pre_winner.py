@@ -344,3 +344,53 @@ def test_integrity_ignores_post_and_checks_stored_skew(tmp_path, archive):
     pool["win_skew_seconds"] = 76
     with pytest.raises(ValueError, match="timing skew mismatch"):
         analyze([row])
+
+
+def test_weekly_pre_isolated_partial_and_reproducible(tmp_path, archive):
+    import zipfile
+
+    from rikstoto_crawler.weekly import weekly
+
+    row = extract_race(*archive)
+    freeze(tmp_path, [row])
+    write_json(tmp_path / "quality.json", {"config": {"days": [row["date"]]},
+                                         "observed_days": [row["date"]]})
+    (tmp_path / "post-results.json").write_text("POST MUST NOT BE READ")
+    report = weekly(tmp_path)
+    assert report == weekly(tmp_path)
+    with zipfile.ZipFile(report["weekly_files"][0]) as package:
+        assert "POST.md" not in package.namelist()
+        assert {"PRE.md", "PRE.csv", "COLLECTIVE.csv", "INTEGRITY.md", "MANIFEST.json"} <= set(package.namelist())
+        manifest = json.loads(package.read("MANIFEST.json"))
+        assert manifest["week"] == "2025-W52"
+        assert len(manifest["missing_days"]) == 6
+        assert not manifest["all_races_claimed"]
+        assert manifest["race_count"] == 1
+
+
+def test_weekly_iso_boundary_and_separate_results(tmp_path, archive):
+    import zipfile
+
+    from rikstoto_crawler.exports import PAYOUTS
+    from rikstoto_crawler.weekly import week_id, weekly
+
+    assert week_id("2025-12-29") == week_id("2026-01-04") == "2026-W01"
+    assert week_id("2026-01-05") == "2026-W02"
+    first = extract_race(*archive)
+    second = deepcopy(first)
+    second.update(date="2026-01-05", race_id="TEST:2026-01-05:1")
+    manifest = freeze(tmp_path, [first, second])
+    write_json(tmp_path / "post-display.json", {"pre_freeze": manifest, "rejected": {}, "rows": [
+        {"race_id": row["race_id"], "finishers": {"1": {"place": 1}},
+         "dividends": {p: {"entries": []} for p in PAYOUTS}} for row in [first, second]]})
+    write_json(tmp_path / "post-results.json", {"pre_freeze": manifest, "rejected": {},
+        "rows": [{"race_id": r["race_id"]} for r in [first, second]]})
+    report = weekly(tmp_path, stage="both")
+    assert len(report["weekly_files"]) == 4
+    for path in report["weekly_files"]:
+        with zipfile.ZipFile(path) as package:
+            data = json.loads(package.read("MANIFEST.json"))
+            assert data["race_count"] == 1
+            if data["stage"] == "POST":
+                assert data["full_result_verified_races"] == 1
+                assert "PRE.csv" not in package.namelist()

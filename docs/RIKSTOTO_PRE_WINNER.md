@@ -96,6 +96,51 @@ It permits historical collection only, not model promotion or betting. Every
 race still passes its own stricter full-field gate. Unsupported multi-track or
 secondary pools are reported; they are not mapped to a guessed race.
 
+## One upload per calendar week
+
+Weekly uploads are now automatic after sample/January exports and after POST.
+Files are under `<output>/exports/weekly/`:
+
+```text
+Rikstoto_PRE_2026-W02.zip
+  PRE.md
+  PRE.csv
+  COLLECTIVE.csv
+  INTEGRITY.md
+  MANIFEST.json
+  pre.jsonl
+Rikstoto_POST_2026-W02.zip
+  POST.md
+  POST.csv
+  DIVIDENDS.csv
+  MANIFEST.json
+  post-display.json
+```
+
+Upload just the week's PRE ZIP; upload the separate POST ZIP after the assessment
+is frozen. ISO weeks run Monday–Sunday and handle year boundaries correctly.
+PRE Markdown is ordered by date, track and race number. The manifest records source
+and weekly PRE hashes, packaged-file hashes, race IDs, observed/missing days,
+collection scope, rejected races and fetch failures. A five-day sample is explicitly
+partial, not a complete week; all seven observed dates still do not imply every
+race in every country was captured. POST also records unverified/missing results.
+No POST file is opened during PRE-only packaging. Original freezes are never changed.
+
+Regenerate packages offline with one command:
+
+```powershell
+rikstoto-pre-winner weekly --output research-local/rikstoto-pre-winner/test-jan05-09-collective-v2
+# Use --stage post or --stage both only once POST data exists.
+```
+
+Each command packages one verified source archive, splitting it into weeks; it
+does not combine conflicting snapshots from unrelated archives or collect missing
+days automatically. A new collection scope uses a new output directory. Empty or
+partial weeks are labelled from the source coverage, not silently filled. Legacy
+archives lacking product/leg metadata get a NOT_CONFIGURED integrity note.
+The existing Actions artifact includes these weekly ZIPs. No new January crawl or
+permanent public data hosting is triggered by packaging.
+
 ## Frozen PRE-only timing integrity
 
 User-confirmed on 8 October: PRIMARY <=60 seconds; SECONDARY >60–300 seconds;

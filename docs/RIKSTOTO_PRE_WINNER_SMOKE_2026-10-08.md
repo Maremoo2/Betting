@@ -77,6 +77,18 @@ SECONDARY1 (1 STRONG_POS,8 NEUTRAL), EXCLUDE19 (3 STRONG_POS,4 STRONG_NEG,198 NE
 signal counts, not performance or complete PRE-WINNER v1.0 protocol validation.
 Source skew and active-field probability sums revalidated; PRE hash unchanged.
 
+## Weekly upload verification
+
+Created `Rikstoto_PRE_2026-W02.zip` offline from the V2 five-day sample. It contains
+PRE Markdown/CSV, independent collective rows, timing integrity, manifest and
+frozen rows. Missing dates 10–11 January are explicitly listed;32 accepted races
+do not represent complete all-race weekly coverage. Created separate PRE/POST
+weekly ZIPs from the earlier five-day archive to verify POST filtering and manifests.
+No new provider requests. Source PRE hashes unchanged. Ruff and271 tests passed,
+including ISO year boundaries, per-week result counts, PRE/POST isolation and
+partial-week reporting. Packaging is automatic on sample/POST commands and also
+available as the offline `weekly` command.
+
 Local reproducible archives (ignored by Git):
 
 - `research-local/rikstoto-pre-winner/historical-sample-v2/`

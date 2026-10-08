@@ -71,6 +71,7 @@ def display_result(row, result):
 def collect_display(root, *, client=None):
     root = Path(root)
     rows, manifest = frozen_rows(root)
+    rows.sort(key=lambda r: (r["date"], r["track"], r["race_number"]))
     client = client or ArchiveClient(root)
     records, failures, displays, rejected = {}, {}, [], {}
     for row in rows:
@@ -131,6 +132,7 @@ def bundle(path, files):
 def export(root, *, stage="pre"):
     root = Path(root)
     rows, manifest = frozen_rows(root)
+    rows.sort(key=lambda r: (r["date"], r["track"], r["race_number"]))
     destination = root / "exports"
     destination.mkdir(exist_ok=True)
     outputs = []
