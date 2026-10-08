@@ -114,7 +114,8 @@ Implemented:
 - immutable nightly research backups with SQLite integrity verification and SHA-256
 - read-only Rikstoto provider with explicit endpoint-provenance levels
 - live-smoke-verified Rikstoto `/starts` canonical race-field snapshots
-- Swedish ATG point-in-time market-free lifetime-history enrichment
+- capability-based international ATG enrichment with strict FULL_FIELD_ONLY admission
+- live-verified complete enrichment for Sweden and Denmark
 - `FUNDAMENTAL_CHAMPION_V1_1` shadow Champion using historical win records
 - full-field normalization and 80% history-coverage shadow eligibility gate
 - five-minute market watcher with best-effort T-4 timing and latency logging

@@ -55,13 +55,26 @@ That is a successful V1 build. Evidence accumulation then happens through schedu
 shadow runs rather than continued tuning of the frozen Champion.
 
 
-## Evidence-state rule
+## Current evidence vs policy state
 
-Engineering completion is evaluated independently from the live P0 evidence state.
+The machine-readable governance document is a conservative policy authority and may
+retain statuses such as `ENGINEERING_PASS_EVIDENCE_ACCUMULATING` or
+`SHADOW_VALIDATING` until a later manual governance review.
 
-The latest V1 audit writes `research-status.json`. If all four current P0 audits
-pass, the audit may report engineering `PASS` even if the static governance policy
-still uses conservative labels such as `SHADOW_VALIDATING`. A later failed real-state
-audit immediately makes the effective status non-PASS again.
+The V1 system audit must not treat those policy labels as if they were the current
+runtime evidence. Its engineering result is derived from the actual audit run:
 
-This does not change `strategic_validity=NOT_VALIDATED`.
+- temporal integrity;
+- provider integrity;
+- runtime replay parity;
+- settlement integrity.
+
+When all four current P0 audits are `PASS` and governance is valid, the system audit
+reports V1 engineering `PASS`. Strategic validity remains independent and can still
+be `NOT_VALIDATED`.
+
+The latest V1 audit also writes `research-status.json`, an automatically derived
+effective status artifact based on the current audit results. A later failed
+real-state audit is reflected in that artifact without changing the static
+governance policy. Neither a passing audit nor this artifact grants execution or
+promotion authority.

@@ -2,15 +2,18 @@ name: HBI Provider Live Smoke
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - "src/hbi/**"
+      - ".github/workflows/provider-live-smoke.yml"
   push:
-    branches:
-      - "feature/live-fundamental-ingestion-v2"
+    branches: [main]
 
 permissions:
   contents: read
 
 concurrency:
-  group: hbi-provider-live-smoke
+  group: hbi-provider-live-smoke-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -31,13 +34,20 @@ jobs:
       - name: Run live read-only provider smoke
         env:
           HBI_LIVE_SMOKE_PATH: live-smoke.json
+          HBI_SMOKE_REQUIRED_COUNTRIES: SE,DK,NO,FR
         run: python -m hbi.live_smoke
+
+      - name: Probe additional public provider capabilities
+        if: always()
+        run: python -m hbi.provider_research
 
       - name: Upload diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: hbi-provider-live-smoke-${{ github.run_id }}
-          path: live-smoke.json
+          path: |
+            live-smoke.json
+            provider-research.json
           if-no-files-found: ignore
           retention-days: 14

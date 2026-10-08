@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 from hashlib import sha256
 
@@ -10,6 +10,7 @@ from .domain import ProbabilityEstimate
 from .model_registry import ModelRole
 from .point_in_time import PointInTimeRecord, validate_record
 from .probability import normalize
+from .provider_capability import full_field_gate
 from .storage import SQLiteStore
 
 
@@ -197,6 +198,9 @@ def run_and_persist_fundamental(
     model = MarketFreeFundamentalChampionV1(policy)
     rows = store.latest_runner_fundamentals(race_id, before=created_at)
     run = model.estimate(race_id=race_id, rows=rows, created_at=created_at)
+    gate_reason = full_field_gate(store, race_id, rows, created_at)
+    if gate_reason:
+        run = replace(run, shadow_eligible=False, status="NOT_EXECUTABLE", reason=gate_reason)
 
     store.upsert_model_version(
         model_name=model.MODEL_NAME,
@@ -255,7 +259,7 @@ def run_and_persist_fundamental(
                     "market_features": [],
                     "unvalidated_shadow_champion": True,
                     "canonical_field_source": "RIKSTOTO_STARTS",
-                    "history_source": "ATG_FOR_SE_IF_AVAILABLE",
+                    "history_source": "ATG_CAPABILITY_FULL_FIELD_ONLY_V1",
                 },
                 sort_keys=True,
             ),

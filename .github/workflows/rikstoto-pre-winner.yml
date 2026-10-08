@@ -1,0 +1,40 @@
+name: Rikstoto Crawler Pre-winner
+
+on:
+  workflow_dispatch:
+    inputs:
+      include_january:
+        description: Crawl January only after the historical quality gate passes
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rikstoto-pre-winner-research
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - name: Test historical dates and freeze PRE
+        run: rikstoto-pre-winner sample --output research-local/pre-winner/sample
+      - name: Crawl January only after passing sample
+        if: inputs.include_january
+        run: rikstoto-pre-winner january --sample research-local/pre-winner/sample --output research-local/pre-winner/january-2026
+      - name: Preserve market archive and interruption checkpoints
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rikstoto-pre-winner-${{ github.run_id }}
+          path: research-local/pre-winner/
+          if-no-files-found: error
+          retention-days: 30

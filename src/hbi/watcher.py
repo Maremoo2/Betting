@@ -168,6 +168,9 @@ def run_watcher(
             ],
         )
         audit.fundamental_snapshots_inserted += fundamental_inserted
+        # Decisions must occur after provider responses, never at request start.
+        if now is None:
+            live_now = datetime.now(UTC)
         if fundamental_ok:
             fundamental_run = run_and_persist_fundamental(
                 store,

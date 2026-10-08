@@ -1,6 +1,6 @@
 {
   "schema_version": "HBI_RESEARCH_GOVERNANCE_V1",
-  "updated_at_utc": "2026-09-27T19:55:00+00:00",
+  "updated_at_utc": "2026-10-07T06:28:16+00:00",
   "system_version": "HBI_V1",
   "operational_validity": "SHADOW_OPERATIONAL",
   "strategic_validity": "NOT_VALIDATED",
@@ -39,7 +39,9 @@
     "settle_shadow_tickets",
     "run_research_audits",
     "build_counterfactual_research",
-    "build_challenger_evidence"
+    "build_challenger_evidence",
+    "collect_scheduled_intelligence_to_research_inbox",
+    "compute_evidence_driven_strategic_focus"
   ],
   "forbidden_automatic_actions": [
     "place_real_money_bets",
@@ -47,6 +49,32 @@
     "change_shadow_champion",
     "change_strategy_thresholds",
     "change_model_weights",
-    "enable_adaptive_switching"
-  ]
+    "enable_adaptive_switching",
+    "write_llm_evidence_directly_to_predictions",
+    "write_llm_evidence_directly_to_bet_decisions"
+  ],
+  "strategic_governance": {
+    "framework": "RUMELT_KERNEL_V1",
+    "source_role": "STRATEGIC_GOVERNANCE",
+    "next_step_policy": "EVIDENCE_DRIVEN_WEAKEST_CRITICAL_LINK",
+    "kernel_required": [
+      "diagnosis",
+      "guiding_policy",
+      "proximate_objective",
+      "coherent_actions",
+      "defer",
+      "empirical_test",
+      "re_diagnose"
+    ],
+    "single_proximate_objective": true,
+    "calendar_cannot_certify_progress": true,
+    "create_destroy_required_for_challenger_hypotheses": true,
+    "production_probability_authority": false,
+    "execution_authority": false
+  },
+  "source_roles": {
+    "BENTER": "PRIMARY_BETTING_METHODOLOGY",
+    "RUMELT": "STRATEGIC_GOVERNANCE",
+    "VENTUS": "SUPPORTING_MODEL_ARCHITECTURE"
+  }
 }
