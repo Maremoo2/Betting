@@ -55,6 +55,28 @@ def _rows(envelope):
     return value
 
 
+def market_stability_digest(record):
+    """Only identity-keyed market lists are unordered; retain every field/value."""
+    from copy import deepcopy
+
+    body = deepcopy(record["body"])
+    result = body["result"]
+    if not isinstance(result, list):
+        raise TypeError("unsupported stability market schema")
+    if result and all("startNumber" in r for r in result):
+        by_number = keyed(result)
+        body["result"] = [by_number[n] for n in sorted(by_number, key=int)]
+    elif result:
+        identities = [(r["raceKey"], r["raceNumber"]) for r in result]
+        if len(set(identities)) != len(identities):
+            raise ValueError("ambiguous stability race identity")
+        for race in result:
+            by_number = keyed(race["investmentDistribution"])
+            race["investmentDistribution"] = [by_number[n] for n in sorted(by_number, key=int)]
+        body["result"] = sorted(result, key=lambda r: (r["raceKey"], r["raceNumber"]))
+    return digest(body)
+
+
 def crawl(root, days, *, countries=("NO", "SE", "FR"), max_races_per_meeting=0,
           client=None):
     root = Path(root)
@@ -159,10 +181,11 @@ def crawl(root, days, *, countries=("NO", "SE", "FR"), max_races_per_meeting=0,
                     if key not in checkpoint["stability"]:
                         stability_sources = [win, place, *used_sources]
                         repeated = [client.get(s["path"], refresh=True) for s in stability_sources]
-                        stable = all(a["body_sha256"] == b["body_sha256"]
+                        stable = all(market_stability_digest(a) == market_stability_digest(b)
                                      for a, b in zip(stability_sources, repeated, strict=True))
                         checkpoint["stability"][key] = {
                             "stable": stable, "country": meeting["countryIsoCode"],
+                            "comparison": "ALL_VALUES_WITH_IDENTITY_KEYED_LIST_ORDER_NORMALIZED",
                             "race_id": race_id, "paths": [s["path"] for s in stability_sources],
                             "checked_at": datetime.now(UTC).isoformat()}
                     if not checkpoint["stability"][key]["stable"]:
