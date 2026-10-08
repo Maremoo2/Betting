@@ -241,3 +241,41 @@ def test_changing_result_fields_does_not_change_pre(archive):
     mutated = deepcopy(archive)
     mutated[1]["winningStartNumber"] = 2
     assert extract_race(*mutated) == baseline
+
+
+def test_pre_upload_never_contains_results_or_dividends(tmp_path, archive):
+    import zipfile
+
+    from rikstoto_crawler.exports import export
+
+    freeze(tmp_path, [extract_race(*archive)])
+    write_json(tmp_path / "post-display.json", {"winner": "SECRET_OUTCOME", "dividend": 999})
+    export(tmp_path)
+    with zipfile.ZipFile(tmp_path / "exports" / "PRE-upload.zip") as bundle:
+        assert not any("POST" in n or "post" in n for n in bundle.namelist())
+        assert all(b"SECRET_OUTCOME" not in bundle.read(n) for n in bundle.namelist())
+    assert "Horse 1" in (tmp_path / "exports" / "PRE.md").read_text(encoding="utf-8")
+
+
+def test_published_dividend_display_does_not_qualify_settlement(archive):
+    from rikstoto_crawler.exports import display_result
+
+    row = extract_race(*archive)
+    summary = {"raceDay": row["raceday_key"], "raceResults": {"1": [{"startNumber": 1, "place": 1}]},
+               "finalOdds": {"winOdds": {"1": {"1": {"odds": 8.7, "payoutStatus": "Dividends"}}},
+                             "placeOdds": {"1": {"1": {"odds": 2.4, "payoutStatus": "Refunded"}}},
+                             "twinOdds": {"1": [{"startNumbers": "1-2", "odds": 20.8,
+                                                 "payoutStatus": "Dividends"}]}}}
+    data = display_result(row, summary)
+    assert data["dividends"]["WIN"]["entries"][0]["dividend"] == 8.7
+    assert data["dividends"]["PLACE"]["entries"][0]["dividend"] is None
+    assert data["dividends"]["DUO"]["status"] == "MISSING"
+    assert not data["settlement_eligible"] and not data["full_result_verified"]
+    summary["raceResults"]["1"][0]["startNumber"] = 99
+    with pytest.raises(ValueError, match="outside active field"):
+        display_result(row, summary)
+
+
+def test_summary_endpoint_forbidden_before_post(tmp_path):
+    with pytest.raises(ValueError, match="PRE"):
+        ArchiveClient(tmp_path).get("/results/raceDays/F2_NR_2025-12-26/raceresults")

@@ -31,6 +31,45 @@ plus January and uploads the complete research archive, including interruption
 checkpoints. GitHub's job limit can interrupt a month crawl; resume locally from
 the downloaded archive with the same output directory/configuration.
 
+## Upload to the analysis thread
+
+Each sample/January command automatically writes `<output>/exports/PRE.md`,
+`PRE.csv`, `COLLECTIVE.csv` and `PRE-upload.zip`. PRE contains the full runner
+table (number, horse, driver, WIN, PLACE min/max, scratches), start time and V/P
+turnover. Collective shares and source update times remain in the CSV/JSON files.
+The ZIP also includes the original frozen `pre.jsonl` and `freeze.json`.
+
+`post` then retrieves the public `/results/raceDays/{day}/raceresults` summary,
+including actual WIN/PLACE/TWIN/DUO/TRIPLE dividends with selection and payout
+status. It writes separate `POST.md`, `POST.csv`, `DIVIDENDS.csv`, `POST-upload.zip`
+and `post-display.json`. Pair/triple dividends retain their combination; they
+are not assigned to an individual horse. Refunded/unknown statuses are not
+interpreted as winning dividends; missing products stay explicit in JSON.
+Summary rows can be published even when the complete-result endpoint is incomplete,
+but are labelled UNVERIFIED/QUARANTINED and never qualify settlement. Horse/driver
+display names come from the frozen race roster, aligned by provider race/start number.
+
+Regenerate exports offline without new requests:
+
+```powershell
+rikstoto-pre-winner export --output research-local/rikstoto-pre-winner/january-2026 --stage pre
+rikstoto-pre-winner export --output research-local/rikstoto-pre-winner/january-2026 --stage post
+```
+
+For “Rett før start analyse”, upload **PRE.md** or **PRE-upload.zip** first. Upload
+POST.md/the POST bundle only after that thread has frozen its PRE assessment.
+The PRE export never opens POST files. Uploading both at once defeats the intended
+outcome masking. January remains a retrospective archive, not a blind live batch.
+
+These files are local and Git-ignored; source-code/PR links do not expose collected
+data. The manual Actions workflow uploads the output as `rikstoto-pre-winner-<run_id>`
+under the run's **Artifacts**, retained 30 days. `include_post=true` enables the
+separate POST exports after freeze. A workflow-run link can be shared, but artifact
+download requires GitHub access; a ChatGPT thread may not be able to read that ZIP
+directly. Download and attach the Markdown/ZIP for reliable access. No public site
+or permanent raw-data publishing is enabled. This PR has not been merged, so the
+new workflow is not yet installed on the default branch.
+
 The expansion gate is fixed before seeing results: >=5 historical days, >=10
 accepted races, >=80% accepted among attempted races, >=2 accepted races each in
 NO and SE, no unresolved fetch errors and stable repeated archive retrievals.
@@ -53,6 +92,7 @@ All requests are GET on `https://www.rikstoto.no/api` and allowlisted:
   race number AND race key; preserve the canonical pool key.
 - `/results/raceDays/{day}/totalInvestment`: V/P and collective pool turnover.
 - `/results/raceDays/{day}/{race}/completeresults`: POST stage only.
+- `/results/raceDays/{day}/raceresults`: POST-only published finishers and dividends.
 
 The collective/turnover/scratch paths were observed in the public frontend service
 bundle `chunk-GX4YOHCS.js` on 8 October 2026, loaded by `main-ESTEPZ3S.js`, then

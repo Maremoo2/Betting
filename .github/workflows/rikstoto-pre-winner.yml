@@ -7,6 +7,10 @@ on:
         description: Crawl January only after the historical quality gate passes
         type: boolean
         default: false
+      include_post:
+        description: Fetch POST results/dividends after PRE freeze and export separate upload bundles
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -30,6 +34,12 @@ jobs:
       - name: Crawl January only after passing sample
         if: inputs.include_january
         run: rikstoto-pre-winner january --sample research-local/pre-winner/sample --output research-local/pre-winner/january-2026
+      - name: Export sample POST after PRE freeze
+        if: inputs.include_post
+        run: rikstoto-pre-winner post --output research-local/pre-winner/sample
+      - name: Export January POST after PRE freeze
+        if: inputs.include_post && inputs.include_january
+        run: rikstoto-pre-winner post --output research-local/pre-winner/january-2026
       - name: Preserve market archive and interruption checkpoints
         if: always()
         uses: actions/upload-artifact@v4

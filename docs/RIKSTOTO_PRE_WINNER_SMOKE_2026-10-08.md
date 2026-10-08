@@ -35,6 +35,13 @@ Matched runner outcomes use 1,286 exact provider-ID/name matches and 2,385 expli
 race-local start-number/unique-name matches. PRE SHA-256 remained unchanged after
 all 544 official result requests. None of these POST joins are live settlement.
 
+Follow-up table/export verification: published result/dividend summaries were fetched
+for all 31 sample races and all 544 January races, with no rejected display rows.
+This includes the Bordeaux example's WIN 8.70, PLACE 2.40/2.10/3.70 and TWIN 11-3
+20.80; it does not override the incomplete official French full-result status.
+Separate PRE/POST Markdown, CSV and upload ZIPs are available under each archive's
+`exports/` directory. PRE file hashes remained unchanged. Ruff and 259 tests passed.
+
 Local reproducible archives (ignored by Git):
 
 - `research-local/rikstoto-pre-winner/historical-sample-v2/`
