@@ -17,7 +17,10 @@ PATHS = (
     rf"/racedays/{KEY}/(?:starts|raceInfo)",
     rf"/results/raceDays/{KEY}/(?:totalInvestment|scratchedStarts)",
     rf"/game/{KEY}/betdistribution/(?:winodds|placeodds)/\d+",
-    rf"/game/{KEY}/betdistribution/investment/V(?:4|5|64|65|75|85|86)\?raceNumber=\d+",
+    rf"/game/{KEY}/betdistribution/investment/V(?:4|5A?|64|65|75|85|86)\?raceNumber=\d+",
+    rf"/game/{KEY}/odds/(?:tv|duo|t|dd)/\d+",
+    rf"/game/prizepayout/system/{KEY}/(?:V4|V5A?|V64|V65|V75|V85|V86)",
+    rf"/game/prizepayout/{KEY}/(?:V4|V5A?|V64|V65|V75|V85|V86|DD)\?raceNumber=\d+",
     rf"/results/raceDays/{KEY}/\d+/completeresults",
     rf"/results/raceDays/{KEY}/raceresults",
 )
@@ -59,7 +62,7 @@ class ArchiveClient:
     def get(self, path, *, result=False, refresh=False):
         if not any(re.fullmatch(pattern, path) for pattern in PATHS):
             raise ValueError("URL outside read-only Rikstoto scope")
-        is_result = path.endswith(("/completeresults", "/raceresults"))
+        is_result = path.endswith(("/completeresults", "/raceresults")) or path.startswith("/game/prizepayout/")
         if is_result != result:
             raise ValueError("result endpoint forbidden in PRE stage")
         cache = self.root / ("raw-results" if result else "raw-markets") / (

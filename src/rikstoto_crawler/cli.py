@@ -30,8 +30,35 @@ def main(argv=None):
     weeks = sub.add_parser("weekly")
     weeks.add_argument("--output", required=True)
     weeks.add_argument("--stage", choices=("pre", "post", "both"), default="pre")
+    capture = sub.add_parser("capture-v3")
+    capture.add_argument("--days", required=True)
+    capture.add_argument("--countries", default="NO,SE,DK,FR")
+    capture.add_argument("--meeting")
+    capture.add_argument("--refresh", action="store_true")
+    capture.add_argument("--output", required=True)
+    watcher = sub.add_parser("watch-v3")
+    watcher.add_argument("--day", required=True)
+    watcher.add_argument("--meeting", required=True)
+    watcher.add_argument("--duration", type=int, default=3600)
+    watcher.add_argument("--interval", type=int, default=30)
+    watcher.add_argument("--output", required=True)
+    for name in ("weekly-v3", "post-v3"):
+        command = sub.add_parser(name)
+        command.add_argument("--output", required=True)
     args = parser.parse_args(argv)
-    if args.command == "sample":
+    if args.command in {"weekly-v3", "post-v3"}:
+        from .capture_exports import post_v3, weekly_v3
+        print(json.dumps((weekly_v3 if args.command == "weekly-v3" else post_v3)(args.output), indent=2))
+    elif args.command == "watch-v3":
+        from .watch import watch
+        print(json.dumps(watch(args.output, args.day, args.meeting,
+                               duration=args.duration, interval=args.interval), indent=2))
+    elif args.command == "capture-v3":
+        from .capture import collect
+        print(json.dumps(collect(args.output, args.days.split(","),
+                                 countries=args.countries.split(","), refresh=args.refresh,
+                                 meeting_key=args.meeting), indent=2))
+    elif args.command == "sample":
         if args.max_races_per_meeting < 0:
             parser.error("max-races-per-meeting must be nonnegative")
         report = crawl(args.output, args.days.split(","), countries=args.countries.split(","),
