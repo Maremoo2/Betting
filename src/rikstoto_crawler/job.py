@@ -140,7 +140,13 @@ def crawl(root, days, *, countries=("NO", "SE", "FR"), max_races_per_meeting=0,
                     for pk, record in pool_data.items():
                         matches = [r for r in _rows(record) if r["raceNumber"] == n]
                         if len(matches) == 1 and n in pool_sources[pk]["raceNumbers"]:
-                            per_race[pk] = matches[0]
+                            meta = pool_sources[pk]
+                            per_race[pk] = {**matches[0], "product": meta["product"],
+                                            "leg": meta["raceNumbers"].index(n) + 1,
+                                            "pool_start_race": meta["raceNumber"],
+                                            "pool_race_numbers": meta["raceNumbers"],
+                                            "source": {k: record[k] for k in
+                                                       ("url", "path", "fetched_at", "body_sha256")}}
                             used_sources.append(record)
                     matching_info = [r for r in _rows(info) if r["raceNumber"] == n]
                     if len(matching_info) != 1:

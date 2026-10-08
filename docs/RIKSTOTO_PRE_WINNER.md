@@ -31,12 +31,133 @@ plus January and uploads the complete research archive, including interruption
 checkpoints. GitHub's job limit can interrupt a month crawl; resume locally from
 the downloaded archive with the same output directory/configuration.
 
+## Upload to the analysis thread
+
+Each sample/January command automatically writes `<output>/exports/PRE.md`,
+`PRE.csv`, `COLLECTIVE.csv` and `PRE-upload.zip`. PRE contains the full runner
+table (number, horse, driver, WIN, PLACE min/max, scratches), start time and V/P
+turnover. Collective shares and source update times remain in the CSV/JSON files.
+The ZIP also includes the original frozen `pre.jsonl` and `freeze.json`.
+
+Archive V2 also displays every collective pool separately in PRE.md: product,
+canonical pool ID, leg ordinal from the provider's race-number list, pool turnover,
+source URL/update time, full-field shares, normalized pWIN/pCOL, delta in percentage
+points and R. COLLECTIVE.csv has one row per runner per pool with explicit
+meeting/race/product/leg identifiers, market values, scratches, provenance and
+snapshot type. Different pools are never averaged or collapsed. Scratched runners
+remain visible with empty probability/share fields and are excluded from normalization.
+Machine CSV/JSON retains full precision; Markdown rounds calculated values to six
+decimals. Existing V1 freezes remain immutable and have UNKNOWN leg/product metadata
+in this new view; re-extract a separate V2 batch from its raw market cache instead
+of inventing missing identifiers or rewriting the old freeze.
+
+Observed quality patterns are flagged, not corrected: VP_TURNOVER_IDENTICAL,
+PLACE_RANGE_COLLAPSED_ALL_ACTIVE and, for affected Swedish races,
+SE_PLACE_SEMANTICS_UNVERIFIED. PLACE semantics remain unverified; these fields must
+not be treated as independent Norwegian/French PLACE evidence or p(place).
+No M0–M6/MODERATE/EXTREME thresholds are invented. Archive collection beyond the
+new five-day integrity sample is on hold pending the user's PRE-WINNER review.
+
+`post` then retrieves the public `/results/raceDays/{day}/raceresults` summary,
+including actual WIN/PLACE/TWIN/DUO/TRIPLE dividends with selection and payout
+status. It writes separate `POST.md`, `POST.csv`, `DIVIDENDS.csv`, `POST-upload.zip`
+and `post-display.json`. Pair/triple dividends retain their combination; they
+are not assigned to an individual horse. Refunded/unknown statuses are not
+interpreted as winning dividends; missing products stay explicit in JSON.
+Summary rows can be published even when the complete-result endpoint is incomplete,
+but are labelled UNVERIFIED/QUARANTINED and never qualify settlement. Horse/driver
+display names come from the frozen race roster, aligned by provider race/start number.
+
+Regenerate exports offline without new requests:
+
+```powershell
+rikstoto-pre-winner export --output research-local/rikstoto-pre-winner/january-2026 --stage pre
+rikstoto-pre-winner export --output research-local/rikstoto-pre-winner/january-2026 --stage post
+```
+
+For “Rett før start analyse”, upload **PRE.md** or **PRE-upload.zip** first. Upload
+POST.md/the POST bundle only after that thread has frozen its PRE assessment.
+The PRE export never opens POST files. Uploading both at once defeats the intended
+outcome masking. January remains a retrospective archive, not a blind live batch.
+
+These files are local and Git-ignored; source-code/PR links do not expose collected
+data. The manual Actions workflow uploads the output as `rikstoto-pre-winner-<run_id>`
+under the run's **Artifacts**, retained 30 days. `include_post=true` enables the
+separate POST exports after freeze. A workflow-run link can be shared, but artifact
+download requires GitHub access; a ChatGPT thread may not be able to read that ZIP
+directly. Download and attach the Markdown/ZIP for reliable access. No public site
+or permanent raw-data publishing is enabled. This PR has not been merged, so the
+new workflow is not yet installed on the default branch.
+
 The expansion gate is fixed before seeing results: >=5 historical days, >=10
 accepted races, >=80% accepted among attempted races, >=2 accepted races each in
 NO and SE, no unresolved fetch errors and stable repeated archive retrievals.
 It permits historical collection only, not model promotion or betting. Every
 race still passes its own stricter full-field gate. Unsupported multi-track or
 secondary pools are reported; they are not mapped to a guessed race.
+
+## One upload per calendar week
+
+Weekly uploads are now automatic after sample/January exports and after POST.
+Files are under `<output>/exports/weekly/`:
+
+```text
+Rikstoto_PRE_2026-W02.zip
+  PRE.md
+  PRE.csv
+  COLLECTIVE.csv
+  INTEGRITY.md
+  MANIFEST.json
+  pre.jsonl
+Rikstoto_POST_2026-W02.zip
+  POST.md
+  POST.csv
+  DIVIDENDS.csv
+  MANIFEST.json
+  post-display.json
+```
+
+Upload just the week's PRE ZIP; upload the separate POST ZIP after the assessment
+is frozen. ISO weeks run Monday–Sunday and handle year boundaries correctly.
+PRE Markdown is ordered by date, track and race number. The manifest records source
+and weekly PRE hashes, packaged-file hashes, race IDs, observed/missing days,
+collection scope, rejected races and fetch failures. A five-day sample is explicitly
+partial, not a complete week; all seven observed dates still do not imply every
+race in every country was captured. POST also records unverified/missing results.
+No POST file is opened during PRE-only packaging. Original freezes are never changed.
+
+Regenerate packages offline with one command:
+
+```powershell
+rikstoto-pre-winner weekly --output research-local/rikstoto-pre-winner/test-jan05-09-collective-v2
+# Use --stage post or --stage both only once POST data exists.
+```
+
+Each command packages one verified source archive, splitting it into weeks; it
+does not combine conflicting snapshots from unrelated archives or collect missing
+days automatically. A new collection scope uses a new output directory. Empty or
+partial weeks are labelled from the source coverage, not silently filled. Legacy
+archives lacking product/leg metadata get a NOT_CONFIGURED integrity note.
+The existing Actions artifact includes these weekly ZIPs. No new January crawl or
+permanent public data hosting is triggered by packaging.
+
+## Frozen PRE-only timing integrity
+
+User-confirmed on 8 October: PRIMARY <=60 seconds; SECONDARY >60–300 seconds;
+EXCLUDE_DIAGNOSTIC >300 seconds. Existing `contemporaneous<=60` remains unchanged.
+`rikstoto-pre-winner integrity --output <archive>` writes the immutable timing
+policy/hash tied to the verified PRE file BEFORE computing the diagnostic report.
+Outputs under `<archive>/integrity/`: `timing-policy.json`, `report.json`,
+`observations.csv`, `PRE-WINNER-integrity.md`. No network requests or POST reads.
+Invalid/missing timing, normalization or signal-policy provenance fails closed.
+Skew is recomputed from active runners' WIN source times and checked against PRE.
+
+Counts are runner/pool observations and independent race/pool cohorts, not wins
+or bets. Races with any PRIMARY pool and those with all pools PRIMARY are distinct.
+Historical data never becomes an executable decision snapshot through this rule.
+Only existing frozen V3.3 STRONG_POS/STRONG_NEG/NEUTRAL labels are evaluated;
+complete PRE-WINNER v1.0 M0–M6/MODERATE/EXTREME remains NOT_CONFIGURED. No POST,
+performance assessment, expanded crawl or model changes are authorized by this step.
 
 ## Verified read-only API paths
 
@@ -53,6 +174,7 @@ All requests are GET on `https://www.rikstoto.no/api` and allowlisted:
   race number AND race key; preserve the canonical pool key.
 - `/results/raceDays/{day}/totalInvestment`: V/P and collective pool turnover.
 - `/results/raceDays/{day}/{race}/completeresults`: POST stage only.
+- `/results/raceDays/{day}/raceresults`: POST-only published finishers and dividends.
 
 The collective/turnover/scratch paths were observed in the public frontend service
 bundle `chunk-GX4YOHCS.js` on 8 October 2026, loaded by `main-ESTEPZ3S.js`, then

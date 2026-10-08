@@ -35,6 +35,60 @@ Matched runner outcomes use 1,286 exact provider-ID/name matches and 2,385 expli
 race-local start-number/unique-name matches. PRE SHA-256 remained unchanged after
 all 544 official result requests. None of these POST joins are live settlement.
 
+Follow-up table/export verification: published result/dividend summaries were fetched
+for all 31 sample races and all 544 January races, with no rejected display rows.
+This includes the Bordeaux example's WIN 8.70, PLACE 2.40/2.10/3.70 and TWIN 11-3
+20.80; it does not override the incomplete official French full-result status.
+Separate PRE/POST Markdown, CSV and upload ZIPs are available under each archive's
+`exports/` directory. PRE file hashes remained unchanged. Ruff and 261 tests passed
+after integration with the latest main branch.
+
+## Collective V2 integrity sample, 5–9 January
+
+Re-extracted only the five-day cached public market scope into a NEW output:
+`research-local/rikstoto-pre-winner/test-jan05-09-collective-v2/`. Meeting-level
+stability payloads were refetched; no POST endpoints were requested for this batch.
+Earlier January archives already existed, but no new full-month crawl was run.
+
+32/42 sampled races accepted: NO6, SE12, FR14; no fetch errors. Four abandoned
+races, four missing collective pools and two incomplete WIN/PLACE fields rejected.
+The existing expansion gate stays blocked (76.2%); no thresholds changed.
+33 independent pools: V4=20, V65=5, V64=6, V75=2. One race has two pools. All12
+Swedish accepted races show identical V/P turnover and collapsed PLACE ranges,
+explicitly flagged as unverified PLACE semantics. These observations establish
+market extraction coverage, not complete PRE-WINNER protocol validation.
+
+V2 PRE SHA-256: `42d80a07085b09037039b8a373fa289759401715002d7fc4006232b1643e198e`.
+PRE.md now includes each pool's product/leg/share/turnover/source and calculated
+pWIN/pCOL/delta/R. Separate CSV keeps one runner/pool row and full precision.
+Old PRE freezes remain unchanged. Ruff and263 tests passed, including dual-pool
+separation, wrong-leg rejection and Swedish-pattern flagging. Further January
+collection is on hold for the user's integrity review.
+
+## User-frozen timing integrity
+
+After explicit user selection, froze PRIMARY<=60s, SECONDARY>60–300s and
+EXCLUDE_DIAGNOSTIC>300s. Timing policy SHA-256:
+`bb9ceb47fcf1baa824ca99f23b6d8b4da7cd90795fc5af634a49aee8f61f7a7c`.
+Ran integrity on V2 PRE only; no POST reads or new crawl. 32 races, 33 pools,
+339 runner/pool observations. PRIMARY13 pools (5 STRONG_POS,3 STRONG_NEG,117 NEUTRAL),
+SECONDARY1 (1 STRONG_POS,8 NEUTRAL), EXCLUDE19 (3 STRONG_POS,4 STRONG_NEG,198 NEUTRAL).
+13 races have any PRIMARY pool;12 have all pools PRIMARY. These are diagnostic
+signal counts, not performance or complete PRE-WINNER v1.0 protocol validation.
+Source skew and active-field probability sums revalidated; PRE hash unchanged.
+
+## Weekly upload verification
+
+Created `Rikstoto_PRE_2026-W02.zip` offline from the V2 five-day sample. It contains
+PRE Markdown/CSV, independent collective rows, timing integrity, manifest and
+frozen rows. Missing dates 10–11 January are explicitly listed;32 accepted races
+do not represent complete all-race weekly coverage. Created separate PRE/POST
+weekly ZIPs from the earlier five-day archive to verify POST filtering and manifests.
+No new provider requests. Source PRE hashes unchanged. Ruff and271 tests passed,
+including ISO year boundaries, per-week result counts, PRE/POST isolation and
+partial-week reporting. Packaging is automatic on sample/POST commands and also
+available as the offline `weekly` command.
+
 Local reproducible archives (ignored by Git):
 
 - `research-local/rikstoto-pre-winner/historical-sample-v2/`

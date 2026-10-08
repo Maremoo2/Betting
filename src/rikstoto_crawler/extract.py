@@ -103,13 +103,24 @@ def extract_race(meeting, race, starts, info, scratches, win, place, pools, inve
             if any(v > 100 for v in shares.values()):
                 raise ValueError("invalid collective percentage")
             pcol = normalize(shares, active)
+            product = pool["product"]
+            leg = pool["leg"]
+            if (product not in PRODUCTS or type(leg) is not int or leg < 1
+                    or pool["pool_race_numbers"][leg - 1] != number
+                    or pool["pool_start_race"] != pool["pool_race_numbers"][0]
+                    or pool_key != f"{key}#{product}#{pool['pool_start_race']}"):
+                raise ValueError("collective product/leg identity mismatch")
             skew = max(abs((t - updated).total_seconds()) for t in win_times)
             # Preserve archive shares even for later legs; do not pretend contemporaneous data.
-            collective[pool_key] = {"updated_at": updated.isoformat(), "win_skew_seconds": skew,
+            collective[pool_key] = {"product": product, "leg": leg,
+                                    "pool_start_race": pool["pool_start_race"],
+                                    "pool_race_numbers": pool["pool_race_numbers"],
+                                    "source": pool.get("source"),
+                                    "updated_at": updated.isoformat(), "win_skew_seconds": skew,
                                     "contemporaneous": skew <= 60, "raw_shares": shares,
                                     "pCOL": pcol, "signals": {
                                         n: divergence(pcol[n], pwin[n]) for n in active}}
-        except (ValueError, KeyError, TypeError) as exc:
+        except (ValueError, KeyError, TypeError, IndexError) as exc:
             rejected_pools[pool_key] = str(exc)
     if not collective:
         raise ValueError("NO_COMPLETE_COLLECTIVE_POOL")
@@ -129,7 +140,15 @@ def extract_race(meeting, race, starts, info, scratches, win, place, pools, inve
             raise ValueError("missing/ambiguous collective pool turnover")
         raw = numeric(matches[0]["totalInvestment"], minimum=1)
         pool_totals[pool_key] = {"raw_minor_units": raw, "nok": raw / 100}
-    return {"schema_version": "RIKSTOTO_PRE_WINNER_ARCHIVE_V1",
+    flags = []
+    if turnover["V"]["raw_minor_units"] == turnover["P"]["raw_minor_units"]:
+        flags.append("VP_TURNOVER_IDENTICAL")
+    if all(runners[n]["place_min"] == runners[n]["place_max"] for n in active):
+        flags.append("PLACE_RANGE_COLLAPSED_ALL_ACTIVE")
+    if meeting["countryIsoCode"] == "SE" and flags:
+        flags.append("SE_PLACE_SEMANTICS_UNVERIFIED")
+    return {"schema_version": "RIKSTOTO_PRE_WINNER_ARCHIVE_V2",
+            "data_quality_flags": flags, "place_semantics_verified": False,
             "race_id": f"RIKSTOTO:{key}:{number}", "raceday_key": key,
             "race_number": number, "date": key[-10:], "track": meeting["raceDayName"],
             "country": meeting["countryIsoCode"], "sport": meeting["sportType"],

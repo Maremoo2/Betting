@@ -23,7 +23,9 @@ def archive():
     place = [{"startNumber": n, "minOdds": 1.5, "maxOdds": 2,
               "lastUpdated": "2025-12-26T12:05:00"} for n in (1, 2, 3)]
     pk = key + "#V4#1"
-    pools = {pk: {"raceKey": key+"#1", "raceNumber": 1, "updatedTime": "2025-12-26T12:01:15",
+    pools = {pk: {"raceKey": key+"#1", "raceNumber": 1, "product": "V4", "leg": 1,
+                  "pool_start_race": 1, "pool_race_numbers": [1, 2, 3, 4],
+                  "updatedTime": "2025-12-26T12:01:15",
                   "investmentDistribution": [{"startNumber": n, "percentage": p}
                                               for n, p in ((1, 60), (2, 30), (3, 10))]}}
     totals = [{"raceDay": key, "product": p, "raceNumber": 1, "poolKey": key+f"#{p}#1",
@@ -241,3 +243,154 @@ def test_changing_result_fields_does_not_change_pre(archive):
     mutated = deepcopy(archive)
     mutated[1]["winningStartNumber"] = 2
     assert extract_race(*mutated) == baseline
+
+
+def test_pre_upload_never_contains_results_or_dividends(tmp_path, archive):
+    import zipfile
+
+    from rikstoto_crawler.exports import export
+
+    freeze(tmp_path, [extract_race(*archive)])
+    write_json(tmp_path / "post-display.json", {"winner": "SECRET_OUTCOME", "dividend": 999})
+    export(tmp_path)
+    with zipfile.ZipFile(tmp_path / "exports" / "PRE-upload.zip") as bundle:
+        assert not any("POST" in n or "post" in n for n in bundle.namelist())
+        assert all(b"SECRET_OUTCOME" not in bundle.read(n) for n in bundle.namelist())
+    assert "Horse 1" in (tmp_path / "exports" / "PRE.md").read_text(encoding="utf-8")
+
+
+def test_published_dividend_display_does_not_qualify_settlement(archive):
+    from rikstoto_crawler.exports import display_result
+
+    row = extract_race(*archive)
+    summary = {"raceDay": row["raceday_key"], "raceResults": {"1": [{"startNumber": 1, "place": 1}]},
+               "finalOdds": {"winOdds": {"1": {"1": {"odds": 8.7, "payoutStatus": "Dividends"}}},
+                             "placeOdds": {"1": {"1": {"odds": 2.4, "payoutStatus": "Refunded"}}},
+                             "twinOdds": {"1": [{"startNumbers": "1-2", "odds": 20.8,
+                                                 "payoutStatus": "Dividends"}]}}}
+    data = display_result(row, summary)
+    assert data["dividends"]["WIN"]["entries"][0]["dividend"] == 8.7
+    assert data["dividends"]["PLACE"]["entries"][0]["dividend"] is None
+    assert data["dividends"]["DUO"]["status"] == "MISSING"
+    assert not data["settlement_eligible"] and not data["full_result_verified"]
+    summary["raceResults"]["1"][0]["startNumber"] = 99
+    with pytest.raises(ValueError, match="outside active field"):
+        display_result(row, summary)
+
+
+def test_summary_endpoint_forbidden_before_post(tmp_path):
+    with pytest.raises(ValueError, match="PRE"):
+        ArchiveClient(tmp_path).get("/results/raceDays/F2_NR_2025-12-26/raceresults")
+
+
+def test_collective_products_stay_separate_and_visible(tmp_path, archive):
+    from rikstoto_crawler.exports import export
+
+    first = next(iter(archive[7].values()))
+    second = deepcopy(first)
+    second.update(product="V65", pool_race_numbers=[1, 2, 3, 4, 5, 6])
+    second["investmentDistribution"][0]["percentage"] = 30
+    second["source"] = {"url": "https://www.rikstoto.no/api/verified", "fetched_at": "now",
+                        "body_sha256": "hash"}
+    pk = archive[0]["raceDay"] + "#V65#1"
+    archive[7][pk] = second
+    archive[8].append({"poolKey": pk, "totalInvestment": 9876500})
+    row = extract_race(*archive)
+    assert len(row["collective"]) == 2
+    assert row["collective"][pk]["leg"] == 1
+    freeze(tmp_path, [row])
+    export(tmp_path)
+    text = (tmp_path / "exports/PRE.md").read_text(encoding="utf-8")
+    assert "V4 — Avdeling 1" in text and "V65 — Avdeling 1" in text
+    assert "Andel %" in text and "98765.0" in text and "Δ pp" in text
+    assert "https://www.rikstoto.no/api/verified" in text
+
+
+def test_bad_leg_rejected_and_place_quality_patterns_flagged(archive):
+    pool = next(iter(archive[7].values()))
+    pool["leg"] = 2
+    with pytest.raises(ValueError, match="NO_COMPLETE_COLLECTIVE_POOL"):
+        extract_race(*archive)
+    pool["leg"] = 1
+    for r in archive[6]:
+        r["maxOdds"] = r["minOdds"]
+    row = extract_race(*archive)
+    assert set(row["data_quality_flags"]) == {"VP_TURNOVER_IDENTICAL",
+        "PLACE_RANGE_COLLAPSED_ALL_ACTIVE", "SE_PLACE_SEMANTICS_UNVERIFIED"}
+    assert not row["place_semantics_verified"]
+
+
+@pytest.mark.parametrize("skew,expected", [(0, "PRIMARY"), (60, "PRIMARY"),
+    (60.001, "SECONDARY"), (300, "SECONDARY"), (300.001, "EXCLUDE_DIAGNOSTIC")])
+def test_frozen_timing_boundaries(skew, expected):
+    from rikstoto_crawler.integrity import cohort
+
+    assert cohort(skew) == expected
+    with pytest.raises(ValueError):
+        cohort(float("nan"))
+
+
+def test_integrity_ignores_post_and_checks_stored_skew(tmp_path, archive):
+    from rikstoto_crawler.integrity import analyze, run
+
+    row = extract_race(*archive)
+    freeze(tmp_path, [row])
+    (tmp_path / "post-results.json").write_text("invalid POST MUST NOT BE READ")
+    report = run(tmp_path)
+    assert report["post_read"] is False
+    assert report["pool_cohorts"] == {"PRIMARY": 1}
+    assert run(tmp_path) == report
+    pool = next(iter(row["collective"].values()))
+    pool["win_skew_seconds"] = 76
+    with pytest.raises(ValueError, match="timing skew mismatch"):
+        analyze([row])
+
+
+def test_weekly_pre_isolated_partial_and_reproducible(tmp_path, archive):
+    import zipfile
+
+    from rikstoto_crawler.weekly import weekly
+
+    row = extract_race(*archive)
+    freeze(tmp_path, [row])
+    write_json(tmp_path / "quality.json", {"config": {"days": [row["date"]]},
+                                         "observed_days": [row["date"]]})
+    (tmp_path / "post-results.json").write_text("POST MUST NOT BE READ")
+    report = weekly(tmp_path)
+    assert report == weekly(tmp_path)
+    with zipfile.ZipFile(report["weekly_files"][0]) as package:
+        assert "POST.md" not in package.namelist()
+        assert {"PRE.md", "PRE.csv", "COLLECTIVE.csv", "INTEGRITY.md", "MANIFEST.json"} <= set(package.namelist())
+        manifest = json.loads(package.read("MANIFEST.json"))
+        assert manifest["week"] == "2025-W52"
+        assert len(manifest["missing_days"]) == 6
+        assert not manifest["all_races_claimed"]
+        assert manifest["race_count"] == 1
+
+
+def test_weekly_iso_boundary_and_separate_results(tmp_path, archive):
+    import zipfile
+
+    from rikstoto_crawler.exports import PAYOUTS
+    from rikstoto_crawler.weekly import week_id, weekly
+
+    assert week_id("2025-12-29") == week_id("2026-01-04") == "2026-W01"
+    assert week_id("2026-01-05") == "2026-W02"
+    first = extract_race(*archive)
+    second = deepcopy(first)
+    second.update(date="2026-01-05", race_id="TEST:2026-01-05:1")
+    manifest = freeze(tmp_path, [first, second])
+    write_json(tmp_path / "post-display.json", {"pre_freeze": manifest, "rejected": {}, "rows": [
+        {"race_id": row["race_id"], "finishers": {"1": {"place": 1}},
+         "dividends": {p: {"entries": []} for p in PAYOUTS}} for row in [first, second]]})
+    write_json(tmp_path / "post-results.json", {"pre_freeze": manifest, "rejected": {},
+        "rows": [{"race_id": r["race_id"]} for r in [first, second]]})
+    report = weekly(tmp_path, stage="both")
+    assert len(report["weekly_files"]) == 4
+    for path in report["weekly_files"]:
+        with zipfile.ZipFile(path) as package:
+            data = json.loads(package.read("MANIFEST.json"))
+            assert data["race_count"] == 1
+            if data["stage"] == "POST":
+                assert data["full_result_verified_races"] == 1
+                assert "PRE.csv" not in package.namelist()
