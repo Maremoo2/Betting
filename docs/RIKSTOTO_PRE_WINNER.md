@@ -96,6 +96,24 @@ It permits historical collection only, not model promotion or betting. Every
 race still passes its own stricter full-field gate. Unsupported multi-track or
 secondary pools are reported; they are not mapped to a guessed race.
 
+## Frozen PRE-only timing integrity
+
+User-confirmed on 8 October: PRIMARY <=60 seconds; SECONDARY >60–300 seconds;
+EXCLUDE_DIAGNOSTIC >300 seconds. Existing `contemporaneous<=60` remains unchanged.
+`rikstoto-pre-winner integrity --output <archive>` writes the immutable timing
+policy/hash tied to the verified PRE file BEFORE computing the diagnostic report.
+Outputs under `<archive>/integrity/`: `timing-policy.json`, `report.json`,
+`observations.csv`, `PRE-WINNER-integrity.md`. No network requests or POST reads.
+Invalid/missing timing, normalization or signal-policy provenance fails closed.
+Skew is recomputed from active runners' WIN source times and checked against PRE.
+
+Counts are runner/pool observations and independent race/pool cohorts, not wins
+or bets. Races with any PRIMARY pool and those with all pools PRIMARY are distinct.
+Historical data never becomes an executable decision snapshot through this rule.
+Only existing frozen V3.3 STRONG_POS/STRONG_NEG/NEUTRAL labels are evaluated;
+complete PRE-WINNER v1.0 M0–M6/MODERATE/EXTREME remains NOT_CONFIGURED. No POST,
+performance assessment, expanded crawl or model changes are authorized by this step.
+
 ## Verified read-only API paths
 
 All requests are GET on `https://www.rikstoto.no/api` and allowlisted:

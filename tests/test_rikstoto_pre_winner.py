@@ -318,3 +318,29 @@ def test_bad_leg_rejected_and_place_quality_patterns_flagged(archive):
     assert set(row["data_quality_flags"]) == {"VP_TURNOVER_IDENTICAL",
         "PLACE_RANGE_COLLAPSED_ALL_ACTIVE", "SE_PLACE_SEMANTICS_UNVERIFIED"}
     assert not row["place_semantics_verified"]
+
+
+@pytest.mark.parametrize("skew,expected", [(0, "PRIMARY"), (60, "PRIMARY"),
+    (60.001, "SECONDARY"), (300, "SECONDARY"), (300.001, "EXCLUDE_DIAGNOSTIC")])
+def test_frozen_timing_boundaries(skew, expected):
+    from rikstoto_crawler.integrity import cohort
+
+    assert cohort(skew) == expected
+    with pytest.raises(ValueError):
+        cohort(float("nan"))
+
+
+def test_integrity_ignores_post_and_checks_stored_skew(tmp_path, archive):
+    from rikstoto_crawler.integrity import analyze, run
+
+    row = extract_race(*archive)
+    freeze(tmp_path, [row])
+    (tmp_path / "post-results.json").write_text("invalid POST MUST NOT BE READ")
+    report = run(tmp_path)
+    assert report["post_read"] is False
+    assert report["pool_cohorts"] == {"PRIMARY": 1}
+    assert run(tmp_path) == report
+    pool = next(iter(row["collective"].values()))
+    pool["win_skew_seconds"] = 76
+    with pytest.raises(ValueError, match="timing skew mismatch"):
+        analyze([row])

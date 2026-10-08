@@ -65,6 +65,18 @@ Old PRE freezes remain unchanged. Ruff and263 tests passed, including dual-pool
 separation, wrong-leg rejection and Swedish-pattern flagging. Further January
 collection is on hold for the user's integrity review.
 
+## User-frozen timing integrity
+
+After explicit user selection, froze PRIMARY<=60s, SECONDARY>60–300s and
+EXCLUDE_DIAGNOSTIC>300s. Timing policy SHA-256:
+`bb9ceb47fcf1baa824ca99f23b6d8b4da7cd90795fc5af634a49aee8f61f7a7c`.
+Ran integrity on V2 PRE only; no POST reads or new crawl. 32 races, 33 pools,
+339 runner/pool observations. PRIMARY13 pools (5 STRONG_POS,3 STRONG_NEG,117 NEUTRAL),
+SECONDARY1 (1 STRONG_POS,8 NEUTRAL), EXCLUDE19 (3 STRONG_POS,4 STRONG_NEG,198 NEUTRAL).
+13 races have any PRIMARY pool;12 have all pools PRIMARY. These are diagnostic
+signal counts, not performance or complete PRE-WINNER v1.0 protocol validation.
+Source skew and active-field probability sums revalidated; PRE hash unchanged.
+
 Local reproducible archives (ignored by Git):
 
 - `research-local/rikstoto-pre-winner/historical-sample-v2/`

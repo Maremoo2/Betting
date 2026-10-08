@@ -4,6 +4,7 @@ import argparse
 import json
 
 from .exports import collect_display, export
+from .integrity import run as integrity
 from .job import crawl, january, post, validate_sample
 
 
@@ -23,6 +24,8 @@ def main(argv=None):
     upload = sub.add_parser("export")
     upload.add_argument("--output", required=True)
     upload.add_argument("--stage", choices=("pre", "post", "both"), default="pre")
+    check = sub.add_parser("integrity")
+    check.add_argument("--output", required=True)
     args = parser.parse_args(argv)
     if args.command == "sample":
         if args.max_races_per_meeting < 0:
@@ -48,6 +51,8 @@ def main(argv=None):
         print(json.dumps(post(args.output), indent=2))
         print(json.dumps(collect_display(args.output), indent=2))
         print(json.dumps(export(args.output, stage="both"), indent=2))
+    elif args.command == "integrity":
+        print(json.dumps(integrity(args.output), indent=2))
     else:
         print(json.dumps(export(args.output, stage=args.stage), indent=2))
 
