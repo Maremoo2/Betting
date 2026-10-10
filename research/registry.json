@@ -1,0 +1,225 @@
+{
+  "schema_version": "HBI_RESEARCH_LAB_V1",
+  "promotion_enabled": false,
+  "hypotheses": [
+    {
+      "id": "HYP-001",
+      "name": "PERFORMANCE_DECOMPOSITION",
+      "status": "PROPOSED_NOT_PREREGISTERED",
+      "required_fields": [
+        "sec_per_km",
+        "track",
+        "distance",
+        "start_method"
+      ],
+      "primary_metrics": [
+        "log_loss",
+        "brier",
+        "calibration"
+      ],
+      "pit_required": true,
+      "source_ids": [],
+      "mechanism_review_required": true
+    },
+    {
+      "id": "HYP-002",
+      "name": "DYNAMIC_HORSE_ABILITY",
+      "status": "PROPOSED_NOT_PREREGISTERED",
+      "required_fields": [
+        "horse_id",
+        "past_starts"
+      ],
+      "primary_metrics": [
+        "log_loss",
+        "brier",
+        "calibration"
+      ],
+      "pit_required": true,
+      "source_ids": [],
+      "mechanism_review_required": true
+    },
+    {
+      "id": "HYP-003",
+      "name": "FORM_DECAY",
+      "status": "PROPOSED_NOT_PREREGISTERED",
+      "required_fields": [
+        "past_starts",
+        "days_since_start"
+      ],
+      "primary_metrics": [
+        "log_loss",
+        "brier",
+        "calibration"
+      ],
+      "pit_required": true,
+      "source_ids": [],
+      "mechanism_review_required": true
+    },
+    {
+      "id": "HYP-004",
+      "name": "CLEAN_RACE_RELIABILITY",
+      "status": "PROPOSED_NOT_PREREGISTERED",
+      "required_fields": [
+        "gallop",
+        "disqualified"
+      ],
+      "primary_metrics": [
+        "log_loss",
+        "brier",
+        "calibration"
+      ],
+      "pit_required": true,
+      "source_ids": [],
+      "mechanism_review_required": true
+    },
+    {
+      "id": "HYP-005",
+      "name": "PIT_OPPONENT_STRENGTH",
+      "status": "PROPOSED_NOT_PREREGISTERED",
+      "required_fields": [
+        "opponent_ids",
+        "past_starts"
+      ],
+      "primary_metrics": [
+        "log_loss",
+        "brier",
+        "calibration"
+      ],
+      "pit_required": true,
+      "source_ids": [],
+      "mechanism_review_required": true
+    },
+    {
+      "id": "HYP-021",
+      "name": "MARKET_PATH",
+      "status": "PROPOSED_NOT_PREREGISTERED",
+      "required_fields": [
+        "timestamped_market_snapshots"
+      ],
+      "primary_metrics": [
+        "log_loss",
+        "brier",
+        "calibration"
+      ],
+      "pit_required": true,
+      "source_ids": [],
+      "mechanism_review_required": true
+    }
+  ],
+  "sources": [
+    {
+      "id": "SRC-001",
+      "name": "William Benter",
+      "role": "BETTING_METHODOLOGY",
+      "verification_status": "BIBLIOGRAPHY_REVIEW_REQUIRED",
+      "url": null,
+      "sample_size": null,
+      "peer_reviewed": null,
+      "pit_quality": "UNKNOWN",
+      "oos_quality": "UNKNOWN",
+      "limitations": "No evidential strength assigned until the original source is checked."
+    },
+    {
+      "id": "SRC-002",
+      "name": "Richard Rumelt",
+      "role": "STRATEGIC_GOVERNANCE",
+      "verification_status": "BIBLIOGRAPHY_REVIEW_REQUIRED",
+      "url": null,
+      "sample_size": null,
+      "peer_reviewed": null,
+      "pit_quality": "UNKNOWN",
+      "oos_quality": "UNKNOWN",
+      "limitations": "No evidential strength assigned until the original source is checked."
+    },
+    {
+      "id": "SRC-003",
+      "name": "Thuneberg-Selonen",
+      "role": "TROT_RESEARCH_CANDIDATE",
+      "verification_status": "BIBLIOGRAPHY_REVIEW_REQUIRED",
+      "url": null,
+      "sample_size": null,
+      "peer_reviewed": null,
+      "pit_quality": "UNKNOWN",
+      "oos_quality": "UNKNOWN",
+      "limitations": "No evidential strength assigned until the original source is checked."
+    },
+    {
+      "id": "SRC-004",
+      "name": "Sol\u00e9 et al. 2020",
+      "role": "TROT_RESEARCH_CANDIDATE",
+      "verification_status": "BIBLIOGRAPHY_REVIEW_REQUIRED",
+      "url": null,
+      "sample_size": null,
+      "peer_reviewed": null,
+      "pit_quality": "UNKNOWN",
+      "oos_quality": "UNKNOWN",
+      "limitations": "No evidential strength assigned until the original source is checked."
+    }
+  ],
+  "positions": [
+    {
+      "id": "AP-001",
+      "statement": "Market probabilities are a required benchmark.",
+      "status": "PROPOSED",
+      "evidence_level": "UNASSESSED",
+      "source_ids": [],
+      "revision_history": []
+    },
+    {
+      "id": "AP-002",
+      "statement": "Raw kilometre time may confound ability and race context.",
+      "status": "PROPOSED",
+      "evidence_level": "UNASSESSED",
+      "source_ids": [],
+      "revision_history": []
+    },
+    {
+      "id": "AP-003",
+      "statement": "Conditional speed and failure risk should be examined separately.",
+      "status": "PROPOSED",
+      "evidence_level": "UNASSESSED",
+      "source_ids": [],
+      "revision_history": []
+    },
+    {
+      "id": "AP-004",
+      "statement": "Market paths may add information beyond a terminal price.",
+      "status": "PROPOSED",
+      "evidence_level": "UNASSESSED",
+      "source_ids": [],
+      "revision_history": []
+    },
+    {
+      "id": "AP-005",
+      "statement": "Prediction quality does not establish executable profitability.",
+      "status": "PROPOSED",
+      "evidence_level": "UNASSESSED",
+      "source_ids": [],
+      "revision_history": []
+    }
+  ],
+  "data_policy": {
+    "development": [
+      2015,
+      2022
+    ],
+    "internal_validation": [
+      2023,
+      2023
+    ],
+    "challenger_validation": [
+      2024,
+      2024
+    ],
+    "historical_lockbox_candidate": [
+      2025,
+      2025
+    ],
+    "contaminated_periods": [
+      "2025 pilot results and automatically produced metrics: exposure audit required",
+      "2026 January\u2013September: already analysed"
+    ],
+    "lockbox_access_enabled": false,
+    "future_oos": "Must be newly registered and demonstrably unopened; not all of 2026."
+  }
+}
