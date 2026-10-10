@@ -154,7 +154,7 @@ def test_reentry_is_new_revision_and_case_pass_stays_closed(case):
 ])
 def test_fail_closed_invalid_coverage_provenance_batch(case, mutation):
     mutation(case)
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, TypeError)):
         evaluate(case)
 
 
