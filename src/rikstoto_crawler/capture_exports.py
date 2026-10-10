@@ -28,7 +28,7 @@ def weekly_v3(root):
                     "races": len({r["race_id"] for _, r in items}),
                     "days": sorted({r["day"] for _, r in items}),
                     "historical_is_not_prospective": True,
-                    "files": {str(p.relative_to(root)): digest(r) for p, r in items}}
+                    "files": {p.relative_to(root).as_posix(): digest(r) for p, r in items}}
         destination = root / "weekly" / f"{week}-market-v3.zip"
         destination.parent.mkdir(parents=True, exist_ok=True)
         with ZipFile(destination, "w", ZIP_DEFLATED) as archive:
@@ -37,7 +37,7 @@ def weekly_v3(root):
                               "Missing/zero prices are not valid odds. See market and pool statuses.\n"
                               "Historical acquisition does not establish pre-race availability.\n")
             for path, _ in items:
-                archive.write(path, str(path.relative_to(root)))
+                archive.write(path, path.relative_to(root).as_posix())
         outputs.append(str(destination))
     return outputs
 
