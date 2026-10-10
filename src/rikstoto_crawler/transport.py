@@ -15,9 +15,11 @@ KEY = r"[A-Za-z0-9]+_NR_\d{4}-\d{2}-\d{2}"
 PATHS = (
     r"/results/racedays/\d{4}-\d{2}-\d{2}/\d{4}-\d{2}-\d{2}/list",
     rf"/racedays/{KEY}/(?:starts|raceInfo)",
+    r"/racedays/dates/\d{4}-\d{2}-\d{2}(?:/\d{4}-\d{2}-\d{2})?",
+    rf"/racedays/historic/{KEY}",
     rf"/results/raceDays/{KEY}/(?:totalInvestment|scratchedStarts)",
     rf"/game/{KEY}/betdistribution/(?:winodds|placeodds)/\d+",
-    rf"/game/{KEY}/betdistribution/investment/V(?:4|5A?|64|65|75|85|86)\?raceNumber=\d+",
+    rf"/game/{KEY}/betdistribution/investment/V(?:4|5A?|64|65|75|76|85|86)\?raceNumber=\d+",
     rf"/game/{KEY}/odds/(?:tv|duo|t|dd)/\d+",
     rf"/game/prizepayout/system/{KEY}/(?:V4|V5A?|V64|V65|V75|V85|V86)",
     rf"/game/prizepayout/{KEY}/(?:V4|V5A?|V64|V65|V75|V85|V86|DD)\?raceNumber=\d+",
