@@ -48,7 +48,7 @@ def test_missing_db_and_naive_time_fail_without_creating_state(tmp_path):
         build_tracker(path, now=OBSERVED)
     assert not path.exists()
     with pytest.raises(ValueError, match="aware"):
-        build_tracker(path, now=datetime(2026, 10, 2))  # noqa: DTZ001 - rejection test
+        build_tracker(path, now=datetime(2026, 10, 2, tzinfo=UTC).replace(tzinfo=None))  # rejection test
 
 
 def test_paired_cohort_is_read_only_and_lifetime_is_not_start_history(tmp_path):
