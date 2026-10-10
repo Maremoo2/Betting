@@ -275,7 +275,7 @@ def test_full_field_rank_reversal_detected_before_outcome(case):
     case["cases"]["2"]["field_review"]["status"] = "QUALIFIED"
     case["cases"]["2"]["market_conflict_explanation"] = "Fundamental factors independent"
     case["cases"]["2"]["minimum_price"] = 2
-    case["decision_snapshot"]["WIN"]["odds"] = {"1": 2.8, "2": 2}
+    case["decision_snapshot"]["WIN"]["odds"] = {"1": 3.3, "2": 2}
     original = evaluate(case)
     quote = {"race_id": "race", "snapshot_id": "new-quote",
              "observed_at": "2026-10-07T12:57:00+00:00",
