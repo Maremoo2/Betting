@@ -79,3 +79,37 @@ def test_immutable_json_normalizes_tuple_serialization(tmp_path):
     locked_json(tmp_path / "config.json", {"tiers": [("A", .5)]})
     with pytest.raises(ValueError, match="Immutable"):
         locked_json(tmp_path / "config.json", {"tiers": [("A", .6)]})
+
+@pytest.mark.parametrize('order,expected', [
+    ('ascending', ['2015-06-01', '2015-06-02', '2025-12-31']),
+    ('descending', ['2025-12-31', '2015-06-02', '2015-06-01']),
+])
+def test_archive_direction_and_existing_day_progress(tmp_path, monkeypatch, order, expected):
+    from rikstoto_crawler import archive
+    from rikstoto_crawler.transport import write_json
+
+    inventory = []
+    for month, days in [('2025-12', ['2025-12-31']),
+                        ('2015-06', ['2015-06-02', '2015-06-01'])]:
+        inventory.append({'month': month, 'meetings': len(days), 'races': len(days)})
+        write_json(tmp_path / 'inventory' / (month + '.json'), {'body': {'result': [
+            {'raceDayKey': 'BJ_NR_' + day, 'races': []} for day in days]}})
+    write_json(tmp_path / 'result-days/2025-12-31.json', {'existing': True})
+    monkeypatch.setattr(archive, 'census', lambda *args: inventory)
+    monkeypatch.setattr(archive, 'package_weeks', lambda root: 0)
+    calls, progress = [], []
+
+    def collect(root, day, meetings, client):
+        calls.append(day)
+        path = root / 'progress.json'
+        if path.exists():
+            progress.append(json.loads(path.read_text())['days_completed'])
+        return {'day': day, 'counts': {}}
+
+    monkeypatch.setattr(archive, 'collect_day', collect)
+    result = archive.run(tmp_path, client=object(), order=order)
+    assert calls == expected
+    assert result['days'] == 3
+    assert json.loads((tmp_path / 'progress.json').read_text())['days_completed'] == 3
+    assert progress[0] == (2 if order == 'ascending' else 1)
+    assert json.loads((tmp_path / 'result-days/2025-12-31.json').read_text()) == {'existing': True}

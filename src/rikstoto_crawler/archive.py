@@ -232,8 +232,10 @@ def package_weeks(root):
     return len(weeks)
 
 
-def run(root, first="2015-01", last="2025-12", *, mode="full", client=None):
+def run(root, first="2015-01", last="2025-12", *, mode="full", client=None, order="ascending"):
     root = Path(root)
+    if order not in {"ascending", "descending"}:
+        raise ValueError("Unknown archive order")
     if mode not in {"census", "pilot", "full"}:
         raise ValueError("Unknown archive mode")
     root.mkdir(parents=True, exist_ok=True)
@@ -259,10 +261,15 @@ def run(root, first="2015-01", last="2025-12", *, mode="full", client=None):
                 meetings = sorted(meetings, key=lambda m: m.get("isDomestic") is not True)[:1]
                 meetings = [{**m, "races": m["races"][:5]} for m in meetings]
             selected.append((day, meetings))
+    selected.sort(key=lambda item: item[0], reverse=order == "descending")
+    selected_days = {day for day, _ in selected}
+    completed_days = {p.stem for p in (root / "result-days").glob("*.json")} & selected_days
     reports = []
     for day, meetings in selected:
         reports.append(collect_day(root, day, meetings, client))
-        write_json(root / "progress.json", {"status": "RUNNING", "mode": mode, "days_completed": len(reports),
+        completed_days.add(day)
+        write_json(root / "progress.json", {"status": "RUNNING", "mode": mode, "order": order,
+                                             "days_completed": len(completed_days),
                                              "days_total": len(selected), "last": reports[-1]})
     counts, year_counts, pool_counts, timing_counts = Counter(), defaultdict(Counter), Counter(), Counter()
     for report in reports:

@@ -49,11 +49,12 @@ def main(argv=None):
     historical.add_argument("--first", default="2015-01")
     historical.add_argument("--last", default="2025-12")
     historical.add_argument("--mode", choices=("census", "pilot", "full"), default="census")
+    historical.add_argument("--order", choices=("ascending", "descending"), default="ascending")
     historical.add_argument("--output", required=True)
     args = parser.parse_args(argv)
     if args.command == "archive":
         from .archive import run
-        print(json.dumps(run(args.output, args.first, args.last, mode=args.mode), indent=2))
+        print(json.dumps(run(args.output, args.first, args.last, mode=args.mode, order=args.order), indent=2))
     elif args.command in {"weekly-v3", "post-v3"}:
         from .capture_exports import post_v3, weekly_v3
         print(json.dumps((weekly_v3 if args.command == "weekly-v3" else post_v3)(args.output), indent=2))
