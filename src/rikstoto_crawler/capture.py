@@ -79,7 +79,7 @@ def assess(key, number, starts, win, place, distributions):
             "pWIN": pwin, "collective": collective}
 
 
-def collect(root, days, *, countries=("NO", "SE", "DK", "FR"), client=None, refresh=False, meeting_key=None):
+def collect(root, days, *, countries=("NO", "SE", "DK", "FR"), client=None, refresh=False, meeting_key=None, race_numbers=None, include_combinations=True):
     root = Path(root)
     if (root / "freeze.json").exists() or (root / "pre.jsonl").exists():
         raise ValueError("Use a new V3 output directory; frozen PRE is read-only")
@@ -101,6 +101,11 @@ def collect(root, days, *, countries=("NO", "SE", "DK", "FR"), client=None, refr
         for meeting in [m for g in groups for m in g["raceDays"]
                         if m["countryIsoCode"] in countries
                         and (meeting_key is None or m["raceDay"] == meeting_key)]:
+            selected = [r for r in meeting["races"]
+                        if race_numbers is None or r["raceNumber"] in race_numbers]
+            if not selected:
+                continue
+            selected_numbers = {r["raceNumber"] for r in selected}
             key = meeting["raceDay"]
             sources = list(discovery_sources)
             try:
@@ -112,6 +117,8 @@ def collect(root, days, *, countries=("NO", "SE", "DK", "FR"), client=None, refr
             meeting_sources = list(sources)
             pools, coverage, combinations = [], [], []
             for meta in meeting["pools"]:
+                if not selected_numbers.intersection(meta["raceNumbers"]):
+                    continue
                 product = ALIASES.get(meta["product"], meta["product"])
                 status = {"pool_id": meta["poolKey"], "provider_product": meta["product"],
                           "product": product, "status": "UNSUPPORTED_ENDPOINT"}
@@ -127,8 +134,10 @@ def collect(root, days, *, countries=("NO", "SE", "DK", "FR"), client=None, refr
                         status.update(status="FETCH_ERROR", reason=str(exc))
                         failures[meta["poolKey"]] = str(exc)
                 routes = {"TV": "tv", "DUO": "duo", "T": "t", "DD": "dd"}
-                if meta["product"] in routes:
+                if meta["product"] in routes and include_combinations:
                     for race_no in ([meta["raceNumber"]] if meta["product"] == "DD" else meta["raceNumbers"]):
+                        if meta["product"] != "DD" and race_no not in selected_numbers:
+                            continue
                         combo = {"pool_id": meta["poolKey"], "product": meta["product"],
                                  "race_number": race_no, "status": "FETCH_ERROR"}
                         try:
@@ -139,13 +148,15 @@ def collect(root, days, *, countries=("NO", "SE", "DK", "FR"), client=None, refr
                             combo["reason"] = str(exc)
                             failures[f"{meta['poolKey']}:{race_no}"] = str(exc)
                         combinations.append(combo)
+                elif meta["product"] in routes:
+                    status["status"] = "NOT_REQUESTED"
                 elif meta["product"] in {"V", "P", "VP"}:
                     status["status"] = "RUNNER_ENDPOINT"
                 if status["status"] == "UNSUPPORTED_ENDPOINT" and (meta.get("isMultiTrack") or meta.get("isSecondary")):
                     status["reason"] = "MULTITRACK_OR_SECONDARY"
                 coverage.append(status)
             pool_sources = sources[len(meeting_sources):]
-            for race in meeting["races"]:
+            for race in selected:
                 number = race["raceNumber"]
                 sources = meeting_sources + pool_sources
                 record = {"schema_version": "RIKSTOTO_RESEARCH_CAPTURE_V3", "day": day,
