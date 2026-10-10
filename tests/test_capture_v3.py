@@ -92,3 +92,17 @@ def test_collect_preserves_failed_place_and_cached_replay(tmp_path):
     assert report["unsupported_products"] == ["QPlus"]
     collect(tmp_path, ["2026-09-30"], client=Client())
     assert len(list((tmp_path / "captures").glob("*/*.json"))) == 1
+
+
+def test_selected_race_does_not_request_unrelated_endpoints(tmp_path):
+    from rikstoto_crawler.transport import digest
+
+    class Client:
+        def get(self, path, **kwargs):
+            assert path.endswith("/list")
+            body = {"result": [{"raceDays": [{"raceDay": "FO_NR_2026-09-30", "countryIsoCode": "NO",
+                    "races": [{"raceNumber": 1}], "pools": []}]}]}
+            return {"path": path, "url": "https://www.rikstoto.no/api" + path,
+                    "fetched_at": "2026-10-08T12:00:00Z", "body": body, "body_sha256": digest(body)}
+
+    assert collect(tmp_path, ["2026-09-30"], client=Client(), race_numbers={2})["captures"] == 0
