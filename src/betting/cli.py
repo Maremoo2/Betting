@@ -62,7 +62,10 @@ def main(argv=None):
             output = evaluate(data)
         elif args.command == "multi-race":
             data = read(args.input)
-            output = construct_multi_race(data["legs"], data["unit_price"])
+            output = construct_multi_race(
+                data["legs"], data["unit_price"],
+                max_paper_cost_nok=data["max_paper_cost_nok"],
+            )
         else:
             report, data = read(args.decision), read(args.input)
             if args.command == "reassess":

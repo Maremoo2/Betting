@@ -39,13 +39,35 @@
   "cases": {
     "1": {
       "qualified": true,
-      "reason": "form",
-      "minimum_price": 3
+      "reason": "Recent form and draw support the independent WIN case",
+      "minimum_price": 3,
+      "field_review": {
+        "status": "QUALIFIED",
+        "checked_factors": [
+          "FORM",
+          "DRAW"
+        ],
+        "source_refs": [
+          "synthetic-pre-race-program-2026-10-07"
+        ],
+        "market_free": true
+      }
     },
     "2": {
       "qualified": false,
-      "reason": "no independent case",
-      "minimum_price": 2
+      "reason": "Current form and race shape do not justify a WIN case",
+      "minimum_price": 2,
+      "field_review": {
+        "status": "CASE_PASS",
+        "checked_factors": [
+          "FORM",
+          "RACE_SHAPE"
+        ],
+        "source_refs": [
+          "synthetic-pre-race-program-2026-10-07"
+        ],
+        "market_free": true
+      }
     }
   },
   "decision_snapshot": {
@@ -102,13 +124,35 @@
     "cases": {
       "1": {
         "qualified": true,
-        "reason": "place case",
-        "minimum_price": 3
+        "reason": "Recent form and draw support a distinct PLACE case",
+        "minimum_price": 3,
+        "field_review": {
+          "status": "QUALIFIED",
+          "checked_factors": [
+            "FORM",
+            "DRAW"
+          ],
+          "source_refs": [
+            "synthetic-pre-race-program-2026-10-07"
+          ],
+          "market_free": true
+        }
       },
       "2": {
         "qualified": false,
-        "reason": "no case",
-        "minimum_price": 2
+        "reason": "No independent PLACE case from the current form history",
+        "minimum_price": 2,
+        "field_review": {
+          "status": "CASE_PASS",
+          "checked_factors": [
+            "FORM",
+            "RACE_SHAPE"
+          ],
+          "source_refs": [
+            "synthetic-pre-race-program-2026-10-07"
+          ],
+          "market_free": true
+        }
       }
     },
     "snapshot": {

@@ -9,6 +9,13 @@ It masks results until PRE freeze and keeps archive research separate from live 
 Full-field probability intervals and an independent PLACE model are required inputs;
 they are never inferred from HBI/PRE-WATCH scores. Divergence is evidence only.
 See [the V3.3 contract and prospective workflow](docs/BETTING_V3_3.md).
+The prospective **FFQ-1 quality gate** requires specific, source-backed, market-free
+case screening for *every runner* before a BET or multi-race coupon can finalize.
+Every omitted coupon runner needs a documented cut rationale; every fresh complete
+WIN snapshot triggers full-field repricing and candidate rank-change reporting.
+Multi-race paper coupons require an explicit fixed budget. This is an additional
+process gate, not evidence of calibrated edge. The policy hash has changed: register
+a new forward batch and preserve old frozen batches with their earlier policy/code.
 The frozen Champion/watcher continues as a historical research comparator; its V2.1
 paper decisions are not V3.3 approvals. `hbi review-contenders` is the legacy V2.1
 replay interface. No V3.3 decision can submit a real wager.

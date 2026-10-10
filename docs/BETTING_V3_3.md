@@ -20,12 +20,15 @@ betting closing decision-001.json closing-quote.json --output closing-001.json
 betting coupon decision-001.json coupon-leg.json --output coupon-leg-001.json
 betting stake decision-001.json stake-request.json --output stake-001.json
 betting multi-race reviewed-legs.json --output coupon-001.json
+# reviewed-legs.json MUST contain an explicit max_paper_cost_nok; no default budget.
 ```
 
 Output paths must be NEW; existing decisions/registrations cannot be overwritten.
 Invalid input writes a BLOCKED report and exits 2. Store these files with the batch
 artifacts before any result is observed. The policy hash travels with every decision
-and re-entry. A batch registration records current UTC, frozen policy and no tuning.
+and re-entry. The FFQ-1 full-field quality-gate policy changes the hash; register
+a **new prospective batch** and retain the older code/policy for verifying old
+frozen batches. No old batch or historical decision is retroactively updated. A batch registration records current UTC, frozen policy and no tuning.
 Retrospective demonstrations/tests are not validation evidence. Do not merge V3.3
 records into the original Champion forward cohort or use this batch to tune thresholds.
 
@@ -51,6 +54,21 @@ schema fixture with deliberately artificial probabilities, never live evidence.
 - `cases`: every selection has explicit `qualified` boolean, independent reason
   and minimum price at least `1/p_low`. This input is the sports/model case,
   never an automatically generated market-support classification.
+- **FFQ-1 mandatory screening audit** for **every active runner** (WIN and,
+  independently, every PLACE case): `field_review.status` is one of
+  `QUALIFIED`, `CASE_PASS`, `DATA_MISSING`. It must agree with `qualified`.
+  `field_review.checked_factors` records at least two *distinct checked*
+  market-free factor categories from
+  `FORM, CLASS, DRAW, RACE_SHAPE, DRIVER_TRAINER, DISTANCE, GALLOP_RISK,
+  EQUIPMENT, DATA_QUALITY, OTHER`. `source_refs` must be nonempty and refer
+  to evidence actually reviewed before the decision. `market_free=true` is
+  mandatory, and `reason` is a specific, informative free-text explanation
+  (not only "PASS" or "no case"). These fields are **assertions by the external
+  analyst/model**, not proof that the evidence is reliable: never invent sources,
+  checked factors or odds-free rationale just to pass the software check.
+  Missing or inconsistent fields fail closed; any `DATA_MISSING` blocks
+  finalization even if other runners pass. Keep the whole active field in
+  probability and odds inputs; do not silently drop uncertain horses.
 - `decision_snapshot.WIN`: race ID, immutable snapshot ID, observed UTC, all odds.
   `pWIN=(1/odds)/sum(1/odds)`. Zero, missing, infinite or <=1 odds fail closed.
 - `decision_snapshot.collective`: independent named pools, each containing all
@@ -90,12 +108,32 @@ explanation for finalization, without automatically converting BET to PASS.
 
 ## Singles, snapshots and stake
 
+**Before recommending any BET**, validate every runner's fundamental case and
+reason. `evaluate` rejects missing/underspecified FFQ-1 audits and emits
+`full_field_quality` plus `ranked_qualified_WIN`, the full qualified field
+ranked by conditional conservative EV `p_low*odds - 1`. Ranking is not automatic
+approval and cannot establish calibration. For every quoted opportunity explain
+why apparently better-priced alternatives are qualified, rejected or on WATCH.
+No single-best-horse shortcut is permitted. Multiple independent WIN cases may
+each qualify at 1u; the code has no arbitrary one-horse-per-race ceiling. It also
+does not infer a safe total race exposure, so human bankroll/portfolio controls
+must be applied before any *real* wager.
+
 CASE_PASS closes a nonqualifying case; higher odds alone cannot reopen it.
 PRICE_PASS preserves an otherwise qualifying case with re-entry price. BET requires
 a fresh late price >= minimum AND positive conservative EV (`p_low*odds>1`). Exactly
 fair at the lower bound is not a BET. Missing/stale/early quotes produce WATCH.
 Reassessment writes a new opportunity linked to the original decision ID and retains
 all original probabilities and case eligibility. It never rewrites a frozen decision.
+`reassess` reprices **all active runners** on each supplied complete, timestamped
+snapshot, reports `reprice_coverage`, re-ranks every fundamentally qualified WIN
+case and records `changes` for status transitions, price-threshold crossings and
+candidate rank reversals. Previous `PRICE_PASS` is not a permanent veto; previous
+`CASE_PASS` remains closed pending a new, separately validated fundamental
+assessment (never changed solely because odds moved). If the snapshot is stale,
+a positive theoretical EV is still WATCH, not a BET. A previously placed ticket
+is separate from a new additional opportunity; old advice, quote timestamps,
+purchase receipts and later odds must not be conflated.
 Closing snapshots are separate research records; adding closing prices leaves the
 decision ID, original quote, probabilities and decisions unchanged.
 
@@ -106,12 +144,24 @@ are SHADOW_ONLY and no API submits wagers or changes settlement.
 
 ## Coupon layer and shadow combination
 
-`review_coupon` runs after complete single reviews. Every omitted >=10% p_mid horse,
-BET horse or STRONG_POS horse requires a cut reason. Banker selection must be the
-sole included horse, have an explicit explanation, and retain full-field midpoint
-and lower-bound pricing plus cut audit. No unvalidated numerical banker cutoff is
-invented. `construct_multi_race` combines only passing legs and reports rows/cost;
-it does not auto-pick selections or claim coupon EV without joint probabilities.
+`review_coupon` runs **only after** a complete FFQ-1 single review. **Every
+omitted runner, including low-percentage runners and `CASE_PASS`, now requires
+a specific nontrivial cut/budget rationale** (minimum 16 characters), not only
+>=10% p_mid, BET or STRONG_POS. The output retains full-field pricing,
+`full_field_quality`, audit counts, and each rejected candidate's WIN status.
+No absent/placeholder reason may qualify a coupon, regardless of the ultimate
+winner. When budget binds, compare omitted candidates with retained markings
+before adding cost; this substitution check requires substantive analyst input
+and must not be inferred from public percentages alone.
+
+Banker selection must be the sole included horse, have an explicit explanation,
+and retain full-field midpoint and lower-bound pricing plus cut audit.
+`construct_multi_race` combines only passing legs and now requires
+`max_paper_cost_nok` supplied alongside `unit_price`. The combination cost
+must not exceed that explicit fixed budget. **No budget default is guessed** and
+no new marks are silently added to spend more. The system reports rows, cost and
+remaining paper budget, but does not auto-pick selections or claim coupon EV
+without joint probabilities. Code outputs remain SHADOW_ONLY.
 
 Optional `shadow_weights` must be preregistered using `register-batch --shadow-weights
 weights.json`; each race must match these frozen batch weights exactly. They specify
@@ -125,7 +175,9 @@ approved promotion are required before any monetary use. Existing governance rem
 ## Verification
 
 Run `ruff check .` and `pytest -q`. Regression tests cover threshold boundaries,
-full-field/identity/PIT failures, PRICE_PASS re-entry, immutable closing/decisions,
-independent PLACE, fixed paper stake, conflict review, cut/banker audit, pool timing,
-and shadow blending without decision changes. Synthetic tests are not a live-smoke
+full-field/identity/PIT failures, **required per-runner case audits, DATA_MISSING
+blocking, every omitted-runner cut reason, full-field odds re-entry and rank
+reversals, two independently qualified horses, and fixed explicit coupon budgets**,
+PRICE_PASS re-entry, immutable closing/decisions, independent PLACE, fixed paper
+stake, conflict review, pool timing, and shadow blending without decision changes. Synthetic tests are not a live-smoke
 claim; existing provider-live-smoke checks remain separate ingestion verification.

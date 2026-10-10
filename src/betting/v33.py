@@ -19,8 +19,59 @@ POLICY = {
     "sensitivity_ratio_neg": [0.70, 0.80],
     "max_age_seconds": 120, "max_pool_skew_seconds": 60,
     "late_window_seconds": 300, "unit_nok": 25,
+    "full_field_review_gate": "FFQ-1", "all_runner_cut_reasons": True,
+    "explicit_multi_race_budget": True,
 }
 POLICY_HASH = sha256(json.dumps(POLICY, sort_keys=True).encode()).hexdigest()
+
+# Screening categories are independent of price and public support.
+REVIEW_STATUSES = {"QUALIFIED", "CASE_PASS", "DATA_MISSING"}
+REVIEW_FACTORS = {
+    "FORM", "CLASS", "DRAW", "RACE_SHAPE", "DRIVER_TRAINER",
+    "DISTANCE", "GALLOP_RISK", "EQUIPMENT", "DATA_QUALITY", "OTHER",
+}
+
+
+def validate_field_review(case, *, product):
+    """Fail closed if any runner has only a bare flag or generic unexplained PASS."""
+    if type(case.get("qualified")) is not bool:
+        raise ValueError(f"FULL_FIELD_REVIEW_REQUIRED:{product}:qualified")
+    reason = case.get("reason")
+    if not isinstance(reason, str) or len(reason.strip()) < 18:
+        raise ValueError(f"FULL_FIELD_REVIEW_REQUIRED:{product}:specific_reason")
+    review = case.get("field_review")
+    if not isinstance(review, dict):
+        raise TypeError(f"FULL_FIELD_REVIEW_REQUIRED:{product}:missing_audit")
+    status = review.get("status")
+    if status not in REVIEW_STATUSES:
+        raise ValueError(f"FULL_FIELD_REVIEW_REQUIRED:{product}:status")
+    if case["qualified"] != (status == "QUALIFIED"):
+        raise ValueError(f"FULL_FIELD_REVIEW_REQUIRED:{product}:qualification_conflict")
+    factors = review.get("checked_factors")
+    if (not isinstance(factors, list) or len(factors) < 2
+            or len(set(map(str, factors))) != len(factors)
+            or any(not isinstance(factor, str) or factor not in REVIEW_FACTORS
+                   for factor in factors)):
+        raise ValueError(f"FULL_FIELD_REVIEW_REQUIRED:{product}:checked_factors")
+    refs = review.get("source_refs")
+    if (not isinstance(refs, list) or not refs
+            or any(not isinstance(ref, str) or len(ref.strip()) < 8 for ref in refs)):
+        raise ValueError(f"FULL_FIELD_REVIEW_REQUIRED:{product}:source_refs")
+    if review.get("market_free") is not True:
+        raise ValueError(f"FULL_FIELD_REVIEW_REQUIRED:{product}:market_free")
+    return deepcopy(review)
+
+
+def ranked_win_candidates(rows):
+    """Compare every independent WIN case; rank conditional lower-bound EV, not winners."""
+    candidates = [
+        {"selection": key, "decision": row["WIN"]["decision"],
+         "conservative_ev": row["WIN"]["p_low"] * row["WIN"]["available_odds"] - 1,
+         "minimum_price": row["WIN"]["minimum_price"],
+         "available_odds": row["WIN"]["available_odds"]}
+        for key, row in rows.items() if row["WIN"]["decision"] != "CASE_PASS"
+    ]
+    return sorted(candidates, key=lambda item: (-item["conservative_ev"], item["selection"]))
 
 
 def number(value, low=0, high=None):
@@ -185,8 +236,7 @@ def evaluate(data):
             raise ValueError("PLACE snapshot identity required")
     for key in field:
         case = data["cases"][key]
-        if type(case["qualified"]) is not bool or not case.get("reason", "").strip():
-            raise ValueError("explicit case qualification/reason required")
+        field_review = validate_field_review(case, product="WIN")
         signals = [row["signal"] for row in panel[key].values()]
         pos, neg = signals.count("STRONG_POS"), signals.count("STRONG_NEG")
         consensus = ("CONFLICT" if pos and neg else "POSITIVE" if pos >= 2
@@ -199,8 +249,7 @@ def evaluate(data):
                         "reason": "SEPARATE_P_PLACE_REQUIRED", "stake": None}
         if place_bounds is not None:
             pc = place["cases"][key]
-            if type(pc["qualified"]) is not bool or not pc.get("reason", "").strip():
-                raise ValueError("explicit PLACE case reason required")
+            place_field_review = validate_field_review(pc, product="PLACE")
             place_result = single(
                 place_bounds[key], number(place["snapshot"]["odds"][key], 1),
                 case_qualified=pc["qualified"], minimum_price=pc["minimum_price"],
@@ -211,7 +260,9 @@ def evaluate(data):
                      if winner["decision"] == "BET" else "PLACE"
                      if place_result["decision"] == "BET" else "PASS",
                      "DUAL_POOL_STRONG": pos >= 2, "COL_CONSENSUS": consensus,
-                     "case_reason": case["reason"], "place_required": required_place,
+                     "case_reason": case["reason"], "field_review": field_review,
+                     "place_field_review": place_field_review if place_bounds is not None else None,
+                     "place_required": required_place,
                      "market_conflict_explanation": case.get("market_conflict_explanation"),
                      "conflict_review_required": case["qualified"] and neg > 0
                      and not case.get("market_conflict_explanation", "").strip()}
@@ -230,17 +281,32 @@ def evaluate(data):
                     + weights["WIN"] * pwin[key]
                     + weights["collective"] * sum(p[key] for p in pools.values()) / len(pools)
                     for key in field}
+    quality_incomplete = any(
+        row["field_review"]["status"] == "DATA_MISSING"
+        or (row["place_field_review"] is not None
+            and row["place_field_review"]["status"] == "DATA_MISSING")
+        for row in rows.values()
+    )
+    full_field_quality = {
+        "gate_version": POLICY["full_field_review_gate"],
+        "active_runners": len(field), "screened_runners": len(rows),
+        "place_screened_runners": len(rows) if place_bounds is not None else 0,
+        "blocked_by_missing_data": quality_incomplete,
+    }
     report = {"standard": ACTIVE_STANDARD, "policy_hash": POLICY_HASH,
               "race_id": data["race_id"], "active_field": list(field),
               "decision_time": now.isoformat(), "race_start": start.isoformat(),
               "decision_snapshot": deepcopy(data["decision_snapshot"]),
               "closing_snapshot": None, "fundamental_provenance": deepcopy(model),
               "place_input": deepcopy(place), "runners": rows,
+              "full_field_quality": full_field_quality,
+              "ranked_qualified_WIN": ranked_win_candidates(rows),
               "unavailable_pools": unavailable, "shadow_combined": combined,
               "shadow_weights": deepcopy(data.get("shadow_weights")),
               "hbi_evidence": deepcopy(data.get("hbi_evidence", [])),
-              "allowed": not any(r["place_required"] and r["PLACE"]["decision"] == "BLOCKED"
-                                 or r["conflict_review_required"] for r in rows.values()),
+              "allowed": not quality_incomplete and not any(
+                  r["place_required"] and r["PLACE"]["decision"] == "BLOCKED"
+                  or r["conflict_review_required"] for r in rows.values()),
               "execution": "SHADOW_ONLY", "champion_changed": False,
               "batch": deepcopy(data["batch"])}
     batch = report["batch"]
@@ -288,9 +354,40 @@ def reassess(report, snapshot, decision_time):
             price_fresh=fresh(snapshot["observed_at"], now, start))
     if snapshot.get("race_id") != report["race_id"]:
         raise ValueError("re-entry race mismatch")
+    # Reprice all starters; do not inherit a prior price-based PASS as a permanent veto.
+    updated_rows = {
+        key: {"WIN": candidate} for key, candidate in rows.items()
+    }
+    original_ranks = [
+        item["selection"] for item in report["ranked_qualified_WIN"]
+    ]
+    updated_ranking = ranked_win_candidates(updated_rows)
+    new_ranks = [item["selection"] for item in updated_ranking]
+    changes = {}
+    for key in report["active_field"]:
+        old = report["runners"][key]["WIN"]
+        current = rows[key]
+        old_price = old["available_odds"]
+        new_price = current["available_odds"]
+        old_qual = old["decision"] != "CASE_PASS"
+        status_changed = old["decision"] != current["decision"]
+        price_crossed = old_qual and (
+            (old_price < old["minimum_price"] <= new_price)
+            or (new_price < old["minimum_price"] <= old_price)
+        )
+        rank_changed = (old_qual and original_ranks.index(key) != new_ranks.index(key))
+        if status_changed or price_crossed or rank_changed:
+            changes[key] = {
+                "previous_status": old["decision"], "current_status": current["decision"],
+                "price_crossed": price_crossed, "rank_changed": rank_changed,
+                "old_odds": old_price, "new_odds": new_price,
+            }
     return {"parent_decision_id": report["decision_id"], "policy_hash": POLICY_HASH,
             "decision_time": decision_time, "decision_snapshot": deepcopy(snapshot),
-            "WIN": rows, "allowed": report["allowed"], "execution": "SHADOW_ONLY"}
+            "WIN": rows, "reprice_coverage": {"active": len(report["active_field"]),
+                                             "checked": len(rows)},
+            "ranked_qualified_WIN": updated_ranking, "changes": changes,
+            "allowed": report["allowed"], "execution": "SHADOW_ONLY"}
 
 
 def attach_closing(report, snapshot):
@@ -318,15 +415,24 @@ def review_coupon(report, selections, *, omissions, banker=None, banker_reason=N
     if not set(selections) <= set(report["active_field"]):
         raise ValueError("unknown coupon selection")
     cuts, errors = {}, []
+    if not isinstance(omissions, dict):
+        raise TypeError("full-field omission audit required")
+    omitted = set(report["active_field"]) - set(selections)
+    if set(omissions) - omitted:
+        errors.append("CUT_AUDIT_UNKNOWN_SELECTION")
     for key, row in report["runners"].items():
         if key in selections:
             continue
-        audit_required = (row["WIN"]["p_mid"] >= 0.10 or row["WIN"]["decision"] == "BET"
-                          or any(p["signal"] == "STRONG_POS"
-                                 for p in row["market_evidence"].values()))
-        reason = omissions.get(key, "").strip()
-        cuts[key] = {"required": audit_required, "reason": reason or None}
-        if audit_required and not reason:
+        # A budget-driven cut still needs a reason, even for longshots and CASE_PASS runners.
+        reason = omissions.get(key)
+        valid_reason = isinstance(reason, str) and len(reason.strip()) >= 16
+        cuts[key] = {
+            "required": True, "reason": reason.strip() if valid_reason else None,
+            "win_status": row["WIN"]["decision"],
+            "p_mid": row["WIN"]["p_mid"],
+            "qualified_case": row["WIN"]["decision"] != "CASE_PASS",
+        }
+        if not valid_reason:
             errors.append(f"CUT_AUDIT_REQUIRED:{key}")
     if banker is not None and (
         selections != [banker] or not banker_reason or not banker_reason.strip()
@@ -337,10 +443,12 @@ def review_coupon(report, selections, *, omissions, banker=None, banker_reason=N
             "selections": list(selections), "banker": banker,
             "banker_reason": banker_reason,
             "full_field_pricing": {k: r["WIN"] for k, r in report["runners"].items()},
+            "full_field_quality": deepcopy(report["full_field_quality"]),
+            "runner_audit_count": len(cuts) + len(selections),
             "execution": "SHADOW_ONLY"}
 
 
-def construct_multi_race(legs, unit_price):
+def construct_multi_race(legs, unit_price, *, max_paper_cost_nok=None):
     if not legs or any(not leg["allowed"] for leg in legs):
         raise ValueError("all legs must pass singles/cut audit")
     if len({leg["race_id"] for leg in legs}) != len(legs):
@@ -348,6 +456,15 @@ def construct_multi_race(legs, unit_price):
     price = number(unit_price)
     if price <= 0:
         raise ValueError("positive coupon unit price required")
+    if max_paper_cost_nok is None:
+        raise ValueError("explicit multi-race budget required")
+    budget = number(max_paper_cost_nok)
+    if budget <= 0:
+        raise ValueError("positive paper budget required")
     combinations = prod(len(leg["selections"]) for leg in legs)
+    cost = combinations * price
+    if cost > budget + 1e-9:
+        raise ValueError("multi-race selections exceed explicit fixed budget")
     return {"legs": deepcopy(legs), "combinations": combinations,
-            "paper_cost_nok": combinations * price, "execution": "SHADOW_ONLY"}
+            "paper_cost_nok": cost, "max_paper_cost_nok": budget,
+            "budget_remaining_nok": budget - cost, "execution": "SHADOW_ONLY"}

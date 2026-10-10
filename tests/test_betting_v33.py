@@ -29,8 +29,24 @@ def case():
         "fundamental": {"market_free": True, "model_version": "external-calibrated-interval-v1",
                         "observed_at": "2026-10-07T12:50:00+00:00",
                         "priced_at": "2026-10-07T12:55:00+00:00", "probabilities": probs},
-        "cases": {"1": {"qualified": True, "reason": "form", "minimum_price": 3},
-                  "2": {"qualified": False, "reason": "no independent case", "minimum_price": 2}},
+        "cases": {
+            "1": {
+                "qualified": True, "reason": "Recent form and draw support a winning case",
+                "minimum_price": 3,
+                "field_review": {"status": "QUALIFIED",
+                                 "checked_factors": ["FORM", "DRAW"],
+                                 "source_refs": ["program-form-2026-10-07"],
+                                 "market_free": True},
+            },
+            "2": {
+                "qualified": False, "reason": "No independent form or race-shape support",
+                "minimum_price": 2,
+                "field_review": {"status": "CASE_PASS",
+                                 "checked_factors": ["FORM", "RACE_SHAPE"],
+                                 "source_refs": ["program-form-2026-10-07"],
+                                 "market_free": True},
+            },
+        },
         "decision_snapshot": {
             "WIN": {"race_id": "race", "snapshot_id": "win-1",
                     "observed_at": "2026-10-07T12:55:50+00:00", "odds": {"1": 2.8, "2": 2}},
@@ -40,8 +56,24 @@ def case():
         "place": {"market_free": True, "model_version": "separate-place-v1", "paid_places": 1,
                   "observed_at": "2026-10-07T12:50:00+00:00",
                   "priced_at": "2026-10-07T12:55:00+00:00", "probabilities": deepcopy(probs),
-                  "cases": {"1": {"qualified": True, "reason": "place case", "minimum_price": 3},
-                            "2": {"qualified": False, "reason": "no case", "minimum_price": 2}},
+                  "cases": {
+                      "1": {
+                          "qualified": True, "reason": "Independent place case from recent form",
+                          "minimum_price": 3,
+                          "field_review": {"status": "QUALIFIED",
+                                           "checked_factors": ["FORM", "DRAW"],
+                                           "source_refs": ["program-form-2026-10-07"],
+                                           "market_free": True},
+                      },
+                      "2": {
+                          "qualified": False, "reason": "No independent place case from form",
+                          "minimum_price": 2,
+                          "field_review": {"status": "CASE_PASS",
+                                           "checked_factors": ["FORM", "RACE_SHAPE"],
+                                           "source_refs": ["program-form-2026-10-07"],
+                                           "market_free": True},
+                      },
+                  },
                   "snapshot": {"race_id": "race", "snapshot_id": "place-1",
                                "observed_at": "2026-10-07T12:55:50+00:00",
                                "odds": {"1": 3.1, "2": 2}}},
@@ -75,6 +107,8 @@ def test_evidence_never_creates_bet_or_probability(case):
     assert row["PLACE"]["decision"] == "BET"
     assert report["runners"]["2"]["WIN"]["decision"] == "CASE_PASS"
     assert report["allowed"]
+    assert report["full_field_quality"]["screened_runners"] == len(case["active_field"])
+    assert [item["selection"] for item in report["ranked_qualified_WIN"]] == ["1"]
 
 
 def test_reentry_is_new_revision_and_case_pass_stays_closed(case):
@@ -85,6 +119,9 @@ def test_reentry_is_new_revision_and_case_pass_stays_closed(case):
     revision = reassess(original, quote, "2026-10-07T12:57:10+00:00")
     assert revision["WIN"]["1"]["decision"] == "BET"
     assert revision["WIN"]["2"]["decision"] == "CASE_PASS"
+    assert revision["reprice_coverage"] == {"active": 2, "checked": 2}
+    assert revision["changes"]["1"]["price_crossed"]
+    assert revision["changes"]["1"]["current_status"] == "BET"
     assert original == saved
     assert allocate_stake(revision["WIN"]["1"])["stake_nok"] == 25
     assert allocate_stake(revision["WIN"]["2"])["stake_nok"] == 0
@@ -104,13 +141,20 @@ def test_reentry_is_new_revision_and_case_pass_stays_closed(case):
     lambda c: c["decision_snapshot"]["WIN"]["odds"].update({"2": float("nan")}),
     lambda c: c["decision_snapshot"]["WIN"].update(race_id="other"),
     lambda c: c["cases"]["1"].update(minimum_price=2),
+    lambda c: c["cases"]["2"].pop("field_review"),
+    lambda c: c["cases"]["1"]["field_review"].update(source_refs=[]),
+    lambda c: c["cases"]["1"]["field_review"].update(checked_factors=["FORM"]),
+    lambda c: c["cases"]["1"]["field_review"].update(market_free=False),
+    lambda c: c["cases"]["2"]["field_review"].update(status="QUALIFIED"),
+    lambda c: c["cases"]["2"].update(reason="not sure"),
+    lambda c: c["place"]["cases"]["1"].pop("field_review"),
     lambda c: c["batch"].update(policy_hash="tuned"),
     lambda c: c["batch"].update(registered_at="2026-10-07T13:00:00+00:00"),
     lambda c: c["place"]["probabilities"]["1"].update(p_mid=.5),
 ])
 def test_fail_closed_invalid_coverage_provenance_batch(case, mutation):
     mutation(case)
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, TypeError)):
         evaluate(case)
 
 
@@ -151,11 +195,17 @@ def test_bankers_and_multirace_require_cut_audit(case):
                         banker="1", banker_reason="full-field uncertainty considered")
     assert leg["allowed"] and leg["full_field_pricing"]["1"]["p_low"] == .35
     second = {**leg, "race_id": "race-2"}
-    assert construct_multi_race([leg, second], .5)["paper_cost_nok"] == .5
+    assert construct_multi_race(
+        [leg, second], .5, max_paper_cost_nok=.5
+    )["paper_cost_nok"] == .5
+    with pytest.raises(ValueError, match="budget"):
+        construct_multi_race([leg, second], .5)
+    with pytest.raises(ValueError, match="budget"):
+        construct_multi_race([leg, second], .5, max_paper_cost_nok=.49)
     with pytest.raises(ValueError):
-        construct_multi_race([leg, leg], .5)
+        construct_multi_race([leg, leg], .5, max_paper_cost_nok=100)
     with pytest.raises(ValueError):
-        construct_multi_race([bad], .5)
+        construct_multi_race([bad], .5, max_paper_cost_nok=100)
 
 
 def test_shadow_combination_never_changes_decisions(case):
@@ -173,6 +223,68 @@ def test_tampering_cannot_reopen_case(case):
     report["runners"]["2"]["WIN"]["decision"] = "PRICE_PASS"
     with pytest.raises(ValueError, match="integrity"):
         review_coupon(report, ["1"], omissions={"2": "reason"})
+
+
+def test_missing_quality_data_blocks_bet_and_coupon(case):
+    case["cases"]["2"]["field_review"]["status"] = "DATA_MISSING"
+    report = evaluate(case)
+    assert not report["allowed"]
+    assert report["full_field_quality"]["blocked_by_missing_data"]
+    with pytest.raises(ValueError, match="incomplete"):
+        review_coupon(report, ["1"], omissions={"2": "insufficient independent form"})
+
+
+def test_two_independent_winner_cases_can_both_qualify(case):
+    # There is no arbitrary one-runner-per-race cap.
+    case["cases"]["2"]["qualified"] = True
+    case["cases"]["2"]["reason"] = "Separate form-supported winning case for runner two"
+    case["cases"]["2"]["field_review"]["status"] = "QUALIFIED"
+    case["cases"]["2"]["market_conflict_explanation"] = "Form case despite negative pools"
+    case["decision_snapshot"]["WIN"]["odds"] = {"1": 3.1, "2": 2.5}
+    report = evaluate(case)
+    assert report["allowed"]
+    assert all(report["runners"][key]["WIN"]["decision"] == "BET"
+               for key in case["active_field"])
+    assert len(report["ranked_qualified_WIN"]) == 2
+
+
+def test_every_coupon_omission_requires_specific_reason(case):
+    # Even a low-probability runner must have a documented budget/cut rationale.
+    case["fundamental"]["probabilities"] = {
+        "1": {"p_low": .85, "p_mid": .92, "p_high": .95},
+        "2": {"p_low": .05, "p_mid": .08, "p_high": .15},
+    }
+    case["cases"]["2"]["minimum_price"] = 20
+    case["place"]["probabilities"] = deepcopy(case["fundamental"]["probabilities"])
+    case["place"]["cases"]["2"]["minimum_price"] = 20
+    report = evaluate(case)
+    blocked = review_coupon(report, ["1"], omissions={})
+    assert not blocked["allowed"]
+    assert "CUT_AUDIT_REQUIRED:2" in blocked["errors"]
+    approved = review_coupon(
+        report, ["1"],
+        omissions={"2": "Unqualified, stronger included single mark within budget"}
+    )
+    assert approved["allowed"]
+    assert approved["cut_audit"]["2"]["required"]
+
+
+def test_full_field_rank_reversal_detected_before_outcome(case):
+    case["cases"]["2"]["qualified"] = True
+    case["cases"]["2"]["reason"] = "Independent form-supported winning case for runner two"
+    case["cases"]["2"]["field_review"]["status"] = "QUALIFIED"
+    case["cases"]["2"]["market_conflict_explanation"] = "Fundamental factors independent"
+    case["cases"]["2"]["minimum_price"] = 2
+    case["decision_snapshot"]["WIN"]["odds"] = {"1": 3.3, "2": 2}
+    original = evaluate(case)
+    quote = {"race_id": "race", "snapshot_id": "new-quote",
+             "observed_at": "2026-10-07T12:57:00+00:00",
+             "odds": {"1": 3.2, "2": 5.0}}
+    revision = reassess(original, quote, "2026-10-07T12:57:10+00:00")
+    assert revision["reprice_coverage"] == {"active": 2, "checked": 2}
+    assert revision["ranked_qualified_WIN"][0]["selection"] == "2"
+    assert revision["changes"]["2"]["rank_changed"]
+    assert revision["WIN"]["2"]["decision"] == "BET"
 
 
 def test_pool_alias_is_not_independent_evidence(case):
