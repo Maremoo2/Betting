@@ -41,7 +41,7 @@ def validate_field_review(case, *, product):
         raise ValueError(f"FULL_FIELD_REVIEW_REQUIRED:{product}:specific_reason")
     review = case.get("field_review")
     if not isinstance(review, dict):
-        raise ValueError(f"FULL_FIELD_REVIEW_REQUIRED:{product}:missing_audit")
+        raise TypeError(f"FULL_FIELD_REVIEW_REQUIRED:{product}:missing_audit")
     status = review.get("status")
     if status not in REVIEW_STATUSES:
         raise ValueError(f"FULL_FIELD_REVIEW_REQUIRED:{product}:status")
@@ -50,7 +50,8 @@ def validate_field_review(case, *, product):
     factors = review.get("checked_factors")
     if (not isinstance(factors, list) or len(factors) < 2
             or len(set(map(str, factors))) != len(factors)
-            or any(factor not in REVIEW_FACTORS for factor in factors)):
+            or any(not isinstance(factor, str) or factor not in REVIEW_FACTORS
+                   for factor in factors)):
         raise ValueError(f"FULL_FIELD_REVIEW_REQUIRED:{product}:checked_factors")
     refs = review.get("source_refs")
     if (not isinstance(refs, list) or not refs
@@ -415,7 +416,7 @@ def review_coupon(report, selections, *, omissions, banker=None, banker_reason=N
         raise ValueError("unknown coupon selection")
     cuts, errors = {}, []
     if not isinstance(omissions, dict):
-        raise ValueError("full-field omission audit required")
+        raise TypeError("full-field omission audit required")
     omitted = set(report["active_field"]) - set(selections)
     if set(omissions) - omitted:
         errors.append("CUT_AUDIT_UNKNOWN_SELECTION")
