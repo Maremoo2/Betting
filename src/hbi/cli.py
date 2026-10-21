@@ -172,6 +172,8 @@ def build_parser() -> argparse.ArgumentParser:
     overview.add_argument("--sha256", required=True)
     overview.add_argument("--output", required=True, help="New isolated output directory")
     overview.add_argument("--fundamental", action="store_true", help="Descriptive horse evidence; no model ranking")
+    overview.add_argument("--results-archive", help="Archived authoritative result envelopes (JSON)")
+    overview.add_argument("--results-sha256", help="Required SHA256 of result archive")
     overview.set_defaults(func=overview_cli)
 
     betting = sub.add_parser("review-betting", help="Active Betting V3.3 decision layer")

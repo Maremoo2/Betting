@@ -780,6 +780,61 @@ Betting review. Fully model-analyzed races remain zero. Calibrated p(win)/WATCH
 requires verified historical horse/race/result truth, documented PIT train/test
 splits, time-based out-of-sample evaluation, calibration and baseline comparisons.
 
+#### Historical truth and model readiness
+
+Add the following to the same `hbi overview --fundamental` command:
+
+```bash
+  --results-archive tests/fixtures/rikstoto-historical-truth.json \
+  --results-sha256 8086ec016e8e4f9cda7d9ad36abe44df1e09e3c2e387a9ed6c612fa61a0f8953
+```
+
+This adds individual historical result statuses to the summary/JSON and writes
+`model-readiness.json`. It does not alter the M3 facts, Betting requests or database
+model/result tables. The command runs offline; all selected sources are archived.
+The report is scoped to independent source entries; composite products do not add
+observations. Repeated stable horse/historical race pairs count once. Before a
+historical race is resolved, stable registration (or unresolved source section),
+date and source race number form a provisional deduplication key; divergent
+excerpts sharing that key become conflicts rather than independent training rows.
+Each observation retains every source occurrence, its reasons and evidence refs.
+
+The genuine fixture contains 12 original `rikstoto_crawler.transport.ArchiveClient`
+envelopes retrieved from Rikstoto on 2026-10-21 (21:37–21:38 UTC): four official
+day inventories, four rosters and four complete results. Full provider JSON values,
+URLs, retrieval times and canonical body hashes are preserved; these hashes are
+not hashes of the original HTTP response bytes. The whole fixture is SHA256-pinned.
+The four selected historical races are Jarlsberg 2026-07-03 race 10, Klosterskogen
+2026-09-24 race 4, and Momarken 2026-06-25 race 3 / 2026-10-17 race 1.
+
+Historical identity uses the official date inventory and matching stable horse
+registration in the historical roster. Program track abbreviations are not guessed
+into provider keys. Existing `verify_outcome` checks the complete active result
+field against the roster; missing/contradictory identities or ambiguous races fail
+closed. For Bjerke race 1 this verifies six observations, including Mio Nova's
+fourth place, `29,8` / 2120 m at Jarlsberg, and Hage Balder's win, `29,0` / 2140 m
+at Klosterskogen. Every verified result includes its original endpoint and row pointer.
+Other historical sources were not exhaustively collected.
+
+Positive numeric provider placings are displayed. Zero is retained as a source
+code with no numeric placing; `dg a`, `br a`, `32,5 g`, unknown codes and time
+formats remain verbatim. No authoritative code legend was acquired, so gallop,
+disqualification and nonfinish flags are **unknown**, not false. The verified
+status attests the raw authoritative result/identity, not an unverified code meaning.
+No previous program-parser interpretation is used as result truth.
+
+The report counts 1440 unique historical observations: 375 have verified target
+horse identity, six historical race identities and six authoritative result links.
+Exclusive statuses are SOURCE_EXCERPT_ONLY=1065, IDENTITY_VERIFIED=369,
+RESULT_VERIFIED=6, PIT_VERIFIED=0, MODEL_ELIGIBLE=0, CONFLICT=0, UNRESOLVED=0.
+Cumulative identity/result counters overlap by design; exclusive statuses do not.
+The result payloads were acquired after the target race and have no documented
+historical publication timestamps. They are explicitly retrospective display truth,
+never pre-start features. PIT and model eligibility therefore remain false even
+when a complete result field is verified. Historical full-field PIT feature data,
+code semantics, a documented temporal dataset/split, OOS evaluation and calibration
+remain necessary before fundamental p(win) or WATCH can be built and validated.
+
 A complete local dry run can now be executed without any live provider:
 
 ```bash

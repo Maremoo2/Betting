@@ -220,9 +220,17 @@ def write(path, data):
         stream.write("\n")
 
 
-def run_overview(day, archive_path, sha256, output, fundamental=False):
+def run_overview(day, archive_path, sha256, output, fundamental=False,
+                 results_archive=None, results_sha256=None):
     from .cli import _store, cmd_import_races
 
+    if bool(results_archive) != bool(results_sha256) or (results_archive and not fundamental):
+        raise ValueError("HISTORICAL_RESULTS_REQUIRE_FUNDAMENTAL_AND_CHECKSUM")
+    truth = None
+    if results_archive:
+        from .historical_truth import HistoricalTruth
+
+        truth = HistoricalTruth(results_archive, results_sha256)
     archive = DailyArchive(archive_path, sha256, day)
     meetings = {m["meeting_id"]: m for m in archive.manifest["meetings"]}
     entries, cards, docs = [], [], {}
@@ -311,6 +319,11 @@ def run_overview(day, archive_path, sha256, output, fundamental=False):
                 for r in independent for h in r["fundamental_analysis"]["horses"]),
             "model_analyzed_races": 0, "scope": "DESCRIPTIVE_NOT_PREDICTIVE",
         }
+    if truth:
+        from .historical_truth import attach_history
+
+        attach_history(report, archive, truth)
+        write(output / "model-readiness.json", report["historical_truth"])
     write(output / "overview.json", report)
     text = summary(report)
     (output / "summary.txt").write_text(text, encoding="utf-8")
@@ -355,13 +368,22 @@ def summary(report):
             from .fundamental_view import render
 
             lines.extend(render(race["fundamental_analysis"]))
+        if "historical_truth" in report and not race["composite_product"]:
+            from .historical_truth import render_history
+
+            lines.extend(render_history(report, race))
+    if "historical_truth" in report:
+        lines.append("Model-readiness: " + json.dumps(report["historical_truth"]["counts"], ensure_ascii=False))
+        lines.append("MODELLGRUNNLAG BLOKKERT: historisk tilgjengelighet og fullfelt-PIT-features er ikke dokumentert.")
     return "\n".join(lines) + "\n"
 
 
 def cli(args):
     try:
         _, text = run_overview(args.date, args.archive, args.sha256, args.output,
-                               fundamental=getattr(args, "fundamental", False))
+                               fundamental=getattr(args, "fundamental", False),
+                               results_archive=getattr(args, "results_archive", None),
+                               results_sha256=getattr(args, "results_sha256", None))
     except (ValueError, KeyError, TypeError, OSError, zipfile.BadZipFile) as exc:
         print(json.dumps({"allowed": False, "error": str(exc)}, ensure_ascii=False))
         raise SystemExit(2) from exc
