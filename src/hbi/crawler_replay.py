@@ -38,7 +38,7 @@ def archive_card(body: str) -> tuple[dict, dict]:
     pdf_uri = re.search(r"pdf_source_url=(\S+)", section)[1]
     rows = re.findall(
         r"^#(\d+) (.*?) \| driver=(.*?) \| scratch=(\w+)"
-        r" \| scratch_asof_utc=(\S+) \| historical_count=(\d+)$", section, re.M,
+        r" \| scratch_asof_utc=(\S+) \| historical_count=(\d+)$", section, re.MULTILINE,
     )
     expected = int(re.search(r"horse_count=(\d+)", section)[1])
     if expected != 12 or len(rows) != expected or len({r[0] for r in rows}) != expected:
@@ -47,7 +47,7 @@ def archive_card(body: str) -> tuple[dict, dict]:
         observed = datetime.fromisoformat(value)
         if observed.tzinfo is None or observed >= start:
             raise ValueError("POST_START_SOURCE")
-    history_dates = re.findall(r"^  - (\d{4}-\d\d-\d\d) previous_race=", section, re.M)
+    history_dates = re.findall(r"^  - (\d{4}-\d\d-\d\d) previous_race=", section, re.MULTILINE)
     if len(history_dates) != 60 or any(d >= "2026-10-20" for d in history_dates):
         raise ValueError("INVALID_PREVIOUS_START_EVIDENCE")
     if any(r[3] != "ACTIVE_AS_OF_SNAPSHOT" or int(r[5]) != 5 for r in rows):
