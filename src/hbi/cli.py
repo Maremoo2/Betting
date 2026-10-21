@@ -164,6 +164,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--schema", default=None)
     sub = parser.add_subparsers(dest="command", required=True)
 
+    from .date_overview import cli as overview_cli
+
+    overview = sub.add_parser("overview", help="Offline løpsoversikt for én arkivdato")
+    overview.add_argument("--date", required=True)
+    overview.add_argument("--archive", required=True)
+    overview.add_argument("--sha256", required=True)
+    overview.add_argument("--output", required=True, help="New isolated output directory")
+    overview.set_defaults(func=overview_cli)
+
     betting = sub.add_parser("review-betting", help="Active Betting V3.3 decision layer")
     betting.add_argument("file")
     betting.add_argument("--batch", required=True)
