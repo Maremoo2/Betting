@@ -220,7 +220,7 @@ def write(path, data):
         stream.write("\n")
 
 
-def run_overview(day, archive_path, sha256, output):
+def run_overview(day, archive_path, sha256, output, fundamental=False):
     from .cli import _store, cmd_import_races
 
     archive = DailyArchive(archive_path, sha256, day)
@@ -234,6 +234,10 @@ def run_overview(day, archive_path, sha256, output):
             starts = None
         entry, card = inspect_race(archive, doc, meetings[mid], starts)
         entry["source_entry_id"] = f"{archive.sha256}:races:{source_index}"
+        if fundamental:
+            from .fundamental_view import analyze_race
+
+            entry["fundamental_analysis"] = analyze_race(archive, doc, entry, starts)
         entries.append(entry)
         docs[entry["race_id"]] = doc
         if card:
@@ -301,6 +305,12 @@ def run_overview(day, archive_path, sha256, output):
                          "blocked_before_review": sum(r["betting_runtime"] is None for r in entries),
                          "fully_analyzed": 0},
               "races": entries}
+    if fundamental:
+        report["descriptive_analysis"] = {
+            "verified_horses": sum(h["identity"]["status"] == "VERIFIED"
+                for r in independent for h in r["fundamental_analysis"]["horses"]),
+            "model_analyzed_races": 0, "scope": "DESCRIPTIVE_NOT_PREDICTIVE",
+        }
     write(output / "overview.json", report)
     text = summary(report)
     (output / "summary.txt").write_text(text, encoding="utf-8")
@@ -341,12 +351,17 @@ def summary(report):
                 " (strøket ved snapshot)" if h["scratched_as_of_snapshot"] is True else ""
             ) for h in race["runners"]
         ))
+        if "fundamental_analysis" in race:
+            from .fundamental_view import render
+
+            lines.extend(render(race["fundamental_analysis"]))
     return "\n".join(lines) + "\n"
 
 
 def cli(args):
     try:
-        _, text = run_overview(args.date, args.archive, args.sha256, args.output)
+        _, text = run_overview(args.date, args.archive, args.sha256, args.output,
+                               fundamental=getattr(args, "fundamental", False))
     except (ValueError, KeyError, TypeError, OSError, zipfile.BadZipFile) as exc:
         print(json.dumps({"allowed": False, "error": str(exc)}, ensure_ascii=False))
         raise SystemExit(2) from exc

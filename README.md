@@ -754,6 +754,32 @@ is the scope: the command does not claim that every race on that date was captur
 Raw historical excerpts are not validated model features. Missing stable provider
 identities, calibrated intervals, fresh WIN, PLACE or FFQ-1 remain explicit blocks.
 
+Add `--fundamental` to the same overview command for a horse-by-horse descriptive
+analysis in both outputs. For the archived Bjerke fields this cross-checks stable
+RIKSTOTO registrations between program and startlist, and exact sire/dam names
+against the PDF horse section. Name or start number alone never establishes a
+stable identity. Missing evidence is `UNRESOLVED`; contradictions are `CONFLICT`.
+
+The view labels concordant first-party annual/career starts and win/place counts
+`VERIFIED_FACT`, computed starting distance and age of the latest **listed** start
+`DERIVED_FEATURE`, raw historical excerpts/equipment codes `UNVERIFIED_SOURCE`,
+and absent validated results `MISSING_DATA`. For example Bjerke race 1 documents
+Hage Balder's 7 wins/21 starts and 2180 m versus Finnskog Bolt's 2/7 and 2160 m.
+These observations span unequal conditions/classes and are not predicted chances.
+Full-field counts, riders/drivers and evidence references remain visible.
+
+Verification here means concordant archived first-party records, not independent
+result validation; the collection remains `CAPTURED_UNVERIFIED`. Individual past
+results, times, gallop/disqualification and qualification codes stay uninterpreted
+source quotations. Historical race IDs and publication times are unknown; no
+quoted odds column is parsed as a feature. Future/undated/duplicate-date excerpts
+are withheld, as are ambiguous identity links. Source observation must precede
+the target start. Its time is never substituted for historical publication time.
+No descriptive evidence is written into model/market/result tables or fed to the
+Betting review. Fully model-analyzed races remain zero. Calibrated p(win)/WATCH
+requires verified historical horse/race/result truth, documented PIT train/test
+splits, time-based out-of-sample evaluation, calibration and baseline comparisons.
+
 A complete local dry run can now be executed without any live provider:
 
 ```bash
