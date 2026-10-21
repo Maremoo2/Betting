@@ -222,7 +222,7 @@ def attach_history(report, archive, truth):
                 horse["historical_results"].append(oid)
     for entry in report["races"]:
         for horse in entry["fundamental_analysis"]["horses"]:
-            horse_rows = [observations[i] for i in set(horse["historical_results"])]
+            horse_rows = [observations[i] for i in dict.fromkeys(horse["historical_results"])]
             horse["historical_coverage"] = {
                 "unique_observations": len(horse_rows),
                 "verified_results": sum(r["authoritative_result_verified"] for r in horse_rows),
