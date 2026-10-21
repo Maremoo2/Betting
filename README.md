@@ -726,6 +726,34 @@ promotion criterion.
 
 ## CLI data flow
 
+### One archived date: source and analysis readiness
+
+```bash
+hbi overview --date 2026-10-20 \
+  --archive tests/fixtures/rikstoto-2026-10-20.zip \
+  --sha256 a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e \
+  --output /tmp/betting-2026-10-20-overview
+```
+
+Use a new output directory each time. It contains `overview.json` (every source
+entry and runner, coverage, missing inputs and actual Betting rejection reports),
+`summary.txt`, canonical interchange data and an isolated SQLite database. This
+command never writes the global `--db` database. It imports through the existing
+HBI implementation and reviews through the existing V3.3 CLI; it creates no
+probabilities, WATCH score or BET.
+
+The genuine fixture is the crawler's original daily ZIP from run
+`20261020T051747910748Z`, source commit
+`e7173d9dfa378a1ac1ee744476ddf3960bb4f91b`, Actions run `39374067972`,
+fallback artifact `12242931072`. Its ZIP hash matches the archived sidecar and
+release asset metadata. Collection remains `CAPTURED_UNVERIFIED`.
+The source has 55 program entries/628 runner entries, including seven composite
+product entries; there are 48 independent races/545 runners. Unknown `00:00`
+start clocks and composite entries are shown but not imported. The selected ZIP
+is the scope: the command does not claim that every race on that date was captured.
+Raw historical excerpts are not validated model features. Missing stable provider
+identities, calibrated intervals, fresh WIN, PLACE or FFQ-1 remain explicit blocks.
+
 A complete local dry run can now be executed without any live provider:
 
 ```bash
