@@ -243,7 +243,7 @@ def attach_history(report, archive, truth):
                    "pit_verified": sum(r["pit_verified"] for r in rows),
                    "model_eligible": sum(r["model_eligible"] for r in rows),
                    "by_status": {level: status[level] for level in LEVELS}},
-        "reason_counts": dict(Counter(reason for r in rows for reason in set(r["reasons"]))),
+        "reason_counts": dict(Counter(reason for r in rows for reason in dict.fromkeys(r["reasons"]))),
         "deduplication": "VERIFIED_REGISTRATION_OR_SOURCE_SECTION_PLUS_HISTORICAL_RACE_OR_DATE_AND_RACE_NUMBER; DIVERGENT_EXCERPTS_CONFLICT",
         "model_readiness": "BLOCKED", "missing": ["DOCUMENTED_HISTORICAL_AVAILABILITY",
             "VERIFIED_RESULT_CODE_LEGEND", "VERIFIED_FULL_FIELD_PIT_FEATURE_DATASET",

@@ -2,6 +2,7 @@
 import copy
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -261,3 +262,20 @@ def test_target_identity_never_promoted_by_a_name_or_number(status):
     assert not row["horse_identity_verified"]
     assert row["result"] is None and not row["authoritative_result_verified"]
     assert not row["model_eligible"]
+
+
+def test_readiness_serialization_reproducible_across_hash_seeds():
+    program = """
+import json, runpy
+from hbi.historical_truth import HistoricalTruth, attach_history
+suite = runpy.run_path('tests/test_historical_truth.py')
+archive, doc, entry = suite['context']()
+archive.data['races'] = [doc]
+report = {'races': [entry]}
+attach_history(report, archive, HistoricalTruth(suite['TRUTH'], suite['TRUTH_SHA']))
+print(json.dumps(report, ensure_ascii=False))
+"""
+    outputs = [subprocess.run([sys.executable, '-c', program], cwd=ROOT,
+        env={**os.environ, 'PYTHONHASHSEED': seed}, capture_output=True,
+        text=True, check=True).stdout for seed in ('1', '2')]
+    assert outputs[0] == outputs[1]
