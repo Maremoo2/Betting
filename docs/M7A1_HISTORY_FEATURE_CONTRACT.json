@@ -1,0 +1,209 @@
+{
+  "schema": "M7A1_PROPOSED_HISTORY_FEATURE_CONTRACT_V1",
+  "version": "0.1.0-proposal",
+  "status": "PROPOSED_NOT_ACTIVATED",
+  "proposed_attachment": "Existing M5 dataset.jsonl -> model_candidate.inputs[].features.history; no parallel datastore or runtime integration in this PR",
+  "compatibility": "Existing M6 HISTORY_FEATURE_CONTRACT_NOT_VALIDATED remains unchanged and enforced",
+  "identity": "Preserve original registration/TMP and namespace. Name or start number alone is insufficient. Retrospective ATG identity proof does not automatically establish pre-race identity/PIT.",
+  "labels": "Official results are a separate RETROSPECTIVE_LABEL_ONLY evidence layer. A 2026 fetch of a 2015 outcome may be a retrospective label; it never proves 2015 pre-race input availability.",
+  "evidence_quarantine": "Original raw history lines may contain odds/prizes. Retain as evidence, never pass raw text, market columns or target outcomes as fundamental features.",
+  "race_level_rule": "Any future training candidate requires verified full fields, stable horse/race IDs, independent result truth, PIT-correct approved inputs for every runner and explicit exclusions. Sixty diagnostic observations do not meet this requirement.",
+  "allowed_use_vocabulary": {
+    "RESEARCH_ONLY": "Only use assigned by this proposal",
+    "SHADOW_CANDIDATE": "Future explicit validation/governance prerequisite; not assigned here",
+    "MODEL_ELIGIBLE": "Never assigned by this delivery; separate data/model admission required"
+  },
+  "fields": {
+    "historical_date": {
+      "datatype": "ISO8601 date",
+      "unit": "calendar day",
+      "normalization": "Exact source date; no century guessing",
+      "missing_values": "UNKNOWN",
+      "source_and_identity_requirements": "Original PDF date token and uniquely attributed horse block",
+      "cutoff": "Historical event precedes target analysis cutoff; actual feature availability must be strictly before cutoff, all timestamps aware; same-day date-only history excluded",
+      "pit_verification": "Documented publication or conservative direct observation upper bound for this exact source fact and verified horse/race identity before cutoff; retrieval of a retrospective result is not proof of earlier feature availability",
+      "exclusions": [
+        "UNKNOWN_OR_AMBIGUOUS_VALUE",
+        "UNRESOLVED_HORSE_OR_RACE_IDENTITY",
+        "QUALIFIER_MISCLASSIFIED_AS_ORDINARY_START",
+        "SOURCE_AFTER_CUTOFF_OR_UNKNOWN_TIMEZONE",
+        "UNVERIFIED_CODE_SEMANTICS",
+        "MARKET_OR_TARGET_RESULT_LEAKAGE"
+      ],
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false
+    },
+    "historical_track": {
+      "datatype": "string",
+      "unit": "printed provider track code",
+      "normalization": "Preserve raw code; resolve to physical track only with country/date/provider evidence",
+      "missing_values": "UNKNOWN",
+      "source_and_identity_requirements": "Code alone is not historical race identity; B/J are country-ambiguous",
+      "cutoff": "Historical event precedes target analysis cutoff; actual feature availability must be strictly before cutoff, all timestamps aware; same-day date-only history excluded",
+      "pit_verification": "Documented publication or conservative direct observation upper bound for this exact source fact and verified horse/race identity before cutoff; retrieval of a retrospective result is not proof of earlier feature availability",
+      "exclusions": [
+        "UNKNOWN_OR_AMBIGUOUS_VALUE",
+        "UNRESOLVED_HORSE_OR_RACE_IDENTITY",
+        "QUALIFIER_MISCLASSIFIED_AS_ORDINARY_START",
+        "SOURCE_AFTER_CUTOFF_OR_UNKNOWN_TIMEZONE",
+        "UNVERIFIED_CODE_SEMANTICS",
+        "MARKET_OR_TARGET_RESULT_LEAKAGE"
+      ],
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false
+    },
+    "historical_race_number": {
+      "datatype": "positive integer",
+      "unit": "physical race number",
+      "normalization": "Keep physical race number separate from V86/V4 legs",
+      "missing_values": "UNKNOWN",
+      "source_and_identity_requirements": "Calendar + exact track/date/race; composite sections require whole-field reconciliation",
+      "cutoff": "Historical event precedes target analysis cutoff; actual feature availability must be strictly before cutoff, all timestamps aware; same-day date-only history excluded",
+      "pit_verification": "Documented publication or conservative direct observation upper bound for this exact source fact and verified horse/race identity before cutoff; retrieval of a retrospective result is not proof of earlier feature availability",
+      "exclusions": [
+        "UNKNOWN_OR_AMBIGUOUS_VALUE",
+        "UNRESOLVED_HORSE_OR_RACE_IDENTITY",
+        "QUALIFIER_MISCLASSIFIED_AS_ORDINARY_START",
+        "SOURCE_AFTER_CUTOFF_OR_UNKNOWN_TIMEZONE",
+        "UNVERIFIED_CODE_SEMANTICS",
+        "MARKET_OR_TARGET_RESULT_LEAKAGE"
+      ],
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false
+    },
+    "distance_m": {
+      "datatype": "positive integer",
+      "unit": "metres",
+      "normalization": "Read actual historical starter distance, not target-race or base distance",
+      "missing_values": "UNKNOWN",
+      "source_and_identity_requirements": "Unambiguous historical distance cell; official corroboration separately recorded",
+      "cutoff": "Historical event precedes target analysis cutoff; actual feature availability must be strictly before cutoff, all timestamps aware; same-day date-only history excluded",
+      "pit_verification": "Documented publication or conservative direct observation upper bound for this exact source fact and verified horse/race identity before cutoff; retrieval of a retrospective result is not proof of earlier feature availability",
+      "exclusions": [
+        "UNKNOWN_OR_AMBIGUOUS_VALUE",
+        "UNRESOLVED_HORSE_OR_RACE_IDENTITY",
+        "QUALIFIER_MISCLASSIFIED_AS_ORDINARY_START",
+        "SOURCE_AFTER_CUTOFF_OR_UNKNOWN_TIMEZONE",
+        "UNVERIFIED_CODE_SEMANTICS",
+        "MARKET_OR_TARGET_RESULT_LEAKAGE"
+      ],
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false
+    },
+    "start_method": {
+      "datatype": "enum AUTO|VOLT|UNKNOWN",
+      "unit": "category",
+      "normalization": "AUTO from documented explicit source marker; do not infer VOLT from missing a; official values remain a separate layer",
+      "missing_values": "UNKNOWN",
+      "source_and_identity_requirements": "Versioned codebook or explicit historical race metadata; never copy target start method",
+      "cutoff": "Historical event precedes target analysis cutoff; actual feature availability must be strictly before cutoff, all timestamps aware; same-day date-only history excluded",
+      "pit_verification": "Documented publication or conservative direct observation upper bound for this exact source fact and verified horse/race identity before cutoff; retrieval of a retrospective result is not proof of earlier feature availability",
+      "exclusions": [
+        "UNKNOWN_OR_AMBIGUOUS_VALUE",
+        "UNRESOLVED_HORSE_OR_RACE_IDENTITY",
+        "QUALIFIER_MISCLASSIFIED_AS_ORDINARY_START",
+        "SOURCE_AFTER_CUTOFF_OR_UNKNOWN_TIMEZONE",
+        "UNVERIFIED_CODE_SEMANTICS",
+        "MARKET_OR_TARGET_RESULT_LEAKAGE"
+      ],
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false
+    },
+    "placing": {
+      "datatype": "tagged category and optional positive integer",
+      "unit": "placing",
+      "normalization": "PLACED requires positive integer; UNPLACED, DQ, DNF, QUALIFIER and UNKNOWN remain distinct; zero is never numeric rank or DQ",
+      "missing_values": "UNKNOWN",
+      "source_and_identity_requirements": "Versioned country/provider result semantics; qualification excluded from ordinary-start aggregates",
+      "cutoff": "Historical event precedes target analysis cutoff; actual feature availability must be strictly before cutoff, all timestamps aware; same-day date-only history excluded",
+      "pit_verification": "Documented publication or conservative direct observation upper bound for this exact source fact and verified horse/race identity before cutoff; retrieval of a retrospective result is not proof of earlier feature availability",
+      "exclusions": [
+        "UNKNOWN_OR_AMBIGUOUS_VALUE",
+        "UNRESOLVED_HORSE_OR_RACE_IDENTITY",
+        "QUALIFIER_MISCLASSIFIED_AS_ORDINARY_START",
+        "SOURCE_AFTER_CUTOFF_OR_UNKNOWN_TIMEZONE",
+        "UNVERIFIED_CODE_SEMANTICS",
+        "MARKET_OR_TARGET_RESULT_LEAKAGE"
+      ],
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false
+    },
+    "km_time": {
+      "datatype": "finite positive number",
+      "unit": "seconds per kilometre",
+      "normalization": "Explicit decimal time 11,1 -> 71.1; codes frd8a/5g/ug/it/br are not numeric times; retain raw code",
+      "missing_values": "NOT_REPORTED or UNKNOWN",
+      "source_and_identity_requirements": "Readable numeric time cell, documented unit and normalization; no filling from external result into PDF truth",
+      "cutoff": "Historical event precedes target analysis cutoff; actual feature availability must be strictly before cutoff, all timestamps aware; same-day date-only history excluded",
+      "pit_verification": "Documented publication or conservative direct observation upper bound for this exact source fact and verified horse/race identity before cutoff; retrieval of a retrospective result is not proof of earlier feature availability",
+      "exclusions": [
+        "UNKNOWN_OR_AMBIGUOUS_VALUE",
+        "UNRESOLVED_HORSE_OR_RACE_IDENTITY",
+        "QUALIFIER_MISCLASSIFIED_AS_ORDINARY_START",
+        "SOURCE_AFTER_CUTOFF_OR_UNKNOWN_TIMEZONE",
+        "UNVERIFIED_CODE_SEMANTICS",
+        "MARKET_OR_TARGET_RESULT_LEAKAGE"
+      ],
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false
+    },
+    "gallop_flag": {
+      "datatype": "true|false|UNKNOWN|NOT_REPORTED",
+      "unit": "boolean evidence",
+      "normalization": "Only explicit source/codebook evidence; no false from absence of g",
+      "missing_values": "NOT_REPORTED",
+      "source_and_identity_requirements": "Source marker/comment with versioned interpretation",
+      "cutoff": "Historical event precedes target analysis cutoff; actual feature availability must be strictly before cutoff, all timestamps aware; same-day date-only history excluded",
+      "pit_verification": "Documented publication or conservative direct observation upper bound for this exact source fact and verified horse/race identity before cutoff; retrieval of a retrospective result is not proof of earlier feature availability",
+      "exclusions": [
+        "UNKNOWN_OR_AMBIGUOUS_VALUE",
+        "UNRESOLVED_HORSE_OR_RACE_IDENTITY",
+        "QUALIFIER_MISCLASSIFIED_AS_ORDINARY_START",
+        "SOURCE_AFTER_CUTOFF_OR_UNKNOWN_TIMEZONE",
+        "UNVERIFIED_CODE_SEMANTICS",
+        "MARKET_OR_TARGET_RESULT_LEAKAGE"
+      ],
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false
+    },
+    "disqualification_flag": {
+      "datatype": "true|false|UNKNOWN|NOT_REPORTED",
+      "unit": "boolean evidence",
+      "normalization": "Do not equate zero, unplaced or gallop with DQ; unknown d/dg mappings remain unknown without documented meaning",
+      "missing_values": "UNKNOWN or NOT_REPORTED",
+      "source_and_identity_requirements": "Explicit disqualification evidence or documented provider code semantics",
+      "cutoff": "Historical event precedes target analysis cutoff; actual feature availability must be strictly before cutoff, all timestamps aware; same-day date-only history excluded",
+      "pit_verification": "Documented publication or conservative direct observation upper bound for this exact source fact and verified horse/race identity before cutoff; retrieval of a retrospective result is not proof of earlier feature availability",
+      "exclusions": [
+        "UNKNOWN_OR_AMBIGUOUS_VALUE",
+        "UNRESOLVED_HORSE_OR_RACE_IDENTITY",
+        "QUALIFIER_MISCLASSIFIED_AS_ORDINARY_START",
+        "SOURCE_AFTER_CUTOFF_OR_UNKNOWN_TIMEZONE",
+        "UNVERIFIED_CODE_SEMANTICS",
+        "MARKET_OR_TARGET_RESULT_LEAKAGE"
+      ],
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false
+    },
+    "qualification_flag": {
+      "datatype": "true|false|UNKNOWN|NOT_REPORTED",
+      "unit": "boolean evidence",
+      "normalization": "Separate qualification/approved trial from ordinary competitive starts; k is contextual, never a placing",
+      "missing_values": "NOT_REPORTED",
+      "source_and_identity_requirements": "Printed qualifier marker and approval token in correct columns; preserve gdk separately",
+      "cutoff": "Historical event precedes target analysis cutoff; actual feature availability must be strictly before cutoff, all timestamps aware; same-day date-only history excluded",
+      "pit_verification": "Documented publication or conservative direct observation upper bound for this exact source fact and verified horse/race identity before cutoff; retrieval of a retrospective result is not proof of earlier feature availability",
+      "exclusions": [
+        "UNKNOWN_OR_AMBIGUOUS_VALUE",
+        "UNRESOLVED_HORSE_OR_RACE_IDENTITY",
+        "QUALIFIER_MISCLASSIFIED_AS_ORDINARY_START",
+        "SOURCE_AFTER_CUTOFF_OR_UNKNOWN_TIMEZONE",
+        "UNVERIFIED_CODE_SEMANTICS",
+        "MARKET_OR_TARGET_RESULT_LEAKAGE"
+      ],
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false
+    }
+  },
+  "model_eligible": false
+}

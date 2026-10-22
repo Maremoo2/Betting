@@ -1,0 +1,4625 @@
+{
+  "schema": "M7A1_SEMANTIC_COMPARISON_V1",
+  "rows": 60,
+  "field_metrics": {
+    "historical_date": {
+      "counts": {
+        "CORRECT": 60,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 0,
+        "AMBIGUOUS_SOURCE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "total_rows": 60,
+      "scorable_denominator": 60,
+      "correct_numerator": 60,
+      "correct_fraction": 1.0
+    },
+    "historical_track": {
+      "counts": {
+        "CORRECT": 0,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 60,
+        "AMBIGUOUS_SOURCE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "total_rows": 60,
+      "scorable_denominator": 60,
+      "correct_numerator": 0,
+      "correct_fraction": 0.0
+    },
+    "historical_race_number": {
+      "counts": {
+        "CORRECT": 60,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 0,
+        "AMBIGUOUS_SOURCE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "total_rows": 60,
+      "scorable_denominator": 60,
+      "correct_numerator": 60,
+      "correct_fraction": 1.0
+    },
+    "distance_m": {
+      "counts": {
+        "CORRECT": 0,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 60,
+        "AMBIGUOUS_SOURCE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "total_rows": 60,
+      "scorable_denominator": 60,
+      "correct_numerator": 0,
+      "correct_fraction": 0.0
+    },
+    "start_method": {
+      "counts": {
+        "CORRECT": 0,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 35,
+        "AMBIGUOUS_SOURCE": 25,
+        "NOT_APPLICABLE": 0
+      },
+      "total_rows": 60,
+      "scorable_denominator": 35,
+      "correct_numerator": 0,
+      "correct_fraction": 0.0
+    },
+    "placing": {
+      "counts": {
+        "CORRECT": 0,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 50,
+        "AMBIGUOUS_SOURCE": 8,
+        "NOT_APPLICABLE": 2
+      },
+      "total_rows": 60,
+      "scorable_denominator": 50,
+      "correct_numerator": 0,
+      "correct_fraction": 0.0
+    },
+    "km_time": {
+      "counts": {
+        "CORRECT": 0,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 49,
+        "AMBIGUOUS_SOURCE": 2,
+        "NOT_APPLICABLE": 9
+      },
+      "total_rows": 60,
+      "scorable_denominator": 49,
+      "correct_numerator": 0,
+      "correct_fraction": 0.0
+    },
+    "gallop_flag": {
+      "counts": {
+        "CORRECT": 0,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 14,
+        "AMBIGUOUS_SOURCE": 1,
+        "NOT_APPLICABLE": 45
+      },
+      "total_rows": 60,
+      "scorable_denominator": 14,
+      "correct_numerator": 0,
+      "correct_fraction": 0.0
+    },
+    "disqualification_flag": {
+      "counts": {
+        "CORRECT": 0,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 1,
+        "AMBIGUOUS_SOURCE": 8,
+        "NOT_APPLICABLE": 51
+      },
+      "total_rows": 60,
+      "scorable_denominator": 1,
+      "correct_numerator": 0,
+      "correct_fraction": 0.0
+    },
+    "qualification_flag": {
+      "counts": {
+        "CORRECT": 0,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 2,
+        "AMBIGUOUS_SOURCE": 0,
+        "NOT_APPLICABLE": 58
+      },
+      "total_rows": 60,
+      "scorable_denominator": 2,
+      "correct_numerator": 0,
+      "correct_fraction": 0.0
+    }
+  },
+  "source_localization": {
+    "CORRECT": 60
+  },
+  "structural_assignment": {
+    "CORRECT": 60
+  },
+  "history_lines_found": 60,
+  "critical_findings": {
+    "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track": 60,
+    "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m": 60,
+    "MISSING_REQUIRED_SEMANTIC_INPUT:start_method": 35,
+    "MISSING_REQUIRED_SEMANTIC_INPUT:placing": 50,
+    "MISSING_REQUIRED_SEMANTIC_INPUT:km_time": 49,
+    "MISSING_REQUIRED_SEMANTIC_INPUT:gallop_flag": 14,
+    "MISSING_REQUIRED_SEMANTIC_INPUT:qualification_flag": 2,
+    "MISSING_REQUIRED_SEMANTIC_INPUT:disqualification_flag": 1
+  },
+  "observations": [
+    {
+      "observation_id": "M7A1-001",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-08-22",
+          "actual": "2026-08-22",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "J",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 4,
+          "actual": 4,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2100,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 1,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 74.6,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-002",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-09-04",
+          "actual": "2026-09-04",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "J",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 1,
+          "actual": 1,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2100,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 75.3,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-003",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-09-12",
+          "actual": "2026-09-12",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "B",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 3,
+          "actual": 3,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2100,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "km_time": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "gallop_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "disqualification_flag": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:gallop_flag"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-004",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-10-06",
+          "actual": "2026-10-06",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "B",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 8,
+          "actual": 8,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2100,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 3,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 74.1,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-005",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-07-06",
+          "actual": "2026-07-06",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "M",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 6,
+          "actual": 6,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 75.1,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-006",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-07-24",
+          "actual": "2026-07-24",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "BI",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 6,
+          "actual": 6,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2620,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": "UNPLACED",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 81.8,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:gallop_flag"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-007",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-08-11",
+          "actual": "2026-08-11",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "B",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 9,
+          "actual": 9,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2100,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": "UNPLACED",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 74.8,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-008",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-08-18",
+          "actual": "2026-08-18",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "B",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 8,
+          "actual": 8,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2100,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": "UNPLACED",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 74.4,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-009",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-10-13",
+          "actual": "2026-10-13",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "B",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 8,
+          "actual": 8,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2660,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": 2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 76.8,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-010",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-08-01",
+          "actual": "2026-08-01",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Rä",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 6,
+          "actual": 6,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 6,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 74.0,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-011",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-08-20",
+          "actual": "2026-08-20",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "B",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 4,
+          "actual": 4,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 1640,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 1,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 71.7,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-012",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-08-27",
+          "actual": "2026-08-27",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "G",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 7,
+          "actual": 7,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 3,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 73.3,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-013",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-09-29",
+          "actual": "2026-09-29",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Ro",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 13,
+          "actual": 13,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": "NOT_APPLICABLE",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "km_time": {
+          "expected": 77.0,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:qualification_flag"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-014",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-10-06",
+          "actual": "2026-10-06",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Vi",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 4,
+          "actual": 4,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 1620,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 72.3,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-015",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-05-15",
+          "actual": "2026-05-15",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "S",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 6,
+          "actual": 6,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": "UNPLACED",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 76.5,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:gallop_flag"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-016",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-05-31",
+          "actual": "2026-05-31",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "S",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 14,
+          "actual": 14,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": "UNPLACED",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 72.6,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-017",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-07-19",
+          "actual": "2026-07-19",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Ax",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 10,
+          "actual": 10,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "km_time": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "gallop_flag": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "disqualification_flag": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-018",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-09-12",
+          "actual": "2026-09-12",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Ö",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 9,
+          "actual": 9,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 1609,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 3,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 74.4,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:gallop_flag"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-019",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-08-25",
+          "actual": "2026-08-25",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "JÆ",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 3,
+          "actual": 3,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": "UNPLACED",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "gallop_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "disqualification_flag": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:gallop_flag"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-020",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-08-09",
+          "actual": "2026-08-09",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Åm",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 4,
+          "actual": 4,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 1680,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "km_time": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "gallop_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "disqualification_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:gallop_flag",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:disqualification_flag"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-021",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-06-27",
+          "actual": "2026-06-27",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Å",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 3,
+          "actual": 3,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": 4,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-022",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-07-13",
+          "actual": "2026-07-13",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Hd",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 9,
+          "actual": 9,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 1640,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 74.4,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-023",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-08-09",
+          "actual": "2026-08-09",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Åm",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 8,
+          "actual": 8,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 1680,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 8,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 76.8,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-024",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-08-20",
+          "actual": "2026-08-20",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Å",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 5,
+          "actual": 5,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": 8,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 77.0,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-025",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-10-10",
+          "actual": "2026-10-10",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Hd",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 7,
+          "actual": 7,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 4,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 75.8,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-026",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-07-24",
+          "actual": "2026-07-24",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Hd",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 2,
+          "actual": 2,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": 4,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 77.0,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-027",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-08-21",
+          "actual": "2026-08-21",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Kr",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 8,
+          "actual": 8,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": 2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 76.2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-028",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-09-09",
+          "actual": "2026-09-09",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Å",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 3,
+          "actual": 3,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 6,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 75.0,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-029",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-09-24",
+          "actual": "2026-09-24",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Åm",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 1,
+          "actual": 1,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2080,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 8,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 78.5,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:gallop_flag"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-030",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-10-05",
+          "actual": "2026-10-05",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "F",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 7,
+          "actual": 7,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": 2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 74.7,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-031",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-07-04",
+          "actual": "2026-07-04",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Hd",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 2,
+          "actual": 2,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 5,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 74.2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-032",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-07-17",
+          "actual": "2026-07-17",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Ax",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 2,
+          "actual": 2,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "km_time": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "gallop_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "disqualification_flag": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:gallop_flag"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-033",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-07-24",
+          "actual": "2026-07-24",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Hd",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 2,
+          "actual": 2,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": 1,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 76.6,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-034",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-09-13",
+          "actual": "2026-09-13",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Ti",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 8,
+          "actual": 8,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 1609,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 71.0,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-035",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-09-27",
+          "actual": "2026-09-27",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "S",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 1,
+          "actual": 1,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "km_time": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "gallop_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "disqualification_flag": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:gallop_flag"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-036",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-03-04",
+          "actual": "2026-03-04",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "S",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 9,
+          "actual": 9,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 1,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 72.8,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-037",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-04-08",
+          "actual": "2026-04-08",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "S",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 3,
+          "actual": 3,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 72.7,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-038",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-05-31",
+          "actual": "2026-05-31",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "S",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 4,
+          "actual": 4,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2640,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "km_time": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "gallop_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "disqualification_flag": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:gallop_flag"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-039",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-08-26",
+          "actual": "2026-08-26",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "S",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 6,
+          "actual": 6,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2640,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 72.8,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-040",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-09-23",
+          "actual": "2026-09-23",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "S",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 8,
+          "actual": 8,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 1,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 71.1,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-041",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-09-08",
+          "actual": "2026-09-08",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Hd",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 6,
+          "actual": 6,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": "UNPLACED",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 76.2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-042",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-09-14",
+          "actual": "2026-09-14",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Vg",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 7,
+          "actual": 7,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2148,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 4,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 75.8,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-043",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-09-22",
+          "actual": "2026-09-22",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "J",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 7,
+          "actual": 7,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": 7,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 76.0,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:gallop_flag"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-044",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-10-03",
+          "actual": "2026-10-03",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Å",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 1,
+          "actual": 1,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2160,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": 2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 76.4,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-045",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-10-10",
+          "actual": "2026-10-10",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Hd",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 7,
+          "actual": 7,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 3,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 75.8,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-046",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-08-23",
+          "actual": "2026-08-23",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Ti",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 1,
+          "actual": 1,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 1609,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 8,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 76.8,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:gallop_flag"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-047",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-08-23",
+          "actual": "2026-08-23",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Ti",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 2,
+          "actual": 2,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 1609,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 3,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 74.8,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-048",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-09-06",
+          "actual": "2026-09-06",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "J",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 3,
+          "actual": 3,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": "UNPLACED",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 75.2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-049",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-09-16",
+          "actual": "2026-09-16",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "J",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 8,
+          "actual": 8,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": "UNPLACED",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 75.0,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-050",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-09-22",
+          "actual": "2026-09-22",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "J",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 1,
+          "actual": 1,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": 3,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 75.6,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-051",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-10-13",
+          "actual": "2026-10-13",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "J",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 6,
+          "actual": 6,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": 3,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 75.6,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-052",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2025-10-10",
+          "actual": "2025-10-10",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "U",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 6,
+          "actual": 6,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "km_time": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-053",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2025-10-26",
+          "actual": "2025-10-26",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "U",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 6,
+          "actual": 6,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "km_time": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "gallop_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "disqualification_flag": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:gallop_flag"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-054",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-02-25",
+          "actual": "2026-02-25",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "U",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 8,
+          "actual": 8,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": 2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 77.9,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-055",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-04-11",
+          "actual": "2026-04-11",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "U",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 6,
+          "actual": 6,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 1,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 77.2,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-056",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-04-21",
+          "actual": "2026-04-21",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "U",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 5,
+          "actual": 5,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": "UNPLACED",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "gallop_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:gallop_flag"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-057",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-07-13",
+          "actual": "2026-07-13",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Hd",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 13,
+          "actual": 13,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": "NOT_APPLICABLE",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "km_time": {
+          "expected": 77.9,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": true,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:qualification_flag"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-058",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-07-01",
+          "actual": "2026-07-01",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Vg",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 6,
+          "actual": 6,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2148,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": 1,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 77.1,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-059",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-07-21",
+          "actual": "2026-07-21",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "J",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 6,
+          "actual": 6,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 2140,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "UNKNOWN",
+          "actual": null,
+          "status": "AMBIGUOUS_SOURCE"
+        },
+        "placing": {
+          "expected": 1,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 76.4,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    },
+    {
+      "observation_id": "M7A1-060",
+      "source_localization": "CORRECT",
+      "history_line_found": true,
+      "parser_matches": 1,
+      "structural_assignment": "CORRECT",
+      "fields": {
+        "historical_date": {
+          "expected": "2026-08-12",
+          "actual": "2026-08-12",
+          "status": "CORRECT"
+        },
+        "historical_track": {
+          "expected": "Ti",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "historical_race_number": {
+          "expected": 2,
+          "actual": 2,
+          "status": "CORRECT"
+        },
+        "distance_m": {
+          "expected": 1609,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "start_method": {
+          "expected": "AUTO",
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "placing": {
+          "expected": 3,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "km_time": {
+          "expected": 73.8,
+          "actual": null,
+          "status": "NOT_EXTRACTED"
+        },
+        "gallop_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "disqualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        },
+        "qualification_flag": {
+          "expected": "NOT_REPORTED",
+          "actual": null,
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "critical_findings": [
+        "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:start_method",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:placing",
+        "MISSING_REQUIRED_SEMANTIC_INPUT:km_time"
+      ],
+      "model_eligible": false
+    }
+  ],
+  "representative": false,
+  "model_eligible": 0,
+  "truth_sha256": "82ca3f9e043cfc76c672b7efe15efe9da93090387972c762f4e306ffdaf1e39d",
+  "parser_sha256": "2ea5c70dfa76a2c8dbc358bbfcb97657efe1f831a5f799cb3790b9064a1ae64d",
+  "source_bundle_sha256": "1d4108180de1a191a3df502fde0e2ff4d2b74fc3f3b6eee30b701a18cb9e81a9",
+  "author_independence": "Semantic cells manually transcribed from rendered original PDFs before parser comparison; no parser interpretations used as expected values. Author is Codex, not an independent human annotator.",
+  "terminal_status": "M7A.1_PASS",
+  "recommendation": "M7B_HOLD",
+  "official_review": {
+    "reviewed": 6,
+    "status_counts": {
+      "RESULT_VERIFIED": 6
+    },
+    "observations": [
+      {
+        "observation_id": "M7A1-036",
+        "race_id": "2026-03-04_5_9",
+        "horse_identity": "ATG_HORSE:788027",
+        "identity_proof": {
+          "horse": "Flying Finn",
+          "stable_identity": "ATG_HORSE:788027",
+          "historical_race": "2026-09-23_5_8",
+          "target_race": "2026-10-21_5_9",
+          "place": 1,
+          "km_time_seconds": 71.1,
+          "official_result_status": "RESULT_VERIFIED",
+          "pre_race_identity_availability": "UNRESOLVED",
+          "pit_status": "UNRESOLVED",
+          "model_eligible": false,
+          "source_refs": [
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-23_5_8",
+              "observed_at": "2026-10-22T17:39:16.803638+00:00",
+              "race_id": "2026-09-23_5_8",
+              "selection": 1,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            },
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-21_5_9",
+              "observed_at": "2026-10-22T17:39:19.735624+00:00",
+              "race_id": "2026-10-21_5_9",
+              "selection": 5,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            }
+          ]
+        },
+        "raw_official_result": {
+          "place": 1,
+          "finishOrder": 1,
+          "kmTime": {
+            "minutes": 1,
+            "seconds": 12,
+            "tenths": 8
+          },
+          "prizeMoney": 150000,
+          "finalOdds": 2.15,
+          "startNumber": 2
+        },
+        "official_values": {
+          "placing": 1,
+          "km_time": 72.8,
+          "gallop_flag": null,
+          "disqualification_flag": null,
+          "distance_m": 2140,
+          "start_method": "AUTO"
+        },
+        "pdf_values": {
+          "placing": 1,
+          "km_time": 72.8,
+          "gallop_flag": "NOT_REPORTED",
+          "disqualification_flag": "NOT_REPORTED",
+          "distance_m": 2140,
+          "start_method": "AUTO"
+        },
+        "comparison": {
+          "placing": "CORRECT",
+          "km_time": "CORRECT",
+          "gallop_flag": "NOT_APPLICABLE",
+          "disqualification_flag": "NOT_APPLICABLE",
+          "distance_m": "CORRECT",
+          "start_method": "CORRECT"
+        },
+        "result_status": "RESULT_VERIFIED",
+        "source": {
+          "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+          "member": "atg-2026-03-04_5_9.json",
+          "member_sha256": "2fdd0b03257eb1a611d7f4f894680589d8e8d2c860acecd9ef0b89f7873813f5",
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-03-04_5_9",
+          "observed_at": "2026-10-22T19:08:15.754072+00:00"
+        },
+        "role": "RETROSPECTIVE_LABEL_REVIEW_ONLY",
+        "pit_status": "UNVERIFIED",
+        "model_eligible": false
+      },
+      {
+        "observation_id": "M7A1-037",
+        "race_id": "2026-04-08_5_3",
+        "horse_identity": "ATG_HORSE:788027",
+        "identity_proof": {
+          "horse": "Flying Finn",
+          "stable_identity": "ATG_HORSE:788027",
+          "historical_race": "2026-09-23_5_8",
+          "target_race": "2026-10-21_5_9",
+          "place": 1,
+          "km_time_seconds": 71.1,
+          "official_result_status": "RESULT_VERIFIED",
+          "pre_race_identity_availability": "UNRESOLVED",
+          "pit_status": "UNRESOLVED",
+          "model_eligible": false,
+          "source_refs": [
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-23_5_8",
+              "observed_at": "2026-10-22T17:39:16.803638+00:00",
+              "race_id": "2026-09-23_5_8",
+              "selection": 1,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            },
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-21_5_9",
+              "observed_at": "2026-10-22T17:39:19.735624+00:00",
+              "race_id": "2026-10-21_5_9",
+              "selection": 5,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            }
+          ]
+        },
+        "raw_official_result": {
+          "place": 2,
+          "finishOrder": 2,
+          "kmTime": {
+            "minutes": 1,
+            "seconds": 12,
+            "tenths": 7
+          },
+          "prizeMoney": 30000,
+          "finalOdds": 2.51,
+          "startNumber": 6
+        },
+        "official_values": {
+          "placing": 2,
+          "km_time": 72.7,
+          "gallop_flag": null,
+          "disqualification_flag": null,
+          "distance_m": 2140,
+          "start_method": "AUTO"
+        },
+        "pdf_values": {
+          "placing": 2,
+          "km_time": 72.7,
+          "gallop_flag": "NOT_REPORTED",
+          "disqualification_flag": "NOT_REPORTED",
+          "distance_m": 2140,
+          "start_method": "AUTO"
+        },
+        "comparison": {
+          "placing": "CORRECT",
+          "km_time": "CORRECT",
+          "gallop_flag": "NOT_APPLICABLE",
+          "disqualification_flag": "NOT_APPLICABLE",
+          "distance_m": "CORRECT",
+          "start_method": "CORRECT"
+        },
+        "result_status": "RESULT_VERIFIED",
+        "source": {
+          "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+          "member": "atg-2026-04-08_5_3.json",
+          "member_sha256": "3efd02b52b685e732b02d3c9da7d80243b333537ce38cb2d688f6832a770022b",
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-04-08_5_3",
+          "observed_at": "2026-10-22T19:08:17.012643+00:00"
+        },
+        "role": "RETROSPECTIVE_LABEL_REVIEW_ONLY",
+        "pit_status": "UNVERIFIED",
+        "model_eligible": false
+      },
+      {
+        "observation_id": "M7A1-038",
+        "race_id": "2026-05-31_5_4",
+        "horse_identity": "ATG_HORSE:788027",
+        "identity_proof": {
+          "horse": "Flying Finn",
+          "stable_identity": "ATG_HORSE:788027",
+          "historical_race": "2026-09-23_5_8",
+          "target_race": "2026-10-21_5_9",
+          "place": 1,
+          "km_time_seconds": 71.1,
+          "official_result_status": "RESULT_VERIFIED",
+          "pre_race_identity_availability": "UNRESOLVED",
+          "pit_status": "UNRESOLVED",
+          "model_eligible": false,
+          "source_refs": [
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-23_5_8",
+              "observed_at": "2026-10-22T17:39:16.803638+00:00",
+              "race_id": "2026-09-23_5_8",
+              "selection": 1,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            },
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-21_5_9",
+              "observed_at": "2026-10-22T17:39:19.735624+00:00",
+              "race_id": "2026-10-21_5_9",
+              "selection": 5,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            }
+          ]
+        },
+        "raw_official_result": {
+          "finishOrder": 35,
+          "kmTime": {
+            "code": "5"
+          },
+          "galloped": true,
+          "disqualified": true,
+          "prizeMoney": 1500,
+          "finalOdds": 4.22,
+          "startNumber": 6
+        },
+        "official_values": {
+          "placing": null,
+          "km_time": null,
+          "gallop_flag": true,
+          "disqualification_flag": true,
+          "distance_m": 2640,
+          "start_method": "AUTO"
+        },
+        "pdf_values": {
+          "placing": "UNKNOWN",
+          "km_time": "UNKNOWN",
+          "gallop_flag": true,
+          "disqualification_flag": "UNKNOWN",
+          "distance_m": 2640,
+          "start_method": "UNKNOWN"
+        },
+        "comparison": {
+          "placing": "AMBIGUOUS_SOURCE",
+          "km_time": "AMBIGUOUS_SOURCE",
+          "gallop_flag": "CORRECT",
+          "disqualification_flag": "AMBIGUOUS_SOURCE",
+          "distance_m": "CORRECT",
+          "start_method": "AMBIGUOUS_SOURCE"
+        },
+        "result_status": "RESULT_VERIFIED",
+        "source": {
+          "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+          "member": "atg-2026-05-31_5_4.json",
+          "member_sha256": "d371f684de9fca653c8a47b3a8d5a8a286373535918e1d532991ce1fb4dbc001",
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-05-31_5_4",
+          "observed_at": "2026-10-22T19:08:18.730278+00:00"
+        },
+        "role": "RETROSPECTIVE_LABEL_REVIEW_ONLY",
+        "pit_status": "UNVERIFIED",
+        "model_eligible": false
+      },
+      {
+        "observation_id": "M7A1-039",
+        "race_id": "2026-08-26_5_6",
+        "horse_identity": "ATG_HORSE:788027",
+        "identity_proof": {
+          "horse": "Flying Finn",
+          "stable_identity": "ATG_HORSE:788027",
+          "historical_race": "2026-09-23_5_8",
+          "target_race": "2026-10-21_5_9",
+          "place": 1,
+          "km_time_seconds": 71.1,
+          "official_result_status": "RESULT_VERIFIED",
+          "pre_race_identity_availability": "UNRESOLVED",
+          "pit_status": "UNRESOLVED",
+          "model_eligible": false,
+          "source_refs": [
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-23_5_8",
+              "observed_at": "2026-10-22T17:39:16.803638+00:00",
+              "race_id": "2026-09-23_5_8",
+              "selection": 1,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            },
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-21_5_9",
+              "observed_at": "2026-10-22T17:39:19.735624+00:00",
+              "race_id": "2026-10-21_5_9",
+              "selection": 5,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            }
+          ]
+        },
+        "raw_official_result": {
+          "place": 2,
+          "finishOrder": 2,
+          "kmTime": {
+            "minutes": 1,
+            "seconds": 12,
+            "tenths": 8
+          },
+          "prizeMoney": 40000,
+          "finalOdds": 4.25,
+          "startNumber": 1
+        },
+        "official_values": {
+          "placing": 2,
+          "km_time": 72.8,
+          "gallop_flag": null,
+          "disqualification_flag": null,
+          "distance_m": 2640,
+          "start_method": "AUTO"
+        },
+        "pdf_values": {
+          "placing": 2,
+          "km_time": 72.8,
+          "gallop_flag": "NOT_REPORTED",
+          "disqualification_flag": "NOT_REPORTED",
+          "distance_m": 2640,
+          "start_method": "AUTO"
+        },
+        "comparison": {
+          "placing": "CORRECT",
+          "km_time": "CORRECT",
+          "gallop_flag": "NOT_APPLICABLE",
+          "disqualification_flag": "NOT_APPLICABLE",
+          "distance_m": "CORRECT",
+          "start_method": "CORRECT"
+        },
+        "result_status": "RESULT_VERIFIED",
+        "source": {
+          "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+          "member": "atg-2026-08-26_5_6.json",
+          "member_sha256": "666a76df9cf42618326bf5e7e4808ec8c23f56b574ab072c1a3fead3c21f479d",
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-26_5_6",
+          "observed_at": "2026-10-22T19:08:20.103459+00:00"
+        },
+        "role": "RETROSPECTIVE_LABEL_REVIEW_ONLY",
+        "pit_status": "UNVERIFIED",
+        "model_eligible": false
+      },
+      {
+        "observation_id": "M7A1-040",
+        "race_id": "2026-09-23_5_8",
+        "horse_identity": "ATG_HORSE:788027",
+        "identity_proof": {
+          "horse": "Flying Finn",
+          "stable_identity": "ATG_HORSE:788027",
+          "historical_race": "2026-09-23_5_8",
+          "target_race": "2026-10-21_5_9",
+          "place": 1,
+          "km_time_seconds": 71.1,
+          "official_result_status": "RESULT_VERIFIED",
+          "pre_race_identity_availability": "UNRESOLVED",
+          "pit_status": "UNRESOLVED",
+          "model_eligible": false,
+          "source_refs": [
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-23_5_8",
+              "observed_at": "2026-10-22T17:39:16.803638+00:00",
+              "race_id": "2026-09-23_5_8",
+              "selection": 1,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            },
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-21_5_9",
+              "observed_at": "2026-10-22T17:39:19.735624+00:00",
+              "race_id": "2026-10-21_5_9",
+              "selection": 5,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            }
+          ]
+        },
+        "raw_official_result": {
+          "place": 1,
+          "finishOrder": 1,
+          "kmTime": {
+            "minutes": 1,
+            "seconds": 11,
+            "tenths": 1
+          },
+          "prizeMoney": 80000,
+          "finalOdds": 2.9,
+          "startNumber": 1
+        },
+        "official_values": {
+          "placing": 1,
+          "km_time": 71.1,
+          "gallop_flag": null,
+          "disqualification_flag": null,
+          "distance_m": 2140,
+          "start_method": "AUTO"
+        },
+        "pdf_values": {
+          "placing": 1,
+          "km_time": 71.1,
+          "gallop_flag": "NOT_REPORTED",
+          "disqualification_flag": "NOT_REPORTED",
+          "distance_m": 2140,
+          "start_method": "AUTO"
+        },
+        "comparison": {
+          "placing": "CORRECT",
+          "km_time": "CORRECT",
+          "gallop_flag": "NOT_APPLICABLE",
+          "disqualification_flag": "NOT_APPLICABLE",
+          "distance_m": "CORRECT",
+          "start_method": "CORRECT"
+        },
+        "result_status": "RESULT_VERIFIED",
+        "source": {
+          "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+          "member": "atg-2026-09-23_5_8.json",
+          "member_sha256": "f39b08ef27b8ee41f9028df2926af76d009c191871c2bd16765434ce313d9cf1",
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-23_5_8",
+          "observed_at": "2026-10-22T17:39:16.803638+00:00"
+        },
+        "role": "RETROSPECTIVE_LABEL_REVIEW_ONLY",
+        "pit_status": "UNVERIFIED",
+        "model_eligible": false
+      },
+      {
+        "observation_id": "M7A1-054",
+        "race_id": "2026-02-25_27_8",
+        "horse_identity": "ATG_HORSE:793918",
+        "identity_proof": {
+          "stable_identity": "ATG_HORSE:793918",
+          "target_race": "2026-10-24_7_1",
+          "source_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-24_7_1",
+          "observed_at": "2026-10-22T19:15:47.606590+00:00",
+          "proof": "EXACT_TARGET_FIELD_SELECTION_AND_PDF_NAME_SIRE_DAM_PLUS_SAME_HISTORICAL_STABLE_ID",
+          "model_eligible": false,
+          "pit_status": "UNVERIFIED"
+        },
+        "raw_official_result": {
+          "place": 2,
+          "finishOrder": 2,
+          "kmTime": {
+            "minutes": 1,
+            "seconds": 17,
+            "tenths": 9
+          },
+          "prizeMoney": 17500,
+          "finalOdds": 2.89,
+          "startNumber": 2
+        },
+        "official_values": {
+          "placing": 2,
+          "km_time": 77.9,
+          "gallop_flag": null,
+          "disqualification_flag": null,
+          "distance_m": 2140,
+          "start_method": "VOLT"
+        },
+        "pdf_values": {
+          "placing": 2,
+          "km_time": 77.9,
+          "gallop_flag": "NOT_REPORTED",
+          "disqualification_flag": "NOT_REPORTED",
+          "distance_m": 2140,
+          "start_method": "UNKNOWN"
+        },
+        "comparison": {
+          "placing": "CORRECT",
+          "km_time": "CORRECT",
+          "gallop_flag": "NOT_APPLICABLE",
+          "disqualification_flag": "NOT_APPLICABLE",
+          "distance_m": "CORRECT",
+          "start_method": "AMBIGUOUS_SOURCE"
+        },
+        "result_status": "RESULT_VERIFIED",
+        "source": {
+          "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+          "member": "atg-2026-02-25_27_8.json",
+          "member_sha256": "cd83bdc65a77b8304fcfc7d1533dcfa9e3e6c7c54f4aaaf3ca3318b69573e840",
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-02-25_27_8",
+          "observed_at": "2026-10-22T19:15:45.337319+00:00"
+        },
+        "role": "RETROSPECTIVE_LABEL_REVIEW_ONLY",
+        "pit_status": "UNVERIFIED",
+        "model_eligible": false
+      }
+    ],
+    "selection_reason": "Five Flying Finn starts plus Pure Ego 2026-02-25: stable IDs and pedigree, wins, seconds, gallop/DQ, nonnumeric time, and one officially confirmed VOLT start; not representative",
+    "model_eligible": 0
+  },
+  "parser_model_readiness": "BLOCKED; VALIDATION_DELIVERY_PASS_IS_NOT_PARSER_OR_FEATURE_APPROVAL"
+}

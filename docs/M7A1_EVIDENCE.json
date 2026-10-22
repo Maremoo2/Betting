@@ -1,0 +1,272 @@
+{
+  "task_id": "M7A.1",
+  "mode": "RESEARCH_ONLY_PR_AUTHORIZED",
+  "base_sha": "66947366de056dba79a576abdfd7ed46e044b0f4",
+  "previous_reference_sha": "1be33d7d01ffe6f282a6394e2c37c771c1ec324f",
+  "previous_pr_44_status": "MERGED_BY_HQ; previous artifacts unchanged",
+  "collector_sha": "d57ec73370fffb25dee1444029744581073b2327",
+  "collector_parser_sha256": "2ea5c70dfa76a2c8dbc358bbfcb97657efe1f831a5f799cb3790b9064a1ae64d",
+  "environment": {
+    "python": "3.12.14",
+    "pypdf": "6.21.2"
+  },
+  "preflight": {
+    "DATA_002": "Original versioned delivery and 180-row dataset not found in accessible repos/branches/GitHub/Drive searches; available collector parser not asserted to be DATA-002",
+    "DATA_003": "Original 60-entry truth set not found; newly authored reference explicitly not DATA-003"
+  },
+  "reference": {
+    "schema": "M7A1_MANUAL_PDF_TRUTH_V1",
+    "version": "1.0.0",
+    "observations": 60,
+    "target_horse_blocks": 17,
+    "printed_historical_track_codes": 20,
+    "source_pdf_strata": {
+      "2026-10-20": 20,
+      "2026-10-21": 20,
+      "2026-10-24": 20
+    },
+    "result_categories": {
+      "PLACED": 40,
+      "UNRESOLVED_CODE": 8,
+      "UNPLACED_CODE_ZERO": 9,
+      "QUALIFICATION_APPROVED": 2,
+      "DISQUALIFIED_EXPLICIT_COMMENT": 1
+    },
+    "review_method": "Semantic cells manually transcribed from rendered original PDFs before parser comparison; no parser interpretations used as expected values. Author is Codex, not an independent human annotator.",
+    "reviewed_pdf_pages": {
+      "X1_NR_2026-10-20": [
+        1,
+        2,
+        3,
+        7
+      ],
+      "S5_NR_2026-10-21": [
+        1,
+        6
+      ],
+      "S1_NR_2026-10-24": [
+        1
+      ]
+    },
+    "representative": false
+  },
+  "field_metrics": {
+    "historical_date": {
+      "counts": {
+        "CORRECT": 60,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 0,
+        "AMBIGUOUS_SOURCE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "total_rows": 60,
+      "scorable_denominator": 60,
+      "correct_numerator": 60,
+      "correct_fraction": 1.0
+    },
+    "historical_track": {
+      "counts": {
+        "CORRECT": 0,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 60,
+        "AMBIGUOUS_SOURCE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "total_rows": 60,
+      "scorable_denominator": 60,
+      "correct_numerator": 0,
+      "correct_fraction": 0.0
+    },
+    "historical_race_number": {
+      "counts": {
+        "CORRECT": 60,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 0,
+        "AMBIGUOUS_SOURCE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "total_rows": 60,
+      "scorable_denominator": 60,
+      "correct_numerator": 60,
+      "correct_fraction": 1.0
+    },
+    "distance_m": {
+      "counts": {
+        "CORRECT": 0,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 60,
+        "AMBIGUOUS_SOURCE": 0,
+        "NOT_APPLICABLE": 0
+      },
+      "total_rows": 60,
+      "scorable_denominator": 60,
+      "correct_numerator": 0,
+      "correct_fraction": 0.0
+    },
+    "start_method": {
+      "counts": {
+        "CORRECT": 0,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 35,
+        "AMBIGUOUS_SOURCE": 25,
+        "NOT_APPLICABLE": 0
+      },
+      "total_rows": 60,
+      "scorable_denominator": 35,
+      "correct_numerator": 0,
+      "correct_fraction": 0.0
+    },
+    "placing": {
+      "counts": {
+        "CORRECT": 0,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 50,
+        "AMBIGUOUS_SOURCE": 8,
+        "NOT_APPLICABLE": 2
+      },
+      "total_rows": 60,
+      "scorable_denominator": 50,
+      "correct_numerator": 0,
+      "correct_fraction": 0.0
+    },
+    "km_time": {
+      "counts": {
+        "CORRECT": 0,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 49,
+        "AMBIGUOUS_SOURCE": 2,
+        "NOT_APPLICABLE": 9
+      },
+      "total_rows": 60,
+      "scorable_denominator": 49,
+      "correct_numerator": 0,
+      "correct_fraction": 0.0
+    },
+    "gallop_flag": {
+      "counts": {
+        "CORRECT": 0,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 14,
+        "AMBIGUOUS_SOURCE": 1,
+        "NOT_APPLICABLE": 45
+      },
+      "total_rows": 60,
+      "scorable_denominator": 14,
+      "correct_numerator": 0,
+      "correct_fraction": 0.0
+    },
+    "disqualification_flag": {
+      "counts": {
+        "CORRECT": 0,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 1,
+        "AMBIGUOUS_SOURCE": 8,
+        "NOT_APPLICABLE": 51
+      },
+      "total_rows": 60,
+      "scorable_denominator": 1,
+      "correct_numerator": 0,
+      "correct_fraction": 0.0
+    },
+    "qualification_flag": {
+      "counts": {
+        "CORRECT": 0,
+        "INCORRECT": 0,
+        "NOT_EXTRACTED": 2,
+        "AMBIGUOUS_SOURCE": 0,
+        "NOT_APPLICABLE": 58
+      },
+      "total_rows": 60,
+      "scorable_denominator": 2,
+      "correct_numerator": 0,
+      "correct_fraction": 0.0
+    }
+  },
+  "localization": {
+    "CORRECT": 60
+  },
+  "structural_assignment": {
+    "CORRECT": 60
+  },
+  "history_lines_found": 60,
+  "critical_findings": {
+    "MISSING_REQUIRED_SEMANTIC_INPUT:historical_track": 60,
+    "MISSING_REQUIRED_SEMANTIC_INPUT:distance_m": 60,
+    "MISSING_REQUIRED_SEMANTIC_INPUT:start_method": 35,
+    "MISSING_REQUIRED_SEMANTIC_INPUT:placing": 50,
+    "MISSING_REQUIRED_SEMANTIC_INPUT:km_time": 49,
+    "MISSING_REQUIRED_SEMANTIC_INPUT:gallop_flag": 14,
+    "MISSING_REQUIRED_SEMANTIC_INPUT:qualification_flag": 2,
+    "MISSING_REQUIRED_SEMANTIC_INPUT:disqualification_flag": 1
+  },
+  "critical_semantic_omissions": 271,
+  "official_review": {
+    "starts": 6,
+    "status_counts": {
+      "RESULT_VERIFIED": 6
+    },
+    "stable_horse_ids": [
+      "ATG_HORSE:788027",
+      "ATG_HORSE:793918"
+    ],
+    "selection_reason": "Five Flying Finn starts plus Pure Ego 2026-02-25: stable IDs and pedigree, wins, seconds, gallop/DQ, nonnumeric time, and one officially confirmed VOLT start; not representative",
+    "official_confirmed_volt_starts": 1,
+    "pdf_start_method_not_backfilled": true,
+    "source_timestamps": "2026-10-22 actual observations; Flying Finn after target, Pure Ego before target; no automatic feature/PIT admission"
+  },
+  "source_sha256": {
+    "tests/fixtures/m7a1-ground-truth-v1.json": "82ca3f9e043cfc76c672b7efe15efe9da93090387972c762f4e306ffdaf1e39d",
+    "tests/fixtures/m7a1-atg-results-v1.zip": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+    "tests/fixtures/m7a-pdf-validation.zip": "1d4108180de1a191a3df502fde0e2ff4d2b74fc3f3b6eee30b701a18cb9e81a9",
+    "docs/M7A1_COMPARISON.json": "aa8a5187bd6799734da84077db20a8c44c326c103224bc426b182e48fbbe2847",
+    "docs/M7A1_HISTORY_FEATURE_CONTRACT.json": "9a9b36a3f283730c56f48ef3c4fc53d03ac4dc0670901d7929964debcf8767fe",
+    "src/hbi/pdf_semantic_validation.py": "3ecbf889e4b18e4d5aaf1d3c1faf025a2cb2e02545e549086f0359b1a37a5aa8"
+  },
+  "tests": {
+    "focused_command": "python -m pytest -q tests/test_pdf_semantic_validation.py tests/test_pdf_validation.py tests/test_model_readiness.py",
+    "focused_result": "44 passed in 10.24s",
+    "full_command": "python -m pytest -q",
+    "full_result": "480 passed in 31.31s",
+    "ruff_command": "ruff check .",
+    "ruff_result": "All checks passed!",
+    "diff_check": "git diff --check exit 0",
+    "research_audit": "PASS_WITH_EVIDENCE_PENDING on isolated clean DB; temporal and settlement PASS, provider/replay NO_EVIDENCE; not production validation",
+    "actual_parser_replay": "Executed locally against the pinned existing external collector parser, then byte-identical report reproduced. CI source tests use archived parser output, clearly distinguished."
+  },
+  "negative_cases": [
+    "TEST_ONLY wrong block and wrong date separately detected",
+    "TEST_ONLY future history, duplicate observation, missing mandatory field and model-admission attempt rejected",
+    "TEST_ONLY wrong PDF line pointer rejected",
+    "TEST_ONLY conflicting official pedigree rejected after archive hashes recomputed",
+    "TEST_ONLY bool-as-number, nonfinite time, unplaced-as-numeric rejected by comparison",
+    "Qualification, uncertain codes, absent times and N/A values never credited as correct missing values"
+  ],
+  "mandatory_regressions": {
+    "God Only Knows": "NOT_REPRODUCED in available original; header and history on page 7; synthetic cross-page tests not counted as source evidence",
+    "Single Lane": "Qualifier, not ordinary numeric placing; missing qualification extraction reported",
+    "Eire": "frd8a preserved, UNKNOWN placing/time",
+    "Custer": "dg a preserved, explicit gallop, disqualification mapping remains uncertain",
+    "Goffa": "zero -> unplaced, no automatic DQ",
+    "Flying Finn": "Five exact historical ATG races, stable ID 788027, including 2026-09-23 71.1 sec/km",
+    "Solvalla L9": "Existing real-source V86-6/V4-2 alias and physical track distinction regression retained",
+    "Eskilstuna L5": "Existing M6 real-source 12-runner monte unresolved test retained"
+  },
+  "remaining_model_blockers": [
+    "Available parser omits track/distance/time/placing/flags",
+    "Historical codebook and qualification semantics not fully validated",
+    "25 PDF start methods remain UNKNOWN; absence of a is not proof of VOLT",
+    "Historical track codes are not resolved physical identities",
+    "Stable historical identity/full-field/PIT contracts not admitted",
+    "Official subset is limited to six SE starts; NO-specific official semantic coverage remains missing",
+    "Source version reproducing God Only Knows split block unavailable",
+    "No independent human/second-reader signoff is claimed"
+  ],
+  "feature_contract_status": "0.1.0-proposal; RESEARCH_ONLY; existing M6 history gate unchanged",
+  "terminal_status": "M7A.1_PASS",
+  "parser_model_readiness": "BLOCKED",
+  "recommendation": "M7B_HOLD",
+  "model_eligible": 0,
+  "production_changes": false,
+  "rollback": "Revert this PR; no production state changes",
+  "ci": "Exact-head results to be recorded in Draft PR after execution"
+}
