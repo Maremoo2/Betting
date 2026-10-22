@@ -837,6 +837,19 @@ remain necessary before fundamental p(win) or WATCH can be built and validated.
 
 #### Historical batch import (M5 partial delivery)
 
+Active product scope is **Norwegian and Swedish trot (NO/SE)**. Batch import
+requires explicit NO/SE country and trot metadata. Other countries, gallop and
+unknown metadata are excluded with source references; the manifest reports NO
+and SE separately, including zero coverage.
+
+The separate 2026-10-20 program archive audit finds NO: 7 matched fields /
+75 runners / 75 verified identities; SE: 19 matched fields / 208 runners /
+0 verified identities (temporary provider registrations are not promoted).
+This is program coverage, not monthly-backfill or verified result coverage. Denmark is P2 and requires a separate
+HQ mandate before inclusion. Existing French provider diagnostics remain visible
+and unchanged; a documented isolated FR failure is not a NO/SE product blocker.
+This product distinction does not waive GitHub checks or grant merge authority.
+
 ```bash
 hbi backfill --manifest examples/backfill/m4-regression.json --output /tmp/m5-regression
 ```

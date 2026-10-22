@@ -261,3 +261,25 @@ def test_native_composite_meeting_cannot_be_imported_as_independent(tmp_path):
     row = make_record('JA_NR_2026-07-03', meta, meeting, sources, set())
     assert not row['full_field_identity_verified'] and not row['labels']
     assert 'COMPOSITE_MEETING_NOT_INDEPENDENT' in row['reasons']
+
+
+@pytest.mark.parametrize('country,sport,allowed', [
+    ('NO', 'T', True), ('SE', 'T', True), ('DK', 'T', False),
+    ('FR', 'T', False), ('NO', 'G', False), ('SE', None, False), (None, 'T', False),
+])
+def test_hq_active_market_scope(country, sport, allowed):
+    from hbi.backfill import market_scope
+    assert market_scope({'countryIsoCode': country, 'sportType': sport})[0] is allowed
+
+
+def test_scope_exclusions_do_not_import_or_hide_source_inventory(tmp_path):
+    def mutate(b):
+        s = next(s for s in b['sources'] if s['path'].endswith('2026-07-03/list'))
+        m = next(m for m in s['body']['result'][0]['raceDays'] if m['raceDay'] == 'JA_NR_2026-07-03')
+        m['countryIsoCode'] = 'FR'  # Negative scope mutation, not real French data.
+    report = run_batch(manifest(tmp_path, [mutated_spec(tmp_path, mutate)]), tmp_path / 'scoped')
+    assert report['races'] == 26
+    excluded = next(m for m in report['excluded_inventory_meetings'] if m['meeting_id'] == 'JA_NR_2026-07-03')
+    assert excluded['roster_source_present'] and excluded['source_refs']
+    assert report['by_country']['SE']['races'] == 0
+    assert report['active_product_scope'] == {'countries': ['NO', 'SE'], 'discipline': 'trot'}

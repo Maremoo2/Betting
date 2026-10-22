@@ -210,6 +210,14 @@ def quarantine(row, reason):
             f["status"] = "UNRESOLVED"
 
 
+def market_scope(meeting):
+    if meeting.get("countryIsoCode") not in {"NO", "SE"}:
+        return False, "OUTSIDE_ACTIVE_COUNTRIES_OR_COUNTRY_UNKNOWN"
+    if meeting.get("sportType") != "T":
+        return False, "OUTSIDE_TROT_OR_DISCIPLINE_UNKNOWN"
+    return True, None
+
+
 def run_batch(manifest_path, output):
     from .cli import _store, cmd_import_races
 
@@ -221,12 +229,22 @@ def run_batch(manifest_path, output):
     conflicts = {p for p, variants in versions.items() if len(variants) > 1}
     sources = {p: next(iter(v.values())) for p, v in versions.items() if len(v) == 1}
     records = {}
+    excluded_markets = {}
     inventory_items = list(sources.items()) + [(p, v) for p in sorted(conflicts)
         if p.startswith("/racedays/dates/") or p.endswith("/list") for v in versions[p].values()]
     for path, item in sorted(inventory_items, key=lambda pair: pair[0]):
         if not (path.startswith("/racedays/dates/") or path.endswith("/list")):
             continue
         for key, meeting in meeting_rows(path, item["source"]):
+            allowed, reason = market_scope(meeting)
+            if not allowed:
+                exclusion = {"meeting_id": key, "country": meeting.get("countryIsoCode"),
+                    "sport_type": meeting.get("sportType"), "reason": reason,
+                    "inventory_races": len(meeting.get("races", [])),
+                    "roster_source_present": f"/racedays/{key}/starts" in versions,
+                    "source_refs": item["refs"]}
+                excluded_markets[digest({k: v for k, v in exclusion.items() if k != "source_refs"})] = exclusion
+                continue
             for meta in meeting.get("races", []):
                 # Inventory-only entries are not imported as collected start fields.
                 if f"/racedays/{key}/starts" not in versions:
@@ -298,12 +316,23 @@ def run_batch(manifest_path, output):
             "excluded_scratched_label_rows": sum(reason.startswith("SCRATCHED_RESULT_ROW_EXCLUDED:") for r in selected for reason in r["reasons"]),
             "feature_pit_verified_runners": sum(all(f["status"] == "PIT_VERIFIED" for f in h["features"].values())
                 for r in selected for h in r["roster"]), "model_eligible": 0}
+    by_country = {}
+    for country in ("NO", "SE"):
+        selected = [r for r in rows if r["country"] == country]
+        by_country[country] = {"races": len(selected),
+            "runners": sum(len(r["roster"]) for r in selected),
+            "verified_result_races": sum(r["authoritative_result_verified"] for r in selected),
+            "active_raw_labels": sum(len(r["labels"]) for r in selected),
+            "feature_pit_verified_runners": sum(all(f["status"] == "PIT_VERIFIED" for f in h["features"].values())
+                for r in selected for h in r["roster"]), "model_eligible": 0}
     code = {p.name: sha(p.read_bytes()) for p in (Path(__file__), Path(__file__).with_name("historical_truth.py"),
         Path(__file__).parents[1] / "rikstoto_crawler/archive.py",
         Path(__file__).parents[1] / "rikstoto_crawler/transport.py")}
     report = {"schema": "HBI_RESEARCH_DATASET_V1", "dataset_id": digest({"manifest": manifest, "code": code}),
         "input_manifest_sha256": sha(manifest_path.read_bytes()), "code_sha256": code, "sources": manifest["archives"],
-        "cohort": manifest["cohort"], "per_month": per_month, "races": len(rows),
+        "cohort": manifest["cohort"], "per_month": per_month,
+        "active_product_scope": {"countries": ["NO", "SE"], "discipline": "trot"},
+        "by_country": by_country, "excluded_inventory_meetings": list(excluded_markets.values()), "races": len(rows),
         "imported_races": store.count("races"), "imported_runners": store.count("runners"),
         "provenance_payloads": store.count("provider_payloads"),
         "status_counts": dict(Counter(r["status"] for r in rows)), "conflicting_source_paths": sorted(conflicts),
