@@ -300,6 +300,10 @@ def run_batch(manifest_path, output):
                 observed_at=max(timestamp(ref["fetched_at"]) for ref in row["source_refs"]),
                 source_uri=row["source_refs"][0]["url"], payload=row,
             )
+    from .model_dataset import candidate
+
+    for row in rows:
+        row["model_candidate"] = candidate(row)
     with (output / "dataset.jsonl").open("x", encoding="utf-8") as stream:
         for row in rows:
             stream.write(json.dumps(row, ensure_ascii=False, allow_nan=False) + "\n")
@@ -326,6 +330,7 @@ def run_batch(manifest_path, output):
             "feature_pit_verified_runners": sum(all(f["status"] == "PIT_VERIFIED" for f in h["features"].values())
                 for r in selected for h in r["roster"]), "model_eligible": 0}
     code = {p.name: sha(p.read_bytes()) for p in (Path(__file__), Path(__file__).with_name("historical_truth.py"),
+        Path(__file__).with_name("model_dataset.py"),
         Path(__file__).parents[1] / "rikstoto_crawler/archive.py",
         Path(__file__).parents[1] / "rikstoto_crawler/transport.py")}
     report = {"schema": "HBI_RESEARCH_DATASET_V1", "dataset_id": digest({"manifest": manifest, "code": code}),

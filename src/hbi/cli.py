@@ -164,6 +164,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--schema", default=None)
     sub = parser.add_subparsers(dest="command", required=True)
 
+    from .model_protocol import cli as audit_cli
+    from .swedish_identity import cli as identity_cli
+
+    identity = sub.add_parser("resolve-se-identities", help="Offline retrospective Swedish identity evidence")
+    for option in ("date", "archive", "sha256", "atg-archive", "atg-sha256", "output"):
+        identity.add_argument("--" + option, required=True)
+    identity.set_defaults(func=identity_cli)
+    audit = sub.add_parser("model-audit", help="Chronological research dataset controls; no training")
+    for option in ("dataset-dir", "protocol", "output"):
+        audit.add_argument("--" + option, required=True)
+    audit.set_defaults(func=audit_cli)
     from .backfill import cli as backfill_cli
     from .date_overview import cli as overview_cli
 
