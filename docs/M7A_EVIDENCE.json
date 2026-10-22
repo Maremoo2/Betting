@@ -1,0 +1,416 @@
+{
+  "task_id": "M7A",
+  "mode": "RESEARCH_PR_AUTHORIZED",
+  "base_sha": "840d255cbdad75ebb6c39e9ede0c0eb90cf12c34",
+  "collector_sha": "d57ec73370fffb25dee1444029744581073b2327",
+  "parser_sha256": "2ea5c70dfa76a2c8dbc358bbfcb97657efe1f831a5f799cb3790b9064a1ae64d",
+  "python": "3.12.14",
+  "pypdf": "6.21.2",
+  "source_bundle_sha256": "1d4108180de1a191a3df502fde0e2ff4d2b74fc3f3b6eee30b701a18cb9e81a9",
+  "terminal_status": "M7A_PARTIAL",
+  "process_status": "READY_FOR_REVIEW",
+  "recommendation": "M7B_HOLD",
+  "documents": [
+    {
+      "meeting_id": "X1_NR_2026-10-20",
+      "date": "2026-10-20",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "source_archive_sha256": "a91c6d2147be18202a80423d1c1e9d32c3acdfca5d234de0dfe6bf28ae0f4981",
+      "source_archive_member": "2026-10-20/20261019T181829591266Z/meetings/X1_NR_2026-10-20/full_program.pdf",
+      "source_archive_asset_url": "https://api.github.com/repos/Maremoo2/rikstoto-program-collector/releases/assets/657061413",
+      "pages": 8,
+      "counts": {
+        "race_sections": 7,
+        "horses": 83,
+        "history_rows": 415
+      },
+      "reported_counts_match": true,
+      "parser_qa": {
+        "status": "REVIEW_REQUIRED",
+        "warnings": [
+          "DUPLICATE_RACE_IDS"
+        ],
+        "document_date": "2026-10-20",
+        "race_sections": 7,
+        "race_numbers": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "horses": 83,
+        "history_rows": 415
+      },
+      "fields": [
+        {
+          "source_section": 0,
+          "printed_race_number": 4,
+          "physical_candidates": [
+            "BJ_NR_2026-10-20#4"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 1,
+          "printed_race_number": 7,
+          "physical_candidates": [
+            "S2_NR_2026-10-20#7"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 2,
+          "printed_race_number": 5,
+          "physical_candidates": [
+            "BJ_NR_2026-10-20#5"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 3,
+          "printed_race_number": 8,
+          "physical_candidates": [
+            "S2_NR_2026-10-20#8"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 4,
+          "printed_race_number": 6,
+          "physical_candidates": [
+            "BJ_NR_2026-10-20#6"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 5,
+          "printed_race_number": 9,
+          "physical_candidates": [
+            "S2_NR_2026-10-20#9"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 6,
+          "printed_race_number": 7,
+          "physical_candidates": [
+            "BJ_NR_2026-10-20#7"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        }
+      ],
+      "status_counts": {
+        "SOURCE_LINE_LOCATED": 415
+      },
+      "cross_page_history_rows": 0,
+      "model_eligible": 0
+    },
+    {
+      "meeting_id": "S5_NR_2026-10-21",
+      "date": "2026-10-21",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "source_archive_sha256": "4fe7d2a4c4bc86917484c19d1fb00f22a76c0f376ab94e727a895fe194f3a680",
+      "source_archive_member": "2026-10-21/20261019T202057396292Z/meetings/S5_NR_2026-10-21/full_program.pdf",
+      "source_archive_asset_url": "https://api.github.com/repos/Maremoo2/rikstoto-program-collector/releases/assets/657344961",
+      "pages": 8,
+      "counts": {
+        "race_sections": 8,
+        "horses": 92,
+        "history_rows": 460
+      },
+      "reported_counts_match": true,
+      "parser_qa": {
+        "status": "REVIEW_REQUIRED",
+        "warnings": [
+          "DUPLICATE_RACE_IDS"
+        ],
+        "document_date": "2026-10-21",
+        "race_sections": 8,
+        "race_numbers": [
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "horses": 92,
+        "history_rows": 460
+      },
+      "fields": [
+        {
+          "source_section": 0,
+          "printed_race_number": 6,
+          "physical_candidates": [
+            "S2_NR_2026-10-21#6"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 1,
+          "printed_race_number": 7,
+          "physical_candidates": [
+            "S1_NR_2026-10-21#7"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 2,
+          "printed_race_number": 7,
+          "physical_candidates": [
+            "S2_NR_2026-10-21#7"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 3,
+          "printed_race_number": 8,
+          "physical_candidates": [
+            "S1_NR_2026-10-21#8"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 4,
+          "printed_race_number": 8,
+          "physical_candidates": [
+            "S2_NR_2026-10-21#8"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 5,
+          "printed_race_number": 9,
+          "physical_candidates": [
+            "S1_NR_2026-10-21#9"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 6,
+          "printed_race_number": 9,
+          "physical_candidates": [
+            "S2_NR_2026-10-21#9"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 7,
+          "printed_race_number": 10,
+          "physical_candidates": [
+            "S1_NR_2026-10-21#10"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        }
+      ],
+      "status_counts": {
+        "SOURCE_LINE_LOCATED": 460
+      },
+      "cross_page_history_rows": 0,
+      "model_eligible": 0
+    },
+    {
+      "meeting_id": "S1_NR_2026-10-24",
+      "date": "2026-10-24",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "source_archive_sha256": "c34d97544875b6b10bdfffe3b0559ff6e240584c46442e585c8e25153454a3de",
+      "source_archive_member": "2026-10-24/20261019T182202683484Z/meetings/S1_NR_2026-10-24/full_program.pdf",
+      "source_archive_asset_url": "https://api.github.com/repos/Maremoo2/rikstoto-program-collector/releases/assets/657066047",
+      "pages": 15,
+      "counts": {
+        "race_sections": 12,
+        "horses": 146,
+        "history_rows": 730
+      },
+      "reported_counts_match": true,
+      "parser_qa": {
+        "status": "REVIEW_REQUIRED",
+        "warnings": [],
+        "document_date": "2026-10-24",
+        "race_sections": 12,
+        "race_numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ],
+        "horses": 146,
+        "history_rows": 730
+      },
+      "fields": [
+        {
+          "source_section": 0,
+          "printed_race_number": 1,
+          "physical_candidates": [
+            "S1_NR_2026-10-24#1"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 1,
+          "printed_race_number": 2,
+          "physical_candidates": [
+            "S1_NR_2026-10-24#2"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 2,
+          "printed_race_number": 3,
+          "physical_candidates": [
+            "S1_NR_2026-10-24#3"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 3,
+          "printed_race_number": 4,
+          "physical_candidates": [
+            "S1_NR_2026-10-24#4"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 4,
+          "printed_race_number": 5,
+          "physical_candidates": [
+            "S1_NR_2026-10-24#5"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 5,
+          "printed_race_number": 6,
+          "physical_candidates": [
+            "S1_NR_2026-10-24#6"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 6,
+          "printed_race_number": 7,
+          "physical_candidates": [
+            "S1_NR_2026-10-24#7"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 7,
+          "printed_race_number": 8,
+          "physical_candidates": [
+            "S1_NR_2026-10-24#8"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 8,
+          "printed_race_number": 9,
+          "physical_candidates": [
+            "S1_NR_2026-10-24#9"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 9,
+          "printed_race_number": 10,
+          "physical_candidates": [
+            "S1_NR_2026-10-24#10"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 10,
+          "printed_race_number": 11,
+          "physical_candidates": [
+            "S1_NR_2026-10-24#11"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        },
+        {
+          "source_section": 11,
+          "printed_race_number": 12,
+          "physical_candidates": [
+            "S1_NR_2026-10-24#12"
+          ],
+          "status": "FIELD_ROUTED_NOT_IDENTITY_VERIFIED"
+        }
+      ],
+      "status_counts": {
+        "SOURCE_LINE_LOCATED": 730
+      },
+      "cross_page_history_rows": 0,
+      "model_eligible": 0
+    }
+  ],
+  "counts": {
+    "horse_entries": 321,
+    "raw_history_rows": 1605,
+    "source_located_rows": 1605,
+    "race_sections_routed": 27,
+    "independent_official_result_chains": 1,
+    "model_eligible": 0
+  },
+  "diagnostic": {
+    "role": "NONREPRESENTATIVE_AGENT_SOURCE_TRANSCRIPTION_NOT_DATA_003",
+    "rows": 30,
+    "date_matches": 30,
+    "printed_historical_race_number_matches": 30,
+    "track_distance_placing_kmtime_populated_per_field": 0,
+    "independent_DATA_003_accuracy": "NOT_RUN_NO_GOLD_SET",
+    "omitted_rows_wrong_blocks_global_recall": "NOT_MEASURABLE"
+  },
+  "independent_result_check": {
+    "horse": "Flying Finn",
+    "stable_identity": "ATG_HORSE:788027",
+    "historical_race": "2026-09-23_5_8",
+    "target_race": "2026-10-21_5_9",
+    "place": 1,
+    "km_time_seconds": 71.1,
+    "official_result_status": "RESULT_VERIFIED",
+    "pre_race_identity_availability": "UNRESOLVED",
+    "pit_status": "UNRESOLVED",
+    "model_eligible": false,
+    "source_refs": [
+      {
+        "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-23_5_8",
+        "observed_at": "2026-10-22T17:39:16.803638+00:00",
+        "race_id": "2026-09-23_5_8",
+        "selection": 1,
+        "role": "RETROSPECTIVE_VALIDATION_ONLY"
+      },
+      {
+        "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-21_5_9",
+        "observed_at": "2026-10-22T17:39:19.735624+00:00",
+        "race_id": "2026-10-21_5_9",
+        "selection": 5,
+        "role": "RETROSPECTIVE_VALIDATION_ONLY"
+      }
+    ],
+    "archive_sha256": "8e0013ed4dbacb638e354807433cec4ab53a8412c957372279d1c5966bed01fc"
+  },
+  "actual_output_sha256": "ac8e1940f82ae3ed9145219ab25729ff2a3b21c2de42b1675fc199ec589616ab",
+  "tests": {
+    "focused": "75 passed in 23.41s",
+    "full": "462 passed in 29.66s",
+    "ruff": "All checks passed!",
+    "clean_research_audit": "PASS_WITH_EVIDENCE_PENDING; temporal PASS, settlement PASS; provider/replay NO_EVIDENCE on zero-row research DB"
+  },
+  "remaining_blockers": [
+    "DATA-002 versioned deliverable not identified",
+    "DATA-003 independent 60-entry truth set unavailable",
+    "God Only Knows original split-history failure version not available/reproduced",
+    "Qualification and country-specific result-code semantics unvalidated",
+    "History feature contract not validated; retrospective identity is not feature PIT proof"
+  ],
+  "risk": "Audit outputs are research evidence only; production gates and M5/M6 contracts unchanged",
+  "rollback": "Revert PR; no production state changes"
+}
