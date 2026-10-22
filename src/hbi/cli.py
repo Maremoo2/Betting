@@ -164,7 +164,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--schema", default=None)
     sub = parser.add_subparsers(dest="command", required=True)
 
+    from .backfill import cli as backfill_cli
     from .date_overview import cli as overview_cli
+
+    backfill = sub.add_parser("backfill", help="Offline batch import of existing historical archives")
+    backfill.add_argument("--manifest", required=True)
+    backfill.add_argument("--output", required=True, help="New isolated research directory")
+    backfill.set_defaults(func=backfill_cli)
 
     overview = sub.add_parser("overview", help="Offline løpsoversikt for én arkivdato")
     overview.add_argument("--date", required=True)

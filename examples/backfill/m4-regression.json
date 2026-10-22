@@ -1,0 +1,11 @@
+{
+  "schema": "HBI_BACKFILL_INPUT_V1",
+  "cohort": "M4_REGRESSION_ONLY",
+  "archives": [{
+    "path": "../../tests/fixtures/rikstoto-historical-truth.json",
+    "format": "M4_TRUTH_REGRESSION_ONLY",
+    "sha256": "8086ec016e8e4f9cda7d9ad36abe44df1e09e3c2e387a9ed6c612fa61a0f8953",
+    "source_repository": "Maremoo2/Betting",
+    "source_commit": "202b9122a5a55a07b9574167767c00d1200ebbfa"
+  }]
+}
