@@ -835,6 +835,64 @@ when a complete result field is verified. Historical full-field PIT feature data
 code semantics, a documented temporal dataset/split, OOS evaluation and calibration
 remain necessary before fundamental p(win) or WATCH can be built and validated.
 
+#### Historical batch import (M5 partial delivery)
+
+```bash
+hbi backfill --manifest examples/backfill/m4-regression.json --output /tmp/m5-regression
+```
+
+This offline regression uses the **existing M4 source bundle**, not monthly
+2015-onward backfill. It imports 39 complete source rosters / 393 runners through
+HBI into an isolated `research.sqlite`, preserving provenance in provider payloads.
+Four races have authoritative complete results: 41 active-runner raw labels; one
+scratched result row is excluded. The inputs cover four selected dates in June,
+July, September and October 2026, not complete months or different-year backfill.
+The same Bjerke M4 history cohort remains 6 verified result links / 60 observations;
+the new full-field dataset has a different denominator and is not an improvement
+claim. Source files are reused unchanged; no crawler or network call is started.
+
+`dataset.jsonl` keeps rosters/registrations and candidate pre-race features separate
+from retrospective labels. `model-readiness.json` includes a versioned dataset ID,
+input/code/output checksums, per-month counts, source conflicts and exclusions.
+Only driver and extra distance from the roster are candidate inputs; odds, market
+probabilities, result times and placings never become input features. The complete
+fundamental feature contract is not configured; model eligibility remains zero.
+No outcome settlement or model/market/decision-table writes occur.
+
+A late-retrieved result can be a retrospective label when the complete field and
+identities verify. Label retrieval before the race is **not** required. A feature
+requires its own pre-race availability proof: an actual archived observation strictly
+before the event cutoff is a conservative upper bound on availability, explicitly
+labelled `DIRECT_OBSERVATION_UPPER_BOUND`. It is never a fabricated publication
+time. Undocumented/late observations stay unresolved; timestamp claims added to
+unsupported fields are ignored. This is a research-data policy, not a change to
+V3.3/provider/model gates. The M4 regression has zero PIT-verified feature runners.
+
+To import existing native crawler caches, supply a JSON manifest with schema
+`HBI_BACKFILL_INPUT_V1`, an explicit `cohort`, and `archives` entries containing
+`path` (relative to manifest), `format: CRAWLER_NATIVE_ZIP`, `sha256`, and available
+`source_repository` / `source_commit` provenance. Multiple ZIPs/months are supported.
+Native ZIPs must preserve the existing `inventory/`, `raw-markets/`, `raw-results/`
+ArchiveClient envelopes. Optional `market-days/` and `result-days/` freezes are
+checksum-checked and POST must bind to PRE. Weekly MARKET-only packages are
+insufficient for result verification. No unsupported archive is silently upgraded.
+Identical race/source records deduplicate; conflicting source revisions, race
+metadata or registration/name mappings are quarantined across archives.
+
+**The real monthly archives were not available in this workspace.** The access
+snapshot [lists all 142 months from 2015-01 through 2026-10](docs/evidence/m5-backfill-access.json)
+as unknown, not completed, failed or not-run. The documented 132-month census and
+55-race pilot are not accessible collection artifacts. The historical crawler is
+in Betting (`docs/ARCHIVE_2015_2025.md`); the companion repository's visible workflows
+collect daily programs. No monthly artifacts were identified among 644 Betting /
+77 collector artifacts. Existing local backfill data must be supplied before a
+real multi-month backfill demonstration or completion audit is possible.
+
+```bash
+hbi backfill --manifest examples/backfill/unavailable-monthly.json --output /tmp/m5-unavailable
+# Writes an honest empty report, terminal_status=M5_BLOCKED, exits 2.
+```
+
 A complete local dry run can now be executed without any live provider:
 
 ```bash

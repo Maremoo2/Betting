@@ -1,0 +1,1468 @@
+{
+  "schema": "M5_BACKFILL_ACCESS_AUDIT_V1",
+  "observed_at": "2026-10-22T07:00:12.082100+00:00",
+  "repository_main": "4a97701ee110c89f7337e28c9dffc58805dedf98",
+  "collector_main": "d57ec73370fffb25dee1444029744581073b2327",
+  "github": {
+    "Betting_artifacts_inspected": 644,
+    "collector_artifacts_inspected": 77,
+    "monthly_artifacts_identified": 0,
+    "evidence_queries": [
+      "https://api.github.com/repos/Maremoo2/Betting/actions/artifacts?per_page=100&page=1..7",
+      "https://api.github.com/repos/Maremoo2/Betting/actions/workflows/378327238/runs?per_page=100",
+      "https://api.github.com/repos/Maremoo2/rikstoto-program-collector/actions/artifacts?per_page=100",
+      "https://api.github.com/repos/Maremoo2/rikstoto-program-collector/actions/workflows"
+    ],
+    "Betting_pre_winner_workflow_id": 378327238,
+    "Betting_pre_winner_workflow_runs": 0,
+    "dedicated_monthly_backfill_workflow_identified": false,
+    "collector_releases_inspected": 84
+  },
+  "documented_only": {
+    "source": "docs/ARCHIVE_2015_2025.md",
+    "census_months": 132,
+    "census_race_entries": 202946,
+    "pilot_races": 55,
+    "pilot_verified_full_field_outcomes": 34,
+    "note": "Documentation, not accessible collection artifacts or M5 verification evidence",
+    "empty_discovery_months_not_proof_of_no_racing": [
+      "2015-01",
+      "2015-02",
+      "2015-03",
+      "2015-04",
+      "2015-05"
+    ]
+  },
+  "monthly_status": [
+    {
+      "month": "2015-01",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2015-02",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2015-03",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2015-04",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2015-05",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2015-06",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2015-07",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2015-08",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2015-09",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2015-10",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2015-11",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2015-12",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2016-01",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2016-02",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2016-03",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2016-04",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2016-05",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2016-06",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2016-07",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2016-08",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2016-09",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2016-10",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2016-11",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2016-12",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2017-01",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2017-02",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2017-03",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2017-04",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2017-05",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2017-06",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2017-07",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2017-08",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2017-09",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2017-10",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2017-11",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2017-12",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2018-01",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2018-02",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2018-03",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2018-04",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2018-05",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2018-06",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2018-07",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2018-08",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2018-09",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2018-10",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2018-11",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2018-12",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2019-01",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2019-02",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2019-03",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2019-04",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2019-05",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2019-06",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2019-07",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2019-08",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2019-09",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2019-10",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2019-11",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2019-12",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2020-01",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2020-02",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2020-03",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2020-04",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2020-05",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2020-06",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2020-07",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2020-08",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2020-09",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2020-10",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2020-11",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2020-12",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2021-01",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2021-02",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2021-03",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2021-04",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2021-05",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2021-06",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2021-07",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2021-08",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2021-09",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2021-10",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2021-11",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2021-12",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2022-01",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2022-02",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2022-03",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2022-04",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2022-05",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2022-06",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2022-07",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2022-08",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2022-09",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2022-10",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2022-11",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2022-12",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2023-01",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2023-02",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2023-03",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2023-04",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2023-05",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2023-06",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2023-07",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2023-08",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2023-09",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2023-10",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2023-11",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2023-12",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2024-01",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2024-02",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2024-03",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2024-04",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2024-05",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2024-06",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2024-07",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2024-08",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2024-09",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2024-10",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2024-11",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2024-12",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2025-01",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2025-02",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2025-03",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2025-04",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2025-05",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2025-06",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2025-07",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2025-08",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2025-09",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2025-10",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2025-11",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2025-12",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2026-01",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2026-02",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2026-03",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2026-04",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2026-05",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2026-06",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2026-07",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2026-08",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2026-09",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    },
+    {
+      "month": "2026-10",
+      "collection_status": "UNKNOWN_NO_ACCESS_TO_LOCAL_BACKFILL",
+      "archived": null,
+      "imported": null,
+      "verified": null,
+      "model_ready": null,
+      "M5_backfill_races_imported": 0,
+      "completion_failure_or_not_run": "NOT_ESTABLISHED"
+    }
+  ],
+  "evidence_files": {
+    "Betting-releases.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "backfill-runs.json": "25d6b549f693c58d86d78b8c3c8e2b78ce00dbf4596605a00266f3023a896d2b",
+    "rikstoto-program-collector-releases.json": "1257a1d71fc818a9d6caa29066dfdc90490f1f61962c759a63e875fbbcb43c1d",
+    "rikstoto-program-collector-artifacts.json": "4e4ca7c66f41d8010aeb67d644d4ca208d0dc8f045b75b769f53d66944bef422",
+    "Betting-runs.json": "22a4794c3bd54c8655da714dcc3b5b088f73f7c20df9ff49ecbaa425bf7558aa",
+    "Betting-all-artifacts.json": "506af641526d04c9bb6ff922ce202281f821d8b7f91eb1b52b52e40b5fa5fd89",
+    "rikstoto-program-collector-runs.json": "d09d95f858341453dd3f3afa320ffdf39bcb33229066881b905d3bdac9edc46c",
+    "Betting-artifacts.json": "0c9b089bec11339af8b8a711932cf04d40c7c38c5cf22a6c42c5cfd84f66af80"
+  }
+}

@@ -17,6 +17,32 @@ LEVELS = ("SOURCE_EXCERPT_ONLY", "IDENTITY_VERIFIED", "RESULT_VERIFIED", "PIT_VE
           "MODEL_ELIGIBLE", "CONFLICT", "UNRESOLVED")
 
 
+def verify_field(rows, key, number, result):
+    """Shared M4 full-field identity check; no collection or decision authority."""
+    start_numbers = [r.get("startNumber") for r in rows]
+    ids = [r.get("horseRegistrationNumber") for r in rows]
+    roster_valid = (
+        type(number) is int and number > 0
+        and len(set(start_numbers)) == len(rows) and len(set(ids)) == len(rows)
+        and all(type(n) is int and n > 0 for n in start_numbers)
+        and all(isinstance(i, str) and i and not i.upper().startswith("TMP") for i in ids)
+        and all(r.get("raceKey") == f"{key}#{number}" and r.get("raceNumber") == number
+                and type(r.get("isScratched")) is bool for r in rows)
+    )
+    full_field_error = None
+    try:
+        if not roster_valid:
+            raise ValueError("HISTORICAL_ROSTER_IDENTITY_CONFLICT")
+        active = [str(r["startNumber"]) for r in rows if r["isScratched"] is False]
+        verify_outcome(rows, active, result)
+        result_ids = [r.get("horseRegistrationNumber") for r in result["results"]]
+        if len(result_ids) != len(set(result_ids)):
+            raise ValueError("DUPLICATE_RESULT_IDENTITIES")
+    except (ValueError, KeyError, TypeError) as exc:
+        full_field_error = str(exc)
+    return roster_valid, full_field_error
+
+
 class HistoricalTruth:
     """Read checksum-pinned, original ArchiveClient envelopes. No network or writes."""
 
@@ -66,28 +92,8 @@ class HistoricalTruth:
                         result_source = self.sources.get(f"/results/raceDays/{key}/{number}/completeresults")
                         if not rows or not result_source:
                             continue
-                        start_numbers = [r.get("startNumber") for r in rows]
-                        ids = [r.get("horseRegistrationNumber") for r in rows]
-                        roster_valid = (
-                            type(number) is int and number > 0
-                            and len(set(start_numbers)) == len(rows) and len(set(ids)) == len(rows)
-                            and all(type(n) is int and n > 0 for n in start_numbers)
-                            and all(isinstance(i, str) and i and not i.upper().startswith("TMP") for i in ids)
-                            and all(r.get("raceKey") == f"{key}#{number}" and r.get("raceNumber") == number
-                                    and type(r.get("isScratched")) is bool for r in rows)
-                        )
                         result = result_source["body"]["result"]
-                        full_field_error = None
-                        try:
-                            if not roster_valid:
-                                raise ValueError("HISTORICAL_ROSTER_IDENTITY_CONFLICT")
-                            active = [str(r["startNumber"]) for r in rows if r["isScratched"] is False]
-                            verify_outcome(rows, active, result)
-                            result_ids = [r.get("horseRegistrationNumber") for r in result["results"]]
-                            if len(result_ids) != len(set(result_ids)):
-                                raise ValueError("DUPLICATE_RESULT_IDENTITIES")
-                        except (ValueError, KeyError, TypeError) as exc:
-                            full_field_error = str(exc)
+                        roster_valid, full_field_error = verify_field(rows, key, number, result)
                         refs = [self.ref(s) for s in (source, roster_source, result_source)]
                         self.races.append({"day": day, "key": key, "number": number,
                                            "track": meeting["raceDayName"], "rows": rows,
