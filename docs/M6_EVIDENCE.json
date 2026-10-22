@@ -1,0 +1,108 @@
+{
+  "task": "M6",
+  "status": "M6_PARTIAL",
+  "base_sha": "7a7637064ee5d920c8fa3cff6e60041e6606d96a",
+  "python": "3.12.14",
+  "identity_summary": {
+    "schema": "HBI_SE_IDENTITY_EVIDENCE_V1",
+    "date": "2026-10-20",
+    "races": 19,
+    "horses": 208,
+    "original_stable_registrations": 0,
+    "status_counts": {
+      "IDENTITY_VERIFIED": 196,
+      "UNRESOLVED": 12
+    },
+    "provider_admission_changed": false,
+    "model_eligible": 0
+  },
+  "example_link": {
+    "raceday_key": "S1_NR_2026-10-20",
+    "race_number": 1,
+    "selection_id": "1",
+    "name": "Rajadhiraja",
+    "original_registration": "TMP-S1-20261020-01-01",
+    "status": "IDENTITY_VERIFIED",
+    "provider_identity": {
+      "namespace": "ATG_HORSE",
+      "id": "758929"
+    },
+    "reasons": [],
+    "biography": [
+      9,
+      "gelding",
+      "maharajah",
+      "ofvprincess"
+    ],
+    "proof": {
+      "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+      "starts": {
+        "member": "2026-10-20/20261020T051747910748Z/meetings/S1_NR_2026-10-20/starts.json",
+        "member_sha256": "1fd2482871f7872a92063724a3beeb735136e8c7ff7a9db8edd7ce6022024e5e",
+        "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+      },
+      "program": {
+        "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+        "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+        "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+      },
+      "program_pointer": "/races/29/entrants/0",
+      "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+      "atg_member": "races/2026-10-20_9_1.json",
+      "atg_member_sha256": "cde02e22b5a40241bc4ec80037815863551c6735605c748a8befa11773628611",
+      "atg_pointer": "/payload/races/0/starts/0",
+      "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_9_1",
+      "observed_at": "2026-10-22T11:04:42.937276+00:00",
+      "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+    },
+    "role": "RETROSPECTIVE_IDENTITY_ONLY",
+    "pre_race_availability_verified": false
+  },
+  "audit_summary": {
+    "schema": "HBI_MODEL_AUDIT_V1",
+    "dataset_sha256": "631722414bf9b1df564b878530b327b7fccb1f88acb88b3a90c46727986400e1",
+    "dataset_id": "0af65f51cc0b099fb6116e2f60f11cc4282861d856209cab1fc2aaf17626dc6d",
+    "protocol_sha256": "238d49aa9fdbccedd72896cad5ac8db7adabbd4cf7fff789d721bc1ceae76e05",
+    "races": 39,
+    "data_ready": 0,
+    "empty_partitions": [
+      "train",
+      "validation"
+    ],
+    "by_country": {
+      "NO": {
+        "races": 39,
+        "partitions": {
+          "test": 39
+        }
+      },
+      "SE": {
+        "races": 0,
+        "partitions": {}
+      }
+    },
+    "metrics": null,
+    "evaluation_status": "NOT_RUN_NO_VALIDATED_MODEL_OR_PREDICTIONS",
+    "training_performed": false,
+    "model_admission": false,
+    "limitations": [
+      "HISTORY_FEATURE_CONTRACT_NOT_VALIDATED",
+      "NO_EMPIRICAL_PREDICTION_CLAIM",
+      "SCORING_PRIMITIVE_TESTED_ONLY; MODEL_ARTIFACT_PROVENANCE_GATE_REQUIRED_BEFORE_EMPIRICAL_EVALUATION"
+    ]
+  },
+  "output_sha256": {
+    "identities-final.json": "d575f355b19d1805e3b07b0f883789481978b138bf9fdb9217810a281f3831e1",
+    "audit-final.json": "dbd0295301a32b1eac41de001416b61eb7ff365412d1d2a09991e2525eeeb324"
+  },
+  "regression_test_output": "........................................................................ [ 16%]\n........................................................................ [ 32%]\n........................................................................ [ 48%]\n........................................................................ [ 64%]\n........................................................................ [ 80%]\n........................................................................ [ 96%]\n..................                                                       [100%]\n450 passed in 28.43s",
+  "ruff": "All checks passed!",
+  "integrity": "clean research audit: PASS_WITH_EVIDENCE_PENDING; temporal PASS; settlement PASS; provider and replay NO_EVIDENCE (zero-row audit, not operational proof)",
+  "limitations": [
+    "No monthly backfill available or sought",
+    "Identity proof retrospective only",
+    "12 monte runners unresolved",
+    "History feature definition and empirical model artifact/prediction provenance interface not validated; all candidates excluded",
+    "No model training, empirical metrics, WATCH or BET"
+  ]
+}
