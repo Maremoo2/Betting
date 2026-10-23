@@ -94,3 +94,45 @@ def test_test_only_absence_a_does_not_prove_volt_and_market_not_time():
     assert result["fields"]["gallop_flag"]["value"] == "NOT_REPORTED"
     prior["raw_text"] = "TEST_ONLY U 01.01.20-1|999 10' 2140 13,1a"
     assert not normalize_prior(prior, target_date="2020-01-02", provenance={}, codebook=book())["history_accepted"]
+
+
+def test_real_frozen_holdout_replays_without_retuning():
+    import hashlib
+
+    frozen = json.loads((ROOT / "docs/M7B1_HOLDOUT_FIRST_EVALUATION.json").read_text())
+    actual = run(ROOT, None, archived=True)
+    for group in ("known", "holdout"):
+        assert actual[group]["field_metrics"] == frozen[group]["field_metrics"]
+        assert actual[group]["structural_assignment"] == {"CORRECT": actual[group]["rows"]}
+        assert actual[group]["critical_findings"] == {}
+    for name, expected in (("history_semantics.py", "adapter_sha256"),
+                           ("history_semantic_benchmark.py", "evaluator_sha256")):
+        assert hashlib.sha256((ROOT / "src/hbi" / name).read_bytes()).hexdigest() == frozen["evidence"][expected]
+    assert actual["holdout"]["rows"] == 30
+    assert actual["holdout"]["field_metrics"]["disqualification_flag"]["assessable"] == 0
+    assert actual["holdout"]["field_metrics"]["qualification_flag"]["assessable"] == 0
+    assert actual["holdout"]["track_identity_status_counts"] == {"EXTRACTED": 9, "AMBIGUOUS": 21}
+
+
+@pytest.mark.parametrize("mutation", ["wrong_block", "duplicate_line"])
+def test_test_only_assignment_failure_blocks_semantics(mutation):
+    from hbi.history_semantic_benchmark import score
+    from hbi.pdf_semantic_validation import read_sources
+    from hbi.pdf_validation import physical_candidates
+
+    sources = copy.deepcopy(read_sources(ROOT / "tests/fixtures/m7a-pdf-validation.zip"))
+    row = json.loads((ROOT / "tests/fixtures/m7a1-ground-truth-v1.json").read_text())["rows"][0]
+    meta, _pages = sources[row["pdf_sha256"]]
+    horse = next(h for d in meta["archived_parser_output"] for h in d["entrants"]
+        if any(p["raw_text"] == row["raw_history_line"] for p in h["past_starts"]))
+    if mutation == "wrong_block":
+        horse["name"] = "TEST_ONLY_WRONG_HORSE"
+    else:
+        horse["past_starts"].append(copy.deepcopy(next(p for p in horse["past_starts"]
+            if p["raw_text"] == row["raw_history_line"])))
+    parsed = {h: [(d, physical_candidates(d, meta["canonical_starts"])) for d in meta["archived_parser_output"]]
+        for h, (meta, _pages) in sources.items()}
+    result = score([row], parsed, sources, book())["observations"][0]
+    assert result["semantic"] == {}
+    assert result["structural_assignment"] != "CORRECT"
+    assert "WRONG_OR_AMBIGUOUS_HORSE_OR_PHYSICAL_RACE" in result["critical_findings"]

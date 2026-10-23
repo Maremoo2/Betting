@@ -1,0 +1,154 @@
+{
+  "task_id": "M7B.1",
+  "mode": "PR_AUTHORIZED_RESEARCH_ONLY",
+  "repository": "Maremoo2/Betting",
+  "base_sha": "697244a326095da63b4b9fbececf197e7a3061b1",
+  "upstream_parser_commit": "d57ec73370fffb25dee1444029744581073b2327",
+  "upstream_parser_sha256": "2ea5c70dfa76a2c8dbc358bbfcb97657efe1f831a5f799cb3790b9064a1ae64d",
+  "holdout_lock_commit": "ee577d1ffb6bad51621bd34e840de89576b35b9d",
+  "implementation_freeze_commit": "d9ae10d5ab06add0a5ec8410793af16b8246d845",
+  "first_evaluation_commit": "ba5facb3b05307ab8a5899cdcb359c7d23f6a24d",
+  "observed_at": "2026-10-23T05:37:29.220114+00:00",
+  "environment": {
+    "python": "Python 3.12.14",
+    "workspace": "/workspace/Betting-M7B1",
+    "installation": ".venv/bin/pip install -e '.[dev]'",
+    "new_dependencies": []
+  },
+  "files": {
+    "tests/fixtures/m7a-pdf-validation.zip": {
+      "sha256": "1d4108180de1a191a3df502fde0e2ff4d2b74fc3f3b6eee30b701a18cb9e81a9",
+      "bytes": 665363
+    },
+    "tests/fixtures/m7a1-ground-truth-v1.json": {
+      "sha256": "82ca3f9e043cfc76c672b7efe15efe9da93090387972c762f4e306ffdaf1e39d",
+      "bytes": 186439
+    },
+    "tests/fixtures/m7a1-atg-results-v1.zip": {
+      "sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+      "bytes": 96867
+    },
+    "tests/fixtures/m7b1-holdout-v1.json": {
+      "sha256": "f9d9eaf36b778b7af13738dbf49dcff81690119b1987827d0d676d8a95f58b87",
+      "bytes": 94034
+    },
+    "src/hbi/history_semantics.py": {
+      "sha256": "11d4970422ecb89f1e34bc5dd6788d313e5318cd04b71ebd904e03a43d5590eb",
+      "bytes": 7966
+    },
+    "src/hbi/history_semantic_benchmark.py": {
+      "sha256": "1a0515c8ba458a85586cda19e22ddf090262386f08ae51f213090f66e5b31f61",
+      "bytes": 8363
+    },
+    "docs/M7B1_CODEBOOK.json": {
+      "sha256": "78df77540f59e635386a1d744f851b12e5faf505628a1a21b9c696570f285344",
+      "bytes": 18354
+    },
+    "docs/M7B1_HISTORY_FEATURE_CONTRACT.json": {
+      "sha256": "14f9fd6b873a1f355b6d81a9c1eb06608e6541566ae2b0b9b7b6747e9d93a1f2",
+      "bytes": 14377
+    },
+    "docs/M7B1_HOLDOUT_LOCK.json": {
+      "sha256": "ca51bf26f9c167a0ca50da0770541881e577c5496f1207e8f15e4ff9e5b6bb42",
+      "bytes": 1146
+    },
+    "docs/M7B1_HOLDOUT_FIRST_EVALUATION.json": {
+      "sha256": "d690b3d861829353e96939b17cd82064ce56c71a257450233b60a8b278774de0",
+      "bytes": 20985
+    },
+    "docs/M7B1_FIELD_METRICS.json": {
+      "sha256": "2031c9acb987faa2c3bcf31eb6aa98ddce056ad99973c2b0ccb7cd18435ecda3",
+      "bytes": 19569
+    }
+  },
+  "original_pdf_sha256": [
+    "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+    "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+    "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286"
+  ],
+  "source_pointers": "Per observation source_evidence in frozen truth fixtures includes release asset URL, parent archive SHA/member, PDF hash/page/raw line, source_observed_at and unknown historical publication time. Existing original PDF archive is reused without modification.",
+  "archive_policy": "No new original PDF/large archive/sensitive source dump committed; new holdout JSON is 94KB, existing 665KB original source bundle reused; full generated report 769747 bytes is deterministically reproducible, hash preserved.",
+  "parser_quality": {
+    "known_rows": 60,
+    "holdout_rows": 30,
+    "wrong_assessed_fields": 0,
+    "wrong_structural_assignments": 0,
+    "historical_track_candidates_extracted": 43,
+    "historical_track_unresolved": 47,
+    "independent_physical_track_accuracy": "NOT_MEASURED",
+    "model_eligible": 0
+  },
+  "independence": "Original PDF transcription and separate control pass by same Codex agent; not human, not blinded, not representative. No tuning after first holdout run.",
+  "official_results": "Existing separately archived ATG six-start verification rerun by regressions; not passed as inputs or backfilled into PDF gold. No new official result claim.",
+  "source_limitations": [
+    "Original DATA-002 180-row / DATA-003 60-row versioned deliveries unavailable in inspected accessible sources",
+    "Primary code-index indexed text accessible, direct binary URL verification HTML and documented CMS HTTP403; no binary verification claim",
+    "Historical NO/SE code/track ambiguities remain",
+    "Holdout has no assessable qualification/DQ examples; limited known denominators only"
+  ],
+  "tests": [
+    {
+      "command": ".venv/bin/python -m pytest -q tests/test_history_semantics.py",
+      "exit_code": 0,
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "negative_cases": "Future/same-day, wrong raw/upstream date/race, unknown codes, missing method, market-column misuse, wrong block and duplicate raw line; TEST_ONLY mutations"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q",
+      "exit_code": 0,
+      "passed": 496,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 37.14,
+      "output_sha256": "fbdfa9149c38e0ddffd5730e0526e2ef0b800ddce977b79bc9a27e1580da7546"
+    },
+    {
+      "command": ".venv/bin/ruff check .",
+      "exit_code": 0,
+      "result": "All checks passed!",
+      "output_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "command": ".venv/bin/python -m hbi.v1_readiness",
+      "exit_code": 0,
+      "output_sha256": "d58710691683bc1577976630f0654d1f7582cbc9e4caf17ef2e987c9248c2678"
+    },
+    {
+      "command": ".venv/bin/python -m hbi.v1_audit --db /workspace/evidence/m7b1/integrity/research.sqlite --output-dir /workspace/evidence/m7b1/integrity/audit",
+      "exit_code": 0,
+      "result": "PASS_WITH_EVIDENCE_PENDING",
+      "counts": "Clean isolated DB, zero stored rows; temporal/settlement PASS, provider/replay NO_EVIDENCE; not claimed operational validity"
+    },
+    {
+      "command": "validate_governance(load_governance(docs/research_governance.json))",
+      "result": "valid=True; errors=()"
+    },
+    {
+      "command": "python -m hbi.history_semantic_benchmark --parser-path /workspace/rikstoto-program-collector/collector/pdf_program.py --output <new-path>",
+      "exit_code": 0,
+      "upstream_execution": "ACTUAL_EXTERNAL_PARSER_EXECUTION",
+      "repeated_output_sha256": "812a0c4ca9b4e7466c5bd4dfc5115774ccaa11de6e5ccbf61264ff8f19adf623",
+      "byte_identical_reproduction": true,
+      "known_rows": 60,
+      "holdout_rows": 30
+    }
+  ],
+  "ci": "Pending new Draft PR exact-head workflows; report actual results in PR/final, not inferred from local tests",
+  "protected_scope_changes": [],
+  "terminal_status": "M7B1_PARTIAL",
+  "workflow_status": "REVISE",
+  "recommendation": "M7B2_HOLD for model-feature integration until source ambiguities and identity/PIT are separately resolved",
+  "debug_chronology": [
+    "Before holdout: known-only development found one missing gallop narrative (Wingait Siw gal 300 kv), conservative source-backed phrase added before freeze; all known assessable fields then correct",
+    "Before holdout: 13 focused tests and Ruff passed; implementation committed",
+    "First holdout run: all assessable fields match; report frozen; no adapter/evaluator/codebook retuning",
+    "After freeze: one new negative TEST_ONLY duplicate-line test initially duplicated a different source line; corrected test mutation to duplicate the selected raw line. No adapter change. Final 16 focused and 496 full pass"
+  ],
+  "non_assessable_value_audit": {
+    "known_additional_extracted_values": 0,
+    "holdout_additional_extracted_values": 0,
+    "meaning": "No numeric/boolean extraction credited or hidden on UNKNOWN/NOT_REPORTED/NOT_APPLICABLE reference cells; qualification NOT_APPLICABLE sentinel excluded"
+  }
+}
