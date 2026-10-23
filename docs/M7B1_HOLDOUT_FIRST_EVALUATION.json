@@ -1,0 +1,760 @@
+{
+  "schema": "M7B1_FROZEN_FIRST_EVALUATION_V1",
+  "freeze_commit": "d9ae10d5ab06add0a5ec8410793af16b8246d845",
+  "evaluated_at": "2026-10-23T05:32:54.200477+00:00",
+  "full_reproducible_output_sha256": "812a0c4ca9b4e7466c5bd4dfc5115774ccaa11de6e5ccbf61264ff8f19adf623",
+  "full_output_bytes": 769747,
+  "command": ".venv/bin/python -m hbi.history_semantic_benchmark --parser-path /workspace/rikstoto-program-collector/collector/pdf_program.py --output /workspace/evidence/m7b1/first-evaluation.json",
+  "post_holdout_adapter_changes": false,
+  "evidence": {
+    "schema": "M7B1_SEMANTIC_BENCHMARK_V1",
+    "version": "0.1.0",
+    "upstream_execution": "ACTUAL_EXTERNAL_PARSER_EXECUTION",
+    "source_bundle_sha256": "1d4108180de1a191a3df502fde0e2ff4d2b74fc3f3b6eee30b701a18cb9e81a9",
+    "upstream_parser_sha256": "2ea5c70dfa76a2c8dbc358bbfcb97657efe1f831a5f799cb3790b9064a1ae64d",
+    "codebook_sha256": "78df77540f59e635386a1d744f851b12e5faf505628a1a21b9c696570f285344",
+    "known_truth_sha256": "82ca3f9e043cfc76c672b7efe15efe9da93090387972c762f4e306ffdaf1e39d",
+    "adapter_sha256": "11d4970422ecb89f1e34bc5dd6788d313e5318cd04b71ebd904e03a43d5590eb",
+    "evaluator_sha256": "1a0515c8ba458a85586cda19e22ddf090262386f08ae51f213090f66e5b31f61",
+    "model_eligible": 0,
+    "holdout_truth_sha256": "f9d9eaf36b778b7af13738dbf49dcff81690119b1987827d0d676d8a95f58b87"
+  },
+  "known": {
+    "rows": 60,
+    "field_metrics": {
+      "historical_date": {
+        "assessable": 60,
+        "correct": 60,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 0,
+        "not_applicable": 0,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "EXTRACTED": 60
+        },
+        "counts": {
+          "CORRECT": 60,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 0
+        }
+      },
+      "historical_track": {
+        "assessable": 60,
+        "correct": 60,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 0,
+        "not_applicable": 0,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "EXTRACTED": 60
+        },
+        "counts": {
+          "CORRECT": 60,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 0
+        }
+      },
+      "historical_race_number": {
+        "assessable": 60,
+        "correct": 60,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 0,
+        "not_applicable": 0,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "EXTRACTED": 60
+        },
+        "counts": {
+          "CORRECT": 60,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 0
+        }
+      },
+      "distance_m": {
+        "assessable": 60,
+        "correct": 60,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 0,
+        "not_applicable": 0,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "EXTRACTED": 60
+        },
+        "counts": {
+          "CORRECT": 60,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 0
+        }
+      },
+      "start_method": {
+        "assessable": 35,
+        "correct": 35,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 25,
+        "not_applicable": 0,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "EXTRACTED": 35,
+          "AMBIGUOUS": 24,
+          "UNKNOWN_CODE": 1
+        },
+        "counts": {
+          "CORRECT": 35,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 25,
+          "NOT_APPLICABLE": 0
+        }
+      },
+      "placing": {
+        "assessable": 50,
+        "correct": 50,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 8,
+        "not_applicable": 2,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "EXTRACTED": 52,
+          "UNKNOWN_CODE": 8
+        },
+        "counts": {
+          "CORRECT": 50,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 8,
+          "NOT_APPLICABLE": 2
+        }
+      },
+      "km_time": {
+        "assessable": 49,
+        "correct": 49,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 2,
+        "not_applicable": 9,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "EXTRACTED": 49,
+          "UNKNOWN_CODE": 10,
+          "NOT_REPORTED": 1
+        },
+        "counts": {
+          "CORRECT": 49,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 2,
+          "NOT_APPLICABLE": 9
+        }
+      },
+      "gallop_flag": {
+        "assessable": 14,
+        "correct": 14,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 1,
+        "not_applicable": 45,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "NOT_REPORTED": 45,
+          "EXTRACTED": 14,
+          "UNKNOWN_CODE": 1
+        },
+        "counts": {
+          "CORRECT": 14,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 1,
+          "NOT_APPLICABLE": 45
+        }
+      },
+      "disqualification_flag": {
+        "assessable": 1,
+        "correct": 1,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 8,
+        "not_applicable": 51,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "NOT_REPORTED": 52,
+          "UNKNOWN_CODE": 7,
+          "EXTRACTED": 1
+        },
+        "counts": {
+          "CORRECT": 1,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 8,
+          "NOT_APPLICABLE": 51
+        }
+      },
+      "qualification_flag": {
+        "assessable": 2,
+        "correct": 2,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 0,
+        "not_applicable": 58,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "NOT_REPORTED": 58,
+          "EXTRACTED": 2
+        },
+        "counts": {
+          "CORRECT": 2,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 58
+        }
+      }
+    },
+    "baseline_field_metrics": {
+      "historical_date": {
+        "counts": {
+          "CORRECT": 60,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 0
+        },
+        "total_rows": 60,
+        "scorable_denominator": 60,
+        "correct_numerator": 60,
+        "correct_fraction": 1.0
+      },
+      "historical_track": {
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 60,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 0
+        },
+        "total_rows": 60,
+        "scorable_denominator": 60,
+        "correct_numerator": 0,
+        "correct_fraction": 0.0
+      },
+      "historical_race_number": {
+        "counts": {
+          "CORRECT": 60,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 0
+        },
+        "total_rows": 60,
+        "scorable_denominator": 60,
+        "correct_numerator": 60,
+        "correct_fraction": 1.0
+      },
+      "distance_m": {
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 60,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 0
+        },
+        "total_rows": 60,
+        "scorable_denominator": 60,
+        "correct_numerator": 0,
+        "correct_fraction": 0.0
+      },
+      "start_method": {
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 35,
+          "AMBIGUOUS_SOURCE": 25,
+          "NOT_APPLICABLE": 0
+        },
+        "total_rows": 60,
+        "scorable_denominator": 35,
+        "correct_numerator": 0,
+        "correct_fraction": 0.0
+      },
+      "placing": {
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 50,
+          "AMBIGUOUS_SOURCE": 8,
+          "NOT_APPLICABLE": 2
+        },
+        "total_rows": 60,
+        "scorable_denominator": 50,
+        "correct_numerator": 0,
+        "correct_fraction": 0.0
+      },
+      "km_time": {
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 49,
+          "AMBIGUOUS_SOURCE": 2,
+          "NOT_APPLICABLE": 9
+        },
+        "total_rows": 60,
+        "scorable_denominator": 49,
+        "correct_numerator": 0,
+        "correct_fraction": 0.0
+      },
+      "gallop_flag": {
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 14,
+          "AMBIGUOUS_SOURCE": 1,
+          "NOT_APPLICABLE": 45
+        },
+        "total_rows": 60,
+        "scorable_denominator": 14,
+        "correct_numerator": 0,
+        "correct_fraction": 0.0
+      },
+      "disqualification_flag": {
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 1,
+          "AMBIGUOUS_SOURCE": 8,
+          "NOT_APPLICABLE": 51
+        },
+        "total_rows": 60,
+        "scorable_denominator": 1,
+        "correct_numerator": 0,
+        "correct_fraction": 0.0
+      },
+      "qualification_flag": {
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 2,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 58
+        },
+        "total_rows": 60,
+        "scorable_denominator": 2,
+        "correct_numerator": 0,
+        "correct_fraction": 0.0
+      }
+    },
+    "representative": false,
+    "model_eligible": 0,
+    "source_localization": {
+      "CORRECT": 60
+    },
+    "structural_assignment": {
+      "CORRECT": 60
+    },
+    "critical_findings": {},
+    "track_identity_status_counts": {
+      "AMBIGUOUS": 26,
+      "EXTRACTED": 34
+    },
+    "track_identity_accuracy": "NOT_MEASURED_NO_INDEPENDENT_PHYSICAL_IDENTITY_GOLD"
+  },
+  "holdout": {
+    "rows": 30,
+    "field_metrics": {
+      "historical_date": {
+        "assessable": 30,
+        "correct": 30,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 0,
+        "not_applicable": 0,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "EXTRACTED": 30
+        },
+        "counts": {
+          "CORRECT": 30,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 0
+        }
+      },
+      "historical_track": {
+        "assessable": 30,
+        "correct": 30,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 0,
+        "not_applicable": 0,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "EXTRACTED": 30
+        },
+        "counts": {
+          "CORRECT": 30,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 0
+        }
+      },
+      "historical_race_number": {
+        "assessable": 30,
+        "correct": 30,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 0,
+        "not_applicable": 0,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "EXTRACTED": 30
+        },
+        "counts": {
+          "CORRECT": 30,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 0
+        }
+      },
+      "distance_m": {
+        "assessable": 30,
+        "correct": 30,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 0,
+        "not_applicable": 0,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "EXTRACTED": 30
+        },
+        "counts": {
+          "CORRECT": 30,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 0
+        }
+      },
+      "start_method": {
+        "assessable": 20,
+        "correct": 20,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 10,
+        "not_applicable": 0,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "EXTRACTED": 20,
+          "AMBIGUOUS": 10
+        },
+        "counts": {
+          "CORRECT": 20,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 10,
+          "NOT_APPLICABLE": 0
+        }
+      },
+      "placing": {
+        "assessable": 28,
+        "correct": 28,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 2,
+        "not_applicable": 0,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "EXTRACTED": 28,
+          "UNKNOWN_CODE": 2
+        },
+        "counts": {
+          "CORRECT": 28,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 2,
+          "NOT_APPLICABLE": 0
+        }
+      },
+      "km_time": {
+        "assessable": 28,
+        "correct": 28,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 2,
+        "not_applicable": 0,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "EXTRACTED": 28,
+          "UNKNOWN_CODE": 2
+        },
+        "counts": {
+          "CORRECT": 28,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 2,
+          "NOT_APPLICABLE": 0
+        }
+      },
+      "gallop_flag": {
+        "assessable": 4,
+        "correct": 4,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 0,
+        "not_applicable": 26,
+        "coverage": 1.0,
+        "accuracy_among_extracted": 1.0,
+        "accuracy_among_assessable": 1.0,
+        "extraction_status_counts_all_rows": {
+          "NOT_REPORTED": 26,
+          "EXTRACTED": 4
+        },
+        "counts": {
+          "CORRECT": 4,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 26
+        }
+      },
+      "disqualification_flag": {
+        "assessable": 0,
+        "correct": 0,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 2,
+        "not_applicable": 28,
+        "coverage": "NOT_APPLICABLE",
+        "accuracy_among_extracted": "NOT_APPLICABLE",
+        "accuracy_among_assessable": "NOT_APPLICABLE",
+        "extraction_status_counts_all_rows": {
+          "NOT_REPORTED": 28,
+          "UNKNOWN_CODE": 2
+        },
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 2,
+          "NOT_APPLICABLE": 28
+        }
+      },
+      "qualification_flag": {
+        "assessable": 0,
+        "correct": 0,
+        "incorrect": 0,
+        "not_extracted": 0,
+        "ambiguous_source": 0,
+        "not_applicable": 30,
+        "coverage": "NOT_APPLICABLE",
+        "accuracy_among_extracted": "NOT_APPLICABLE",
+        "accuracy_among_assessable": "NOT_APPLICABLE",
+        "extraction_status_counts_all_rows": {
+          "NOT_REPORTED": 30
+        },
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 30
+        }
+      }
+    },
+    "baseline_field_metrics": {
+      "historical_date": {
+        "counts": {
+          "CORRECT": 30,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 0
+        },
+        "total_rows": 30,
+        "scorable_denominator": 30,
+        "correct_numerator": 30,
+        "correct_fraction": 1.0
+      },
+      "historical_track": {
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 30,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 0
+        },
+        "total_rows": 30,
+        "scorable_denominator": 30,
+        "correct_numerator": 0,
+        "correct_fraction": 0.0
+      },
+      "historical_race_number": {
+        "counts": {
+          "CORRECT": 30,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 0
+        },
+        "total_rows": 30,
+        "scorable_denominator": 30,
+        "correct_numerator": 30,
+        "correct_fraction": 1.0
+      },
+      "distance_m": {
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 30,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 0
+        },
+        "total_rows": 30,
+        "scorable_denominator": 30,
+        "correct_numerator": 0,
+        "correct_fraction": 0.0
+      },
+      "start_method": {
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 20,
+          "AMBIGUOUS_SOURCE": 10,
+          "NOT_APPLICABLE": 0
+        },
+        "total_rows": 30,
+        "scorable_denominator": 20,
+        "correct_numerator": 0,
+        "correct_fraction": 0.0
+      },
+      "placing": {
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 28,
+          "AMBIGUOUS_SOURCE": 2,
+          "NOT_APPLICABLE": 0
+        },
+        "total_rows": 30,
+        "scorable_denominator": 28,
+        "correct_numerator": 0,
+        "correct_fraction": 0.0
+      },
+      "km_time": {
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 28,
+          "AMBIGUOUS_SOURCE": 2,
+          "NOT_APPLICABLE": 0
+        },
+        "total_rows": 30,
+        "scorable_denominator": 28,
+        "correct_numerator": 0,
+        "correct_fraction": 0.0
+      },
+      "gallop_flag": {
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 4,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 26
+        },
+        "total_rows": 30,
+        "scorable_denominator": 4,
+        "correct_numerator": 0,
+        "correct_fraction": 0.0
+      },
+      "disqualification_flag": {
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 2,
+          "NOT_APPLICABLE": 28
+        },
+        "total_rows": 30,
+        "scorable_denominator": 0,
+        "correct_numerator": 0,
+        "correct_fraction": null
+      },
+      "qualification_flag": {
+        "counts": {
+          "CORRECT": 0,
+          "INCORRECT": 0,
+          "NOT_EXTRACTED": 0,
+          "AMBIGUOUS_SOURCE": 0,
+          "NOT_APPLICABLE": 30
+        },
+        "total_rows": 30,
+        "scorable_denominator": 0,
+        "correct_numerator": 0,
+        "correct_fraction": null
+      }
+    },
+    "representative": false,
+    "model_eligible": 0,
+    "source_localization": {
+      "CORRECT": 30
+    },
+    "structural_assignment": {
+      "CORRECT": 30
+    },
+    "critical_findings": {},
+    "track_identity_status_counts": {
+      "AMBIGUOUS": 21,
+      "EXTRACTED": 9
+    },
+    "track_identity_accuracy": "NOT_MEASURED_NO_INDEPENDENT_PHYSICAL_IDENTITY_GOLD"
+  },
+  "observations_locator": "Reproduce full report using pinned inputs. Each output observation carries PDF hash/page/raw line, field decisions, original upstream record and exclusions."
+}

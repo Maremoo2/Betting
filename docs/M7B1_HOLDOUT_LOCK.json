@@ -1,0 +1,14 @@
+{
+  "schema": "M7B1_HOLDOUT_LOCK_V1",
+  "locked_at": "2026-10-23T05:20:16.051615+00:00",
+  "base_sha": "697244a326095da63b4b9fbececf197e7a3061b1",
+  "holdout_sha256": "f9d9eaf36b778b7af13738dbf49dcff81690119b1987827d0d676d8a95f58b87",
+  "known_truth_sha256": "82ca3f9e043cfc76c672b7efe15efe9da93090387972c762f4e306ffdaf1e39d",
+  "rows": 30,
+  "overlap": 0,
+  "implementation_exists_at_lock": false,
+  "selection_method": "Predeclared selection: five histories each from first two horses on original X1 page 5, S5 page 2, S1 page 2; 10 NO-target entries and 20 SE-target entries; no semantic parser output used; no overlap with known 60; not representative",
+  "reviewer": "Codex visual source transcription; same agent, not blinded or human verification",
+  "second_pass": "Codex separately reread rendered numeric/result cells against original PDF layout text; no parser output. No differences retained at freeze. Not independent human verification.",
+  "first_evaluation_policy": "Commit/hash semantic implementation before holdout evaluation; freeze first report before any parser adjustment based on holdout; record any subsequent changes"
+}

@@ -1,0 +1,525 @@
+{
+  "schema": "M7B1_HISTORY_CODEBOOK_V1",
+  "version": "0.1.0",
+  "source": {
+    "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf",
+    "document_version": "2020-05-20",
+    "observed_at": "2026-10-23T05:26:29.064650+00:00",
+    "verification": "INDEXED_PRIMARY_TEXT_ONLY",
+    "limitation": "Original URL returned a verification HTML page; documented CMS redirect returned HTTP403. No original PDF byte verification claimed."
+  },
+  "entries": [
+    {
+      "original_code": "positive integer in placing cell",
+      "documented_meaning": "Positive printed placing",
+      "normalization_status": "EXTRACTED",
+      "normalized_status": "PLACED",
+      "time": "NOT_REPORTED",
+      "gallop_information": "NOT_REPORTED",
+      "ambiguity": false,
+      "basis": "ORIGINAL_PDF_NUMERIC_COLUMN_AND_SIX_INDEPENDENT_ATG_CHECKS",
+      "source_references": [
+        "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf",
+        "tests/fixtures/m7a1-ground-truth-v1.json",
+        "tests/fixtures/m7a1-atg-results-v1.zip"
+      ]
+    },
+    {
+      "original_code": "0 in placing cell",
+      "documented_meaning": "Unplaced code; no numeric rank or automatic DQ",
+      "normalization_status": "EXTRACTED",
+      "normalized_status": "UNPLACED",
+      "time": "NOT_REPORTED",
+      "gallop_information": "NOT_REPORTED",
+      "ambiguity": false,
+      "basis": "ORIGINAL_PDF_ZERO_COLUMN; DOES_NOT_PROVE_REASON",
+      "source_references": [
+        "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf",
+        "tests/fixtures/m7a1-ground-truth-v1.json",
+        "tests/fixtures/m7a1-atg-results-v1.zip"
+      ]
+    },
+    {
+      "original_code": "decimal time [a][g]",
+      "documented_meaning": "Explicit decimal km-time; a auto and g gallop markers",
+      "normalization_status": "EXTRACTED",
+      "normalized_status": "NUMERIC_TIME",
+      "time": "60 + displayed decimal seconds/km",
+      "gallop_information": "TRUE_ONLY_WHEN_G_EXPLICIT",
+      "ambiguity": false,
+      "basis": "PRIMARY_CODE_INDEX_AND_ORIGINAL_PDF",
+      "source_references": [
+        "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf",
+        "tests/fixtures/m7a1-ground-truth-v1.json",
+        "tests/fixtures/m7a1-atg-results-v1.zip"
+      ]
+    },
+    {
+      "original_code": "k with gdk in qualifier column",
+      "documented_meaning": "Approved qualification, not competitive numeric placing",
+      "normalization_status": "EXTRACTED",
+      "normalized_status": "QUALIFICATION_APPROVED",
+      "time": "NOT_REPORTED",
+      "gallop_information": "NOT_REPORTED",
+      "ambiguity": false,
+      "basis": "PRIMARY_CODE_INDEX_AND_ORIGINAL_PDF",
+      "source_references": [
+        "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf",
+        "tests/fixtures/m7a1-ground-truth-v1.json",
+        "tests/fixtures/m7a1-atg-results-v1.zip"
+      ]
+    },
+    {
+      "original_code": "it",
+      "documented_meaning": "No timing reported",
+      "normalization_status": "NOT_REPORTED",
+      "normalized_status": "TIME_NOT_REPORTED",
+      "time": "NOT_REPORTED",
+      "gallop_information": "NOT_REPORTED",
+      "ambiguity": false,
+      "basis": "PRIMARY_CODE_INDEX_AND_ORIGINAL_PDF",
+      "source_references": [
+        "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf",
+        "tests/fixtures/m7a1-ground-truth-v1.json",
+        "tests/fixtures/m7a1-atg-results-v1.zip"
+      ]
+    },
+    {
+      "original_code": "d",
+      "documented_meaning": "Disqualification in Swedish index, but no universal cross-country mapping without provenance",
+      "normalization_status": "UNKNOWN_CODE",
+      "normalized_status": "UNKNOWN",
+      "time": "NOT_REPORTED",
+      "gallop_information": "NOT_REPORTED",
+      "ambiguity": true,
+      "basis": "PRIMARY_CODE_INDEX_AND_ORIGINAL_PDF",
+      "source_references": [
+        "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf",
+        "tests/fixtures/m7a1-ground-truth-v1.json",
+        "tests/fixtures/m7a1-atg-results-v1.zip"
+      ]
+    },
+    {
+      "original_code": "dg",
+      "documented_meaning": "Composite code retained; no cross-country DQ inference; own explicit gallop comment handled separately",
+      "normalization_status": "UNKNOWN_CODE",
+      "normalized_status": "UNKNOWN",
+      "time": "NOT_REPORTED",
+      "gallop_information": "NOT_REPORTED",
+      "ambiguity": true,
+      "basis": "ORIGINAL_PDF; COMPLETE_COMPOSITE_MEANING_UNVERIFIED",
+      "source_references": [
+        "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf",
+        "tests/fixtures/m7a1-ground-truth-v1.json",
+        "tests/fixtures/m7a1-atg-results-v1.zip"
+      ]
+    },
+    {
+      "original_code": "br",
+      "documented_meaning": "Composite/incomplete-result code; no numeric placing/time inferred",
+      "normalization_status": "UNKNOWN_CODE",
+      "normalized_status": "UNKNOWN",
+      "time": "NOT_REPORTED",
+      "gallop_information": "NOT_REPORTED",
+      "ambiguity": true,
+      "basis": "ORIGINAL_PDF; COMPLETE_COMPOSITE_MEANING_UNVERIFIED",
+      "source_references": [
+        "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf",
+        "tests/fixtures/m7a1-ground-truth-v1.json",
+        "tests/fixtures/m7a1-atg-results-v1.zip"
+      ]
+    },
+    {
+      "original_code": "frd8a",
+      "documented_meaning": "Index documents frd component only; full compound remains unresolved",
+      "normalization_status": "UNKNOWN_CODE",
+      "normalized_status": "UNKNOWN",
+      "time": "UNKNOWN",
+      "gallop_information": "UNKNOWN",
+      "ambiguity": true,
+      "basis": "PRIMARY_CODE_INDEX_AND_ORIGINAL_PDF",
+      "source_references": [
+        "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf",
+        "tests/fixtures/m7a1-ground-truth-v1.json",
+        "tests/fixtures/m7a1-atg-results-v1.zip"
+      ]
+    },
+    {
+      "original_code": "[0-9]+g (including 5g)",
+      "documented_meaning": "Not decimal time or numeric placing; explicit g is a gallop marker",
+      "normalization_status": "UNKNOWN_CODE",
+      "normalized_status": "UNKNOWN",
+      "time": "UNKNOWN",
+      "gallop_information": true,
+      "ambiguity": true,
+      "basis": "PRIMARY_G_MARKER_AND_FLYING_FINN_OFFICIAL_GALLOP_CORROBORATION",
+      "source_references": [
+        "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf",
+        "tests/fixtures/m7a1-ground-truth-v1.json",
+        "tests/fixtures/m7a1-atg-results-v1.zip"
+      ]
+    },
+    {
+      "original_code": "ug",
+      "documented_meaning": "Full compound remains unresolved; explicit own gallop/DQ narrative may supply separate affirmative evidence",
+      "normalization_status": "UNKNOWN_CODE",
+      "normalized_status": "UNKNOWN",
+      "time": "UNKNOWN",
+      "gallop_information": "UNKNOWN",
+      "ambiguity": true,
+      "basis": "PRIMARY_CODE_INDEX_AND_ORIGINAL_PDF",
+      "source_references": [
+        "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf",
+        "tests/fixtures/m7a1-ground-truth-v1.json",
+        "tests/fixtures/m7a1-atg-results-v1.zip"
+      ]
+    },
+    {
+      "original_code": "vändg",
+      "documented_meaning": "Full compound remains unresolved; explicit own gallop/DQ narrative may supply separate affirmative evidence",
+      "normalization_status": "UNKNOWN_CODE",
+      "normalized_status": "UNKNOWN",
+      "time": "UNKNOWN",
+      "gallop_information": "UNKNOWN",
+      "ambiguity": true,
+      "basis": "PRIMARY_CODE_INDEX_AND_ORIGINAL_PDF",
+      "source_references": [
+        "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf",
+        "tests/fixtures/m7a1-ground-truth-v1.json",
+        "tests/fixtures/m7a1-atg-results-v1.zip"
+      ]
+    },
+    {
+      "original_code": "kubug",
+      "documented_meaning": "Full compound remains unresolved; explicit own gallop/DQ narrative may supply separate affirmative evidence",
+      "normalization_status": "UNKNOWN_CODE",
+      "normalized_status": "UNKNOWN",
+      "time": "UNKNOWN",
+      "gallop_information": "UNKNOWN",
+      "ambiguity": true,
+      "basis": "PRIMARY_CODE_INDEX_AND_ORIGINAL_PDF",
+      "source_references": [
+        "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf",
+        "tests/fixtures/m7a1-ground-truth-v1.json",
+        "tests/fixtures/m7a1-atg-results-v1.zip"
+      ]
+    },
+    {
+      "original_code": "explicit own Startgal/Sg diskad narrative",
+      "documented_meaning": "Own explicit disqualification evidence; does not generalize zero or gallop into DQ",
+      "normalization_status": "EXTRACTED",
+      "normalized_status": "DISQUALIFIED",
+      "time": "NOT_REPORTED",
+      "gallop_information": true,
+      "ambiguity": false,
+      "basis": "BEAUTIFUL_DISASTER_ORIGINAL_PDF_EXPLICIT_COMMENT",
+      "source_references": [
+        "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf",
+        "tests/fixtures/m7a1-ground-truth-v1.json",
+        "tests/fixtures/m7a1-atg-results-v1.zip"
+      ]
+    }
+  ],
+  "track_register": {
+    "Ax": {
+      "candidates": [
+        {
+          "country": "SE",
+          "name": "Axevalla"
+        }
+      ],
+      "status": "EXTRACTED",
+      "source": "https://prep.travsport.se/siteassets/relaterade-dokument/tavling/statistik/arsstatistik-2019.pdf?903=",
+      "provider_track_id": "UNKNOWN",
+      "scope": "NO_SE_ONLY_REGISTER_NOT_GLOBAL"
+    },
+    "G": {
+      "candidates": [
+        {
+          "country": "SE",
+          "name": "Gävle"
+        }
+      ],
+      "status": "EXTRACTED",
+      "source": "https://prep.travsport.se/siteassets/relaterade-dokument/tavling/statistik/arsstatistik-2019.pdf?903=",
+      "provider_track_id": "UNKNOWN",
+      "scope": "NO_SE_ONLY_REGISTER_NOT_GLOBAL"
+    },
+    "Hd": {
+      "candidates": [
+        {
+          "country": "SE",
+          "name": "Halmstad"
+        }
+      ],
+      "status": "EXTRACTED",
+      "source": "https://prep.travsport.se/siteassets/relaterade-dokument/tavling/statistik/arsstatistik-2019.pdf?903=",
+      "provider_track_id": "UNKNOWN",
+      "scope": "NO_SE_ONLY_REGISTER_NOT_GLOBAL"
+    },
+    "Kr": {
+      "candidates": [
+        {
+          "country": "SE",
+          "name": "Kalmar"
+        }
+      ],
+      "status": "EXTRACTED",
+      "source": "https://prep.travsport.se/siteassets/relaterade-dokument/tavling/statistik/arsstatistik-2019.pdf?903=",
+      "provider_track_id": "UNKNOWN",
+      "scope": "NO_SE_ONLY_REGISTER_NOT_GLOBAL"
+    },
+    "L": {
+      "candidates": [
+        {
+          "country": "SE",
+          "name": "Lindesberg"
+        }
+      ],
+      "status": "EXTRACTED",
+      "source": "https://prep.travsport.se/siteassets/relaterade-dokument/tavling/statistik/arsstatistik-2019.pdf?903=",
+      "provider_track_id": "UNKNOWN",
+      "scope": "NO_SE_ONLY_REGISTER_NOT_GLOBAL"
+    },
+    "Mp": {
+      "candidates": [
+        {
+          "country": "SE",
+          "name": "Mantorp"
+        }
+      ],
+      "status": "EXTRACTED",
+      "source": "https://prep.travsport.se/siteassets/relaterade-dokument/tavling/statistik/arsstatistik-2019.pdf?903=",
+      "provider_track_id": "UNKNOWN",
+      "scope": "NO_SE_ONLY_REGISTER_NOT_GLOBAL"
+    },
+    "Ro": {
+      "candidates": [
+        {
+          "country": "SE",
+          "name": "Romme"
+        }
+      ],
+      "status": "EXTRACTED",
+      "source": "https://prep.travsport.se/siteassets/relaterade-dokument/tavling/statistik/arsstatistik-2019.pdf?903=",
+      "provider_track_id": "UNKNOWN",
+      "scope": "NO_SE_ONLY_REGISTER_NOT_GLOBAL"
+    },
+    "Rä": {
+      "candidates": [
+        {
+          "country": "SE",
+          "name": "Rättvik"
+        }
+      ],
+      "status": "EXTRACTED",
+      "source": "https://prep.travsport.se/siteassets/relaterade-dokument/tavling/statistik/arsstatistik-2019.pdf?903=",
+      "provider_track_id": "UNKNOWN",
+      "scope": "NO_SE_ONLY_REGISTER_NOT_GLOBAL"
+    },
+    "Ti": {
+      "candidates": [
+        {
+          "country": "SE",
+          "name": "Tingsryd"
+        }
+      ],
+      "status": "EXTRACTED",
+      "source": "https://prep.travsport.se/siteassets/relaterade-dokument/tavling/statistik/arsstatistik-2019.pdf?903=",
+      "provider_track_id": "UNKNOWN",
+      "scope": "NO_SE_ONLY_REGISTER_NOT_GLOBAL"
+    },
+    "U": {
+      "candidates": [
+        {
+          "country": "SE",
+          "name": "Umåker"
+        }
+      ],
+      "status": "EXTRACTED",
+      "source": "https://prep.travsport.se/siteassets/relaterade-dokument/tavling/statistik/arsstatistik-2019.pdf?903=",
+      "provider_track_id": "UNKNOWN",
+      "scope": "NO_SE_ONLY_REGISTER_NOT_GLOBAL"
+    },
+    "Vg": {
+      "candidates": [
+        {
+          "country": "SE",
+          "name": "Vaggeryd"
+        }
+      ],
+      "status": "EXTRACTED",
+      "source": "https://prep.travsport.se/siteassets/relaterade-dokument/tavling/statistik/arsstatistik-2019.pdf?903=",
+      "provider_track_id": "UNKNOWN",
+      "scope": "NO_SE_ONLY_REGISTER_NOT_GLOBAL"
+    },
+    "Vi": {
+      "candidates": [
+        {
+          "country": "SE",
+          "name": "Visby"
+        }
+      ],
+      "status": "EXTRACTED",
+      "source": "https://prep.travsport.se/siteassets/relaterade-dokument/tavling/statistik/arsstatistik-2019.pdf?903=",
+      "provider_track_id": "UNKNOWN",
+      "scope": "NO_SE_ONLY_REGISTER_NOT_GLOBAL"
+    },
+    "Å": {
+      "candidates": [
+        {
+          "country": "SE",
+          "name": "Åby"
+        }
+      ],
+      "status": "EXTRACTED",
+      "source": "https://prep.travsport.se/siteassets/relaterade-dokument/tavling/statistik/arsstatistik-2019.pdf?903=",
+      "provider_track_id": "UNKNOWN",
+      "scope": "NO_SE_ONLY_REGISTER_NOT_GLOBAL"
+    },
+    "Åm": {
+      "candidates": [
+        {
+          "country": "SE",
+          "name": "Åmål"
+        }
+      ],
+      "status": "EXTRACTED",
+      "source": "https://prep.travsport.se/siteassets/relaterade-dokument/tavling/statistik/arsstatistik-2019.pdf?903=",
+      "provider_track_id": "UNKNOWN",
+      "scope": "NO_SE_ONLY_REGISTER_NOT_GLOBAL"
+    },
+    "Ö": {
+      "candidates": [
+        {
+          "country": "SE",
+          "name": "Örebro"
+        }
+      ],
+      "status": "EXTRACTED",
+      "source": "https://prep.travsport.se/siteassets/relaterade-dokument/tavling/statistik/arsstatistik-2019.pdf?903=",
+      "provider_track_id": "UNKNOWN",
+      "scope": "NO_SE_ONLY_REGISTER_NOT_GLOBAL"
+    },
+    "B": {
+      "candidates": [
+        {
+          "country": "NO",
+          "name": "Bjerke"
+        },
+        {
+          "country": "SE",
+          "name": "Bergsåker"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "source": "NO/SE documented code collision; country must not be inferred from target horse",
+      "provider_track_id": "UNKNOWN"
+    },
+    "F": {
+      "candidates": [
+        {
+          "country": "NO",
+          "name": "Forus"
+        },
+        {
+          "country": "SE",
+          "name": "Färjestad"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "source": "NO/SE documented code collision; country must not be inferred from target horse",
+      "provider_track_id": "UNKNOWN"
+    },
+    "J": {
+      "candidates": [
+        {
+          "country": "NO",
+          "name": "Jarlsberg"
+        },
+        {
+          "country": "SE",
+          "name": "Jägersro"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "source": "NO/SE documented code collision; country must not be inferred from target horse",
+      "provider_track_id": "UNKNOWN"
+    },
+    "S": {
+      "candidates": [
+        {
+          "country": "NO",
+          "name": "Sørlandet"
+        },
+        {
+          "country": "SE",
+          "name": "Solvalla"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "source": "NO/SE documented code collision; country must not be inferred from target horse",
+      "provider_track_id": "UNKNOWN"
+    },
+    "BI": {
+      "candidates": [
+        {
+          "country": "NO",
+          "name": "Biri"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "source": "Candidate alias only; no complete current cross-country authoritative alias register verified",
+      "provider_track_id": "UNKNOWN"
+    },
+    "M": {
+      "candidates": [
+        {
+          "country": "NO",
+          "name": "Momarken"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "source": "Candidate alias only; no complete current cross-country authoritative alias register verified",
+      "provider_track_id": "UNKNOWN"
+    },
+    "K": {
+      "candidates": [
+        {
+          "country": "NO",
+          "name": "Klosterskogen"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "source": "Candidate alias only; no complete current cross-country authoritative alias register verified",
+      "provider_track_id": "UNKNOWN"
+    },
+    "OA": {
+      "candidates": [
+        {
+          "country": "NO",
+          "name": "Orkla"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "source": "Candidate alias only; no complete current cross-country authoritative alias register verified",
+      "provider_track_id": "UNKNOWN"
+    },
+    "JÆ": {
+      "candidates": [
+        {
+          "country": "SE",
+          "name": "Jägersro"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "source": "Candidate alias only; no complete current cross-country authoritative alias register verified",
+      "provider_track_id": "UNKNOWN"
+    }
+  },
+  "unknown_policy": "Preserve raw code, UNKNOWN_CODE on affected value; never zero/null for unknown placing/time",
+  "time_rule": "Only explicit comma-decimal forms are numeric; an absent a marker is not proof of VOLT",
+  "market_policy": "Never use odds, prizes, target results or raw text as a modelling feature",
+  "allowed_use": "RESEARCH_ONLY",
+  "model_eligible": false
+}
