@@ -43,12 +43,12 @@
       "bytes": 178318
     },
     "src/hbi/history_source_verification.py": {
-      "sha256": "99e65b8a71604c93806916dddddd3195e81a14eb72b6fccd27dc1e7bf8809c8a",
-      "bytes": 17897
+      "sha256": "fd9b9f183d128c0b4196266a8c44f49ce30f7d8312cc3e5e6466c8c91d40e8ac",
+      "bytes": 18404
     },
     "tests/test_history_source_verification.py": {
-      "sha256": "311674380efbe3e2a9cf750fdda6757205f4d02172959fc6a85735f25cb0baea",
-      "bytes": 6762
+      "sha256": "0e1699d2577b707ed7574564120d9df7908e1b65369b99c39a940d61bc3775a4",
+      "bytes": 7076
     },
     "tests/fixtures/m7b1a-official-sources-v1.zip": {
       "sha256": "96d6a3c4a344a61b3d42b8173fff1b02fa44a4c1a430902db559d684960f8eb9",
@@ -165,14 +165,14 @@
   "tests": [
     {
       "command": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_history_source_verification.py",
-      "result": "17 passed",
+      "result": "20 passed in 3.26s",
       "exit_code": 0
     },
     {
       "command": "PYTHONPATH=src .venv/bin/python -m pytest -q",
-      "result": "513 passed in 41.09s",
+      "result": "516 passed in 41.89s",
       "exit_code": 0,
-      "output_sha256": "11a343efb8cbc067c12b0a8a11fac6d6a6aec97ea6d9f486416675bb1f6ac17a"
+      "output_sha256": "c84cefe5ba970e6fe3a128045bb6df01f89f7c489fbc9e28a4ef2ffc778252ef"
     },
     {
       "command": "PYTHONPATH=src .venv/bin/ruff check .",
@@ -207,7 +207,8 @@
     "absent a never VOLT; official VOLT remains separate",
     "missing/bad hash/timezone/source provenance",
     "unvalidated candidate/dict VERIFIED tag cannot promote",
-    "old qualification/zero/physical-product-alias/monte/God NOT_REPRODUCED regressions retained"
+    "old qualification/zero/physical-product-alias/monte/God NOT_REPRODUCED regressions retained",
+    "Positive placing with DQ, bool-as-placing and simultaneous compound/numeric time all rejected after rehashing TEST_ONLY bodies"
   ],
   "debug_notes": [
     "Official no-a DQ time cell initially made comparator label Custer AUTO as conflict; source reader corrected to exact race terms and missing source values no longer treated as wrong values. No PDF/adapter change.",

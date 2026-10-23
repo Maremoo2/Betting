@@ -82,7 +82,8 @@ def test_real_high_risk_results_preserve_layers(report):
     assert next(r for r in truth["rows"] if r["observation_id"] == "M7A1-054")["start_method"] == "UNKNOWN"
 
 
-@pytest.mark.parametrize("mutation", ["country", "date", "race", "horse", "pedigree", "code", "provenance"])
+@pytest.mark.parametrize("mutation", ["country", "date", "race", "horse", "pedigree", "code", "provenance",
+    "placing_and_dq", "bool_placing", "mixed_time"])
 def test_test_only_official_conflicts_rejected(eire, raw, mutation):
     row, case, identity = copy.deepcopy(eire)
     meta, body = copy.deepcopy(raw[case["source_member"]])
@@ -101,6 +102,12 @@ def test_test_only_official_conflicts_rejected(eire, raw, mutation):
         horse["horse"]["pedigree"]["mother"]["name"] = "TEST_ONLY_WRONG"
     elif mutation == "code":
         row["historical_track"] = "B"
+    elif mutation == "placing_and_dq":
+        horse["result"]["place"] = 8
+    elif mutation == "bool_placing":
+        horse["result"]["place"] = False
+    elif mutation == "mixed_time":
+        horse["result"]["kmTime"].update(minutes=1, seconds=8, tenths=0)
     else:
         meta.pop("url")
     body = json.dumps(p).encode()

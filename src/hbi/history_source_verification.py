@@ -158,7 +158,14 @@ def atg_review(row, case, source, identity):
     if row["historical_track"].casefold() != race["track"]["sportSystemCode"].casefold():
         raise ValueError("ATG_PRINTED_TRACK_CODE_CONFLICT")
     result = start["result"]
+    placing = result.get("place")
+    if ("place" in result and (type(placing) is not int or placing < 0)
+            or result.get("disqualified") is True and type(placing) is int and placing > 0
+            or any(key in result and type(result[key]) is not bool for key in ("galloped", "disqualified"))):
+        raise ValueError("ATG_CONFLICTING_OR_INVALID_RESULT_VALUES")
     km = result.get("kmTime", {})
+    if "code" in km and set(km) & {"minutes", "seconds", "tenths"}:
+        raise ValueError("ATG_CODE_AND_NUMERIC_TIME_CONFLICT")
     values = {"placing": result["place"] if type(result.get("place")) is int and result["place"] > 0 else
         "UNPLACED" if result.get("place") == 0 else "UNKNOWN",
         "distance_m": start["distance"], "km_time": 60 * km["minutes"] + km["seconds"] + km["tenths"] / 10
