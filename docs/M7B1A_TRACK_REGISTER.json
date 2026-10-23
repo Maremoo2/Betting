@@ -1,0 +1,744 @@
+{
+  "schema": "M7B1A_TRACK_REGISTER_V1",
+  "version": "0.1.0",
+  "allowed_use": "RESEARCH_ONLY",
+  "model_eligible": false,
+  "identity_policy": "No code-only promotion. VERIFIED is per observation/date with independently bound official race and stable horse proof. Candidate register never grants verification.",
+  "validity_policy": "Unknown continuous alias validity; verified observations prove only exact historical dates. No extrapolation to other dates or country.",
+  "codes": {
+    "Ax": {
+      "printed_code": "Ax",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Axevalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "B": {
+      "printed_code": "B",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Bjerke",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Bergsåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "BI": {
+      "printed_code": "BI",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Biri",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "F": {
+      "printed_code": "F",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Forus",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Färjestad",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "G": {
+      "printed_code": "G",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Gävle",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "Hd": {
+      "printed_code": "Hd",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Halmstad",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "J": {
+      "printed_code": "J",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Jarlsberg",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "JÆ": {
+      "printed_code": "JÆ",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "K": {
+      "printed_code": "K",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Klosterskogen",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "Kr": {
+      "printed_code": "Kr",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Kalmar",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "L": {
+      "printed_code": "L",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Lindesberg",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "NO",
+          "official_name": "Leangen",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "status": "UNRESOLVED_HISTORICAL_ALIAS",
+          "supporting_source": "https://abcdocz.com/doc/5174087/klikk-her-for-%C3%A5-se-fullstendig-program",
+          "authority": "SECONDARY_COPY_ONLY_NOT_VERIFICATION"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "SE index L=Lindesberg; historical NO alias candidate Leangen has no authenticated validity interval. Do not infer country/date."
+    },
+    "M": {
+      "printed_code": "M",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Momarken",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "Mp": {
+      "printed_code": "Mp",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Mantorp",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "OA": {
+      "printed_code": "OA",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Orkla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "Ro": {
+      "printed_code": "Ro",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Romme",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "Rä": {
+      "printed_code": "Rä",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Rättvik",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "S": {
+      "printed_code": "S",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Sørlandet",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Solvalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "Ti": {
+      "printed_code": "Ti",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Tingsryd",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "U": {
+      "printed_code": "U",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Umåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "Vg": {
+      "printed_code": "Vg",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Vaggeryd",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "Vi": {
+      "printed_code": "Vi",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Visby",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "Å": {
+      "printed_code": "Å",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Åby",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "Åm": {
+      "printed_code": "Åm",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Åmål",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    },
+    "Ö": {
+      "printed_code": "Ö",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Örebro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain."
+    }
+  }
+}
