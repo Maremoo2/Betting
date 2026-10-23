@@ -1,0 +1,65 @@
+{
+  "schema": "M7B1B_EXCLUSION_POLICY_V1",
+  "version": "0.1.0",
+  "scope": "DIAGNOSTIC_NO_SE_RESEARCH_ONLY",
+  "allowed_use": "RESEARCH_ONLY",
+  "model_eligible": false,
+  "positive_evidence_required": true,
+  "gates": {
+    "A": {
+      "meaning": "Source integrity: pinned original PDF bundle, original page/line/header and unique collector assignment reproduce",
+      "pass": "Exact source localization/structure, never self-asserted status"
+    },
+    "B": {
+      "meaning": "Semantic validity: distinguish safe explicit unknownness from usable core fields",
+      "PASS": "A passes; historical date/race/distance and start method/placing/numeric km-time EXTRACTED with correct typed values, no conflicting official controls",
+      "EXPLICIT_UNKNOWN": "Source is valid but one or more required core values remains explicitly UNKNOWN/NOT_REPORTED/NOT_APPLICABLE; safe representation, not usable quantitative history",
+      "FAIL": "Wrong extracted value, temporal or source conflict, malformed type/status",
+      "optional_flags": "Gallop/DQ/qualification absent values stay NOT_REPORTED; never false from absence. DQ/qualifiers with unavailable rank/time are excluded from quantitative B, not deleted from evidence."
+    },
+    "C": {
+      "meaning": "Exact historical physical venue/race bound to this observation by checked official source and bounded stable horse proof",
+      "PASS": "Positive independently source-checked observation binding; code/name candidates insufficient"
+    },
+    "D": {
+      "status": "NOT_APPROVED",
+      "meaning": "Historical horse identity admission is explicitly outside this task even when a bounded retrospective source link exists"
+    },
+    "E": {
+      "status": "NOT_APPROVED",
+      "meaning": "PIT admission outside this task. Event earlier than target is necessary, never sufficient. Actual availability/cutoff proof still required"
+    }
+  },
+  "core_fields": [
+    "historical_date",
+    "historical_race_number",
+    "distance_m",
+    "start_method",
+    "placing",
+    "km_time"
+  ],
+  "field_statuses": [
+    "EXTRACTED",
+    "NOT_REPORTED",
+    "UNKNOWN_CODE",
+    "AMBIGUOUS",
+    "NOT_EXTRACTED"
+  ],
+  "classifications": {
+    "SOURCE_VERIFIED": "Gate A PASS",
+    "SEMANTIC_VERIFIED": "Gate B PASS for quantitative core, not model admission",
+    "IDENTITY_RESEARCH_CANDIDATE": "Gate A and C PASS with no temporal/source/value conflict. Explicit semantic exclusions may coexist; source evidence can be studied without using excluded performance features. Gate D/E remain NOT_APPROVED.",
+    "EXCLUDED_AMBIGUOUS_TRACK": "C not PASS and venue candidates have multiple meanings",
+    "EXCLUDED_TRACK_UNVERIFIED": "C not PASS with a single candidate, no proof",
+    "EXCLUDED_UNKNOWN_RESULT_CODE": "Any affected result/time/placing value UNKNOWN_CODE; preserve raw code and all additional reasons",
+    "EXCLUDED_IDENTITY_UNVERIFIED": "D NOT_APPROVED; all90 blocked for model use",
+    "EXCLUDED_TEMPORAL_RISK": "Future/same-day history or E NOT_APPROVED; distinguish event violation and PIT_NOT_APPROVED reasons",
+    "EXCLUDED_SOURCE_CONFLICT": "Failed source binding, typed-value contradiction or official comparison conflict",
+    "RESEARCH_PENDING": "Any unresolved source/semantic/identity/PIT issue; never promoted by absence of errors"
+  },
+  "reason_policy": "Accumulate all reasons; classifications are non-exclusive. Quantitative attrition A->B->C reported separately from model D/E blockers. Identity-study branch uses A+C, excludes affected fields and never trains.",
+  "missing_rule": "No null/zero surrogate for unknown placing/time; explicit sentinels only. Missing flags not false.",
+  "temporal_rule": "Same-day/date-only and future events rejected; unknown cutoff/feature availability never granted E",
+  "country_rule": "Target country only for bias grouping, not source-code resolution. Historical country UNKNOWN until C source-bound",
+  "scoping_rule": "No global code->venue verification. Same printed code in a different observation/date/context needs fresh positive proof."
+}

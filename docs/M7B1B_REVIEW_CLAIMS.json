@@ -1,0 +1,1268 @@
+{
+  "schema": "M7B1B_BOUNDED_REVIEW_CLAIMS_V1",
+  "claims": [
+    {
+      "observation_id": "M7A1-007",
+      "kind": "DNT",
+      "source_member": "M7A1-007.html",
+      "track_slug": "bjerke-travbane",
+      "official_track_name": "Bjerke Travbane",
+      "registration": "578001020215363",
+      "country": "NO",
+      "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-08-11"
+    },
+    {
+      "observation_id": "M7A1-009",
+      "kind": "DNT",
+      "source_member": "M7A1-009.html",
+      "track_slug": "bjerke-travbane",
+      "official_track_name": "Bjerke Travbane",
+      "registration": "578001020215363",
+      "country": "NO",
+      "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-10-13"
+    },
+    {
+      "observation_id": "M7B1-H-001",
+      "kind": "DNT",
+      "source_member": "M7B1-H-001.html",
+      "track_slug": "biri-travbane",
+      "official_track_name": "Biri Travbane",
+      "registration": "578001020160529",
+      "country": "NO",
+      "url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-07-25"
+    },
+    {
+      "observation_id": "M7B1-H-002",
+      "kind": "DNT",
+      "source_member": "M7B1-H-002.html",
+      "track_slug": "bjerke-travbane",
+      "official_track_name": "Bjerke Travbane",
+      "registration": "578001020160529",
+      "country": "NO",
+      "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-08-11"
+    },
+    {
+      "observation_id": "M7B1-H-003",
+      "kind": "DNT",
+      "source_member": "M7B1-H-003.html",
+      "track_slug": "bjerke-travbane",
+      "official_track_name": "Bjerke Travbane",
+      "registration": "578001020160529",
+      "country": "NO",
+      "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-01"
+    },
+    {
+      "observation_id": "M7B1-H-004",
+      "kind": "DNT",
+      "source_member": "M7B1-H-004.html",
+      "track_slug": "bjerke-travbane",
+      "official_track_name": "Bjerke Travbane",
+      "registration": "578001020160529",
+      "country": "NO",
+      "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-13"
+    },
+    {
+      "observation_id": "M7B1-H-005",
+      "kind": "DNT",
+      "source_member": "M7B1-H-005.html",
+      "track_slug": "bjerke-travbane",
+      "official_track_name": "Bjerke Travbane",
+      "registration": "578001020160529",
+      "country": "NO",
+      "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-10-03"
+    },
+    {
+      "observation_id": "M7B1-H-006",
+      "kind": "DNT",
+      "source_member": "M7B1-H-006.html",
+      "track_slug": "klosterskogen-travbane",
+      "official_track_name": "Klosterskogen Travbane",
+      "registration": "578001020180623",
+      "country": "NO",
+      "url": "https://www.travsport.no/travbaner/klosterskogen-travbane/results/2026-08-09"
+    },
+    {
+      "observation_id": "M7B1-H-007",
+      "kind": "DNT",
+      "source_member": "M7B1-H-007.html",
+      "track_slug": "varig-orkla-arena",
+      "official_track_name": "Varig Orkla Arena",
+      "registration": "578001020180623",
+      "country": "NO",
+      "url": "https://www.travsport.no/travbaner/varig-orkla-arena/results/2026-08-15"
+    },
+    {
+      "observation_id": "M7B1-H-008",
+      "kind": "DNT",
+      "source_member": "M7B1-H-008.html",
+      "track_slug": "bjerke-travbane",
+      "official_track_name": "Bjerke Travbane",
+      "registration": "578001020180623",
+      "country": "NO",
+      "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-01"
+    },
+    {
+      "observation_id": "M7B1-H-009",
+      "kind": "DNT",
+      "source_member": "M7B1-H-009.html",
+      "track_slug": "biri-travbane",
+      "official_track_name": "Biri Travbane",
+      "registration": "578001020180623",
+      "country": "NO",
+      "url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-09-18"
+    },
+    {
+      "observation_id": "M7B1-H-010",
+      "kind": "DNT",
+      "source_member": "M7B1-H-010.html",
+      "track_slug": "biri-travbane",
+      "official_track_name": "Biri Travbane",
+      "registration": "578001020180623",
+      "country": "NO",
+      "url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-09-26"
+    },
+    {
+      "observation_id": "M7A1-010",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 793549,
+        "pedigree": [
+          "sjscaviar",
+          "singlesock"
+        ],
+        "proof": {
+          "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+          "starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+            "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program": {
+            "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+            "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program_pointer": "/races/44/entrants/0",
+          "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+          "atg_member": "races/2026-10-20_14_7.json",
+          "atg_member_sha256": "e655ac18526af86f17755faef60eca8e82b288928fa122859e6cdc84fa5718d4",
+          "atg_pointer": "/payload/races/0/starts/0",
+          "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_7",
+          "observed_at": "2026-10-22T11:06:41.710968+00:00",
+          "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+        }
+      },
+      "source_member": "atg-2026-08-01_24_6.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-08-01?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-08-01.json",
+      "race_id": "2026-08-01_24_6",
+      "horse_id": 793549
+    },
+    {
+      "observation_id": "M7A1-011",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 793549,
+        "pedigree": [
+          "sjscaviar",
+          "singlesock"
+        ],
+        "proof": {
+          "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+          "starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+            "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program": {
+            "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+            "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program_pointer": "/races/44/entrants/0",
+          "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+          "atg_member": "races/2026-10-20_14_7.json",
+          "atg_member_sha256": "e655ac18526af86f17755faef60eca8e82b288928fa122859e6cdc84fa5718d4",
+          "atg_pointer": "/payload/races/0/starts/0",
+          "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_7",
+          "observed_at": "2026-10-22T11:06:41.710968+00:00",
+          "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+        }
+      },
+      "source_member": "atg-2026-08-20_9_4.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-08-20?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-08-20.json",
+      "race_id": "2026-08-20_9_4",
+      "horse_id": 793549
+    },
+    {
+      "observation_id": "M7A1-012",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 793549,
+        "pedigree": [
+          "sjscaviar",
+          "singlesock"
+        ],
+        "proof": {
+          "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+          "starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+            "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program": {
+            "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+            "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program_pointer": "/races/44/entrants/0",
+          "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+          "atg_member": "races/2026-10-20_14_7.json",
+          "atg_member_sha256": "e655ac18526af86f17755faef60eca8e82b288928fa122859e6cdc84fa5718d4",
+          "atg_pointer": "/payload/races/0/starts/0",
+          "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_7",
+          "observed_at": "2026-10-22T11:06:41.710968+00:00",
+          "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+        }
+      },
+      "source_member": "atg-2026-08-27_16_7.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-08-27?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-08-27.json",
+      "race_id": "2026-08-27_16_7",
+      "horse_id": 793549
+    },
+    {
+      "observation_id": "M7A1-014",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 793549,
+        "pedigree": [
+          "sjscaviar",
+          "singlesock"
+        ],
+        "proof": {
+          "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+          "starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+            "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program": {
+            "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+            "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program_pointer": "/races/44/entrants/0",
+          "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+          "atg_member": "races/2026-10-20_14_7.json",
+          "atg_member_sha256": "e655ac18526af86f17755faef60eca8e82b288928fa122859e6cdc84fa5718d4",
+          "atg_pointer": "/payload/races/0/starts/0",
+          "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_7",
+          "observed_at": "2026-10-22T11:06:41.710968+00:00",
+          "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+        }
+      },
+      "source_member": "atg-2026-10-06_28_4.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-10-06?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-10-06.json",
+      "race_id": "2026-10-06_28_4",
+      "horse_id": 793549
+    },
+    {
+      "observation_id": "M7A1-015",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 791286,
+        "pedigree": [
+          "walner",
+          "vivaciousallie"
+        ],
+        "proof": {
+          "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+          "starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+            "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program": {
+            "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+            "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program_pointer": "/races/44/entrants/2",
+          "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+          "atg_member": "races/2026-10-20_14_7.json",
+          "atg_member_sha256": "e655ac18526af86f17755faef60eca8e82b288928fa122859e6cdc84fa5718d4",
+          "atg_pointer": "/payload/races/0/starts/2",
+          "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_7",
+          "observed_at": "2026-10-22T11:06:41.710968+00:00",
+          "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+        }
+      },
+      "source_member": "atg-2026-05-15_5_6.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-05-15?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-05-15.json",
+      "race_id": "2026-05-15_5_6",
+      "horse_id": 791286
+    },
+    {
+      "observation_id": "M7A1-016",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 791286,
+        "pedigree": [
+          "walner",
+          "vivaciousallie"
+        ],
+        "proof": {
+          "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+          "starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+            "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program": {
+            "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+            "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program_pointer": "/races/44/entrants/2",
+          "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+          "atg_member": "races/2026-10-20_14_7.json",
+          "atg_member_sha256": "e655ac18526af86f17755faef60eca8e82b288928fa122859e6cdc84fa5718d4",
+          "atg_pointer": "/payload/races/0/starts/2",
+          "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_7",
+          "observed_at": "2026-10-22T11:06:41.710968+00:00",
+          "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+        }
+      },
+      "source_member": "atg-2026-05-31_5_14.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-05-31?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-05-31.json",
+      "race_id": "2026-05-31_5_14",
+      "horse_id": 791286
+    },
+    {
+      "observation_id": "M7A1-018",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 786486,
+        "pedigree": [
+          "misterjp",
+          "dreamonlindy"
+        ],
+        "proof": {
+          "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+          "starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+            "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program": {
+            "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+            "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program_pointer": "/races/46/entrants/12",
+          "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+          "atg_member": "races/2026-10-20_14_9.json",
+          "atg_member_sha256": "1d48ac734d7589bdca50720dabebd15efa0cc2a942eac1fcab76edbce5992075",
+          "atg_pointer": "/payload/races/0/starts/12",
+          "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_9",
+          "observed_at": "2026-10-22T11:06:42.441050+00:00",
+          "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+        }
+      },
+      "source_member": "atg-2026-09-12_32_9.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-09-12?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-09-12.json",
+      "race_id": "2026-09-12_32_9",
+      "horse_id": 786486
+    },
+    {
+      "observation_id": "M7A1-055",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 793918,
+        "pedigree": [
+          "creatine",
+          "restless"
+        ],
+        "proof": "EXISTING_M7A1_VERIFIED_PURE_EGO_CHAIN"
+      },
+      "source_member": "atg-2026-04-11_27_6.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-04-11?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-04-11.json",
+      "race_id": "2026-04-11_27_6",
+      "horse_id": 793918
+    },
+    {
+      "observation_id": "M7A1-056",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 793918,
+        "pedigree": [
+          "creatine",
+          "restless"
+        ],
+        "proof": "EXISTING_M7A1_VERIFIED_PURE_EGO_CHAIN"
+      },
+      "source_member": "atg-2026-04-21_27_5.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-04-21?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-04-21.json",
+      "race_id": "2026-04-21_27_5",
+      "horse_id": 793918
+    },
+    {
+      "observation_id": "M7A1-041",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 798136,
+        "pedigree": [
+          "flockidaurcy",
+          "guneva"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "atg-2026-09-08_18_6.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-09-08?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-09-08.json",
+      "race_id": "2026-09-08_18_6",
+      "horse_id": 798136
+    },
+    {
+      "observation_id": "M7A1-042",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 798136,
+        "pedigree": [
+          "flockidaurcy",
+          "guneva"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "atg-2026-09-14_43_7.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-09-14?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-09-14.json",
+      "race_id": "2026-09-14_43_7",
+      "horse_id": 798136
+    },
+    {
+      "observation_id": "M7A1-043",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 798136,
+        "pedigree": [
+          "flockidaurcy",
+          "guneva"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "atg-2026-09-22_7_7.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-09-22?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-09-22.json",
+      "race_id": "2026-09-22_7_7",
+      "horse_id": 798136
+    },
+    {
+      "observation_id": "M7A1-045",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 798136,
+        "pedigree": [
+          "flockidaurcy",
+          "guneva"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "atg-2026-10-10_18_7.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-10-10?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-10-10.json",
+      "race_id": "2026-10-10_18_7",
+      "horse_id": 798136
+    },
+    {
+      "observation_id": "M7A1-046",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 809874,
+        "pedigree": [
+          "propulsion",
+          "longislandicetea"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "atg-2026-08-23_46_1.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-08-23?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-08-23.json",
+      "race_id": "2026-08-23_46_1",
+      "horse_id": 809874
+    },
+    {
+      "observation_id": "M7A1-047",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 792242,
+        "pedigree": [
+          "sjscaviar",
+          "borupsnike"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "atg-2026-08-23_46_2.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-08-23?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-08-23.json",
+      "race_id": "2026-08-23_46_2",
+      "horse_id": 792242
+    },
+    {
+      "observation_id": "M7A1-048",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 792242,
+        "pedigree": [
+          "sjscaviar",
+          "borupsnike"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "atg-2026-09-06_7_3.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-09-06?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-09-06.json",
+      "race_id": "2026-09-06_7_3",
+      "horse_id": 792242
+    },
+    {
+      "observation_id": "M7A1-049",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 792242,
+        "pedigree": [
+          "sjscaviar",
+          "borupsnike"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "atg-2026-09-16_7_8.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-09-16?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-09-16.json",
+      "race_id": "2026-09-16_7_8",
+      "horse_id": 792242
+    },
+    {
+      "observation_id": "M7A1-050",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 792242,
+        "pedigree": [
+          "sjscaviar",
+          "borupsnike"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "atg-2026-09-22_7_1.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-09-22?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-09-22.json",
+      "race_id": "2026-09-22_7_1",
+      "horse_id": 792242
+    },
+    {
+      "observation_id": "M7A1-051",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 792242,
+        "pedigree": [
+          "sjscaviar",
+          "borupsnike"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "atg-2026-10-13_7_6.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-10-13?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-10-13.json",
+      "race_id": "2026-10-13_7_6",
+      "horse_id": 792242
+    },
+    {
+      "observation_id": "M7A1-058",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 801270,
+        "pedigree": [
+          "greenmanalishi",
+          "zathura"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "atg-2026-07-01_43_6.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-07-01?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-07-01.json",
+      "race_id": "2026-07-01_43_6",
+      "horse_id": 801270
+    },
+    {
+      "observation_id": "M7A1-059",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 801270,
+        "pedigree": [
+          "greenmanalishi",
+          "zathura"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "atg-2026-07-21_7_6.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-07-21?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-07-21.json",
+      "race_id": "2026-07-21_7_6",
+      "horse_id": 801270
+    },
+    {
+      "observation_id": "M7A1-060",
+      "kind": "ATG",
+      "country": "SE",
+      "identity": {
+        "horse_id": 801270,
+        "pedigree": [
+          "greenmanalishi",
+          "zathura"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "atg-2026-08-12_46_2.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-08-12?headToHeadEnabled=true",
+      "calendar_member": "calendar-2026-08-12.json",
+      "race_id": "2026-08-12_46_2",
+      "horse_id": 801270
+    }
+  ],
+  "calendar_checks": [
+    {
+      "observation_id": "M7A1-010",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 793549,
+        "pedigree": [
+          "sjscaviar",
+          "singlesock"
+        ],
+        "proof": {
+          "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+          "starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+            "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program": {
+            "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+            "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program_pointer": "/races/44/entrants/0",
+          "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+          "atg_member": "races/2026-10-20_14_7.json",
+          "atg_member_sha256": "e655ac18526af86f17755faef60eca8e82b288928fa122859e6cdc84fa5718d4",
+          "atg_pointer": "/payload/races/0/starts/0",
+          "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_7",
+          "observed_at": "2026-10-22T11:06:41.710968+00:00",
+          "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+        }
+      },
+      "source_member": "calendar-2026-08-01.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-08-01?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-08-01_24_6.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-011",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 793549,
+        "pedigree": [
+          "sjscaviar",
+          "singlesock"
+        ],
+        "proof": {
+          "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+          "starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+            "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program": {
+            "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+            "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program_pointer": "/races/44/entrants/0",
+          "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+          "atg_member": "races/2026-10-20_14_7.json",
+          "atg_member_sha256": "e655ac18526af86f17755faef60eca8e82b288928fa122859e6cdc84fa5718d4",
+          "atg_pointer": "/payload/races/0/starts/0",
+          "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_7",
+          "observed_at": "2026-10-22T11:06:41.710968+00:00",
+          "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+        }
+      },
+      "source_member": "calendar-2026-08-20.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-08-20?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-08-20_9_4.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-012",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 793549,
+        "pedigree": [
+          "sjscaviar",
+          "singlesock"
+        ],
+        "proof": {
+          "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+          "starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+            "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program": {
+            "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+            "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program_pointer": "/races/44/entrants/0",
+          "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+          "atg_member": "races/2026-10-20_14_7.json",
+          "atg_member_sha256": "e655ac18526af86f17755faef60eca8e82b288928fa122859e6cdc84fa5718d4",
+          "atg_pointer": "/payload/races/0/starts/0",
+          "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_7",
+          "observed_at": "2026-10-22T11:06:41.710968+00:00",
+          "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+        }
+      },
+      "source_member": "calendar-2026-08-27.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-08-27?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-08-27_16_7.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-013",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 793549,
+        "pedigree": [
+          "sjscaviar",
+          "singlesock"
+        ],
+        "proof": {
+          "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+          "starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+            "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program": {
+            "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+            "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program_pointer": "/races/44/entrants/0",
+          "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+          "atg_member": "races/2026-10-20_14_7.json",
+          "atg_member_sha256": "e655ac18526af86f17755faef60eca8e82b288928fa122859e6cdc84fa5718d4",
+          "atg_pointer": "/payload/races/0/starts/0",
+          "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_7",
+          "observed_at": "2026-10-22T11:06:41.710968+00:00",
+          "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+        }
+      },
+      "source_member": "calendar-2026-09-29.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-09-29?headToHeadEnabled=true",
+      "result_source_members": []
+    },
+    {
+      "observation_id": "M7A1-014",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 793549,
+        "pedigree": [
+          "sjscaviar",
+          "singlesock"
+        ],
+        "proof": {
+          "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+          "starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+            "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program": {
+            "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+            "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program_pointer": "/races/44/entrants/0",
+          "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+          "atg_member": "races/2026-10-20_14_7.json",
+          "atg_member_sha256": "e655ac18526af86f17755faef60eca8e82b288928fa122859e6cdc84fa5718d4",
+          "atg_pointer": "/payload/races/0/starts/0",
+          "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_7",
+          "observed_at": "2026-10-22T11:06:41.710968+00:00",
+          "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+        }
+      },
+      "source_member": "calendar-2026-10-06.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-10-06?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-10-06_28_4.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-015",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 791286,
+        "pedigree": [
+          "walner",
+          "vivaciousallie"
+        ],
+        "proof": {
+          "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+          "starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+            "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program": {
+            "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+            "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program_pointer": "/races/44/entrants/2",
+          "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+          "atg_member": "races/2026-10-20_14_7.json",
+          "atg_member_sha256": "e655ac18526af86f17755faef60eca8e82b288928fa122859e6cdc84fa5718d4",
+          "atg_pointer": "/payload/races/0/starts/2",
+          "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_7",
+          "observed_at": "2026-10-22T11:06:41.710968+00:00",
+          "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+        }
+      },
+      "source_member": "calendar-2026-05-15.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-05-15?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-05-15_5_6.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-016",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 791286,
+        "pedigree": [
+          "walner",
+          "vivaciousallie"
+        ],
+        "proof": {
+          "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+          "starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+            "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program": {
+            "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+            "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program_pointer": "/races/44/entrants/2",
+          "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+          "atg_member": "races/2026-10-20_14_7.json",
+          "atg_member_sha256": "e655ac18526af86f17755faef60eca8e82b288928fa122859e6cdc84fa5718d4",
+          "atg_pointer": "/payload/races/0/starts/2",
+          "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_7",
+          "observed_at": "2026-10-22T11:06:41.710968+00:00",
+          "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+        }
+      },
+      "source_member": "calendar-2026-05-31.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-05-31?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-05-31_5_14.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-018",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 786486,
+        "pedigree": [
+          "misterjp",
+          "dreamonlindy"
+        ],
+        "proof": {
+          "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+          "starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+            "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program": {
+            "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+            "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "program_pointer": "/races/46/entrants/12",
+          "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+          "atg_member": "races/2026-10-20_14_9.json",
+          "atg_member_sha256": "1d48ac734d7589bdca50720dabebd15efa0cc2a942eac1fcab76edbce5992075",
+          "atg_pointer": "/payload/races/0/starts/12",
+          "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_9",
+          "observed_at": "2026-10-22T11:06:42.441050+00:00",
+          "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+        }
+      },
+      "source_member": "calendar-2026-09-12.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-09-12?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-09-12_32_9.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-055",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 793918,
+        "pedigree": [
+          "creatine",
+          "restless"
+        ],
+        "proof": "EXISTING_M7A1_VERIFIED_PURE_EGO_CHAIN"
+      },
+      "source_member": "calendar-2026-04-11.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-04-11?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-04-11_27_6.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-056",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 793918,
+        "pedigree": [
+          "creatine",
+          "restless"
+        ],
+        "proof": "EXISTING_M7A1_VERIFIED_PURE_EGO_CHAIN"
+      },
+      "source_member": "calendar-2026-04-21.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-04-21?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-04-21_27_5.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-041",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 798136,
+        "pedigree": [
+          "flockidaurcy",
+          "guneva"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "calendar-2026-09-08.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-09-08?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-09-08_18_6.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-042",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 798136,
+        "pedigree": [
+          "flockidaurcy",
+          "guneva"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "calendar-2026-09-14.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-09-14?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-09-14_43_7.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-043",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 798136,
+        "pedigree": [
+          "flockidaurcy",
+          "guneva"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "calendar-2026-09-22.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-09-22?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-09-22_7_7.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-044",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 798136,
+        "pedigree": [
+          "flockidaurcy",
+          "guneva"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "calendar-2026-10-03.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-10-03?headToHeadEnabled=true",
+      "result_source_members": []
+    },
+    {
+      "observation_id": "M7A1-045",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 798136,
+        "pedigree": [
+          "flockidaurcy",
+          "guneva"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "calendar-2026-10-10.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-10-10?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-10-10_18_7.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-046",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 809874,
+        "pedigree": [
+          "propulsion",
+          "longislandicetea"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "calendar-2026-08-23.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-08-23?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-08-23_46_1.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-047",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 792242,
+        "pedigree": [
+          "sjscaviar",
+          "borupsnike"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "calendar-2026-08-23.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-08-23?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-08-23_46_2.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-048",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 792242,
+        "pedigree": [
+          "sjscaviar",
+          "borupsnike"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "calendar-2026-09-06.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-09-06?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-09-06_7_3.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-049",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 792242,
+        "pedigree": [
+          "sjscaviar",
+          "borupsnike"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "calendar-2026-09-16.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-09-16?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-09-16_7_8.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-050",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 792242,
+        "pedigree": [
+          "sjscaviar",
+          "borupsnike"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "calendar-2026-09-22.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-09-22?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-09-22_7_1.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-051",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 792242,
+        "pedigree": [
+          "sjscaviar",
+          "borupsnike"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "calendar-2026-10-13.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-10-13?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-10-13_7_6.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-057",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 803410,
+        "pedigree": [
+          "hohneck",
+          "famousstar"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "calendar-2026-07-13.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-07-13?headToHeadEnabled=true",
+      "result_source_members": []
+    },
+    {
+      "observation_id": "M7A1-058",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 801270,
+        "pedigree": [
+          "greenmanalishi",
+          "zathura"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "calendar-2026-07-01.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-07-01?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-07-01_43_6.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-059",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 801270,
+        "pedigree": [
+          "greenmanalishi",
+          "zathura"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "calendar-2026-07-21.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-07-21?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-07-21_7_6.json"
+      ]
+    },
+    {
+      "observation_id": "M7A1-060",
+      "kind": "ATG_CALENDAR",
+      "country": "SE",
+      "identity": {
+        "horse_id": 801270,
+        "pedigree": [
+          "greenmanalishi",
+          "zathura"
+        ],
+        "proof": "EXISTING_M7A1_ARCHIVED_TARGET24_FULL_FIELD_PLUS_ORIGINAL_PDF_BIOGRAPHY_REVIEW_NOT_GATE_D_APPROVAL"
+      },
+      "source_member": "calendar-2026-08-12.json",
+      "url": "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0/calendar/day/2026-08-12?headToHeadEnabled=true",
+      "result_source_members": [
+        "atg-2026-08-12_46_2.json"
+      ]
+    }
+  ],
+  "selection": "Previously unverified observations with existing M6/NO target-registration/Pure Ego chains, plus existing M7A1 target24 full-field/pedigree corroboration. Bounded context checks, not Gate D admission."
+}

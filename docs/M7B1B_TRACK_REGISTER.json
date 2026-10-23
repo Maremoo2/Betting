@@ -1,0 +1,2652 @@
+{
+  "schema": "M7B1B_TRACK_REGISTER_V1",
+  "version": "0.2.0",
+  "allowed_use": "RESEARCH_ONLY",
+  "model_eligible": false,
+  "identity_policy": "No code-only promotion. VERIFIED is per observation/date with independently bound official race and stable horse proof. Candidate register never grants verification.",
+  "validity_policy": "Unknown continuous alias validity; verified observations prove only exact historical dates. No extrapolation to other dates or country.",
+  "codes": {
+    "Ax": {
+      "printed_code": "Ax",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Axevalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [
+        {
+          "observation_id": "M7A1-017",
+          "valid_on": "2026-07-19",
+          "track": {
+            "country": "SE",
+            "name": "Axevalla",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 8
+            }
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "name": "atg-eire-20260719.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-07-19_8_10",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-07-19_8_10",
+            "observed_at": "2026-10-23T06:08:22.248578+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "9db677065d1c4c3dd560fdbcb1c27b456435f60f6efea1422d5dd765a6663dfc",
+            "bytes": 43421
+          }
+        }
+      ],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-017",
+          "valid_on": "2026-07-19",
+          "track": {
+            "country": "SE",
+            "name": "Axevalla",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 8
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-eire-20260719.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-07-19_8_10",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-07-19_8_10",
+            "observed_at": "2026-10-23T06:08:22.248578+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "9db677065d1c4c3dd560fdbcb1c27b456435f60f6efea1422d5dd765a6663dfc",
+            "bytes": 43421
+          }
+        },
+        {
+          "observation_id": "M7A1-032",
+          "valid_on": "2026-07-17",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "B": {
+      "printed_code": "B",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Bjerke Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Bjerke",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Bergsåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [
+        {
+          "observation_id": "M7A1-003",
+          "valid_on": "2026-09-12",
+          "track": {
+            "country": "NO",
+            "name": "Bjerke Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "name": "dnt-bjerke-20260912.html",
+            "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-12",
+            "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-12",
+            "observed_at": "2026-10-23T06:07:49.933737+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "664c27f57c21843690758260133e3b30541abbbaf9515453c559aee3688e8aba",
+            "bytes": 274263
+          }
+        },
+        {
+          "observation_id": "M7A1-004",
+          "valid_on": "2026-10-06",
+          "track": {
+            "country": "NO",
+            "name": "Bjerke Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "name": "custer-20261006.html",
+            "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-10-06",
+            "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-10-06",
+            "observed_at": "2026-10-23T06:08:55.979766+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "59ae4056d12387437770bca4d36c257bebfcfb9740897519ed3262a24dfb81f3",
+            "bytes": 306852
+          }
+        },
+        {
+          "observation_id": "M7A1-008",
+          "valid_on": "2026-08-18",
+          "track": {
+            "country": "NO",
+            "name": "Bjerke Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "name": "goffa-20260818.html",
+            "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-08-18",
+            "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-08-18",
+            "observed_at": "2026-10-23T06:08:57.940382+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "3d858b26d554a9f0b4002bec35dd2b67c5af699b76dece5804e17d10b1e202b6",
+            "bytes": 273469
+          }
+        }
+      ],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-003",
+          "valid_on": "2026-09-12",
+          "track": {
+            "country": "NO",
+            "name": "Bjerke Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "dnt-bjerke-20260912.html",
+            "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-12",
+            "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-12",
+            "observed_at": "2026-10-23T06:07:49.933737+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "664c27f57c21843690758260133e3b30541abbbaf9515453c559aee3688e8aba",
+            "bytes": 274263
+          }
+        },
+        {
+          "observation_id": "M7A1-004",
+          "valid_on": "2026-10-06",
+          "track": {
+            "country": "NO",
+            "name": "Bjerke Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "custer-20261006.html",
+            "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-10-06",
+            "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-10-06",
+            "observed_at": "2026-10-23T06:08:55.979766+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "59ae4056d12387437770bca4d36c257bebfcfb9740897519ed3262a24dfb81f3",
+            "bytes": 306852
+          }
+        },
+        {
+          "observation_id": "M7A1-007",
+          "valid_on": "2026-08-11",
+          "track": {
+            "country": "NO",
+            "name": "Bjerke Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "M7A1-007.html",
+            "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-08-11",
+            "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-08-11",
+            "observed_at": "2026-10-23T06:59:39.025429+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "49e8f098fd62db2981f175914a97eae15e2949e6ff4b49b4c26c1ec9674e4fa1",
+            "bytes": 342127
+          }
+        },
+        {
+          "observation_id": "M7A1-008",
+          "valid_on": "2026-08-18",
+          "track": {
+            "country": "NO",
+            "name": "Bjerke Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "goffa-20260818.html",
+            "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-08-18",
+            "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-08-18",
+            "observed_at": "2026-10-23T06:08:57.940382+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "3d858b26d554a9f0b4002bec35dd2b67c5af699b76dece5804e17d10b1e202b6",
+            "bytes": 273469
+          }
+        },
+        {
+          "observation_id": "M7A1-009",
+          "valid_on": "2026-10-13",
+          "track": {
+            "country": "NO",
+            "name": "Bjerke Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "M7A1-009.html",
+            "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-10-13",
+            "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-10-13",
+            "observed_at": "2026-10-23T06:59:38.595519+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "155ff69270f56ea27185866e4d454acdff64c7c001098f7d5a159115ee1798a8",
+            "bytes": 255208
+          }
+        },
+        {
+          "observation_id": "M7A1-011",
+          "valid_on": "2026-08-20",
+          "track": {
+            "country": "SE",
+            "name": "Bergsåker",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 9
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-08-20_9_4.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-20_9_4",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-20_9_4",
+            "observed_at": "2026-10-23T07:15:49.948890+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "6b58267487349f34e061a5c639e6840b25c2cb0eff0ca36d02b8b91bc2a02261",
+            "bytes": 44686
+          }
+        },
+        {
+          "observation_id": "M7B1-H-002",
+          "valid_on": "2026-08-11",
+          "track": {
+            "country": "NO",
+            "name": "Bjerke Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "M7B1-H-002.html",
+            "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-08-11",
+            "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-08-11",
+            "observed_at": "2026-10-23T06:59:42.448483+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "b4814d13b38e3719b081b0374e7a6dccb2db5a3724a8969780baaadc0f447ce7",
+            "bytes": 342127
+          }
+        },
+        {
+          "observation_id": "M7B1-H-003",
+          "valid_on": "2026-09-01",
+          "track": {
+            "country": "NO",
+            "name": "Bjerke Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "M7B1-H-003.html",
+            "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-01",
+            "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-01",
+            "observed_at": "2026-10-23T06:59:42.018859+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "ec085afeae3ea7cb26655a08ce20416e99cf4e0250cd6766002b0efcf3257b58",
+            "bytes": 309257
+          }
+        },
+        {
+          "observation_id": "M7B1-H-004",
+          "valid_on": "2026-09-13",
+          "track": {
+            "country": "NO",
+            "name": "Bjerke Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "M7B1-H-004.html",
+            "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-13",
+            "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-13",
+            "observed_at": "2026-10-23T06:59:42.554979+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "0b2d4a923e00ee4fcdcbdc9bfca48b7dc98968f6c39d1abaa64c07e78a5a8347",
+            "bytes": 390653
+          }
+        },
+        {
+          "observation_id": "M7B1-H-005",
+          "valid_on": "2026-10-03",
+          "track": {
+            "country": "NO",
+            "name": "Bjerke Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "M7B1-H-005.html",
+            "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-10-03",
+            "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-10-03",
+            "observed_at": "2026-10-23T06:59:43.847456+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "ac3a1d034b5441633e3728d5aa2e34203f567eb9ee4cfd97ba989fe63580758c",
+            "bytes": 246997
+          }
+        },
+        {
+          "observation_id": "M7B1-H-008",
+          "valid_on": "2026-09-01",
+          "track": {
+            "country": "NO",
+            "name": "Bjerke Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "M7B1-H-008.html",
+            "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-01",
+            "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-01",
+            "observed_at": "2026-10-23T06:59:42.982599+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "e24e842c23eaf9fa4dcb4d3424f3860a12292f389415e8039caab9c813d7c2ca",
+            "bytes": 309257
+          }
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "BI": {
+      "printed_code": "BI",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Biri Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Biri",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [
+        {
+          "observation_id": "M7A1-006",
+          "valid_on": "2026-07-24",
+          "track": {
+            "country": "NO",
+            "name": "Biri Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/biri-travbane/"
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "name": "goffa-20260724.html",
+            "url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-07-24",
+            "final_url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-07-24",
+            "observed_at": "2026-10-23T06:08:58.467437+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "5d7d31ff23f52e47e587f6d308bce3db874486c57d3df426b6c919601eb1e4ec",
+            "bytes": 292788
+          }
+        }
+      ],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-006",
+          "valid_on": "2026-07-24",
+          "track": {
+            "country": "NO",
+            "name": "Biri Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/biri-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "goffa-20260724.html",
+            "url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-07-24",
+            "final_url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-07-24",
+            "observed_at": "2026-10-23T06:08:58.467437+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "5d7d31ff23f52e47e587f6d308bce3db874486c57d3df426b6c919601eb1e4ec",
+            "bytes": 292788
+          }
+        },
+        {
+          "observation_id": "M7B1-H-001",
+          "valid_on": "2026-07-25",
+          "track": {
+            "country": "NO",
+            "name": "Biri Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/biri-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "M7B1-H-001.html",
+            "url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-07-25",
+            "final_url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-07-25",
+            "observed_at": "2026-10-23T06:59:42.566835+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "8714fd7279c6cfb1e9966cd4674c6552779cb29f2e124beabc32dec4e0725132",
+            "bytes": 285223
+          }
+        },
+        {
+          "observation_id": "M7B1-H-009",
+          "valid_on": "2026-09-18",
+          "track": {
+            "country": "NO",
+            "name": "Biri Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/biri-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "M7B1-H-009.html",
+            "url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-09-18",
+            "final_url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-09-18",
+            "observed_at": "2026-10-23T06:59:44.990209+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "9c1748623fd5e0d3735e8ee85752c7244ae9ff6f48d31385787d170b59a04521",
+            "bytes": 235052
+          }
+        },
+        {
+          "observation_id": "M7B1-H-010",
+          "valid_on": "2026-09-26",
+          "track": {
+            "country": "NO",
+            "name": "Biri Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/biri-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "M7B1-H-010.html",
+            "url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-09-26",
+            "final_url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-09-26",
+            "observed_at": "2026-10-23T06:59:45.869655+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "30809be6142a2f4b4e9669c27be91d2f8d24fcde495e258c034b4861792eaa37",
+            "bytes": 303225
+          }
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "F": {
+      "printed_code": "F",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Forus",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Färjestad",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-030",
+          "valid_on": "2026-10-05",
+          "track": "UNKNOWN",
+          "status": "AMBIGUOUS",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7B1-H-014",
+          "valid_on": "2026-09-19",
+          "track": "UNKNOWN",
+          "status": "AMBIGUOUS",
+          "source": "NOT_AVAILABLE"
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "G": {
+      "printed_code": "G",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Gävle",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-012",
+          "valid_on": "2026-08-27",
+          "track": {
+            "country": "SE",
+            "name": "Gävle",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 16
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-08-27_16_7.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-27_16_7",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-27_16_7",
+            "observed_at": "2026-10-23T07:15:50.288160+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "e76df9eb8cb7b9840fd97f1d57169af19535a3c6aea61e7c6de53e0adbbedc31",
+            "bytes": 43558
+          }
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "Hd": {
+      "printed_code": "Hd",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Halmstad",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-022",
+          "valid_on": "2026-07-13",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7A1-025",
+          "valid_on": "2026-10-10",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7A1-026",
+          "valid_on": "2026-07-24",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7A1-031",
+          "valid_on": "2026-07-04",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7A1-033",
+          "valid_on": "2026-07-24",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7A1-041",
+          "valid_on": "2026-09-08",
+          "track": {
+            "country": "SE",
+            "name": "Halmstad",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 18
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-09-08_18_6.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-08_18_6",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-08_18_6",
+            "observed_at": "2026-10-23T07:15:51.898576+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "6c14022f05fa56364b5b9d3a68b21ee2ad849ace0561bdc6580beff8c58a7244",
+            "bytes": 39088
+          }
+        },
+        {
+          "observation_id": "M7A1-045",
+          "valid_on": "2026-10-10",
+          "track": {
+            "country": "SE",
+            "name": "Halmstad",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 18
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-10-10_18_7.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-10_18_7",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-10_18_7",
+            "observed_at": "2026-10-23T07:15:51.837952+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "55b4295300ac4b01767863fae70e942c06c4dafc3d2b00dbc1785b2b447d05da",
+            "bytes": 40122
+          }
+        },
+        {
+          "observation_id": "M7A1-057",
+          "valid_on": "2026-07-13",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7B1-H-025",
+          "valid_on": "2026-10-16",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7B1-H-028",
+          "valid_on": "2026-10-04",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "J": {
+      "printed_code": "J",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Jarlsberg Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Jarlsberg",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [
+        {
+          "observation_id": "M7A1-001",
+          "valid_on": "2026-08-22",
+          "track": {
+            "country": "NO",
+            "name": "Jarlsberg Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/jarlsberg-travbane/"
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "name": "custer-20260822.html",
+            "url": "https://www.travsport.no/travbaner/jarlsberg-travbane/results/2026-08-22",
+            "final_url": "https://www.travsport.no/travbaner/jarlsberg-travbane/results/2026-08-22",
+            "observed_at": "2026-10-23T06:08:55.783757+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "41601562470b93686a49841e66e918c3ad19b6d889e495b461cabdfdd77e5933",
+            "bytes": 256334
+          }
+        },
+        {
+          "observation_id": "M7A1-002",
+          "valid_on": "2026-09-04",
+          "track": {
+            "country": "NO",
+            "name": "Jarlsberg Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/jarlsberg-travbane/"
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "name": "custer-20260904.html",
+            "url": "https://www.travsport.no/travbaner/jarlsberg-travbane/results/2026-09-04",
+            "final_url": "https://www.travsport.no/travbaner/jarlsberg-travbane/results/2026-09-04",
+            "observed_at": "2026-10-23T06:08:55.660160+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "65634a0acd929f4fdb3b257f7d3dc3c47529eb786c5be993b650f15fc9b4f011",
+            "bytes": 265890
+          }
+        }
+      ],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-001",
+          "valid_on": "2026-08-22",
+          "track": {
+            "country": "NO",
+            "name": "Jarlsberg Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/jarlsberg-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "custer-20260822.html",
+            "url": "https://www.travsport.no/travbaner/jarlsberg-travbane/results/2026-08-22",
+            "final_url": "https://www.travsport.no/travbaner/jarlsberg-travbane/results/2026-08-22",
+            "observed_at": "2026-10-23T06:08:55.783757+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "41601562470b93686a49841e66e918c3ad19b6d889e495b461cabdfdd77e5933",
+            "bytes": 256334
+          }
+        },
+        {
+          "observation_id": "M7A1-002",
+          "valid_on": "2026-09-04",
+          "track": {
+            "country": "NO",
+            "name": "Jarlsberg Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/jarlsberg-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "custer-20260904.html",
+            "url": "https://www.travsport.no/travbaner/jarlsberg-travbane/results/2026-09-04",
+            "final_url": "https://www.travsport.no/travbaner/jarlsberg-travbane/results/2026-09-04",
+            "observed_at": "2026-10-23T06:08:55.660160+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "65634a0acd929f4fdb3b257f7d3dc3c47529eb786c5be993b650f15fc9b4f011",
+            "bytes": 265890
+          }
+        },
+        {
+          "observation_id": "M7A1-043",
+          "valid_on": "2026-09-22",
+          "track": {
+            "country": "SE",
+            "name": "Jägersro",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 7
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-09-22_7_7.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-22_7_7",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-22_7_7",
+            "observed_at": "2026-10-23T07:15:52.133080+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "76fc271391a8593f4d6463146b91ca0d746e9ab7be0969a062c8225e3956e4ae",
+            "bytes": 27069
+          }
+        },
+        {
+          "observation_id": "M7A1-048",
+          "valid_on": "2026-09-06",
+          "track": {
+            "country": "SE",
+            "name": "Jägersro",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 7
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-09-06_7_3.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-06_7_3",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-06_7_3",
+            "observed_at": "2026-10-23T07:15:52.391836+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "bd0bb1a28048c98d89c64ee08ee229e8fffbb0739fe8039f70f1cf11feedd4cb",
+            "bytes": 42273
+          }
+        },
+        {
+          "observation_id": "M7A1-049",
+          "valid_on": "2026-09-16",
+          "track": {
+            "country": "SE",
+            "name": "Jägersro",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 7
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-09-16_7_8.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-16_7_8",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-16_7_8",
+            "observed_at": "2026-10-23T07:15:52.274239+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "969e5b72ea782b17377fbe300b1db710d53c92e4a3e6ddc43c61c633d45ddc34",
+            "bytes": 41211
+          }
+        },
+        {
+          "observation_id": "M7A1-050",
+          "valid_on": "2026-09-22",
+          "track": {
+            "country": "SE",
+            "name": "Jägersro",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 7
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-09-22_7_1.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-22_7_1",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-22_7_1",
+            "observed_at": "2026-10-23T07:15:52.283124+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "9ff433d3779bf08c9490d52035108f92e8b784e61753a11a9fb82d2e71a16f2d",
+            "bytes": 35219
+          }
+        },
+        {
+          "observation_id": "M7A1-051",
+          "valid_on": "2026-10-13",
+          "track": {
+            "country": "SE",
+            "name": "Jägersro",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 7
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-10-13_7_6.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-13_7_6",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-13_7_6",
+            "observed_at": "2026-10-23T07:15:52.794220+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "d71bd4596c5a0c0fe20078e70e55cdb0a0e9d881c6cc479881d0f413d1a2f84c",
+            "bytes": 36813
+          }
+        },
+        {
+          "observation_id": "M7A1-059",
+          "valid_on": "2026-07-21",
+          "track": {
+            "country": "SE",
+            "name": "Jägersro",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 7
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-07-21_7_6.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-07-21_7_6",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-07-21_7_6",
+            "observed_at": "2026-10-23T07:15:52.563799+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "f7ed79b7447a85ca57e6aeadf2a7ceec82fbd08ea46fd1e53c7aeb4b008bf9ee",
+            "bytes": 27402
+          }
+        },
+        {
+          "observation_id": "M7B1-H-018",
+          "valid_on": "2026-09-05",
+          "track": "UNKNOWN",
+          "status": "AMBIGUOUS",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7B1-H-024",
+          "valid_on": "2026-09-30",
+          "track": "UNKNOWN",
+          "status": "AMBIGUOUS",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7B1-H-026",
+          "valid_on": "2026-09-16",
+          "track": "UNKNOWN",
+          "status": "AMBIGUOUS",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7B1-H-027",
+          "valid_on": "2026-09-22",
+          "track": "UNKNOWN",
+          "status": "AMBIGUOUS",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7B1-H-029",
+          "valid_on": "2026-10-13",
+          "track": "UNKNOWN",
+          "status": "AMBIGUOUS",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7B1-H-030",
+          "valid_on": "2026-10-17",
+          "track": "UNKNOWN",
+          "status": "AMBIGUOUS",
+          "source": "NOT_AVAILABLE"
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "JÆ": {
+      "printed_code": "JÆ",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-019",
+          "valid_on": "2026-08-25",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "K": {
+      "printed_code": "K",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Klosterskogen Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Klosterskogen",
+          "name_evidence": {
+            "source_member": "M7B1-H-006.html",
+            "role": "EXACT_DATED_OFFICIAL_TITLE_NOT_GLOBAL_VALIDITY"
+          }
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7B1-H-006",
+          "valid_on": "2026-08-09",
+          "track": {
+            "country": "NO",
+            "name": "Klosterskogen Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/klosterskogen-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "M7B1-H-006.html",
+            "url": "https://www.travsport.no/travbaner/klosterskogen-travbane/results/2026-08-09",
+            "final_url": "https://www.travsport.no/travbaner/klosterskogen-travbane/results/2026-08-09",
+            "observed_at": "2026-10-23T06:59:44.858283+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "bac82cefcbecacd9e010ad5a9caf712912c1257a755a7e9be62c36483fa3db7e",
+            "bytes": 232572
+          }
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "Kr": {
+      "printed_code": "Kr",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Kalmar",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-027",
+          "valid_on": "2026-08-21",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7B1-H-022",
+          "valid_on": "2026-08-21",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "L": {
+      "printed_code": "L",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Lindesberg",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "NO",
+          "official_name": "Leangen",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "status": "UNRESOLVED_HISTORICAL_ALIAS",
+          "supporting_source": "https://abcdocz.com/doc/5174087/klikk-her-for-%C3%A5-se-fullstendig-program",
+          "authority": "SECONDARY_COPY_ONLY_NOT_VERIFICATION"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "SE index L=Lindesberg; historical NO alias candidate Leangen has no authenticated validity interval. Do not infer country/date.",
+      "verified_observation_links": [],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7B1-H-012",
+          "valid_on": "2026-07-01",
+          "track": "UNKNOWN",
+          "status": "AMBIGUOUS",
+          "source": "NOT_AVAILABLE"
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "M": {
+      "printed_code": "M",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Momarken Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Momarken",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [
+        {
+          "observation_id": "M7A1-005",
+          "valid_on": "2026-07-06",
+          "track": {
+            "country": "NO",
+            "name": "Momarken Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/momarken-travbane/"
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "name": "goffa-20260706.html",
+            "url": "https://www.travsport.no/travbaner/momarken-travbane/results/2026-07-06",
+            "final_url": "https://www.travsport.no/travbaner/momarken-travbane/results/2026-07-06",
+            "observed_at": "2026-10-23T06:08:55.740205+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "f819eac7c7d8490a7bbbd0d62551b9588e626bedceffb4e41c41c768fade2a9e",
+            "bytes": 281506
+          }
+        }
+      ],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-005",
+          "valid_on": "2026-07-06",
+          "track": {
+            "country": "NO",
+            "name": "Momarken Travbane",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/momarken-travbane/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "goffa-20260706.html",
+            "url": "https://www.travsport.no/travbaner/momarken-travbane/results/2026-07-06",
+            "final_url": "https://www.travsport.no/travbaner/momarken-travbane/results/2026-07-06",
+            "observed_at": "2026-10-23T06:08:55.740205+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "f819eac7c7d8490a7bbbd0d62551b9588e626bedceffb4e41c41c768fade2a9e",
+            "bytes": 281506
+          }
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "Mp": {
+      "printed_code": "Mp",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Mantorp",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7B1-H-016",
+          "valid_on": "2026-06-18",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "OA": {
+      "printed_code": "OA",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Varig Orkla Arena",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Orkla",
+          "name_evidence": {
+            "source_member": "M7B1-H-007.html",
+            "role": "EXACT_DATED_OFFICIAL_TITLE_NOT_GLOBAL_VALIDITY"
+          }
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7B1-H-007",
+          "valid_on": "2026-08-15",
+          "track": {
+            "country": "NO",
+            "name": "Varig Orkla Arena",
+            "stable_provider_id": "NOT_REPORTED",
+            "official_track_uri": "https://www.travsport.no/travbaner/varig-orkla-arena/"
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "M7B1-H-007.html",
+            "url": "https://www.travsport.no/travbaner/varig-orkla-arena/results/2026-08-15",
+            "final_url": "https://www.travsport.no/travbaner/varig-orkla-arena/results/2026-08-15",
+            "observed_at": "2026-10-23T06:59:44.989211+00:00",
+            "status": 200,
+            "content_type": "text/html; charset=utf-8",
+            "sha256": "c857ccb32fe17d703e0bb70aadad5c6e289f14367d5821b44d0ee2b9a79207f2",
+            "bytes": 333899
+          }
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "Ro": {
+      "printed_code": "Ro",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Romme",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-013",
+          "valid_on": "2026-09-29",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "Rä": {
+      "printed_code": "Rä",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Rättvik",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-010",
+          "valid_on": "2026-08-01",
+          "track": {
+            "country": "SE",
+            "name": "Rättvik",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 24
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-08-01_24_6.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-01_24_6",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-01_24_6",
+            "observed_at": "2026-10-23T07:15:50.277108+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "9d46eb6e9648fa5e94e7d9df192921623bcb4afb32c1de43ef8a1d3d4d5992de",
+            "bytes": 44402
+          }
+        },
+        {
+          "observation_id": "M7B1-H-011",
+          "valid_on": "2026-06-18",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "S": {
+      "printed_code": "S",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Sørlandet",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Solvalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "AMBIGUOUS",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [
+        {
+          "observation_id": "M7A1-036",
+          "valid_on": "2026-03-04",
+          "track": {
+            "country": "SE",
+            "name": "Solvalla",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 5
+            }
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+            "member": "atg-2026-03-04_5_9.json",
+            "member_sha256": "2fdd0b03257eb1a611d7f4f894680589d8e8d2c860acecd9ef0b89f7873813f5",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-03-04_5_9",
+            "observed_at": "2026-10-22T19:08:15.754072+00:00",
+            "sha256": "2fdd0b03257eb1a611d7f4f894680589d8e8d2c860acecd9ef0b89f7873813f5"
+          }
+        },
+        {
+          "observation_id": "M7A1-037",
+          "valid_on": "2026-04-08",
+          "track": {
+            "country": "SE",
+            "name": "Solvalla",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 5
+            }
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+            "member": "atg-2026-04-08_5_3.json",
+            "member_sha256": "3efd02b52b685e732b02d3c9da7d80243b333537ce38cb2d688f6832a770022b",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-04-08_5_3",
+            "observed_at": "2026-10-22T19:08:17.012643+00:00",
+            "sha256": "3efd02b52b685e732b02d3c9da7d80243b333537ce38cb2d688f6832a770022b"
+          }
+        },
+        {
+          "observation_id": "M7A1-038",
+          "valid_on": "2026-05-31",
+          "track": {
+            "country": "SE",
+            "name": "Solvalla",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 5
+            }
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+            "member": "atg-2026-05-31_5_4.json",
+            "member_sha256": "d371f684de9fca653c8a47b3a8d5a8a286373535918e1d532991ce1fb4dbc001",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-05-31_5_4",
+            "observed_at": "2026-10-22T19:08:18.730278+00:00",
+            "sha256": "d371f684de9fca653c8a47b3a8d5a8a286373535918e1d532991ce1fb4dbc001"
+          }
+        },
+        {
+          "observation_id": "M7A1-039",
+          "valid_on": "2026-08-26",
+          "track": {
+            "country": "SE",
+            "name": "Solvalla",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 5
+            }
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+            "member": "atg-2026-08-26_5_6.json",
+            "member_sha256": "666a76df9cf42618326bf5e7e4808ec8c23f56b574ab072c1a3fead3c21f479d",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-26_5_6",
+            "observed_at": "2026-10-22T19:08:20.103459+00:00",
+            "sha256": "666a76df9cf42618326bf5e7e4808ec8c23f56b574ab072c1a3fead3c21f479d"
+          }
+        },
+        {
+          "observation_id": "M7A1-040",
+          "valid_on": "2026-09-23",
+          "track": {
+            "country": "SE",
+            "name": "Solvalla",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 5
+            }
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+            "member": "atg-2026-09-23_5_8.json",
+            "member_sha256": "f39b08ef27b8ee41f9028df2926af76d009c191871c2bd16765434ce313d9cf1",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-23_5_8",
+            "observed_at": "2026-10-22T17:39:16.803638+00:00",
+            "sha256": "f39b08ef27b8ee41f9028df2926af76d009c191871c2bd16765434ce313d9cf1"
+          }
+        }
+      ],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-015",
+          "valid_on": "2026-05-15",
+          "track": {
+            "country": "SE",
+            "name": "Solvalla",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 5
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-05-15_5_6.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-05-15_5_6",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-05-15_5_6",
+            "observed_at": "2026-10-23T07:15:50.770775+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "d0a189284d710bc9815dc93d226d644c43487606cd5dde4efb55cc0ec3cb613f",
+            "bytes": 42138
+          }
+        },
+        {
+          "observation_id": "M7A1-016",
+          "valid_on": "2026-05-31",
+          "track": {
+            "country": "SE",
+            "name": "Solvalla",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 5
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-05-31_5_14.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-05-31_5_14",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-05-31_5_14",
+            "observed_at": "2026-10-23T07:15:50.525922+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "389c3becf8c0d88b56510899cd56da4948c3e87b113ccd51932c993ce144aefd",
+            "bytes": 40186
+          }
+        },
+        {
+          "observation_id": "M7A1-035",
+          "valid_on": "2026-09-27",
+          "track": "UNKNOWN",
+          "status": "AMBIGUOUS",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7A1-036",
+          "valid_on": "2026-03-04",
+          "track": {
+            "country": "SE",
+            "name": "Solvalla",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 5
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+            "member": "atg-2026-03-04_5_9.json",
+            "member_sha256": "2fdd0b03257eb1a611d7f4f894680589d8e8d2c860acecd9ef0b89f7873813f5",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-03-04_5_9",
+            "observed_at": "2026-10-22T19:08:15.754072+00:00",
+            "sha256": "2fdd0b03257eb1a611d7f4f894680589d8e8d2c860acecd9ef0b89f7873813f5"
+          }
+        },
+        {
+          "observation_id": "M7A1-037",
+          "valid_on": "2026-04-08",
+          "track": {
+            "country": "SE",
+            "name": "Solvalla",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 5
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+            "member": "atg-2026-04-08_5_3.json",
+            "member_sha256": "3efd02b52b685e732b02d3c9da7d80243b333537ce38cb2d688f6832a770022b",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-04-08_5_3",
+            "observed_at": "2026-10-22T19:08:17.012643+00:00",
+            "sha256": "3efd02b52b685e732b02d3c9da7d80243b333537ce38cb2d688f6832a770022b"
+          }
+        },
+        {
+          "observation_id": "M7A1-038",
+          "valid_on": "2026-05-31",
+          "track": {
+            "country": "SE",
+            "name": "Solvalla",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 5
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+            "member": "atg-2026-05-31_5_4.json",
+            "member_sha256": "d371f684de9fca653c8a47b3a8d5a8a286373535918e1d532991ce1fb4dbc001",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-05-31_5_4",
+            "observed_at": "2026-10-22T19:08:18.730278+00:00",
+            "sha256": "d371f684de9fca653c8a47b3a8d5a8a286373535918e1d532991ce1fb4dbc001"
+          }
+        },
+        {
+          "observation_id": "M7A1-039",
+          "valid_on": "2026-08-26",
+          "track": {
+            "country": "SE",
+            "name": "Solvalla",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 5
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+            "member": "atg-2026-08-26_5_6.json",
+            "member_sha256": "666a76df9cf42618326bf5e7e4808ec8c23f56b574ab072c1a3fead3c21f479d",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-26_5_6",
+            "observed_at": "2026-10-22T19:08:20.103459+00:00",
+            "sha256": "666a76df9cf42618326bf5e7e4808ec8c23f56b574ab072c1a3fead3c21f479d"
+          }
+        },
+        {
+          "observation_id": "M7A1-040",
+          "valid_on": "2026-09-23",
+          "track": {
+            "country": "SE",
+            "name": "Solvalla",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 5
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+            "member": "atg-2026-09-23_5_8.json",
+            "member_sha256": "f39b08ef27b8ee41f9028df2926af76d009c191871c2bd16765434ce313d9cf1",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-23_5_8",
+            "observed_at": "2026-10-22T17:39:16.803638+00:00",
+            "sha256": "f39b08ef27b8ee41f9028df2926af76d009c191871c2bd16765434ce313d9cf1"
+          }
+        },
+        {
+          "observation_id": "M7B1-H-013",
+          "valid_on": "2026-08-26",
+          "track": "UNKNOWN",
+          "status": "AMBIGUOUS",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7B1-H-015",
+          "valid_on": "2026-10-10",
+          "track": "UNKNOWN",
+          "status": "AMBIGUOUS",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7B1-H-019",
+          "valid_on": "2026-09-16",
+          "track": "UNKNOWN",
+          "status": "AMBIGUOUS",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7B1-H-020",
+          "valid_on": "2026-09-23",
+          "track": "UNKNOWN",
+          "status": "AMBIGUOUS",
+          "source": "NOT_AVAILABLE"
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "Ti": {
+      "printed_code": "Ti",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Tingsryd",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-034",
+          "valid_on": "2026-09-13",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7A1-046",
+          "valid_on": "2026-08-23",
+          "track": {
+            "country": "SE",
+            "name": "Tingsryd",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 46
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-08-23_46_1.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-23_46_1",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-23_46_1",
+            "observed_at": "2026-10-23T07:15:52.072902+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "02bffc9a99329cc89782d86fb2c05686e89bba8226518accf598503566b91a16",
+            "bytes": 31095
+          }
+        },
+        {
+          "observation_id": "M7A1-047",
+          "valid_on": "2026-08-23",
+          "track": {
+            "country": "SE",
+            "name": "Tingsryd",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 46
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-08-23_46_2.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-23_46_2",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-23_46_2",
+            "observed_at": "2026-10-23T07:15:52.092605+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "4694ce3cc770bde42fce7e233fefad20341000dcbc245179645d39cda5347b77",
+            "bytes": 23257
+          }
+        },
+        {
+          "observation_id": "M7A1-060",
+          "valid_on": "2026-08-12",
+          "track": {
+            "country": "SE",
+            "name": "Tingsryd",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 46
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-08-12_46_2.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-12_46_2",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-12_46_2",
+            "observed_at": "2026-10-23T07:15:52.808146+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "109ec81083bd1b23f0017661ac882635d20f79b7e1c2a8baa4878757cd2403fa",
+            "bytes": 40538
+          }
+        },
+        {
+          "observation_id": "M7B1-H-023",
+          "valid_on": "2026-09-13",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "U": {
+      "printed_code": "U",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Umåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [
+        {
+          "observation_id": "M7A1-052",
+          "valid_on": "2025-10-10",
+          "track": {
+            "country": "SE",
+            "name": "Umåker",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 27
+            }
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "name": "atg-pure-20251010-r6.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-10_27_6",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-10_27_6",
+            "observed_at": "2026-10-23T06:12:07.216430+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "7b9e62b4ee258949019603d4ce7506cc38b856bad1735168feccd48319ee1ff7",
+            "bytes": 41914
+          }
+        },
+        {
+          "observation_id": "M7A1-053",
+          "valid_on": "2025-10-26",
+          "track": {
+            "country": "SE",
+            "name": "Umåker",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 27
+            }
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "name": "atg-pure-20251026.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-26_27_6",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-26_27_6",
+            "observed_at": "2026-10-23T06:09:40.920047+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "78f9681772f9d4342013a3a44b2fa505c2f39b57b46abd95f2c25199fd98bfd0",
+            "bytes": 34599
+          }
+        },
+        {
+          "observation_id": "M7A1-054",
+          "valid_on": "2026-02-25",
+          "track": {
+            "country": "SE",
+            "name": "Umåker",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 27
+            }
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+            "member": "atg-2026-02-25_27_8.json",
+            "member_sha256": "cd83bdc65a77b8304fcfc7d1533dcfa9e3e6c7c54f4aaaf3ca3318b69573e840",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-02-25_27_8",
+            "observed_at": "2026-10-22T19:15:45.337319+00:00",
+            "sha256": "cd83bdc65a77b8304fcfc7d1533dcfa9e3e6c7c54f4aaaf3ca3318b69573e840"
+          }
+        }
+      ],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-052",
+          "valid_on": "2025-10-10",
+          "track": {
+            "country": "SE",
+            "name": "Umåker",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 27
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-pure-20251010-r6.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-10_27_6",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-10_27_6",
+            "observed_at": "2026-10-23T06:12:07.216430+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "7b9e62b4ee258949019603d4ce7506cc38b856bad1735168feccd48319ee1ff7",
+            "bytes": 41914
+          }
+        },
+        {
+          "observation_id": "M7A1-053",
+          "valid_on": "2025-10-26",
+          "track": {
+            "country": "SE",
+            "name": "Umåker",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 27
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-pure-20251026.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-26_27_6",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-26_27_6",
+            "observed_at": "2026-10-23T06:09:40.920047+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "78f9681772f9d4342013a3a44b2fa505c2f39b57b46abd95f2c25199fd98bfd0",
+            "bytes": 34599
+          }
+        },
+        {
+          "observation_id": "M7A1-054",
+          "valid_on": "2026-02-25",
+          "track": {
+            "country": "SE",
+            "name": "Umåker",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 27
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+            "member": "atg-2026-02-25_27_8.json",
+            "member_sha256": "cd83bdc65a77b8304fcfc7d1533dcfa9e3e6c7c54f4aaaf3ca3318b69573e840",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-02-25_27_8",
+            "observed_at": "2026-10-22T19:15:45.337319+00:00",
+            "sha256": "cd83bdc65a77b8304fcfc7d1533dcfa9e3e6c7c54f4aaaf3ca3318b69573e840"
+          }
+        },
+        {
+          "observation_id": "M7A1-055",
+          "valid_on": "2026-04-11",
+          "track": {
+            "country": "SE",
+            "name": "Umåker",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 27
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-04-11_27_6.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-04-11_27_6",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-04-11_27_6",
+            "observed_at": "2026-10-23T07:15:50.940067+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "da73db1304f31471e9b125c23919053dbd6e87374b6a75a724e2fc5560fc9db2",
+            "bytes": 30554
+          }
+        },
+        {
+          "observation_id": "M7A1-056",
+          "valid_on": "2026-04-21",
+          "track": {
+            "country": "SE",
+            "name": "Umåker",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 27
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-04-21_27_5.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-04-21_27_5",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-04-21_27_5",
+            "observed_at": "2026-10-23T07:15:51.408778+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "0b763d45bd6a3cdadff7c7822146c0cbffd8e6ebc71307beeaf4dd6ee3625009",
+            "bytes": 40870
+          }
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "Vg": {
+      "printed_code": "Vg",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Vaggeryd",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-042",
+          "valid_on": "2026-09-14",
+          "track": {
+            "country": "SE",
+            "name": "Vaggeryd",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 43
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-09-14_43_7.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-14_43_7",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-14_43_7",
+            "observed_at": "2026-10-23T07:15:51.589719+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "e77764911c61194dae613d034470b92a6037636caed2b8490b406879b71b738d",
+            "bytes": 32610
+          }
+        },
+        {
+          "observation_id": "M7A1-058",
+          "valid_on": "2026-07-01",
+          "track": {
+            "country": "SE",
+            "name": "Vaggeryd",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 43
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-07-01_43_6.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-07-01_43_6",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-07-01_43_6",
+            "observed_at": "2026-10-23T07:15:52.646524+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "eae025f3b234df1546730d3b4348e473b22cacb486717026ea11eecd262db600",
+            "bytes": 40717
+          }
+        },
+        {
+          "observation_id": "M7B1-H-021",
+          "valid_on": "2026-08-09",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "Vi": {
+      "printed_code": "Vi",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Visby",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-014",
+          "valid_on": "2026-10-06",
+          "track": {
+            "country": "SE",
+            "name": "Visby",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 28
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-10-06_28_4.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-06_28_4",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-06_28_4",
+            "observed_at": "2026-10-23T07:15:50.037286+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "36e015b804590a501f325caba6b790de9cdf99e1434f8649218d5096e238faa3",
+            "bytes": 44468
+          }
+        },
+        {
+          "observation_id": "M7B1-H-017",
+          "valid_on": "2026-07-09",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "Å": {
+      "printed_code": "Å",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Åby",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-021",
+          "valid_on": "2026-06-27",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7A1-024",
+          "valid_on": "2026-08-20",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7A1-028",
+          "valid_on": "2026-09-09",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7A1-044",
+          "valid_on": "2026-10-03",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "Åm": {
+      "printed_code": "Åm",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Åmål",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [
+        {
+          "observation_id": "M7A1-020",
+          "valid_on": "2026-08-09",
+          "track": {
+            "country": "SE",
+            "name": "Åmål",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 29
+            }
+          },
+          "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+          "source": {
+            "name": "atg-beautiful-20260809.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-09_29_4",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-09_29_4",
+            "observed_at": "2026-10-23T06:10:53.193678+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "b473df24de62f7031379bf45572ca0ca38827b32b57beccc355ec797ba394c31",
+            "bytes": 40607
+          }
+        }
+      ],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-020",
+          "valid_on": "2026-08-09",
+          "track": {
+            "country": "SE",
+            "name": "Åmål",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 29
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-beautiful-20260809.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-09_29_4",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-09_29_4",
+            "observed_at": "2026-10-23T06:10:53.193678+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "b473df24de62f7031379bf45572ca0ca38827b32b57beccc355ec797ba394c31",
+            "bytes": 40607
+          }
+        },
+        {
+          "observation_id": "M7A1-023",
+          "valid_on": "2026-08-09",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        },
+        {
+          "observation_id": "M7A1-029",
+          "valid_on": "2026-09-24",
+          "track": "UNKNOWN",
+          "status": "CANDIDATE_ONLY",
+          "source": "NOT_AVAILABLE"
+        }
+      ],
+      "global_alias_verified": false
+    },
+    "Ö": {
+      "printed_code": "Ö",
+      "source_country": "UNRESOLVED_PER_OBSERVATION",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Örebro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "status": "CANDIDATE_ONLY",
+      "evidence": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_ONLY",
+          "scope": "ST_CODE_NAMESPACE_ONLY; not automatic Rikstoto NO alias proof"
+        },
+        {
+          "prior_book": "docs/M7B1_CODEBOOK.json",
+          "status": "CANDIDATE_BASELINE_NOT_OFFICIAL_IDENTITY"
+        }
+      ],
+      "method": "LITERAL_CODE_AND_REFERENCED_NAMESPACE_CANDIDATES_ONLY",
+      "conflicting_evidence": [],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "verified_observation_links": [],
+      "continuous_alias_validity_verified": false,
+      "current_observation_review": [
+        {
+          "observation_id": "M7A1-018",
+          "valid_on": "2026-09-12",
+          "track": {
+            "country": "SE",
+            "name": "Örebro",
+            "stable_provider_id": {
+              "namespace": "ATG_TRACK",
+              "value": 32
+            }
+          },
+          "status": "VERIFIED",
+          "source": {
+            "name": "atg-2026-09-12_32_9.json",
+            "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-12_32_9",
+            "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-12_32_9",
+            "observed_at": "2026-10-23T07:15:50.778531+00:00",
+            "status": 200,
+            "content_type": "application/json;charset=utf-8",
+            "sha256": "9c3074ef0e9b325ac06b1cc9e6c1258fd064826ab114fd2b659599a8bdc24a01",
+            "bytes": 42984
+          }
+        }
+      ],
+      "global_alias_verified": false
+    }
+  },
+  "extends": "docs/M7B1A_TRACK_REGISTER.json; prior unchanged"
+}
