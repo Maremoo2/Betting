@@ -1,0 +1,233 @@
+{
+  "task_id": "M7B.1a",
+  "mode": "PR_AUTHORIZED_RESEARCH_ONLY",
+  "repo": "Maremoo2/Betting",
+  "base_sha": "f850f51f6c3ae9d20bbcab31090ab0c35f47d3f1",
+  "reference_pr47_head": "13a37d9df26a14d487314ac5a953e4e08c99411e",
+  "preflight": {
+    "pr44": "MERGED_BY_HQ",
+    "pr45": "MERGED_BY_HQ",
+    "pr47": "MERGED_BY_HQ; no unmerged branch dependency",
+    "deviations": "Earlier Draft/unmerged closeout was superseded by HQ merge. Old evidence CI placeholders remain historical; actual prior results are in PR bodies. No history rewritten.",
+    "locked_inputs": "All M7B1 evidence input hashes checked unchanged, including original60,holdout30,adapter,evaluator,codebook and contract",
+    "DATA_002_DATA_003": "Original versioned artifacts remain unavailable as previously documented"
+  },
+  "observed_at": "2026-10-23T06:32:19.140878+00:00",
+  "environment": {
+    "python": "Python 3.12.14",
+    "worktree": "/workspace/Betting-M7B1A",
+    "runtime": "Existing dev venv; PYTHONPATH=src selects new worktree",
+    "dependencies_added": [],
+    "network": "Enforced unrestricted session proxy; no access-control bypass; no monthly archive search/backfill"
+  },
+  "source_control_commit": "c064f536df5179d0de85f3aedf8ae63c6e93ca2f",
+  "files": {
+    "docs/M7B1A_TRACK_REGISTER.json": {
+      "sha256": "414b949b978ca50a1ea3179fe9abcd3560d1e549394290e9a28c0216adf1d67e",
+      "bytes": 46914
+    },
+    "docs/M7B1A_REVIEW_CLAIMS.json": {
+      "sha256": "cb62a0cfb9f1cc3ce886d50015f567dc58ba12e7f2b9335a7e89fa17f555d7dc",
+      "bytes": 4241
+    },
+    "docs/M7B1A_CONTROL_REVIEW.json": {
+      "sha256": "deef73673ea878206d63cc69652d773f6f1da2107916f485b537f9d1964daa48",
+      "bytes": 3038
+    },
+    "docs/M7B1A_RESULT_CODEBOOK.json": {
+      "sha256": "b8dfa593ee3647d4f739146bc70ba7b49df9fb2d8119c102d0f14762a2b87034",
+      "bytes": 42805
+    },
+    "docs/M7B1A_VALIDATION.json": {
+      "sha256": "fe17584486385cb459bceff8e814a88d01930234d4b351839ab4f5f5f5944ed0",
+      "bytes": 178318
+    },
+    "src/hbi/history_source_verification.py": {
+      "sha256": "99e65b8a71604c93806916dddddd3195e81a14eb72b6fccd27dc1e7bf8809c8a",
+      "bytes": 17897
+    },
+    "tests/test_history_source_verification.py": {
+      "sha256": "311674380efbe3e2a9cf750fdda6757205f4d02172959fc6a85735f25cb0baea",
+      "bytes": 6762
+    },
+    "tests/fixtures/m7b1a-official-sources-v1.zip": {
+      "sha256": "96d6a3c4a344a61b3d42b8173fff1b02fa44a4c1a430902db559d684960f8eb9",
+      "bytes": 237450
+    }
+  },
+  "locked_inputs": {
+    "known60_sha256": "82ca3f9e043cfc76c672b7efe15efe9da93090387972c762f4e306ffdaf1e39d",
+    "holdout30_sha256": "f9d9eaf36b778b7af13738dbf49dcff81690119b1987827d0d676d8a95f58b87",
+    "original_program_pdf_bundle_sha256": "1d4108180de1a191a3df502fde0e2ff4d2b74fc3f3b6eee30b701a18cb9e81a9",
+    "unchanged_external_parser_sha256": "2ea5c70dfa76a2c8dbc358bbfcb97657efe1f831a5f799cb3790b9064a1ae64d"
+  },
+  "validation_summary": {
+    "schema": "M7B1A_SOURCE_VERIFICATION_V1",
+    "version": "0.1.0",
+    "rows": 90,
+    "printed_codes_correct": 90,
+    "baseline": {
+      "unambiguous_candidates": 43,
+      "unresolved_candidates": 47,
+      "authoritatively_verified": "NOT_MEASURED"
+    },
+    "track_status_counts": {
+      "VERIFIED": 17,
+      "CANDIDATE_ONLY": 43,
+      "AMBIGUOUS": 30,
+      "UNRESOLVED": 0,
+      "CONFLICTING_EVIDENCE": 0
+    },
+    "baseline_candidate_migration": [
+      {
+        "before": "AMBIGUOUS",
+        "after": "AMBIGUOUS",
+        "rows": 29
+      },
+      {
+        "before": "AMBIGUOUS",
+        "after": "CANDIDATE_ONLY",
+        "rows": 6
+      },
+      {
+        "before": "AMBIGUOUS",
+        "after": "VERIFIED",
+        "rows": 12
+      },
+      {
+        "before": "EXTRACTED",
+        "after": "AMBIGUOUS",
+        "rows": 1
+      },
+      {
+        "before": "EXTRACTED",
+        "after": "CANDIDATE_ONLY",
+        "rows": 37
+      },
+      {
+        "before": "EXTRACTED",
+        "after": "VERIFIED",
+        "rows": 5
+      }
+    ],
+    "official_starts_reviewed": 17,
+    "official_countries": {
+      "SE": 10,
+      "NO": 7
+    },
+    "pdf_official_conflicts": 0,
+    "adapter_incorrect_values": 0,
+    "adapter_missing_official_values": 12,
+    "code_family_denominator": 11,
+    "code_family_verification_counts": {
+      "PARTIALLY_DOCUMENTED": 4,
+      "VERIFIED_SCOPED": 7
+    },
+    "codebook_version": "0.2.0-research",
+    "attempts_without_link": [
+      {
+        "observation_id": "M7A1-007",
+        "source_member": "goffa-20260811.html",
+        "reason": "Requested Biri result page has no matching stable registration; no row linked"
+      },
+      {
+        "observation_id": "M7A1-009",
+        "source_member": "goffa-20261013.html",
+        "reason": "Requested Momarken result page has no matching stable registration; no row linked"
+      }
+    ],
+    "source_archive_sha256": "96d6a3c4a344a61b3d42b8173fff1b02fa44a4c1a430902db559d684960f8eb9",
+    "known_sha256": "82ca3f9e043cfc76c672b7efe15efe9da93090387972c762f4e306ffdaf1e39d",
+    "holdout_sha256": "f9d9eaf36b778b7af13738dbf49dcff81690119b1987827d0d676d8a95f58b87",
+    "representative": false,
+    "model_eligible": 0,
+    "pit_verified": 0,
+    "terminal_status": "M7B1A_PARTIAL"
+  },
+  "source_policy": {
+    "new_fixture": "21 public bounded DNT/ATG/ST responses and manifest,237450-byte compressed archive. No new PDF/backfill/large sensitive source. Complete original body hashes and actual observation times in ZIP manifest.",
+    "source_hierarchy": "Exact official dated stable-horse result proof for VERIFIED observations. Indexed official ST document only supports scoped definitions/candidates; no binary claim. Secondary alias copy never verifies an identity.",
+    "st_index_access": "Direct returned HTML verification page, not PDF. Index meanings reviewed from indexed primary text; document version2020-05-20. No challenge/CMS bypass.",
+    "failed_attempts": [
+      "ATG /tracks endpoint404",
+      "Two requested DNT Goffa pages no matching registration",
+      "One exploratory Pure Ego race5 response did not contain stable ID; rejected, correct race6 fetched and independently verified. No link to wrong race."
+    ]
+  },
+  "control_level": "Same Codex source-first review, not human/blinded/independent second model; explicit limitation and selected cases in CONTROL_REVIEW.json",
+  "data_layers": [
+    "unchanged PDF transcription",
+    "unchanged semantic adapter",
+    "official historical result",
+    "bounded retrospective stable identity evidence",
+    "UNVERIFIED PIT"
+  ],
+  "tests": [
+    {
+      "command": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_history_source_verification.py",
+      "result": "17 passed",
+      "exit_code": 0
+    },
+    {
+      "command": "PYTHONPATH=src .venv/bin/python -m pytest -q",
+      "result": "513 passed in 41.09s",
+      "exit_code": 0,
+      "output_sha256": "11a343efb8cbc067c12b0a8a11fac6d6a6aec97ea6d9f486416675bb1f6ac17a"
+    },
+    {
+      "command": "PYTHONPATH=src .venv/bin/ruff check .",
+      "result": "All checks passed!",
+      "exit_code": 0
+    },
+    {
+      "command": "python -m hbi.history_source_verification --output <new-file>",
+      "result": "90 rows / 17 VERIFIED / 43 CANDIDATE_ONLY /30 AMBIGUOUS; reproduced byte-identically",
+      "output_sha256": "fe17584486385cb459bceff8e814a88d01930234d4b351839ab4f5f5f5944ed0",
+      "exit_code": 0
+    },
+    {
+      "command": "python -m hbi.history_semantic_benchmark --parser-path /workspace/rikstoto-program-collector/collector/pdf_program.py --output <new-file>",
+      "result": "Actual external parser execution; known60 and holdout30 unchanged, byte-identical to M7B1 baseline",
+      "output_sha256": "812a0c4ca9b4e7466c5bd4dfc5115774ccaa11de6e5ccbf61264ff8f19adf623",
+      "exit_code": 0
+    },
+    {
+      "command": "python -m hbi.v1_audit --db <isolated-local.sqlite> --output-dir <evidence-directory>",
+      "result": "PASS_WITH_EVIDENCE_PENDING",
+      "interpretation": "Clean isolated DB zero stored rows; temporal/settlement PASS, provider/replay NO_EVIDENCE. Not operational/model validity.",
+      "exit_code": 0
+    }
+  ],
+  "negative_cases": [
+    "same B/J/S/F code never globally promoted",
+    "wrong country/date/race/horse/pedigree",
+    "unsupported historical alias or reuse of proof for a different PDF observation",
+    "conflicting official source metadata",
+    "unknown compounds not numerical rank/time",
+    "absent a never VOLT; official VOLT remains separate",
+    "missing/bad hash/timezone/source provenance",
+    "unvalidated candidate/dict VERIFIED tag cannot promote",
+    "old qualification/zero/physical-product-alias/monte/God NOT_REPRODUCED regressions retained"
+  ],
+  "debug_notes": [
+    "Official no-a DQ time cell initially made comparator label Custer AUTO as conflict; source reader corrected to exact race terms and missing source values no longer treated as wrong values. No PDF/adapter change.",
+    "New test fixture mutation initially leaked provenance changes into shared test fixture; isolated via deepcopy.",
+    "Code-family occurrence lookup initially omitted raw dg a/br ag suffix forms. Corrected literal prefix indexing, preserving full raw codes; missing-time examples and denominators now explicit."
+  ],
+  "ci": "Record exact-head CI in Draft PR body/final after actual execution; no local result is called CI pass",
+  "protected_changes": [],
+  "model_eligible": 0,
+  "pit_verified": 0,
+  "remaining_blockers": [
+    "73/90 venue identities not VERIFIED",
+    "four complete compound semantics unresolved; br PDF formatter context unbound",
+    "12 source-backed values not extracted by frozen adapter",
+    "no new independent official qualifier row",
+    "no independent human/blinded signoff",
+    "stable historical full-field identity and PIT/model contracts still unadmitted"
+  ],
+  "terminal_status": "M7B1A_PARTIAL",
+  "workflow_status": "REVISE",
+  "recommendation": "M7B2_HOLD for general feature integration; narrowly scoped future identity/PIT research can reuse17 documented chains only under separate HQ scope; no model admission",
+  "rollback": "Close/revert additive research PR; no production state changes"
+}
