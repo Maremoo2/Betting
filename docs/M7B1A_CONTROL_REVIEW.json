@@ -1,0 +1,61 @@
+{
+  "schema": "M7B1A_SOURCE_FIRST_CONTROL_V1",
+  "reviewed_at": "2026-10-23T06:15:28.368347+00:00",
+  "reviewer": "SAME_CODEX_AGENT",
+  "human": false,
+  "blinded": false,
+  "independence_limit": "No independent second reviewer/model is claimed. Agent knows previous task but this control pass consulted original/raw official sources before new audit implementation; normalized parser answers not supplied as source truth. Independent human signoff remains outstanding.",
+  "source_first": true,
+  "parser_normalized_values_used_as_truth": false,
+  "sample_selection": "Risk-directed: ambiguous B/J/S/U/Åm/Ax, dg/frd8a/ug/vändg/kubug, zero, qualification; not representative.",
+  "checks": [
+    {
+      "case": "Custer / B 2026-09-12 R3",
+      "source": "dnt-bjerke-20260912.html",
+      "independent_source_finding": "Same DNT registration 578001020205025, Disk. galopp, raw dg; no numeric time/placing",
+      "decision": "SCOPED_DQ_AND_GALLOP; no global alias mapping"
+    },
+    {
+      "case": "Goffa / BI 2026-07-24 R6",
+      "source": "goffa-20260724.html",
+      "independent_source_finding": "Same registration 578001020215363, zero placing and 21,8 g; different horses explicitly DQ on same result page",
+      "decision": "UNPLACED_WITH_GALLOP_NOT_AUTOMATIC_DQ"
+    },
+    {
+      "case": "Eire / Ax 2026-07-19 R10",
+      "source": "atg-eire-20260719.json",
+      "independent_source_finding": "ATG 791286 with matching sire/dam, Axevalla ID8, auto, disqualified true, kmTime code frd8",
+      "decision": "DQ_CORROBORATED; 8 not final rank or numeric time; full compound still unknown"
+    },
+    {
+      "case": "Pure Ego / U 2025-10-10 R6 and 2025-10-26 R6",
+      "source": [
+        "atg-pure-20251010-r6.json",
+        "atg-pure-20251026.json"
+      ],
+      "independent_source_finding": "ATG793918, Umåker27; kmTime u / vänd; galloped and disqualified true",
+      "decision": "SCOPED_RESULT_FLAGS_VERIFIED; full compound grammar not assumed"
+    },
+    {
+      "case": "Beautiful Disaster / Åm 2026-08-09 R4",
+      "source": "atg-beautiful-20260809.json",
+      "independent_source_finding": "ATG794752 and pedigree, Åmål29; kmTime kubu, galloped and disqualified true",
+      "decision": "SCOPED_RESULT_FLAGS; no numeric time"
+    },
+    {
+      "case": "Single Lane qualifier",
+      "source": "Original X1 PDF page2 and indexed primary ST index 2020-05-20",
+      "independent_source_finding": "k with gdk in qualification context; k elsewhere also distance abbreviation",
+      "decision": "QUALIFICATION_ONLY; independent official result row not obtained"
+    },
+    {
+      "case": "Flying Finn / S Solvalla",
+      "source": "Existing six-start M7A1 official source chain",
+      "independent_source_finding": "Stable ATG788027 and exact historical dates/races; win 71.1 sec/km, separate May DQ/gallop evidence",
+      "decision": "Reuse independently bound historical source, no PIT promotion"
+    }
+  ],
+  "unadjudicated_source_conflicts": [],
+  "pit_approval": false,
+  "model_eligible": false
+}

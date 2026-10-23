@@ -1,0 +1,4304 @@
+{
+  "schema": "M7B1A_SOURCE_VERIFICATION_V1",
+  "version": "0.1.0",
+  "rows": 90,
+  "printed_codes_correct": 90,
+  "baseline": {
+    "unambiguous_candidates": 43,
+    "unresolved_candidates": 47,
+    "authoritatively_verified": "NOT_MEASURED"
+  },
+  "track_status_counts": {
+    "VERIFIED": 17,
+    "CANDIDATE_ONLY": 43,
+    "AMBIGUOUS": 30,
+    "UNRESOLVED": 0,
+    "CONFLICTING_EVIDENCE": 0
+  },
+  "baseline_candidate_migration": [
+    {
+      "before": "AMBIGUOUS",
+      "after": "AMBIGUOUS",
+      "rows": 29
+    },
+    {
+      "before": "AMBIGUOUS",
+      "after": "CANDIDATE_ONLY",
+      "rows": 6
+    },
+    {
+      "before": "AMBIGUOUS",
+      "after": "VERIFIED",
+      "rows": 12
+    },
+    {
+      "before": "EXTRACTED",
+      "after": "AMBIGUOUS",
+      "rows": 1
+    },
+    {
+      "before": "EXTRACTED",
+      "after": "CANDIDATE_ONLY",
+      "rows": 37
+    },
+    {
+      "before": "EXTRACTED",
+      "after": "VERIFIED",
+      "rows": 5
+    }
+  ],
+  "official_starts_reviewed": 17,
+  "official_countries": {
+    "SE": 10,
+    "NO": 7
+  },
+  "pdf_official_conflicts": 0,
+  "adapter_incorrect_values": 0,
+  "adapter_missing_official_values": 12,
+  "code_family_denominator": 11,
+  "code_family_verification_counts": {
+    "PARTIALLY_DOCUMENTED": 4,
+    "VERIFIED_SCOPED": 7
+  },
+  "codebook_version": "0.2.0-research",
+  "attempts_without_link": [
+    {
+      "observation_id": "M7A1-007",
+      "source_member": "goffa-20260811.html",
+      "reason": "Requested Biri result page has no matching stable registration; no row linked"
+    },
+    {
+      "observation_id": "M7A1-009",
+      "source_member": "goffa-20261013.html",
+      "reason": "Requested Momarken result page has no matching stable registration; no row linked"
+    }
+  ],
+  "observations": [
+    {
+      "observation_id": "M7A1-001",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:4",
+      "target_horse_name": "CUSTER",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 1,
+      "raw_history_line": "To Sol J 22.08.26-4|2 2 1 2100 14,6a 246 20' ¢c Am 2 Custer 11 Viviani 12 Amazing Khan lett tet, dempet mye midtveis, meget lett lett tet, dempet mye midtveis, meget lett",
+      "historical_date": "2026-08-22",
+      "printed_code": "J",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Jarlsberg Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Jarlsberg",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "NO",
+        "name": "Jarlsberg Travbane",
+        "stable_provider_id": "NOT_REPORTED",
+        "official_track_uri": "https://www.travsport.no/travbaner/jarlsberg-travbane/"
+      },
+      "valid_on": "2026-08-22",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-001",
+          "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:4",
+          "target_horse_name": "CUSTER",
+          "target_program_number": 1,
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "pdf_page": 1,
+          "raw_history_line": "To Sol J 22.08.26-4|2 2 1 2100 14,6a 246 20' ¢c Am 2 Custer 11 Viviani 12 Amazing Khan lett tet, dempet mye midtveis, meget lett lett tet, dempet mye midtveis, meget lett",
+          "historical_track": "J",
+          "historical_date": "2026-08-22",
+          "historical_race_number": 4
+        },
+        "track": {
+          "country": "NO",
+          "name": "Jarlsberg Travbane",
+          "stable_provider_id": "NOT_REPORTED",
+          "official_track_uri": "https://www.travsport.no/travbaner/jarlsberg-travbane/"
+        },
+        "horse_identity": "DNT_REGISTRATION:578001020205025",
+        "date": "2026-08-22",
+        "race_number": 4,
+        "values": {
+          "placing": 1,
+          "distance_m": 2100,
+          "km_time": 74.6,
+          "start_method": "AUTO",
+          "gallop_flag": "NOT_REPORTED",
+          "disqualification_flag": "NOT_REPORTED"
+        },
+        "raw_official_result": {
+          "cells": [
+            "1",
+            "2",
+            "Custer",
+            "2100",
+            "2.36,7",
+            "14,6a"
+          ],
+          "start_method_from_race_terms": "AUTO"
+        },
+        "source": {
+          "name": "custer-20260822.html",
+          "url": "https://www.travsport.no/travbaner/jarlsberg-travbane/results/2026-08-22",
+          "final_url": "https://www.travsport.no/travbaner/jarlsberg-travbane/results/2026-08-22",
+          "observed_at": "2026-10-23T06:08:55.783757+00:00",
+          "status": 200,
+          "content_type": "text/html; charset=utf-8",
+          "sha256": "41601562470b93686a49841e66e918c3ad19b6d889e495b461cabdfdd77e5933",
+          "bytes": 256334
+        },
+        "identity_proof": {
+          "role": "BOUNDED_RETROSPECTIVE_REGISTRATION_REVIEW_NOT_GLOBAL_IDENTITY_ADMISSION",
+          "target_starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/BJ_NR_2026-10-20/starts.json",
+            "member_sha256": "36e1877b11dc0cdb010d6c91d679cdec9bc3667bf9b42c53a66e884e0cf2f087",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "target_registration": "578001020205025"
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "CORRECT",
+        "distance_m": "CORRECT",
+        "km_time": "CORRECT",
+        "start_method": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE"
+      },
+      "adapter_vs_official": {
+        "placing": "CORRECT",
+        "distance_m": "CORRECT",
+        "km_time": "CORRECT",
+        "start_method": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "observation_id": "M7A1-002",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:4",
+      "target_horse_name": "CUSTER",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 1,
+      "raw_history_line": "To Sol J 04.09.26-1|2 2 2 2100 15,3a 22 18' cc Am 5 Amazing Khan 2 Custer 3 Escobar Face tet, overflydd e 250, lederrygg, fikk sjansen for sent, ikke tom i mål tet, overflydd e 250, lederrygg, fikk sjansen for sent, ikke tom i mål",
+      "historical_date": "2026-09-04",
+      "printed_code": "J",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Jarlsberg Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Jarlsberg",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "NO",
+        "name": "Jarlsberg Travbane",
+        "stable_provider_id": "NOT_REPORTED",
+        "official_track_uri": "https://www.travsport.no/travbaner/jarlsberg-travbane/"
+      },
+      "valid_on": "2026-09-04",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-002",
+          "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:4",
+          "target_horse_name": "CUSTER",
+          "target_program_number": 1,
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "pdf_page": 1,
+          "raw_history_line": "To Sol J 04.09.26-1|2 2 2 2100 15,3a 22 18' cc Am 5 Amazing Khan 2 Custer 3 Escobar Face tet, overflydd e 250, lederrygg, fikk sjansen for sent, ikke tom i mål tet, overflydd e 250, lederrygg, fikk sjansen for sent, ikke tom i mål",
+          "historical_track": "J",
+          "historical_date": "2026-09-04",
+          "historical_race_number": 1
+        },
+        "track": {
+          "country": "NO",
+          "name": "Jarlsberg Travbane",
+          "stable_provider_id": "NOT_REPORTED",
+          "official_track_uri": "https://www.travsport.no/travbaner/jarlsberg-travbane/"
+        },
+        "horse_identity": "DNT_REGISTRATION:578001020205025",
+        "date": "2026-09-04",
+        "race_number": 1,
+        "values": {
+          "placing": 2,
+          "distance_m": 2100,
+          "km_time": 75.3,
+          "start_method": "AUTO",
+          "gallop_flag": "NOT_REPORTED",
+          "disqualification_flag": "NOT_REPORTED"
+        },
+        "raw_official_result": {
+          "cells": [
+            "2",
+            "2",
+            "Custer",
+            "2100",
+            "2.38,2",
+            "15,3a"
+          ],
+          "start_method_from_race_terms": "AUTO"
+        },
+        "source": {
+          "name": "custer-20260904.html",
+          "url": "https://www.travsport.no/travbaner/jarlsberg-travbane/results/2026-09-04",
+          "final_url": "https://www.travsport.no/travbaner/jarlsberg-travbane/results/2026-09-04",
+          "observed_at": "2026-10-23T06:08:55.660160+00:00",
+          "status": 200,
+          "content_type": "text/html; charset=utf-8",
+          "sha256": "65634a0acd929f4fdb3b257f7d3dc3c47529eb786c5be993b650f15fc9b4f011",
+          "bytes": 265890
+        },
+        "identity_proof": {
+          "role": "BOUNDED_RETROSPECTIVE_REGISTRATION_REVIEW_NOT_GLOBAL_IDENTITY_ADMISSION",
+          "target_starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/BJ_NR_2026-10-20/starts.json",
+            "member_sha256": "36e1877b11dc0cdb010d6c91d679cdec9bc3667bf9b42c53a66e884e0cf2f087",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "target_registration": "578001020205025"
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "CORRECT",
+        "distance_m": "CORRECT",
+        "km_time": "CORRECT",
+        "start_method": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE"
+      },
+      "adapter_vs_official": {
+        "placing": "CORRECT",
+        "distance_m": "CORRECT",
+        "km_time": "CORRECT",
+        "start_method": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "observation_id": "M7A1-003",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:4",
+      "target_horse_name": "CUSTER",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 1,
+      "raw_history_line": "To Sol B 12.09.26-3|1011 - 2100 dg a 102 50' ¢c Am 7 Gargo Spritz 5 Amazing Khan 2 C.C. Hammer Time g fra start, angrep 900 i, ny galopp siste bortre g fra start, angrep 900 i, ny galopp siste bortre",
+      "historical_date": "2026-09-12",
+      "printed_code": "B",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Bjerke Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Bjerke",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Bergsåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "NO",
+        "name": "Bjerke Travbane",
+        "stable_provider_id": "NOT_REPORTED",
+        "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+      },
+      "valid_on": "2026-09-12",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-003",
+          "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:4",
+          "target_horse_name": "CUSTER",
+          "target_program_number": 1,
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "pdf_page": 1,
+          "raw_history_line": "To Sol B 12.09.26-3|1011 - 2100 dg a 102 50' ¢c Am 7 Gargo Spritz 5 Amazing Khan 2 C.C. Hammer Time g fra start, angrep 900 i, ny galopp siste bortre g fra start, angrep 900 i, ny galopp siste bortre",
+          "historical_track": "B",
+          "historical_date": "2026-09-12",
+          "historical_race_number": 3
+        },
+        "track": {
+          "country": "NO",
+          "name": "Bjerke Travbane",
+          "stable_provider_id": "NOT_REPORTED",
+          "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+        },
+        "horse_identity": "DNT_REGISTRATION:578001020205025",
+        "date": "2026-09-12",
+        "race_number": 3,
+        "values": {
+          "placing": "UNKNOWN",
+          "distance_m": 2100,
+          "km_time": "NOT_REPORTED",
+          "start_method": "AUTO",
+          "gallop_flag": true,
+          "disqualification_flag": true
+        },
+        "raw_official_result": {
+          "cells": [
+            "Disk. galopp",
+            "11",
+            "Custer",
+            "2100",
+            "#",
+            "dg"
+          ],
+          "start_method_from_race_terms": "AUTO"
+        },
+        "source": {
+          "name": "dnt-bjerke-20260912.html",
+          "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-12",
+          "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-12",
+          "observed_at": "2026-10-23T06:07:49.933737+00:00",
+          "status": 200,
+          "content_type": "text/html; charset=utf-8",
+          "sha256": "664c27f57c21843690758260133e3b30541abbbaf9515453c559aee3688e8aba",
+          "bytes": 274263
+        },
+        "identity_proof": {
+          "role": "BOUNDED_RETROSPECTIVE_REGISTRATION_REVIEW_NOT_GLOBAL_IDENTITY_ADMISSION",
+          "target_starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/BJ_NR_2026-10-20/starts.json",
+            "member_sha256": "36e1877b11dc0cdb010d6c91d679cdec9bc3667bf9b42c53a66e884e0cf2f087",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "target_registration": "578001020205025"
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "AMBIGUOUS_SOURCE",
+        "distance_m": "CORRECT",
+        "km_time": "NOT_APPLICABLE",
+        "start_method": "CORRECT",
+        "gallop_flag": "CORRECT",
+        "disqualification_flag": "AMBIGUOUS_SOURCE"
+      },
+      "adapter_vs_official": {
+        "placing": "AMBIGUOUS_SOURCE",
+        "distance_m": "CORRECT",
+        "km_time": "NOT_APPLICABLE",
+        "start_method": "CORRECT",
+        "gallop_flag": "CORRECT",
+        "disqualification_flag": "NOT_EXTRACTED"
+      }
+    },
+    {
+      "observation_id": "M7A1-004",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:4",
+      "target_horse_name": "CUSTER",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 1,
+      "raw_history_line": "To Sol B 06.10.26-8|1 1 3 2100 14,1a 44 30' ¢c Am 2 Tortilla Tile (SE) * 5 Mila Barosso 1 Custer bra ut, lederrygg, sto på fint til maks bra ut, lederrygg, sto på fint til maks",
+      "historical_date": "2026-10-06",
+      "printed_code": "B",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Bjerke Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Bjerke",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Bergsåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "NO",
+        "name": "Bjerke Travbane",
+        "stable_provider_id": "NOT_REPORTED",
+        "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+      },
+      "valid_on": "2026-10-06",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-004",
+          "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:4",
+          "target_horse_name": "CUSTER",
+          "target_program_number": 1,
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "pdf_page": 1,
+          "raw_history_line": "To Sol B 06.10.26-8|1 1 3 2100 14,1a 44 30' ¢c Am 2 Tortilla Tile (SE) * 5 Mila Barosso 1 Custer bra ut, lederrygg, sto på fint til maks bra ut, lederrygg, sto på fint til maks",
+          "historical_track": "B",
+          "historical_date": "2026-10-06",
+          "historical_race_number": 8
+        },
+        "track": {
+          "country": "NO",
+          "name": "Bjerke Travbane",
+          "stable_provider_id": "NOT_REPORTED",
+          "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+        },
+        "horse_identity": "DNT_REGISTRATION:578001020205025",
+        "date": "2026-10-06",
+        "race_number": 8,
+        "values": {
+          "placing": 3,
+          "distance_m": 2100,
+          "km_time": 74.1,
+          "start_method": "AUTO",
+          "gallop_flag": "NOT_REPORTED",
+          "disqualification_flag": "NOT_REPORTED"
+        },
+        "raw_official_result": {
+          "cells": [
+            "3",
+            "1",
+            "Custer",
+            "2100",
+            "2.35,7",
+            "14,1a"
+          ],
+          "start_method_from_race_terms": "AUTO"
+        },
+        "source": {
+          "name": "custer-20261006.html",
+          "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-10-06",
+          "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-10-06",
+          "observed_at": "2026-10-23T06:08:55.979766+00:00",
+          "status": 200,
+          "content_type": "text/html; charset=utf-8",
+          "sha256": "59ae4056d12387437770bca4d36c257bebfcfb9740897519ed3262a24dfb81f3",
+          "bytes": 306852
+        },
+        "identity_proof": {
+          "role": "BOUNDED_RETROSPECTIVE_REGISTRATION_REVIEW_NOT_GLOBAL_IDENTITY_ADMISSION",
+          "target_starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/BJ_NR_2026-10-20/starts.json",
+            "member_sha256": "36e1877b11dc0cdb010d6c91d679cdec9bc3667bf9b42c53a66e884e0cf2f087",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "target_registration": "578001020205025"
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "CORRECT",
+        "distance_m": "CORRECT",
+        "km_time": "CORRECT",
+        "start_method": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE"
+      },
+      "adapter_vs_official": {
+        "placing": "CORRECT",
+        "distance_m": "CORRECT",
+        "km_time": "CORRECT",
+        "start_method": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "observation_id": "M7A1-005",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:4",
+      "target_horse_name": "GOFFA",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 1,
+      "raw_history_line": "Ge Gun M 06.07.26-6|1112 2 2140 15,1a 19 18' cc Va 8 Euro S.L. 12 Goffa 9 Beverlyhills tredje utv, angrep 650 i, knep annen langt bak vinner, ok, men vært bedre tredje utv, angrep 650 i, knep annen langt bak vinner, ok, men vært bedre",
+      "historical_date": "2026-07-06",
+      "printed_code": "M",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Momarken Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Momarken",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "NO",
+        "name": "Momarken Travbane",
+        "stable_provider_id": "NOT_REPORTED",
+        "official_track_uri": "https://www.travsport.no/travbaner/momarken-travbane/"
+      },
+      "valid_on": "2026-07-06",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-005",
+          "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:4",
+          "target_horse_name": "GOFFA",
+          "target_program_number": 2,
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "pdf_page": 1,
+          "raw_history_line": "Ge Gun M 06.07.26-6|1112 2 2140 15,1a 19 18' cc Va 8 Euro S.L. 12 Goffa 9 Beverlyhills tredje utv, angrep 650 i, knep annen langt bak vinner, ok, men vært bedre tredje utv, angrep 650 i, knep annen langt bak vinner, ok, men vært bedre",
+          "historical_track": "M",
+          "historical_date": "2026-07-06",
+          "historical_race_number": 6
+        },
+        "track": {
+          "country": "NO",
+          "name": "Momarken Travbane",
+          "stable_provider_id": "NOT_REPORTED",
+          "official_track_uri": "https://www.travsport.no/travbaner/momarken-travbane/"
+        },
+        "horse_identity": "DNT_REGISTRATION:578001020215363",
+        "date": "2026-07-06",
+        "race_number": 6,
+        "values": {
+          "placing": 2,
+          "distance_m": 2140,
+          "km_time": 75.1,
+          "start_method": "AUTO",
+          "gallop_flag": "NOT_REPORTED",
+          "disqualification_flag": "NOT_REPORTED"
+        },
+        "raw_official_result": {
+          "cells": [
+            "2",
+            "12",
+            "Goffa",
+            "2140",
+            "2.40,7",
+            "15,1a"
+          ],
+          "start_method_from_race_terms": "AUTO"
+        },
+        "source": {
+          "name": "goffa-20260706.html",
+          "url": "https://www.travsport.no/travbaner/momarken-travbane/results/2026-07-06",
+          "final_url": "https://www.travsport.no/travbaner/momarken-travbane/results/2026-07-06",
+          "observed_at": "2026-10-23T06:08:55.740205+00:00",
+          "status": 200,
+          "content_type": "text/html; charset=utf-8",
+          "sha256": "f819eac7c7d8490a7bbbd0d62551b9588e626bedceffb4e41c41c768fade2a9e",
+          "bytes": 281506
+        },
+        "identity_proof": {
+          "role": "BOUNDED_RETROSPECTIVE_REGISTRATION_REVIEW_NOT_GLOBAL_IDENTITY_ADMISSION",
+          "target_starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/BJ_NR_2026-10-20/starts.json",
+            "member_sha256": "36e1877b11dc0cdb010d6c91d679cdec9bc3667bf9b42c53a66e884e0cf2f087",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "target_registration": "578001020215363"
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "CORRECT",
+        "distance_m": "CORRECT",
+        "km_time": "CORRECT",
+        "start_method": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE"
+      },
+      "adapter_vs_official": {
+        "placing": "CORRECT",
+        "distance_m": "CORRECT",
+        "km_time": "CORRECT",
+        "start_method": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "observation_id": "M7A1-006",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:4",
+      "target_horse_name": "GOFFA",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 1,
+      "raw_history_line": "Ge Gun BI 24.07.26-6|8 11 0 2620 21,8 g 43 20' cc Va 9 Megatron 3 Newton B.R. 5 Born In The Norway feilet på startsiden feilet på startsiden",
+      "historical_date": "2026-07-24",
+      "printed_code": "BI",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Biri Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Biri",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "NO",
+        "name": "Biri Travbane",
+        "stable_provider_id": "NOT_REPORTED",
+        "official_track_uri": "https://www.travsport.no/travbaner/biri-travbane/"
+      },
+      "valid_on": "2026-07-24",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-006",
+          "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:4",
+          "target_horse_name": "GOFFA",
+          "target_program_number": 2,
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "pdf_page": 1,
+          "raw_history_line": "Ge Gun BI 24.07.26-6|8 11 0 2620 21,8 g 43 20' cc Va 9 Megatron 3 Newton B.R. 5 Born In The Norway feilet på startsiden feilet på startsiden",
+          "historical_track": "BI",
+          "historical_date": "2026-07-24",
+          "historical_race_number": 6
+        },
+        "track": {
+          "country": "NO",
+          "name": "Biri Travbane",
+          "stable_provider_id": "NOT_REPORTED",
+          "official_track_uri": "https://www.travsport.no/travbaner/biri-travbane/"
+        },
+        "horse_identity": "DNT_REGISTRATION:578001020215363",
+        "date": "2026-07-24",
+        "race_number": 6,
+        "values": {
+          "placing": "UNPLACED",
+          "distance_m": 2620,
+          "km_time": 81.8,
+          "start_method": "UNKNOWN",
+          "gallop_flag": true,
+          "disqualification_flag": "NOT_REPORTED"
+        },
+        "raw_official_result": {
+          "cells": [
+            "0",
+            "11",
+            "Goffa",
+            "2620",
+            "3.34,2",
+            "21,8 g"
+          ],
+          "start_method_from_race_terms": "UNKNOWN"
+        },
+        "source": {
+          "name": "goffa-20260724.html",
+          "url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-07-24",
+          "final_url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-07-24",
+          "observed_at": "2026-10-23T06:08:58.467437+00:00",
+          "status": 200,
+          "content_type": "text/html; charset=utf-8",
+          "sha256": "5d7d31ff23f52e47e587f6d308bce3db874486c57d3df426b6c919601eb1e4ec",
+          "bytes": 292788
+        },
+        "identity_proof": {
+          "role": "BOUNDED_RETROSPECTIVE_REGISTRATION_REVIEW_NOT_GLOBAL_IDENTITY_ADMISSION",
+          "target_starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/BJ_NR_2026-10-20/starts.json",
+            "member_sha256": "36e1877b11dc0cdb010d6c91d679cdec9bc3667bf9b42c53a66e884e0cf2f087",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "target_registration": "578001020215363"
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "CORRECT",
+        "distance_m": "CORRECT",
+        "km_time": "CORRECT",
+        "start_method": "AMBIGUOUS_SOURCE",
+        "gallop_flag": "CORRECT",
+        "disqualification_flag": "NOT_APPLICABLE"
+      },
+      "adapter_vs_official": {
+        "placing": "CORRECT",
+        "distance_m": "CORRECT",
+        "km_time": "CORRECT",
+        "start_method": "AMBIGUOUS_SOURCE",
+        "gallop_flag": "CORRECT",
+        "disqualification_flag": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "observation_id": "M7A1-007",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:4",
+      "target_horse_name": "GOFFA",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 1,
+      "raw_history_line": "Ge Gun B 11.08.26-9|1212 0 2100 14,8a 94 30' cc Am 4 New First Lady 6 Oh U. Handsomeboy 3 Mefisto Faust femte utv, med i angrep 550 i, hadde lite å sette inn femte utv, med i angrep 550 i, hadde lite å sette inn",
+      "historical_date": "2026-08-11",
+      "printed_code": "B",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Bjerke Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Bjerke",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Bergsåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-008",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:4",
+      "target_horse_name": "GOFFA",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 1,
+      "raw_history_line": "Ge Gun B 18.08.26-8|2 2 0 2100 14,4a 71 22' cc Am 7 Peacekeeper 8 Euro S.L. 12 Atomic Pepper bra ut, lederrygg, dødens runden igjen, trakk seg på oppløpet, tøft bra ut, lederrygg, dødens runden igjen, trakk seg på oppløpet, tøft",
+      "historical_date": "2026-08-18",
+      "printed_code": "B",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Bjerke Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Bjerke",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Bergsåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "NO",
+        "name": "Bjerke Travbane",
+        "stable_provider_id": "NOT_REPORTED",
+        "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+      },
+      "valid_on": "2026-08-18",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-008",
+          "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:4",
+          "target_horse_name": "GOFFA",
+          "target_program_number": 2,
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "pdf_page": 1,
+          "raw_history_line": "Ge Gun B 18.08.26-8|2 2 0 2100 14,4a 71 22' cc Am 7 Peacekeeper 8 Euro S.L. 12 Atomic Pepper bra ut, lederrygg, dødens runden igjen, trakk seg på oppløpet, tøft bra ut, lederrygg, dødens runden igjen, trakk seg på oppløpet, tøft",
+          "historical_track": "B",
+          "historical_date": "2026-08-18",
+          "historical_race_number": 8
+        },
+        "track": {
+          "country": "NO",
+          "name": "Bjerke Travbane",
+          "stable_provider_id": "NOT_REPORTED",
+          "official_track_uri": "https://www.travsport.no/travbaner/bjerke-travbane/"
+        },
+        "horse_identity": "DNT_REGISTRATION:578001020215363",
+        "date": "2026-08-18",
+        "race_number": 8,
+        "values": {
+          "placing": "UNPLACED",
+          "distance_m": 2100,
+          "km_time": 74.4,
+          "start_method": "AUTO",
+          "gallop_flag": "NOT_REPORTED",
+          "disqualification_flag": "NOT_REPORTED"
+        },
+        "raw_official_result": {
+          "cells": [
+            "0",
+            "2",
+            "Goffa",
+            "2100",
+            "2.36,3",
+            "14,4a"
+          ],
+          "start_method_from_race_terms": "AUTO"
+        },
+        "source": {
+          "name": "goffa-20260818.html",
+          "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-08-18",
+          "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-08-18",
+          "observed_at": "2026-10-23T06:08:57.940382+00:00",
+          "status": 200,
+          "content_type": "text/html; charset=utf-8",
+          "sha256": "3d858b26d554a9f0b4002bec35dd2b67c5af699b76dece5804e17d10b1e202b6",
+          "bytes": 273469
+        },
+        "identity_proof": {
+          "role": "BOUNDED_RETROSPECTIVE_REGISTRATION_REVIEW_NOT_GLOBAL_IDENTITY_ADMISSION",
+          "target_starts": {
+            "member": "2026-10-20/20261020T051747910748Z/meetings/BJ_NR_2026-10-20/starts.json",
+            "member_sha256": "36e1877b11dc0cdb010d6c91d679cdec9bc3667bf9b42c53a66e884e0cf2f087",
+            "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+          },
+          "target_registration": "578001020215363"
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "CORRECT",
+        "distance_m": "CORRECT",
+        "km_time": "CORRECT",
+        "start_method": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE"
+      },
+      "adapter_vs_official": {
+        "placing": "CORRECT",
+        "distance_m": "CORRECT",
+        "km_time": "CORRECT",
+        "start_method": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "observation_id": "M7A1-009",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:4",
+      "target_horse_name": "GOFFA",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 1,
+      "raw_history_line": "Gun MT B 13.10.26-8|7 9 2 2660 16,8 95 40' cc Va 8 Brostile R. 9 Goffa 4 Kiwi Bobcat annet/tredje utvendig, angrep 800 igjen, fullførte bra, speedet ned annet/tredje utvendig, angrep 800 igjen, fullførte bra, speedet ned",
+      "historical_date": "2026-10-13",
+      "printed_code": "B",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Bjerke Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Bjerke",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Bergsåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-010",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-20:7",
+      "target_horse_name": "SINGLE LANE",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 2,
+      "raw_history_line": "Kyl Os Rä 01.08.26-6|7 7 6 2140 14,0a 750 136' ¢¢ Am 4 Hip to be Square 3 Myrsjös Tage 6 L.L.Imhoturnot Över, ner e 375, 2-utv, problem 800 kv, lucka fram, höll bara sin fart. Över, ner e 375, 2-utv, problem 800 kv, lucka fram, höll bara sin fart.",
+      "historical_date": "2026-08-01",
+      "printed_code": "Rä",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Rättvik",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-011",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-20:7",
+      "target_horse_name": "SINGLE LANE",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 2,
+      "raw_history_line": "Kyl Os B 20.08.26-4|5 5 1 1640 11,7a 48 43' ¢¢ Am 5 Single Lane 12 O.P.'s Katrin 2 Good Habit Utv led, ledn e 300, fick inte vara ifred, lätt undan, mkt bra. Utv led, ledn e 300, fick inte vara ifred, lätt undan, mkt bra.",
+      "historical_date": "2026-08-20",
+      "printed_code": "B",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Bjerke Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Bjerke",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Bergsåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-012",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-20:7",
+      "target_horse_name": "SINGLE LANE",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 2,
+      "raw_history_line": "Str Je G 27.08.26-7|1111 3 2140 13,3a 102 38' ¢¢ Am 5-utv, med i 3-spår 800 kv, på 250 kv, pigg avsl, 12,3/1000. 5-utv, med i 3-spår 800 kv, på 250 kv, pigg avsl, 12,3/1000.",
+      "historical_date": "2026-08-27",
+      "printed_code": "G",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Gävle",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-013",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-20:7",
+      "target_horse_name": "SINGLE LANE",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 2,
+      "raw_history_line": "Vik LH Ro 29.09.26-13|66 k 2140 17,0 gdk 0'",
+      "historical_date": "2026-09-29",
+      "printed_code": "Ro",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Romme",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-014",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-20:7",
+      "target_horse_name": "SINGLE LANE",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 2,
+      "raw_history_line": "Kyl Os Vi 06.10.26-4|8 8 2 1620 12,3a 24 27' ¢¢ Va 11 Max Montana 8 Single Lane 6 Berghsäker W.F. Ledn e 250, press på si bortre, hård duell, slagen i si stegen, höll bra. Ledn e 250, press på si bortre, hård duell, slagen i si stegen, höll bra.",
+      "historical_date": "2026-10-06",
+      "printed_code": "Vi",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Visby",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-015",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-20:7",
+      "target_horse_name": "EIRE",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 2,
+      "raw_history_line": "Kon Jo S 15.05.26-6|7 7 0 2140 16,5ag 710 327' ¢c Va 6 My Creation 4 Love to the Limit 10 Mamma Mia Sisu Gal e 75, kördes runt på avstånd. Gal e 75, kördes runt på avstånd.",
+      "historical_date": "2026-05-15",
+      "printed_code": "S",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Sørlandet",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Solvalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-016",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-20:7",
+      "target_horse_name": "EIRE",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 2,
+      "raw_history_line": "Kih Ör S 31.05.26-14|99 0 2140 12,6a 104 109' ¢¢ Va 3 Västerbo Redless 4 Lotusorchide 5 Hold Me Closer 6-7-inv, 2-spår 700 kv, inv 400 kv, följde med bakom hästar med sparat. 6-7-inv, 2-spår 700 kv, inv 400 kv, följde med bakom hästar med sparat.",
+      "historical_date": "2026-05-31",
+      "printed_code": "S",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Sørlandet",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Solvalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-017",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-20:7",
+      "target_horse_name": "EIRE",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 2,
+      "raw_history_line": "Sjö Cl Ax 19.07.26-10|66 d 2140 frd8a 392 109' ¢¢ Va 5 Ecuador Broline 3 Have a Drink on Me 11 Sparkling Power Backade direkt, 6-5-utv, med i 3-spår 900 kv, höll hyggligt utan chans. Backade direkt, 6-5-utv, med i 3-spår 900 kv, höll hyggligt utan chans.",
+      "historical_date": "2026-07-19",
+      "printed_code": "Ax",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Axevalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "SE",
+        "name": "Axevalla",
+        "stable_provider_id": {
+          "namespace": "ATG_TRACK",
+          "value": 8
+        }
+      },
+      "valid_on": "2026-07-19",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-017",
+          "target_race_id": "RIKSTOTO:S2_NR_2026-10-20:7",
+          "target_horse_name": "EIRE",
+          "target_program_number": 3,
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "pdf_page": 2,
+          "raw_history_line": "Sjö Cl Ax 19.07.26-10|66 d 2140 frd8a 392 109' ¢¢ Va 5 Ecuador Broline 3 Have a Drink on Me 11 Sparkling Power Backade direkt, 6-5-utv, med i 3-spår 900 kv, höll hyggligt utan chans. Backade direkt, 6-5-utv, med i 3-spår 900 kv, höll hyggligt utan chans.",
+          "historical_track": "Ax",
+          "historical_date": "2026-07-19",
+          "historical_race_number": 10
+        },
+        "track": {
+          "country": "SE",
+          "name": "Axevalla",
+          "stable_provider_id": {
+            "namespace": "ATG_TRACK",
+            "value": 8
+          }
+        },
+        "date": "2026-07-19",
+        "race_number": 10,
+        "horse_identity": "ATG_HORSE:791286",
+        "values": {
+          "placing": "UNKNOWN",
+          "distance_m": 2140,
+          "km_time": "NOT_REPORTED",
+          "start_method": "AUTO",
+          "gallop_flag": "NOT_REPORTED",
+          "disqualification_flag": true
+        },
+        "raw_official_result": {
+          "finishOrder": 43,
+          "kmTime": {
+            "code": "frd8"
+          },
+          "disqualified": true,
+          "prizeMoney": 0,
+          "finalOdds": 39.25,
+          "startNumber": 6
+        },
+        "source": {
+          "name": "atg-eire-20260719.json",
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-07-19_8_10",
+          "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-07-19_8_10",
+          "observed_at": "2026-10-23T06:08:22.248578+00:00",
+          "status": 200,
+          "content_type": "application/json;charset=utf-8",
+          "sha256": "9db677065d1c4c3dd560fdbcb1c27b456435f60f6efea1422d5dd765a6663dfc",
+          "bytes": 43421
+        },
+        "identity_proof": {
+          "horse_id": 791286,
+          "pedigree": [
+            "walner",
+            "vivaciousallie"
+          ],
+          "proof": {
+            "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+            "starts": {
+              "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+              "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+              "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+            },
+            "program": {
+              "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+              "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+              "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+            },
+            "program_pointer": "/races/44/entrants/2",
+            "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+            "atg_member": "races/2026-10-20_14_7.json",
+            "atg_member_sha256": "e655ac18526af86f17755faef60eca8e82b288928fa122859e6cdc84fa5718d4",
+            "atg_pointer": "/payload/races/0/starts/2",
+            "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_7",
+            "observed_at": "2026-10-22T11:06:41.710968+00:00",
+            "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+          },
+          "role": "EXISTING_RETROSPECTIVE_IDENTITY_EVIDENCE_NOT_AUTOMATIC_ADMISSION"
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "AMBIGUOUS_SOURCE",
+        "distance_m": "CORRECT",
+        "km_time": "AMBIGUOUS_SOURCE",
+        "start_method": "AMBIGUOUS_SOURCE",
+        "gallop_flag": "AMBIGUOUS_SOURCE",
+        "disqualification_flag": "AMBIGUOUS_SOURCE"
+      },
+      "adapter_vs_official": {
+        "placing": "AMBIGUOUS_SOURCE",
+        "distance_m": "CORRECT",
+        "km_time": "NOT_APPLICABLE",
+        "start_method": "NOT_EXTRACTED",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_EXTRACTED"
+      }
+    },
+    {
+      "observation_id": "M7A1-018",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-20:9",
+      "target_horse_name": "GOD ONLY KNOWS",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 7,
+      "raw_history_line": "Par Ju Ö 12.09.26-9|2 2 3 1609 14,4ag 43 16' ¢¢ Va 1 Hot Pumpkin 4 Opoto Base 2 God Only Knows Sg, tappade 30, 5-utv, fram i 2-spår, 3-spår 300 kv, på 250, gdk, 14,4/800. Sg, tappade 30, 5-utv, fram i 2-spår, 3-spår 300 kv, på 250, gdk, 14,4/800.",
+      "historical_date": "2026-09-12",
+      "printed_code": "Ö",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Örebro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-019",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:5",
+      "target_horse_name": "SANCTUAIRE (S)",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 3,
+      "raw_history_line": "Ren Er JÆ 25.08.26-3|7 7 0 2140 br ag 300 0' Gal e 50. Gal e 50.",
+      "historical_date": "2026-08-25",
+      "printed_code": "JÆ",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-020",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-20:7",
+      "target_horse_name": "BEAUTIFUL DISASTER",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 2,
+      "raw_history_line": "Mid PO Åm 09.08.26-4|2 2 d 1680 kubug 27 54' ¢c Va 7 Grodda Jet 9 Popup Pellini 5 Maserati Salt Startgal, diskad. Startgal, diskad.",
+      "historical_date": "2026-08-09",
+      "printed_code": "Åm",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Åmål",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "SE",
+        "name": "Åmål",
+        "stable_provider_id": {
+          "namespace": "ATG_TRACK",
+          "value": 29
+        }
+      },
+      "valid_on": "2026-08-09",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-020",
+          "target_race_id": "RIKSTOTO:S2_NR_2026-10-20:7",
+          "target_horse_name": "BEAUTIFUL DISASTER",
+          "target_program_number": 6,
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "pdf_page": 2,
+          "raw_history_line": "Mid PO Åm 09.08.26-4|2 2 d 1680 kubug 27 54' ¢c Va 7 Grodda Jet 9 Popup Pellini 5 Maserati Salt Startgal, diskad. Startgal, diskad.",
+          "historical_track": "Åm",
+          "historical_date": "2026-08-09",
+          "historical_race_number": 4
+        },
+        "track": {
+          "country": "SE",
+          "name": "Åmål",
+          "stable_provider_id": {
+            "namespace": "ATG_TRACK",
+            "value": 29
+          }
+        },
+        "date": "2026-08-09",
+        "race_number": 4,
+        "horse_identity": "ATG_HORSE:794752",
+        "values": {
+          "placing": "UNKNOWN",
+          "distance_m": 1680,
+          "km_time": "NOT_REPORTED",
+          "start_method": "AUTO",
+          "gallop_flag": true,
+          "disqualification_flag": true
+        },
+        "raw_official_result": {
+          "finishOrder": 39,
+          "kmTime": {
+            "code": "kubu"
+          },
+          "galloped": true,
+          "disqualified": true,
+          "prizeMoney": 1500,
+          "finalOdds": 2.77,
+          "startNumber": 2
+        },
+        "source": {
+          "name": "atg-beautiful-20260809.json",
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-09_29_4",
+          "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-09_29_4",
+          "observed_at": "2026-10-23T06:10:53.193678+00:00",
+          "status": 200,
+          "content_type": "application/json;charset=utf-8",
+          "sha256": "b473df24de62f7031379bf45572ca0ca38827b32b57beccc355ec797ba394c31",
+          "bytes": 40607
+        },
+        "identity_proof": {
+          "horse_id": 794752,
+          "pedigree": [
+            "boosterwinner",
+            "urialface"
+          ],
+          "proof": {
+            "program_archive_sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+            "starts": {
+              "member": "2026-10-20/20261020T051747910748Z/meetings/S2_NR_2026-10-20/starts.json",
+              "member_sha256": "de96373be0562412ec8ffa1d1264b7c0c2f10f43d76eba73760d062c8d65d33a",
+              "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+            },
+            "program": {
+              "member": "2026-10-20/20261020T051747910748Z/structured_program_day.json",
+              "member_sha256": "47b7ef855226bf26db98e70dfa14203bbf1600da5cc3c7bd9e253edf459caa24",
+              "hash_basis": "ARCHIVED_FILE_BYTES_NOT_RAW_HTTP"
+            },
+            "program_pointer": "/races/44/entrants/5",
+            "atg_archive_sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+            "atg_member": "races/2026-10-20_14_7.json",
+            "atg_member_sha256": "e655ac18526af86f17755faef60eca8e82b288928fa122859e6cdc84fa5718d4",
+            "atg_pointer": "/payload/races/0/starts/5",
+            "atg_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-20_14_7",
+            "observed_at": "2026-10-22T11:06:41.710968+00:00",
+            "calendar_member_sha256": "a5fc5ec5e59ceb59b8eaa382e93d4d3878c37250a3b60aff85ddbc11585efa25"
+          },
+          "role": "EXISTING_RETROSPECTIVE_IDENTITY_EVIDENCE_NOT_AUTOMATIC_ADMISSION"
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "AMBIGUOUS_SOURCE",
+        "distance_m": "CORRECT",
+        "km_time": "NOT_APPLICABLE",
+        "start_method": "AMBIGUOUS_SOURCE",
+        "gallop_flag": "CORRECT",
+        "disqualification_flag": "CORRECT"
+      },
+      "adapter_vs_official": {
+        "placing": "AMBIGUOUS_SOURCE",
+        "distance_m": "CORRECT",
+        "km_time": "NOT_APPLICABLE",
+        "start_method": "NOT_EXTRACTED",
+        "gallop_flag": "CORRECT",
+        "disqualification_flag": "CORRECT"
+      }
+    },
+    {
+      "observation_id": "M7A1-021",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-21:6",
+      "target_horse_name": "THERESIA T.M.",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 1,
+      "raw_history_line": "Sto Ka Å 27.06.26-3|1010 4 2140 it 38 13' ¢¢ Va 8 Prins Gunnar 2 Eigth Days Ahead 4 Dencos May Day 2-utv, problem att följa i si sv, hakade på skapligt i 2-spår. 2-utv, problem att följa i si sv, hakade på skapligt i 2-spår.",
+      "historical_date": "2026-06-27",
+      "printed_code": "Å",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Åby",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-022",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-21:6",
+      "target_horse_name": "THERESIA T.M.",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 1,
+      "raw_history_line": "Sto Ka Hd 13.07.26-9|5 5 2 1640 14,4a 39 38' ¢¢ Va 8 Glittra Vendil 5 Theresia T.M. 3 Milo H.B. Utv led, rygg led e 350, ut i rygg 200 kv, på 150 kv, bra avsl. Utv led, rygg led e 350, ut i rygg 200 kv, på 150 kv, bra avsl.",
+      "historical_date": "2026-07-13",
+      "printed_code": "Hd",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Halmstad",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-023",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-21:6",
+      "target_horse_name": "THERESIA T.M.",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 1,
+      "raw_history_line": "Sto Ka Åm 09.08.26-8|4 4 8 1680 16,8a 288 54' ¢¢ Va 3 Miss Magdalena 1 Ilia 6 Midnight Rhyme 2-utv, behöll pos, kunde inget ö uppl. 2-utv, behöll pos, kunde inget ö uppl.",
+      "historical_date": "2026-08-09",
+      "printed_code": "Åm",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Åmål",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-024",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-21:6",
+      "target_horse_name": "THERESIA T.M.",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 1,
+      "raw_history_line": "Joh Me Å 20.08.26-5|3 3 8 2140 17,0 290 43' ¢¢ Va 8 Email Address 2 Hall of Fame S. 1 Henessi Odessa Utv led, ner i 3-inv e 300, problem på si bortre, tappade. Utv led, ner i 3-inv e 300, problem på si bortre, tappade.",
+      "historical_date": "2026-08-20",
+      "printed_code": "Å",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Åby",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-025",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-21:6",
+      "target_horse_name": "THERESIA T.M.",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 1,
+      "raw_history_line": "Sto Ka Hd 10.10.26-7|1010 4 2140 15,8a 132 16' ¢¢ Va 5-utv, 4-inv, fram inv, utåt i ryggar 250 kv, gdk avsl inv. 5-utv, 4-inv, fram inv, utåt i ryggar 250 kv, gdk avsl inv.",
+      "historical_date": "2026-10-10",
+      "printed_code": "Hd",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Halmstad",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-026",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-21:6",
+      "target_horse_name": "I LOVE SENSATION",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 1,
+      "raw_history_line": "Unt Jo Hd 24.07.26-2|3 3 4 2140 17,0 79 54' ¢¢ Va Rygg led, ut i rygg 175 kv, följde lätt, sparat. Rygg led, ut i rygg 175 kv, följde lätt, sparat.",
+      "historical_date": "2026-07-24",
+      "printed_code": "Hd",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Halmstad",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-027",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-21:6",
+      "target_horse_name": "I LOVE SENSATION",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 1,
+      "raw_history_line": "Osc Ke Kr 21.08.26-8|5 5 2 2140 16,2 44 38' ¢¢ Va 8 Trifli Vixi 5 I Love Sensation 3 Västerbo Outsider Ledn e 200, släppte 1500 kv, trea inv 600 kv, ut i 2-spår 300 kv, bra avsl. Ledn e 200, släppte 1500 kv, trea inv 600 kv, ut i 2-spår 300 kv, bra avsl.",
+      "historical_date": "2026-08-21",
+      "printed_code": "Kr",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Kalmar",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-028",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-21:6",
+      "target_horse_name": "I LOVE SENSATION",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 1,
+      "raw_history_line": "Ecc Ke Å 09.09.26-3|5 5 6 2140 15,0a 323 65' ¢¢ Va 7 Diane Keaton 3 Mary la Marc 4 Valla d'Primadonna Utv led, ner i rygg led e 350, dragen bakåt 525 kv, loss 300, höll farten. Utv led, ner i rygg led e 350, dragen bakåt 525 kv, loss 300, höll farten.",
+      "historical_date": "2026-09-09",
+      "printed_code": "Å",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Åby",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-029",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-21:6",
+      "target_horse_name": "I LOVE SENSATION",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 1,
+      "raw_history_line": "Öst OJ Åm 24.09.26-1|3 3 8 2080 18,5ag 31 32' ¢¢ Va 6 Sea of Thieves S. 1 Tayno Cruella 12 Lily F.M. Gal in i fö sv, 8-inv e 400, 4-utv 800 kv, ok avsl ö uppl. Gal in i fö sv, 8-inv e 400, 4-utv 800 kv, ok avsl ö uppl.",
+      "historical_date": "2026-09-24",
+      "printed_code": "Åm",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Åmål",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-030",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-21:6",
+      "target_horse_name": "I LOVE SENSATION",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 1,
+      "raw_history_line": "Jep CJ F 05.10.26-7|3 3 2 2140 14,7 102 65' ¢¢ Va 1 Mireya Wibb 3 I Love Sensation 6 Highland Frazer Rygg led, rakt fram över uppl, gdk e maxresa. Rygg led, rakt fram över uppl, gdk e maxresa.",
+      "historical_date": "2026-10-05",
+      "printed_code": "F",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Forus",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Färjestad",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-031",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-21:6",
+      "target_horse_name": "WINGAIT SIW",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 1,
+      "raw_history_line": "Ekl An Hd 04.07.26-2|2 2 5 2140 14,2a 225 54' cc Va 11 Irene Mum 9 Poison Ivy Bros 5 Fade My Way 4-inv, 2-spår 650 kv, utåt 200 kv, hängde med utan chans. 4-inv, 2-spår 650 kv, utåt 200 kv, hängde med utan chans.",
+      "historical_date": "2026-07-04",
+      "printed_code": "Hd",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Halmstad",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-032",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-21:6",
+      "target_horse_name": "WINGAIT SIW",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 1,
+      "raw_history_line": "Ekl An Ax 17.07.26-2|5 6 d 2140 ug 45 54' ¢c Va 4 I See Tail Lights 1 Isaia Degato 11 Pure Bliss Gal e 200. Gal e 200.",
+      "historical_date": "2026-07-17",
+      "printed_code": "Ax",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Axevalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-033",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-21:6",
+      "target_horse_name": "WINGAIT SIW",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 1,
+      "raw_history_line": "Ekl An Hd 24.07.26-2|4 4 1 2140 16,6 30 54' cc Va Trea inv, utv utan rygg e 600, närkamp si bortre, grepp 300 kv, lätt. Trea inv, utv utan rygg e 600, närkamp si bortre, grepp 300 kv, lätt.",
+      "historical_date": "2026-07-24",
+      "printed_code": "Hd",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Halmstad",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-034",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-21:6",
+      "target_horse_name": "WINGAIT SIW",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 1,
+      "raw_history_line": "Ekl An Ti 13.09.26-8|5 5 2 1609 11,0a 49 32' ¢c Va 3-utv, på i 3-spår 700 kv, närmade sig, ej stort slagen, bra. 3-utv, på i 3-spår 700 kv, närmade sig, ej stort slagen, bra.",
+      "historical_date": "2026-09-13",
+      "printed_code": "Ti",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Tingsryd",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-035",
+      "target_race_id": "RIKSTOTO:S2_NR_2026-10-21:6",
+      "target_horse_name": "WINGAIT SIW",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 1,
+      "raw_history_line": "Ekl An S 27.09.26-1|1111 d 2140 ug 800 163' ¢¢ Va 7 Kagli Zet 2 Morning Rain 1 Janitah Brook 6-4-utv, med 900 kv, dålig rygg, på 650 kv, inv si sv, gal 300 kv. 6-4-utv, med 900 kv, dålig rygg, på 650 kv, inv si sv, gal 300 kv.",
+      "historical_date": "2026-09-27",
+      "printed_code": "S",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Sørlandet",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Solvalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-036",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:9",
+      "target_horse_name": "FLYING FINN",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 6,
+      "raw_history_line": "Dju MA S 04.03.26-9|2 2 1 2140 12,8a 21 163' ¢¢ Va 2 Flying Finn 1 Solo Traveler 4 Hidalgo Simoni 2-utv, ej rygg e 600, rygg e 950, på e 1000, 2-utv, på 750, utv led, bra. 2-utv, ej rygg e 600, rygg e 950, på e 1000, 2-utv, på 750, utv led, bra.",
+      "historical_date": "2026-03-04",
+      "printed_code": "S",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Sørlandet",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Solvalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "SE",
+        "name": "Solvalla",
+        "stable_provider_id": {
+          "namespace": "ATG_TRACK",
+          "value": 5
+        }
+      },
+      "valid_on": "2026-03-04",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-036",
+          "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:9",
+          "target_horse_name": "FLYING FINN",
+          "target_program_number": 5,
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "pdf_page": 6,
+          "raw_history_line": "Dju MA S 04.03.26-9|2 2 1 2140 12,8a 21 163' ¢¢ Va 2 Flying Finn 1 Solo Traveler 4 Hidalgo Simoni 2-utv, ej rygg e 600, rygg e 950, på e 1000, 2-utv, på 750, utv led, bra. 2-utv, ej rygg e 600, rygg e 950, på e 1000, 2-utv, på 750, utv led, bra.",
+          "historical_track": "S",
+          "historical_date": "2026-03-04",
+          "historical_race_number": 9
+        },
+        "track": {
+          "country": "SE",
+          "name": "Solvalla",
+          "stable_provider_id": {
+            "namespace": "ATG_TRACK",
+            "value": 5
+          }
+        },
+        "date": "2026-03-04",
+        "race_number": 9,
+        "horse_identity": "ATG_HORSE:788027",
+        "values": {
+          "placing": 1,
+          "km_time": 72.8,
+          "gallop_flag": "NOT_REPORTED",
+          "disqualification_flag": "NOT_REPORTED",
+          "distance_m": 2140,
+          "start_method": "AUTO"
+        },
+        "raw_official_result": {
+          "place": 1,
+          "finishOrder": 1,
+          "kmTime": {
+            "minutes": 1,
+            "seconds": 12,
+            "tenths": 8
+          },
+          "prizeMoney": 150000,
+          "finalOdds": 2.15,
+          "startNumber": 2
+        },
+        "source": {
+          "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+          "member": "atg-2026-03-04_5_9.json",
+          "member_sha256": "2fdd0b03257eb1a611d7f4f894680589d8e8d2c860acecd9ef0b89f7873813f5",
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-03-04_5_9",
+          "observed_at": "2026-10-22T19:08:15.754072+00:00",
+          "sha256": "2fdd0b03257eb1a611d7f4f894680589d8e8d2c860acecd9ef0b89f7873813f5"
+        },
+        "identity_proof": {
+          "horse": "Flying Finn",
+          "stable_identity": "ATG_HORSE:788027",
+          "historical_race": "2026-09-23_5_8",
+          "target_race": "2026-10-21_5_9",
+          "place": 1,
+          "km_time_seconds": 71.1,
+          "official_result_status": "RESULT_VERIFIED",
+          "pre_race_identity_availability": "UNRESOLVED",
+          "pit_status": "UNRESOLVED",
+          "model_eligible": false,
+          "source_refs": [
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-23_5_8",
+              "observed_at": "2026-10-22T17:39:16.803638+00:00",
+              "race_id": "2026-09-23_5_8",
+              "selection": 1,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            },
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-21_5_9",
+              "observed_at": "2026-10-22T17:39:19.735624+00:00",
+              "race_id": "2026-10-21_5_9",
+              "selection": 5,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            }
+          ]
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "CORRECT",
+        "km_time": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE",
+        "distance_m": "CORRECT",
+        "start_method": "CORRECT"
+      },
+      "adapter_vs_official": {
+        "placing": "CORRECT",
+        "km_time": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE",
+        "distance_m": "CORRECT",
+        "start_method": "CORRECT"
+      }
+    },
+    {
+      "observation_id": "M7A1-037",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:9",
+      "target_horse_name": "FLYING FINN",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 6,
+      "raw_history_line": "Dju MA S 08.04.26-3|6 6 2 2140 12,7a 25 65' ¢¢ Va 5 Ace Wibb 6 Flying Finn 4 Basic Structure 3-utv, på 700 kv, grovjobb, stark avsl, nära. 3-utv, på 700 kv, grovjobb, stark avsl, nära.",
+      "historical_date": "2026-04-08",
+      "printed_code": "S",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Sørlandet",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Solvalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "SE",
+        "name": "Solvalla",
+        "stable_provider_id": {
+          "namespace": "ATG_TRACK",
+          "value": 5
+        }
+      },
+      "valid_on": "2026-04-08",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-037",
+          "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:9",
+          "target_horse_name": "FLYING FINN",
+          "target_program_number": 5,
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "pdf_page": 6,
+          "raw_history_line": "Dju MA S 08.04.26-3|6 6 2 2140 12,7a 25 65' ¢¢ Va 5 Ace Wibb 6 Flying Finn 4 Basic Structure 3-utv, på 700 kv, grovjobb, stark avsl, nära. 3-utv, på 700 kv, grovjobb, stark avsl, nära.",
+          "historical_track": "S",
+          "historical_date": "2026-04-08",
+          "historical_race_number": 3
+        },
+        "track": {
+          "country": "SE",
+          "name": "Solvalla",
+          "stable_provider_id": {
+            "namespace": "ATG_TRACK",
+            "value": 5
+          }
+        },
+        "date": "2026-04-08",
+        "race_number": 3,
+        "horse_identity": "ATG_HORSE:788027",
+        "values": {
+          "placing": 2,
+          "km_time": 72.7,
+          "gallop_flag": "NOT_REPORTED",
+          "disqualification_flag": "NOT_REPORTED",
+          "distance_m": 2140,
+          "start_method": "AUTO"
+        },
+        "raw_official_result": {
+          "place": 2,
+          "finishOrder": 2,
+          "kmTime": {
+            "minutes": 1,
+            "seconds": 12,
+            "tenths": 7
+          },
+          "prizeMoney": 30000,
+          "finalOdds": 2.51,
+          "startNumber": 6
+        },
+        "source": {
+          "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+          "member": "atg-2026-04-08_5_3.json",
+          "member_sha256": "3efd02b52b685e732b02d3c9da7d80243b333537ce38cb2d688f6832a770022b",
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-04-08_5_3",
+          "observed_at": "2026-10-22T19:08:17.012643+00:00",
+          "sha256": "3efd02b52b685e732b02d3c9da7d80243b333537ce38cb2d688f6832a770022b"
+        },
+        "identity_proof": {
+          "horse": "Flying Finn",
+          "stable_identity": "ATG_HORSE:788027",
+          "historical_race": "2026-09-23_5_8",
+          "target_race": "2026-10-21_5_9",
+          "place": 1,
+          "km_time_seconds": 71.1,
+          "official_result_status": "RESULT_VERIFIED",
+          "pre_race_identity_availability": "UNRESOLVED",
+          "pit_status": "UNRESOLVED",
+          "model_eligible": false,
+          "source_refs": [
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-23_5_8",
+              "observed_at": "2026-10-22T17:39:16.803638+00:00",
+              "race_id": "2026-09-23_5_8",
+              "selection": 1,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            },
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-21_5_9",
+              "observed_at": "2026-10-22T17:39:19.735624+00:00",
+              "race_id": "2026-10-21_5_9",
+              "selection": 5,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            }
+          ]
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "CORRECT",
+        "km_time": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE",
+        "distance_m": "CORRECT",
+        "start_method": "CORRECT"
+      },
+      "adapter_vs_official": {
+        "placing": "CORRECT",
+        "km_time": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE",
+        "distance_m": "CORRECT",
+        "start_method": "CORRECT"
+      }
+    },
+    {
+      "observation_id": "M7A1-038",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:9",
+      "target_horse_name": "FLYING FINN",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 6,
+      "raw_history_line": "Dju MA S 31.05.26-4|6 6 d 2640 5g 42 109' ¢¢ Va 4 Popeye Tooma 7 Facetime Love 5 Parish Crooks V.S. 3-spår, utv led e 550, ledn 450 kv, gal som slagen 275 kv. 3-spår, utv led e 550, ledn 450 kv, gal som slagen 275 kv.",
+      "historical_date": "2026-05-31",
+      "printed_code": "S",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Sørlandet",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Solvalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "SE",
+        "name": "Solvalla",
+        "stable_provider_id": {
+          "namespace": "ATG_TRACK",
+          "value": 5
+        }
+      },
+      "valid_on": "2026-05-31",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-038",
+          "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:9",
+          "target_horse_name": "FLYING FINN",
+          "target_program_number": 5,
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "pdf_page": 6,
+          "raw_history_line": "Dju MA S 31.05.26-4|6 6 d 2640 5g 42 109' ¢¢ Va 4 Popeye Tooma 7 Facetime Love 5 Parish Crooks V.S. 3-spår, utv led e 550, ledn 450 kv, gal som slagen 275 kv. 3-spår, utv led e 550, ledn 450 kv, gal som slagen 275 kv.",
+          "historical_track": "S",
+          "historical_date": "2026-05-31",
+          "historical_race_number": 4
+        },
+        "track": {
+          "country": "SE",
+          "name": "Solvalla",
+          "stable_provider_id": {
+            "namespace": "ATG_TRACK",
+            "value": 5
+          }
+        },
+        "date": "2026-05-31",
+        "race_number": 4,
+        "horse_identity": "ATG_HORSE:788027",
+        "values": {
+          "placing": "NOT_REPORTED",
+          "km_time": "NOT_REPORTED",
+          "gallop_flag": true,
+          "disqualification_flag": true,
+          "distance_m": 2640,
+          "start_method": "AUTO"
+        },
+        "raw_official_result": {
+          "finishOrder": 35,
+          "kmTime": {
+            "code": "5"
+          },
+          "galloped": true,
+          "disqualified": true,
+          "prizeMoney": 1500,
+          "finalOdds": 4.22,
+          "startNumber": 6
+        },
+        "source": {
+          "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+          "member": "atg-2026-05-31_5_4.json",
+          "member_sha256": "d371f684de9fca653c8a47b3a8d5a8a286373535918e1d532991ce1fb4dbc001",
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-05-31_5_4",
+          "observed_at": "2026-10-22T19:08:18.730278+00:00",
+          "sha256": "d371f684de9fca653c8a47b3a8d5a8a286373535918e1d532991ce1fb4dbc001"
+        },
+        "identity_proof": {
+          "horse": "Flying Finn",
+          "stable_identity": "ATG_HORSE:788027",
+          "historical_race": "2026-09-23_5_8",
+          "target_race": "2026-10-21_5_9",
+          "place": 1,
+          "km_time_seconds": 71.1,
+          "official_result_status": "RESULT_VERIFIED",
+          "pre_race_identity_availability": "UNRESOLVED",
+          "pit_status": "UNRESOLVED",
+          "model_eligible": false,
+          "source_refs": [
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-23_5_8",
+              "observed_at": "2026-10-22T17:39:16.803638+00:00",
+              "race_id": "2026-09-23_5_8",
+              "selection": 1,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            },
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-21_5_9",
+              "observed_at": "2026-10-22T17:39:19.735624+00:00",
+              "race_id": "2026-10-21_5_9",
+              "selection": 5,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            }
+          ]
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "AMBIGUOUS_SOURCE",
+        "km_time": "AMBIGUOUS_SOURCE",
+        "gallop_flag": "CORRECT",
+        "disqualification_flag": "AMBIGUOUS_SOURCE",
+        "distance_m": "CORRECT",
+        "start_method": "AMBIGUOUS_SOURCE"
+      },
+      "adapter_vs_official": {
+        "placing": "NOT_APPLICABLE",
+        "km_time": "NOT_APPLICABLE",
+        "gallop_flag": "CORRECT",
+        "disqualification_flag": "NOT_EXTRACTED",
+        "distance_m": "CORRECT",
+        "start_method": "NOT_EXTRACTED"
+      }
+    },
+    {
+      "observation_id": "M7A1-039",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:9",
+      "target_horse_name": "FLYING FINN",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 6,
+      "raw_history_line": "Dju MA S 26.08.26-6|1 1 2 2640 12,8a 42 87' ¢¢ Va 4 My Honky Tonk Man 1 Flying Finn 10 Ike Zet Rygg led, ut e 300, blev först utv, låg lugn, rygg led 350 kv, ut 200, nära Rygg led, ut e 300, blev först utv, låg lugn, rygg led 350 kv, ut 200, nära",
+      "historical_date": "2026-08-26",
+      "printed_code": "S",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Sørlandet",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Solvalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "SE",
+        "name": "Solvalla",
+        "stable_provider_id": {
+          "namespace": "ATG_TRACK",
+          "value": 5
+        }
+      },
+      "valid_on": "2026-08-26",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-039",
+          "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:9",
+          "target_horse_name": "FLYING FINN",
+          "target_program_number": 5,
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "pdf_page": 6,
+          "raw_history_line": "Dju MA S 26.08.26-6|1 1 2 2640 12,8a 42 87' ¢¢ Va 4 My Honky Tonk Man 1 Flying Finn 10 Ike Zet Rygg led, ut e 300, blev först utv, låg lugn, rygg led 350 kv, ut 200, nära Rygg led, ut e 300, blev först utv, låg lugn, rygg led 350 kv, ut 200, nära",
+          "historical_track": "S",
+          "historical_date": "2026-08-26",
+          "historical_race_number": 6
+        },
+        "track": {
+          "country": "SE",
+          "name": "Solvalla",
+          "stable_provider_id": {
+            "namespace": "ATG_TRACK",
+            "value": 5
+          }
+        },
+        "date": "2026-08-26",
+        "race_number": 6,
+        "horse_identity": "ATG_HORSE:788027",
+        "values": {
+          "placing": 2,
+          "km_time": 72.8,
+          "gallop_flag": "NOT_REPORTED",
+          "disqualification_flag": "NOT_REPORTED",
+          "distance_m": 2640,
+          "start_method": "AUTO"
+        },
+        "raw_official_result": {
+          "place": 2,
+          "finishOrder": 2,
+          "kmTime": {
+            "minutes": 1,
+            "seconds": 12,
+            "tenths": 8
+          },
+          "prizeMoney": 40000,
+          "finalOdds": 4.25,
+          "startNumber": 1
+        },
+        "source": {
+          "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+          "member": "atg-2026-08-26_5_6.json",
+          "member_sha256": "666a76df9cf42618326bf5e7e4808ec8c23f56b574ab072c1a3fead3c21f479d",
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-26_5_6",
+          "observed_at": "2026-10-22T19:08:20.103459+00:00",
+          "sha256": "666a76df9cf42618326bf5e7e4808ec8c23f56b574ab072c1a3fead3c21f479d"
+        },
+        "identity_proof": {
+          "horse": "Flying Finn",
+          "stable_identity": "ATG_HORSE:788027",
+          "historical_race": "2026-09-23_5_8",
+          "target_race": "2026-10-21_5_9",
+          "place": 1,
+          "km_time_seconds": 71.1,
+          "official_result_status": "RESULT_VERIFIED",
+          "pre_race_identity_availability": "UNRESOLVED",
+          "pit_status": "UNRESOLVED",
+          "model_eligible": false,
+          "source_refs": [
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-23_5_8",
+              "observed_at": "2026-10-22T17:39:16.803638+00:00",
+              "race_id": "2026-09-23_5_8",
+              "selection": 1,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            },
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-21_5_9",
+              "observed_at": "2026-10-22T17:39:19.735624+00:00",
+              "race_id": "2026-10-21_5_9",
+              "selection": 5,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            }
+          ]
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "CORRECT",
+        "km_time": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE",
+        "distance_m": "CORRECT",
+        "start_method": "CORRECT"
+      },
+      "adapter_vs_official": {
+        "placing": "CORRECT",
+        "km_time": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE",
+        "distance_m": "CORRECT",
+        "start_method": "CORRECT"
+      }
+    },
+    {
+      "observation_id": "M7A1-040",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:9",
+      "target_horse_name": "FLYING FINN",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 6,
+      "raw_history_line": "Dju MA S 23.09.26-8|1 1 1 2140 11,1a 29 87' ¢¢ Va 1 Flying Finn 4 Pasha Newport 6 Ironic Man Ut direkt, 3-2-utv, på 200 kv, bra avsl, lätt. Ut direkt, 3-2-utv, på 200 kv, bra avsl, lätt.",
+      "historical_date": "2026-09-23",
+      "printed_code": "S",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Sørlandet",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Solvalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "SE",
+        "name": "Solvalla",
+        "stable_provider_id": {
+          "namespace": "ATG_TRACK",
+          "value": 5
+        }
+      },
+      "valid_on": "2026-09-23",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-040",
+          "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:9",
+          "target_horse_name": "FLYING FINN",
+          "target_program_number": 5,
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "pdf_page": 6,
+          "raw_history_line": "Dju MA S 23.09.26-8|1 1 1 2140 11,1a 29 87' ¢¢ Va 1 Flying Finn 4 Pasha Newport 6 Ironic Man Ut direkt, 3-2-utv, på 200 kv, bra avsl, lätt. Ut direkt, 3-2-utv, på 200 kv, bra avsl, lätt.",
+          "historical_track": "S",
+          "historical_date": "2026-09-23",
+          "historical_race_number": 8
+        },
+        "track": {
+          "country": "SE",
+          "name": "Solvalla",
+          "stable_provider_id": {
+            "namespace": "ATG_TRACK",
+            "value": 5
+          }
+        },
+        "date": "2026-09-23",
+        "race_number": 8,
+        "horse_identity": "ATG_HORSE:788027",
+        "values": {
+          "placing": 1,
+          "km_time": 71.1,
+          "gallop_flag": "NOT_REPORTED",
+          "disqualification_flag": "NOT_REPORTED",
+          "distance_m": 2140,
+          "start_method": "AUTO"
+        },
+        "raw_official_result": {
+          "place": 1,
+          "finishOrder": 1,
+          "kmTime": {
+            "minutes": 1,
+            "seconds": 11,
+            "tenths": 1
+          },
+          "prizeMoney": 80000,
+          "finalOdds": 2.9,
+          "startNumber": 1
+        },
+        "source": {
+          "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+          "member": "atg-2026-09-23_5_8.json",
+          "member_sha256": "f39b08ef27b8ee41f9028df2926af76d009c191871c2bd16765434ce313d9cf1",
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-23_5_8",
+          "observed_at": "2026-10-22T17:39:16.803638+00:00",
+          "sha256": "f39b08ef27b8ee41f9028df2926af76d009c191871c2bd16765434ce313d9cf1"
+        },
+        "identity_proof": {
+          "horse": "Flying Finn",
+          "stable_identity": "ATG_HORSE:788027",
+          "historical_race": "2026-09-23_5_8",
+          "target_race": "2026-10-21_5_9",
+          "place": 1,
+          "km_time_seconds": 71.1,
+          "official_result_status": "RESULT_VERIFIED",
+          "pre_race_identity_availability": "UNRESOLVED",
+          "pit_status": "UNRESOLVED",
+          "model_eligible": false,
+          "source_refs": [
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-23_5_8",
+              "observed_at": "2026-10-22T17:39:16.803638+00:00",
+              "race_id": "2026-09-23_5_8",
+              "selection": 1,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            },
+            {
+              "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-21_5_9",
+              "observed_at": "2026-10-22T17:39:19.735624+00:00",
+              "race_id": "2026-10-21_5_9",
+              "selection": 5,
+              "role": "RETROSPECTIVE_VALIDATION_ONLY"
+            }
+          ]
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "CORRECT",
+        "km_time": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE",
+        "distance_m": "CORRECT",
+        "start_method": "CORRECT"
+      },
+      "adapter_vs_official": {
+        "placing": "CORRECT",
+        "km_time": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE",
+        "distance_m": "CORRECT",
+        "start_method": "CORRECT"
+      }
+    },
+    {
+      "observation_id": "M7A1-041",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "KING OF RATZEPUTZ",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Tho Ol Hd 08.09.26-6|1212 0 2140 16,2a 633 38' ¢c Va 8 Makin' Peace 1 No Limit Victory 7 Donna Patricia Inv långt ner, utv i kön, 5-inv, dålig rygg si bortre, ut/på si sv, gdk. Inv långt ner, utv i kön, 5-inv, dålig rygg si bortre, ut/på si sv, gdk.",
+      "historical_date": "2026-09-08",
+      "printed_code": "Hd",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Halmstad",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-042",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "KING OF RATZEPUTZ",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Tho Ol Vg 14.09.26-7|9 9 4 2148 15,8a 533 49' ¢c Va 6 Denniz Popp 5 Noche Snapper 3 Miss Nude 5-inv, 2-spår si sv, på i vida spår på uppl, gdk avsl på stort avstånd. 5-inv, 2-spår si sv, på i vida spår på uppl, gdk avsl på stort avstånd.",
+      "historical_date": "2026-09-14",
+      "printed_code": "Vg",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Vaggeryd",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-043",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "KING OF RATZEPUTZ",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Tho Ol J 22.09.26-7|5 5 7 2140 16,0g 484 65' ¢c Va 2 Richmond 1 Never Ending Pace 3 Misty Silvio Gal kort e start, ifatt 500 kv, bra upphämtning. Gal kort e start, ifatt 500 kv, bra upphämtning.",
+      "historical_date": "2026-09-22",
+      "printed_code": "J",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Jarlsberg Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Jarlsberg",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-044",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "KING OF RATZEPUTZ",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Tho Ol Å 03.10.26-1|5 6 2 2160 16,4 ejsp 13' ¢c Va Sist/sexa, ut utv utan rygg 1300 kv, grepp 150 kv, chanslös svara inv. Sist/sexa, ut utv utan rygg 1300 kv, grepp 150 kv, chanslös svara inv.",
+      "historical_date": "2026-10-03",
+      "printed_code": "Å",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Åby",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-045",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "KING OF RATZEPUTZ",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Tho Ol Hd 10.10.26-7|4 4 3 2140 15,8a 39 16' ¢c Va 3-4-utv, med 450 kv, på 350 kv, gdk avsl. 3-4-utv, med 450 kv, på 350 kv, gdk avsl.",
+      "historical_date": "2026-10-10",
+      "printed_code": "Hd",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Halmstad",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-046",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "MAMACITA D.K.",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Ecc Ke Ti 23.08.26-1|7 7 8 1609 16,8ag 154 32' cc Va 4 Hard Rock 9 Matrix 8 Loaded Alissia 2-utv, gal 450 kv, svårbedömd. 2-utv, gal 450 kv, svårbedömd.",
+      "historical_date": "2026-08-23",
+      "printed_code": "Ti",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Tingsryd",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-047",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "BORUPS D.DAY",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Lin Co Ti 23.08.26-2|6 6 3 1609 14,8a 142 13' cc Va 4 Cruel Eagle 2 Vulcans Elin 6 Borups D.Day 5-inv, 3-utv 800 kv, på 400 kv, närmade sig, gdk. 5-inv, 3-utv 800 kv, på 400 kv, närmade sig, gdk.",
+      "historical_date": "2026-08-23",
+      "printed_code": "Ti",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Tingsryd",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-048",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "BORUPS D.DAY",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Lin Co J 06.09.26-3|1111 0 2140 15,2a 1898 54' cc Va 10 Princess Garde 4 Yalla Yalla 5 Alexa's Genius 4-utv, stora problem och ner inv 1000 kv, ut 450 kv, tappade. 4-utv, stora problem och ner inv 1000 kv, ut 450 kv, tappade.",
+      "historical_date": "2026-09-06",
+      "printed_code": "J",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Jarlsberg Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Jarlsberg",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-049",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "BORUPS D.DAY",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Lin Co J 16.09.26-8|6 6 0 2140 15,0a 1450 65' cc Va 3 Irene Mum 11 Ögat 4 Luci de Lux Över, sist e 450, avhängd 800 kv, tappade massor. Över, sist e 450, avhängd 800 kv, tappade massor.",
+      "historical_date": "2026-09-16",
+      "printed_code": "J",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Jarlsberg Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Jarlsberg",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-050",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "BORUPS D.DAY",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Gra Be J 22.09.26-1|2 2 3 2140 15,6 555 43' cc Va 3 Gattuso Effe 1 Lucifer 2 Borups D.Day Tappstart, trea-fyra, kvar i 4-inv 1475 kv, utåt 350, gdk avsl på avstånd. Tappstart, trea-fyra, kvar i 4-inv 1475 kv, utåt 350, gdk avsl på avstånd.",
+      "historical_date": "2026-09-22",
+      "printed_code": "J",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Jarlsberg Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Jarlsberg",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-051",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "BORUPS D.DAY",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Ros Vi J 13.10.26-6|1 1 3 2140 15,6 326 43' c¢ Va Rygg led, 3-inv e 250, 2-spår 600 kv, höll skapligt utan vinstchans. Rygg led, 3-inv e 250, 2-spår 600 kv, höll skapligt utan vinstchans.",
+      "historical_date": "2026-10-13",
+      "printed_code": "J",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Jarlsberg Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Jarlsberg",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-052",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "PURE EGO",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "For Mi U 10.10.25-6|1 1 d 2140 ug 47 38' cc Am Kommentar saknas, tekniskt fel. Kommentar saknas, tekniskt fel.",
+      "historical_date": "2025-10-10",
+      "printed_code": "U",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Umåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "SE",
+        "name": "Umåker",
+        "stable_provider_id": {
+          "namespace": "ATG_TRACK",
+          "value": 27
+        }
+      },
+      "valid_on": "2025-10-10",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-052",
+          "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+          "target_horse_name": "PURE EGO",
+          "target_program_number": 6,
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "pdf_page": 1,
+          "raw_history_line": "For Mi U 10.10.25-6|1 1 d 2140 ug 47 38' cc Am Kommentar saknas, tekniskt fel. Kommentar saknas, tekniskt fel.",
+          "historical_track": "U",
+          "historical_date": "2025-10-10",
+          "historical_race_number": 6
+        },
+        "track": {
+          "country": "SE",
+          "name": "Umåker",
+          "stable_provider_id": {
+            "namespace": "ATG_TRACK",
+            "value": 27
+          }
+        },
+        "date": "2025-10-10",
+        "race_number": 6,
+        "horse_identity": "ATG_HORSE:793918",
+        "values": {
+          "placing": "UNKNOWN",
+          "distance_m": 2140,
+          "km_time": "NOT_REPORTED",
+          "start_method": "AUTO",
+          "gallop_flag": true,
+          "disqualification_flag": true
+        },
+        "raw_official_result": {
+          "finishOrder": 41,
+          "kmTime": {
+            "code": "u"
+          },
+          "galloped": true,
+          "disqualified": true,
+          "prizeMoney": 1500,
+          "finalOdds": 4.7,
+          "startNumber": 1
+        },
+        "source": {
+          "name": "atg-pure-20251010-r6.json",
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-10_27_6",
+          "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-10_27_6",
+          "observed_at": "2026-10-23T06:12:07.216430+00:00",
+          "status": 200,
+          "content_type": "application/json;charset=utf-8",
+          "sha256": "7b9e62b4ee258949019603d4ce7506cc38b856bad1735168feccd48319ee1ff7",
+          "bytes": 41914
+        },
+        "identity_proof": {
+          "horse_id": 793918,
+          "pedigree": [
+            "creatine",
+            "restless"
+          ],
+          "proof": {
+            "stable_identity": "ATG_HORSE:793918",
+            "target_race": "2026-10-24_7_1",
+            "source_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-24_7_1",
+            "observed_at": "2026-10-22T19:15:47.606590+00:00",
+            "proof": "EXACT_TARGET_FIELD_SELECTION_AND_PDF_NAME_SIRE_DAM_PLUS_SAME_HISTORICAL_STABLE_ID",
+            "model_eligible": false,
+            "pit_status": "UNVERIFIED"
+          }
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "AMBIGUOUS_SOURCE",
+        "distance_m": "CORRECT",
+        "km_time": "NOT_APPLICABLE",
+        "start_method": "AMBIGUOUS_SOURCE",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "AMBIGUOUS_SOURCE"
+      },
+      "adapter_vs_official": {
+        "placing": "AMBIGUOUS_SOURCE",
+        "distance_m": "CORRECT",
+        "km_time": "NOT_APPLICABLE",
+        "start_method": "NOT_EXTRACTED",
+        "gallop_flag": "NOT_EXTRACTED",
+        "disqualification_flag": "NOT_EXTRACTED"
+      }
+    },
+    {
+      "observation_id": "M7A1-053",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "PURE EGO",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Tor Ha U 26.10.25-6|1 1 d 2140 vändg 614 54' cc Am 7 Readly Brodde 8 Jimmy Adore 10 Peek a Boo Poof 4-5-inv, gal e 850. 4-5-inv, gal e 850.",
+      "historical_date": "2025-10-26",
+      "printed_code": "U",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Umåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "SE",
+        "name": "Umåker",
+        "stable_provider_id": {
+          "namespace": "ATG_TRACK",
+          "value": 27
+        }
+      },
+      "valid_on": "2025-10-26",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-053",
+          "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+          "target_horse_name": "PURE EGO",
+          "target_program_number": 6,
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "pdf_page": 1,
+          "raw_history_line": "Tor Ha U 26.10.25-6|1 1 d 2140 vändg 614 54' cc Am 7 Readly Brodde 8 Jimmy Adore 10 Peek a Boo Poof 4-5-inv, gal e 850. 4-5-inv, gal e 850.",
+          "historical_track": "U",
+          "historical_date": "2025-10-26",
+          "historical_race_number": 6
+        },
+        "track": {
+          "country": "SE",
+          "name": "Umåker",
+          "stable_provider_id": {
+            "namespace": "ATG_TRACK",
+            "value": 27
+          }
+        },
+        "date": "2025-10-26",
+        "race_number": 6,
+        "horse_identity": "ATG_HORSE:793918",
+        "values": {
+          "placing": "UNKNOWN",
+          "distance_m": 2140,
+          "km_time": "NOT_REPORTED",
+          "start_method": "AUTO",
+          "gallop_flag": true,
+          "disqualification_flag": true
+        },
+        "raw_official_result": {
+          "finishOrder": 38,
+          "kmTime": {
+            "code": "vänd"
+          },
+          "galloped": true,
+          "disqualified": true,
+          "prizeMoney": 1500,
+          "finalOdds": 61.43,
+          "startNumber": 1
+        },
+        "source": {
+          "name": "atg-pure-20251026.json",
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-26_27_6",
+          "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-26_27_6",
+          "observed_at": "2026-10-23T06:09:40.920047+00:00",
+          "status": 200,
+          "content_type": "application/json;charset=utf-8",
+          "sha256": "78f9681772f9d4342013a3a44b2fa505c2f39b57b46abd95f2c25199fd98bfd0",
+          "bytes": 34599
+        },
+        "identity_proof": {
+          "horse_id": 793918,
+          "pedigree": [
+            "creatine",
+            "restless"
+          ],
+          "proof": {
+            "stable_identity": "ATG_HORSE:793918",
+            "target_race": "2026-10-24_7_1",
+            "source_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-24_7_1",
+            "observed_at": "2026-10-22T19:15:47.606590+00:00",
+            "proof": "EXACT_TARGET_FIELD_SELECTION_AND_PDF_NAME_SIRE_DAM_PLUS_SAME_HISTORICAL_STABLE_ID",
+            "model_eligible": false,
+            "pit_status": "UNVERIFIED"
+          }
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "AMBIGUOUS_SOURCE",
+        "distance_m": "CORRECT",
+        "km_time": "NOT_APPLICABLE",
+        "start_method": "AMBIGUOUS_SOURCE",
+        "gallop_flag": "CORRECT",
+        "disqualification_flag": "AMBIGUOUS_SOURCE"
+      },
+      "adapter_vs_official": {
+        "placing": "AMBIGUOUS_SOURCE",
+        "distance_m": "CORRECT",
+        "km_time": "NOT_APPLICABLE",
+        "start_method": "NOT_EXTRACTED",
+        "gallop_flag": "CORRECT",
+        "disqualification_flag": "NOT_EXTRACTED"
+      }
+    },
+    {
+      "observation_id": "M7A1-054",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "PURE EGO",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Ohl Ul U 25.02.26-8|2 2 2 2140 17,9 28 38' cc Va 7 Jelinek 2 Pure Ego 5 Cricetidae Ås Utv led, ledn e 200, fick hållas, upphunnen på linjen, helt gdk. Utv led, ledn e 200, fick hållas, upphunnen på linjen, helt gdk.",
+      "historical_date": "2026-02-25",
+      "printed_code": "U",
+      "printed_code_correct": true,
+      "status": "VERIFIED",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Umåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED",
+      "track": {
+        "country": "SE",
+        "name": "Umåker",
+        "stable_provider_id": {
+          "namespace": "ATG_TRACK",
+          "value": 27
+        }
+      },
+      "valid_on": "2026-02-25",
+      "method": "EXACT_OFFICIAL_HISTORICAL_RACE_AND_STABLE_HORSE_CHAIN",
+      "review": {
+        "source_binding": {
+          "observation_id": "M7A1-054",
+          "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+          "target_horse_name": "PURE EGO",
+          "target_program_number": 6,
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "pdf_page": 1,
+          "raw_history_line": "Ohl Ul U 25.02.26-8|2 2 2 2140 17,9 28 38' cc Va 7 Jelinek 2 Pure Ego 5 Cricetidae Ås Utv led, ledn e 200, fick hållas, upphunnen på linjen, helt gdk. Utv led, ledn e 200, fick hållas, upphunnen på linjen, helt gdk.",
+          "historical_track": "U",
+          "historical_date": "2026-02-25",
+          "historical_race_number": 8
+        },
+        "track": {
+          "country": "SE",
+          "name": "Umåker",
+          "stable_provider_id": {
+            "namespace": "ATG_TRACK",
+            "value": 27
+          }
+        },
+        "date": "2026-02-25",
+        "race_number": 8,
+        "horse_identity": "ATG_HORSE:793918",
+        "values": {
+          "placing": 2,
+          "km_time": 77.9,
+          "gallop_flag": "NOT_REPORTED",
+          "disqualification_flag": "NOT_REPORTED",
+          "distance_m": 2140,
+          "start_method": "VOLT"
+        },
+        "raw_official_result": {
+          "place": 2,
+          "finishOrder": 2,
+          "kmTime": {
+            "minutes": 1,
+            "seconds": 17,
+            "tenths": 9
+          },
+          "prizeMoney": 17500,
+          "finalOdds": 2.89,
+          "startNumber": 2
+        },
+        "source": {
+          "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+          "member": "atg-2026-02-25_27_8.json",
+          "member_sha256": "cd83bdc65a77b8304fcfc7d1533dcfa9e3e6c7c54f4aaaf3ca3318b69573e840",
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-02-25_27_8",
+          "observed_at": "2026-10-22T19:15:45.337319+00:00",
+          "sha256": "cd83bdc65a77b8304fcfc7d1533dcfa9e3e6c7c54f4aaaf3ca3318b69573e840"
+        },
+        "identity_proof": {
+          "stable_identity": "ATG_HORSE:793918",
+          "target_race": "2026-10-24_7_1",
+          "source_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-24_7_1",
+          "observed_at": "2026-10-22T19:15:47.606590+00:00",
+          "proof": "EXACT_TARGET_FIELD_SELECTION_AND_PDF_NAME_SIRE_DAM_PLUS_SAME_HISTORICAL_STABLE_ID",
+          "model_eligible": false,
+          "pit_status": "UNVERIFIED"
+        }
+      },
+      "pdf_official_comparison": {
+        "placing": "CORRECT",
+        "km_time": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE",
+        "distance_m": "CORRECT",
+        "start_method": "AMBIGUOUS_SOURCE"
+      },
+      "adapter_vs_official": {
+        "placing": "CORRECT",
+        "km_time": "CORRECT",
+        "gallop_flag": "NOT_APPLICABLE",
+        "disqualification_flag": "NOT_APPLICABLE",
+        "distance_m": "CORRECT",
+        "start_method": "NOT_EXTRACTED"
+      }
+    },
+    {
+      "observation_id": "M7A1-055",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "PURE EGO",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Wäj Ol U 11.04.26-6|6 6 1 2140 17,2a 21 16' ¢c Am Snabb till ledn e 150, fick bestämma, undan ur si sv, helt ohotad, fin. Snabb till ledn e 150, fick bestämma, undan ur si sv, helt ohotad, fin.",
+      "historical_date": "2026-04-11",
+      "printed_code": "U",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Umåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-056",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "PURE EGO",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Wäj Ol U 21.04.26-5|1112 0 2140 ug 556 38' ¢c Am Tappstart, sist i kön, gal e 250. Tappstart, sist i kön, gal e 250.",
+      "historical_date": "2026-04-21",
+      "printed_code": "U",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Umåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-057",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "MYSTIC DES THUYAS",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Joh MR Hd 13.07.26-13|77 k 2140 17,9 gdk 0'",
+      "historical_date": "2026-07-13",
+      "printed_code": "Hd",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Halmstad",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-058",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "GATTUSO EFFE",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Wal Ma Vg 01.07.26-6|2 2 1 2148 17,1 16 27' cc Va 2 Gattuso Effe 1 Morningstar Derm 4 Neptune Ledn e 150, fick bestämma, ökade över si bortre, full kontroll, lätt. Ledn e 150, fick bestämma, ökade över si bortre, full kontroll, lätt.",
+      "historical_date": "2026-07-01",
+      "printed_code": "Vg",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Vaggeryd",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-059",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "GATTUSO EFFE",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Wal Ma J 21.07.26-6|4 4 1 2140 16,4 49 43' cc Va 4 Gattuso Effe 7 Luna Derm 3 Buckle Up Baby Tvåa, ut 600 kv, utmanade rejält, slagen 100 kv, fick segern, 13,9/1000. Tvåa, ut 600 kv, utmanade rejält, slagen 100 kv, fick segern, 13,9/1000.",
+      "historical_date": "2026-07-21",
+      "printed_code": "J",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Jarlsberg Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Jarlsberg",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7A1-060",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:1",
+      "target_horse_name": "GATTUSO EFFE",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 1,
+      "raw_history_line": "Per St Ti 12.08.26-2|1212 3 1609 13,8a 24 27' cc Va 11 Mill Holly 8 Global Hippie 12 Gattuso Effe Sist utv, på i 3-spår 600kv, stark avsl utan chans. Sist utv, på i 3-spår 600kv, stark avsl utan chans.",
+      "historical_date": "2026-08-12",
+      "printed_code": "Ti",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Tingsryd",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-001",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:6",
+      "target_horse_name": "ALF MARTIN",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 5,
+      "raw_history_line": "Ja Bje BI 25.07.26-8|1212 4 2100 25,7a 656 60' ¢¢ Va 2 Faks Trym 1 Briskeby Pilen 11 Bragevinn sjette utv, med vinner i angrep etter 1000, stod på helt inn sjette utv, med vinner i angrep etter 1000, stod på helt inn",
+      "historical_date": "2026-07-25",
+      "printed_code": "BI",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Biri Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Biri",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-002",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:6",
+      "target_horse_name": "ALF MARTIN",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 5,
+      "raw_history_line": "Ja Bje B 11.08.26-10|22 2 2100 25,7a 277 30' ¢¢ Va 7 Tordenskjold 2 Alf Martin 6 Holter Odin femte innv, tredje utv 1500 i, ned igjen 1200 i, med 550 i, avsluttet bra femte innv, tredje utv 1500 i, ned igjen 1200 i, med 550 i, avsluttet bra",
+      "historical_date": "2026-08-11",
+      "printed_code": "B",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Bjerke Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Bjerke",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Bergsåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-003",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:6",
+      "target_horse_name": "ALF MARTIN",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 5,
+      "raw_history_line": "Ja Bje B 01.09.26-8|1 1 1 1609 22,0a 340 30' ¢¢ Va 1 Alf Martin 7 Aske Balder 12 Grislefaksen G.L. høyt oppe på startsiden, forsvarte sporet, suveren høyt oppe på startsiden, forsvarte sporet, suveren",
+      "historical_date": "2026-09-01",
+      "printed_code": "B",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Bjerke Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Bjerke",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Bergsåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-004",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:6",
+      "target_horse_name": "ALF MARTIN",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 5,
+      "raw_history_line": "Ja Bje B 13.09.26-3|7 8 0 1609 22,7a 46 40' cc Va 3 Hafell Bris 1 Øygard Stjerna 6 Troll Sterk Bork tredje utvendig, ut på siste bortre, avanserte ikke tredje utvendig, ut på siste bortre, avanserte ikke",
+      "historical_date": "2026-09-13",
+      "printed_code": "B",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Bjerke Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Bjerke",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Bergsåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-005",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:6",
+      "target_horse_name": "ALF MARTIN",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 5,
+      "raw_history_line": "På Sem B 03.10.26-2|4 6 1 2100 25,6a 48 50' ¢¢ Va 6 Alf Martin 1 Jerkeld Odina 7 Jerkeld Stjernen sist av de fem, tredje utv 1200 igjen, med i angrep 200 igjen, grep kort før mål sist av de fem, tredje utv 1200 igjen, med i angrep 200 igjen, grep kort før mål",
+      "historical_date": "2026-10-03",
+      "printed_code": "B",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Bjerke Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Bjerke",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Bergsåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-006",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:6",
+      "target_horse_name": "STOLT ELMAR",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 5,
+      "raw_history_line": "Ol Mik K 09.08.26-4|5 5 3 2100 25,3a 80 18' cc Va 6 Uberg Kos 2 Mjölner Tordis 5 Stolt Elmar tet, lederrygg, prøvde seg uten å utfordre tet, lederrygg, prøvde seg uten å utfordre",
+      "historical_date": "2026-08-09",
+      "printed_code": "K",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Klosterskogen",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-007",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:6",
+      "target_horse_name": "STOLT ELMAR",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 5,
+      "raw_history_line": "Ol Mik OA 15.08.26-10|11 2 1720 24,4 90 50' cc Va 11 Åsvinn S.K. 1 Stolt Elmar 5 Skjegge Svarten tet, 27,2/500 og 24,9/1000, spurtslått kort før mål tet, 27,2/500 og 24,9/1000, spurtslått kort før mål",
+      "historical_date": "2026-08-15",
+      "printed_code": "OA",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Orkla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-008",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:6",
+      "target_horse_name": "STOLT ELMAR",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 5,
+      "raw_history_line": "Ol Mik B 01.09.26-8|3 3 0 1609 24,7a 577 30' cc Va 1 Alf Martin 7 Aske Balder 12 Grislefaksen G.L. fjerde/tredje innvendig, holdt farten etter hinder fjerde/tredje innvendig, holdt farten etter hinder",
+      "historical_date": "2026-09-01",
+      "printed_code": "B",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Bjerke Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Bjerke",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Bergsåker",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-009",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:6",
+      "target_horse_name": "STOLT ELMAR",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 5,
+      "raw_history_line": "Gu Aus BI 18.09.26-5|4 7 2 2120 25,4 63 18' cc Va 9 Lille Helge 7 Stolt Elmar 8 Finseth Faksen dødens, tet e 500, lederrygg, tet da leder g runden i, slått 100 igjen dødens, tet e 500, lederrygg, tet da leder g runden i, slått 100 igjen",
+      "historical_date": "2026-09-18",
+      "printed_code": "BI",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Biri Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Biri",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-010",
+      "target_race_id": "RIKSTOTO:BJ_NR_2026-10-20:6",
+      "target_horse_name": "STOLT ELMAR",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "pdf_page": 5,
+      "raw_history_line": "Ol Mik BI 26.09.26-9|8 13 9 2640 27,3 495 100' cc Va 7 Alm Nordstjernen 2 Birk Faxen 6 Lannem Pær femte utv, prøvde et angrep på sisterunden, avanserte ikke femte utv, prøvde et angrep på sisterunden, avanserte ikke",
+      "historical_date": "2026-09-26",
+      "printed_code": "BI",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Biri Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Biri",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-011",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:7",
+      "target_horse_name": "MOHAWK",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 2,
+      "raw_history_line": "Goo Bj Rä 18.06.26-6|6 6 1 2140 14,6a 15 32' ¢¢ Va Utv led, ledn e 400, dämpade, ryckte 150 kv, lätt, sparat. Utv led, ledn e 400, dämpade, ryckte 150 kv, lätt, sparat.",
+      "historical_date": "2026-06-18",
+      "printed_code": "Rä",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Rättvik",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-012",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:7",
+      "target_horse_name": "MOHAWK",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 2,
+      "raw_history_line": "Goo Bj L 01.07.26-6|2 2 1 2140 14,2a 14 109' ¢¢ Va 2 Mohawk 4 Global Gravity 3 Optimum Rambo Ledn e 600 via utv led, drog undan i si sv, överlägsen, mkt fin. Ledn e 600 via utv led, drog undan i si sv, överlägsen, mkt fin.",
+      "historical_date": "2026-07-01",
+      "printed_code": "L",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Lindesberg",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "NO",
+          "official_name": "Leangen",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "status": "UNRESOLVED_HISTORICAL_ALIAS",
+          "supporting_source": "https://abcdocz.com/doc/5174087/klikk-her-for-%C3%A5-se-fullstendig-program",
+          "authority": "SECONDARY_COPY_ONLY_NOT_VERIFICATION"
+        }
+      ],
+      "reason": "SE index L=Lindesberg; historical NO alias candidate Leangen has no authenticated validity interval. Do not infer country/date.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-013",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:7",
+      "target_horse_name": "MOHAWK",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 2,
+      "raw_history_line": "Goo Bj S 26.08.26-10|1010 1 2140 13,1a 27 87' ¢¢ Va 10 Mohawk 6 Popcorn Vrijthout 2 Icannoliwearchanel 3-2-utv, fram först utv 1050 kv, närkamp uppl, avgjorde säkert. 3-2-utv, fram först utv 1050 kv, närkamp uppl, avgjorde säkert.",
+      "historical_date": "2026-08-26",
+      "printed_code": "S",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Sørlandet",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Solvalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-014",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:7",
+      "target_horse_name": "MOHAWK",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 2,
+      "raw_history_line": "Goo Bj F 19.09.26-5|2 2 1 1640 11,0a 18 136' ¢¢ Va 2 Mohawk 1 Licorice Sisu 4 Global Grand Slam 2-utv, på 800 kv, 3-spår utan rygg resten, avgj 100 kv, rejäl, 09,5 si 800. 2-utv, på 800 kv, 3-spår utan rygg resten, avgj 100 kv, rejäl, 09,5 si 800.",
+      "historical_date": "2026-09-19",
+      "printed_code": "F",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Forus",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Färjestad",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-015",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:7",
+      "target_horse_name": "MOHAWK",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 2,
+      "raw_history_line": "Goo Bj S 10.10.26-2|1 1 1 2140 12,5a 19 272' ¢¢ Va 1 Mohawk 9 Luna Lane 2 Macho Cabrio B.B. Ledn, snabb ut, bestämde, drog undan i si sv, mkt lätt, fin. Ledn, snabb ut, bestämde, drog undan i si sv, mkt lätt, fin.",
+      "historical_date": "2026-10-10",
+      "printed_code": "S",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Sørlandet",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Solvalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-016",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:7",
+      "target_horse_name": "PUTITINNEUTRAL",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 2,
+      "raw_history_line": "Dju MA Mp 18.06.26-4|1010 2 2640 14,5a 34 38' c¢ Va 6 Neil Jung 10 Putitinneutral 12 Bear Victor Ledn e 550 via 2-spår, fick dämpa, ansatt från 1000 kv, slagen 100 kv, bra. Ledn e 550 via 2-spår, fick dämpa, ansatt från 1000 kv, slagen 100 kv, bra.",
+      "historical_date": "2026-06-18",
+      "printed_code": "Mp",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Mantorp",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-017",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:7",
+      "target_horse_name": "PUTITINNEUTRAL",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 2,
+      "raw_history_line": "Per Je Vi 09.07.26-6|1010 1 2120 13,6a 20 54' c¢ Va 2-utv, på e 600, utv led 1300 kv, ledn 500 kv, lätt undan, bra, överpace. 2-utv, på e 600, utv led 1300 kv, ledn 500 kv, lätt undan, bra, överpace.",
+      "historical_date": "2026-07-09",
+      "printed_code": "Vi",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Visby",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-018",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:7",
+      "target_horse_name": "PUTITINNEUTRAL",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 2,
+      "raw_history_line": "Kih Ör J 05.09.26-4|5 10 0 2160 20,0g 44 81' c¢ Va 9 Heathcliff D.E. 4 Le Peak 1 Richmond Startgalopp. Startgalopp.",
+      "historical_date": "2026-09-05",
+      "printed_code": "J",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Jarlsberg Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Jarlsberg",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-019",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:7",
+      "target_horse_name": "PUTITINNEUTRAL",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 2,
+      "raw_history_line": "Kih Ör S 16.09.26-6|1010 0 2140 13,6a 85 87' c¢ Am 4 Five Billion 2 Leandro Wibb 1 Freeman Dance 5-6-utv, 4-inv, 2-spår 1100 kv, 4-inv 450 kv, utåt bakom hästar, sparat. 5-6-utv, 4-inv, 2-spår 1100 kv, 4-inv 450 kv, utåt bakom hästar, sparat.",
+      "historical_date": "2026-09-16",
+      "printed_code": "S",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Sørlandet",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Solvalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-020",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-21:7",
+      "target_horse_name": "PUTITINNEUTRAL",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "pdf_page": 2,
+      "raw_history_line": "Lil Ma S 23.09.26-7|8 8 d 2140 4g 47 87' ¢¢ Am 1 Barn Bank 10 Sherburne S. 3 Good Wine Först utv, testade e 650, svarade pos, höll starkt, gal kort före mål, fyra Först utv, testade e 650, svarade pos, höll starkt, gal kort före mål, fyra",
+      "historical_date": "2026-09-23",
+      "printed_code": "S",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Sørlandet",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        },
+        {
+          "country": "SE",
+          "official_name": "Solvalla",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-021",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:2",
+      "target_horse_name": "LARGO WINCH",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 2,
+      "raw_history_line": "Säk Ma Vg 09.08.26-2|3 3 2 2148 16,6a 29 16' cc Va 4 Ivar von Haithabu 3 Largo Winch 8 King's Anniversary Snabb ut, rygg led, fast med en  del sparat i rygg på vinnaren. Snabb ut, rygg led, fast med en  del sparat i rygg på vinnaren.",
+      "historical_date": "2026-08-09",
+      "printed_code": "Vg",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Vaggeryd",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-022",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:2",
+      "target_horse_name": "LARGO WINCH",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 2,
+      "raw_history_line": "Säk Ma Kr 21.08.26-2|9 9 1 2140 14,8a 47 38' cc Va 9 Largo Winch 1 Ville B.T. 10 Papageno Ali Utv utan rygg, 2-utv 1350 kv, blev utv led 500 kv, ledn 400 kv, överlägsen. Utv utan rygg, 2-utv 1350 kv, blev utv led 500 kv, ledn 400 kv, överlägsen.",
+      "historical_date": "2026-08-21",
+      "printed_code": "Kr",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Kalmar",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-023",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:2",
+      "target_horse_name": "LARGO WINCH",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 2,
+      "raw_history_line": "Säk Ma Ti 13.09.26-3|1010 2 1609 12,5a 27 32' ¢¢ Va 4 Hard Rock 10 Largo Winch 1 Morningstar Derm 3-utv, på i 3-spår 600 kv, bra uppl, kunde ej utmana vinnaren. 3-utv, på i 3-spår 600 kv, bra uppl, kunde ej utmana vinnaren.",
+      "historical_date": "2026-09-13",
+      "printed_code": "Ti",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Tingsryd",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-024",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:2",
+      "target_horse_name": "LARGO WINCH",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 2,
+      "raw_history_line": "Säk Ma J 30.09.26-2|8 8 d 2140 8g 156 43' ¢¢ Va 11 Profiles By Finish 9 Le Peak 12 Knight Rider Keka Ner i 2-utv, satt kvar 800 kv, med 550 kv, trea 300 kv, gal 200 kv. Ner i 2-utv, satt kvar 800 kv, med 550 kv, trea 300 kv, gal 200 kv.",
+      "historical_date": "2026-09-30",
+      "printed_code": "J",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Jarlsberg Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Jarlsberg",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-025",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:2",
+      "target_horse_name": "LARGO WINCH",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 2,
+      "raw_history_line": "Säk Ma Hd 16.10.26-2|1010 3 2140 14,7a 85 38' ¢¢ Va 2 Elroy Face 6 Silver Håleryd 10 Largo Winch 4-5-utv, på 800 kv, ryggar, satt kvar, gdk mellan hästar. 4-5-utv, på 800 kv, ryggar, satt kvar, gdk mellan hästar.",
+      "historical_date": "2026-10-16",
+      "printed_code": "Hd",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Halmstad",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-026",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:2",
+      "target_horse_name": "CLASSIC REWIND",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 2,
+      "raw_history_line": "Ros Vi J 16.09.26-3|1 1 4 2140 15,2a 582 65' cc Am 6 Cruiser 2 Erica Palema 5 Nova de Castella Fyra, 3-inv 850 kv, ut 300 kv, fick inte chansen. Fyra, 3-inv 850 kv, ut 300 kv, fick inte chansen.",
+      "historical_date": "2026-09-16",
+      "printed_code": "J",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Jarlsberg Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Jarlsberg",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-027",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:2",
+      "target_horse_name": "CLASSIC REWIND",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 2,
+      "raw_history_line": "Mif Ty J 22.09.26-7|7 7 8 2140 18,1g 438 65' cc Va 2 Richmond 1 Never Ending Pace 3 Misty Silvio Gal e 50. Gal e 50.",
+      "historical_date": "2026-09-22",
+      "printed_code": "J",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Jarlsberg Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Jarlsberg",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-028",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:2",
+      "target_horse_name": "CLASSIC REWIND",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 2,
+      "raw_history_line": "Sta Mi Hd 04.10.26-3|2 2 2 2140 17,6 ejsp 13' cc Va",
+      "historical_date": "2026-10-04",
+      "printed_code": "Hd",
+      "printed_code_correct": true,
+      "status": "CANDIDATE_ONLY",
+      "candidates": [
+        {
+          "country": "SE",
+          "official_name": "Halmstad",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-029",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:2",
+      "target_horse_name": "CLASSIC REWIND",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 2,
+      "raw_history_line": "Ros Vi J 13.10.26-4|5 9 7 2160 15,5 1050 65' cc Va Utv en bit bak, 3-utv e 500, satt kvar 600 kv, ner inv, kunde inget si bit. Utv en bit bak, 3-utv e 500, satt kvar 600 kv, ner inv, kunde inget si bit.",
+      "historical_date": "2026-10-13",
+      "printed_code": "J",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Jarlsberg Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Jarlsberg",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    },
+    {
+      "observation_id": "M7B1-H-030",
+      "target_race_id": "RIKSTOTO:S1_NR_2026-10-24:2",
+      "target_horse_name": "CLASSIC REWIND",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "pdf_page": 2,
+      "raw_history_line": "Sta Mi J 17.10.26-1|5 7 5 2160 18,0 ejsp 13' cc Va 5-utv, med i 3-spår 1000 kv, kunde inte följa, 2-spår 450 kv, tappade. 5-utv, med i 3-spår 1000 kv, kunde inte följa, 2-spår 450 kv, tappade.",
+      "historical_date": "2026-10-17",
+      "printed_code": "J",
+      "printed_code_correct": true,
+      "status": "AMBIGUOUS",
+      "candidates": [
+        {
+          "country": "NO",
+          "official_name": "Jarlsberg Travbane",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN",
+          "candidate_name_before_review": "Jarlsberg",
+          "name_evidence": "Title of archived official DNT historical result page; exact source claims bound per observation, not universal alias approval"
+        },
+        {
+          "country": "SE",
+          "official_name": "Jägersro",
+          "stable_track_id": "NOT_REPORTED",
+          "valid_from": "UNKNOWN",
+          "valid_to": "UNKNOWN"
+        }
+      ],
+      "reason": "Full printed-code namespace/date and stable physical identity not established without observation-specific source chain.",
+      "allowed_use": "RESEARCH_ONLY",
+      "model_eligible": false,
+      "pit_status": "UNVERIFIED"
+    }
+  ],
+  "source_archive_sha256": "96d6a3c4a344a61b3d42b8173fff1b02fa44a4c1a430902db559d684960f8eb9",
+  "known_sha256": "82ca3f9e043cfc76c672b7efe15efe9da93090387972c762f4e306ffdaf1e39d",
+  "holdout_sha256": "f9d9eaf36b778b7af13738dbf49dcff81690119b1987827d0d676d8a95f58b87",
+  "representative": false,
+  "model_eligible": 0,
+  "pit_verified": 0,
+  "terminal_status": "M7B1A_PARTIAL"
+}

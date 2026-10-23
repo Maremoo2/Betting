@@ -1,0 +1,116 @@
+{
+  "schema": "M7B1A_OBSERVATION_REVIEW_CLAIMS_V1",
+  "version": "0.1.0",
+  "allowed_use": "RESEARCH_ONLY",
+  "model_eligible": false,
+  "no_cases": [
+    {
+      "observation_id": "M7A1-001",
+      "source_member": "custer-20260822.html",
+      "track_slug": "jarlsberg-travbane",
+      "official_track_name": "Jarlsberg Travbane",
+      "registration": "578001020205025",
+      "country": "NO",
+      "target_identity_source": "RIKSTOTO_ORIGINAL_BJ_STARTS_STABLE_REGISTRATION; bounded retrospective review only"
+    },
+    {
+      "observation_id": "M7A1-002",
+      "source_member": "custer-20260904.html",
+      "track_slug": "jarlsberg-travbane",
+      "official_track_name": "Jarlsberg Travbane",
+      "registration": "578001020205025",
+      "country": "NO",
+      "target_identity_source": "RIKSTOTO_ORIGINAL_BJ_STARTS_STABLE_REGISTRATION; bounded retrospective review only"
+    },
+    {
+      "observation_id": "M7A1-003",
+      "source_member": "dnt-bjerke-20260912.html",
+      "track_slug": "bjerke-travbane",
+      "official_track_name": "Bjerke Travbane",
+      "registration": "578001020205025",
+      "country": "NO",
+      "target_identity_source": "RIKSTOTO_ORIGINAL_BJ_STARTS_STABLE_REGISTRATION; bounded retrospective review only"
+    },
+    {
+      "observation_id": "M7A1-004",
+      "source_member": "custer-20261006.html",
+      "track_slug": "bjerke-travbane",
+      "official_track_name": "Bjerke Travbane",
+      "registration": "578001020205025",
+      "country": "NO",
+      "target_identity_source": "RIKSTOTO_ORIGINAL_BJ_STARTS_STABLE_REGISTRATION; bounded retrospective review only"
+    },
+    {
+      "observation_id": "M7A1-005",
+      "source_member": "goffa-20260706.html",
+      "track_slug": "momarken-travbane",
+      "official_track_name": "Momarken Travbane",
+      "registration": "578001020215363",
+      "country": "NO",
+      "target_identity_source": "RIKSTOTO_ORIGINAL_BJ_STARTS_STABLE_REGISTRATION; bounded retrospective review only"
+    },
+    {
+      "observation_id": "M7A1-006",
+      "source_member": "goffa-20260724.html",
+      "track_slug": "biri-travbane",
+      "official_track_name": "Biri Travbane",
+      "registration": "578001020215363",
+      "country": "NO",
+      "target_identity_source": "RIKSTOTO_ORIGINAL_BJ_STARTS_STABLE_REGISTRATION; bounded retrospective review only"
+    },
+    {
+      "observation_id": "M7A1-008",
+      "source_member": "goffa-20260818.html",
+      "track_slug": "bjerke-travbane",
+      "official_track_name": "Bjerke Travbane",
+      "registration": "578001020215363",
+      "country": "NO",
+      "target_identity_source": "RIKSTOTO_ORIGINAL_BJ_STARTS_STABLE_REGISTRATION; bounded retrospective review only"
+    }
+  ],
+  "se_cases": [
+    {
+      "observation_id": "M7A1-017",
+      "source_member": "atg-eire-20260719.json",
+      "horse_id": 791286,
+      "target_member": "races/2026-10-20_14_7.json",
+      "identity_source": "M6_TARGET_FIELD_AND_PDF_NAME_SIRE_DAM",
+      "country": "SE"
+    },
+    {
+      "observation_id": "M7A1-020",
+      "source_member": "atg-beautiful-20260809.json",
+      "horse_id": 794752,
+      "target_member": "races/2026-10-20_14_7.json",
+      "identity_source": "M6_TARGET_FIELD_AND_PDF_NAME_SIRE_DAM",
+      "country": "SE"
+    },
+    {
+      "observation_id": "M7A1-052",
+      "source_member": "atg-pure-20251010-r6.json",
+      "horse_id": 793918,
+      "identity_source": "EXISTING_M7A1_PURE_EGO_STABLE_ID_AND_PEDIGREE",
+      "country": "SE"
+    },
+    {
+      "observation_id": "M7A1-053",
+      "source_member": "atg-pure-20251026.json",
+      "horse_id": 793918,
+      "identity_source": "EXISTING_M7A1_PURE_EGO_STABLE_ID_AND_PEDIGREE",
+      "country": "SE"
+    }
+  ],
+  "attempts_without_link": [
+    {
+      "observation_id": "M7A1-007",
+      "source_member": "goffa-20260811.html",
+      "reason": "Requested Biri result page has no matching stable registration; no row linked"
+    },
+    {
+      "observation_id": "M7A1-009",
+      "source_member": "goffa-20261013.html",
+      "reason": "Requested Momarken result page has no matching stable registration; no row linked"
+    }
+  ],
+  "old_official_layer": "M7A1 six starts replayed separately; original archive/identity checks unchanged"
+}

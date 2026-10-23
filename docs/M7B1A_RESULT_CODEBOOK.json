@@ -1,0 +1,897 @@
+{
+  "schema": "M7B1A_RESULT_CODEBOOK_V1",
+  "version": "0.2.0-research",
+  "extends": "docs/M7B1_CODEBOOK.json (frozen and unchanged)",
+  "observed_at": "2026-10-23T06:21:30.429806+00:00",
+  "allowed_use": "RESEARCH_ONLY",
+  "model_eligible": false,
+  "source_access": {
+    "index_url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+    "document_version": "2020-05-20",
+    "retrieval": "INDEXED_PRIMARY_DOCUMENT_TEXT_ONLY",
+    "binary_verified": false,
+    "direct_response": "HTML verification page, not PDF. No access-control bypass attempted.",
+    "supporting_components_paraphrased": {
+      "a": "automatic start",
+      "d": "disqualification",
+      "g": "gallop",
+      "frd": "result removed by decision",
+      "u": "retired from race",
+      "kub": "outside track boundary",
+      "vänd": "turned and did not complete",
+      "gdk": "approved qualification",
+      "k": "qualification in event-type context",
+      "it": "no timing"
+    }
+  },
+  "normalization_policy": "Source-verification sidecar only. No modifications to frozen adapter, PDF truth, original codes, M5/M6 gates or automatic identity/PIT. VERIFIED_SCOPED is not a general parser rule.",
+  "families": [
+    {
+      "family": "frd8a",
+      "verification_status": "PARTIALLY_DOCUMENTED",
+      "scope": "SE_INDEX_AND_ATG_ROW",
+      "meaning": "ST documents frd component as loss of result/placing by decision; exact Eire source has DQ and kmTime code frd8, auto race. Digit meaning and complete concatenation not independently established.",
+      "normalization_permission": "UNKNOWN_CODE",
+      "occurrences": [
+        {
+          "observation_id": "M7A1-017",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 2,
+          "raw_history_line": "Sjö Cl Ax 19.07.26-10|66 d 2140 frd8a 392 109' ¢¢ Va 5 Ecuador Broline 3 Have a Drink on Me 11 Sparkling Power Backade direkt, 6-5-utv, med i 3-spår 900 kv, höll hyggligt utan chans. Backade direkt, 6-5-utv, med i 3-spår 900 kv, höll hyggligt utan chans.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "frd8a",
+            "qualification_result": "NOT_REPORTED"
+          }
+        }
+      ],
+      "occurrence_count": 1,
+      "sources": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_NOT_BINARY"
+        },
+        {
+          "archive": "tests/fixtures/m7b1a-official-sources-v1.zip",
+          "member": "atg-eire-20260719.json"
+        }
+      ],
+      "hypothesis_promoted_to_fact": false
+    },
+    {
+      "family": "dg",
+      "verification_status": "VERIFIED_SCOPED",
+      "scope": "DNT_RESULT_NO",
+      "meaning": "Official NO result labels exact Custer row as disqualified for gallop with raw dg. DQ category and gallop reason distinct; no numeric placing/time. This is not a universal Swedish compound rule.",
+      "normalization_permission": "SCOPED_DQ_GALLOP_ONLY",
+      "occurrences": [
+        {
+          "observation_id": "M7A1-003",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 1,
+          "raw_history_line": "To Sol B 12.09.26-3|1011 - 2100 dg a 102 50' ¢c Am 7 Gargo Spritz 5 Amazing Khan 2 C.C. Hammer Time g fra start, angrep 900 i, ny galopp siste bortre g fra start, angrep 900 i, ny galopp siste bortre",
+          "raw_codes": {
+            "placing": "-",
+            "km_time": "dg a",
+            "qualification_result": "NOT_REPORTED"
+          }
+        }
+      ],
+      "occurrence_count": 1,
+      "sources": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_NOT_BINARY"
+        },
+        {
+          "archive": "tests/fixtures/m7b1a-official-sources-v1.zip",
+          "member": "dnt-bjerke-20260912.html"
+        },
+        {
+          "archive": "tests/fixtures/m7b1a-official-sources-v1.zip",
+          "member": "dnt-momarken-20201202.html"
+        }
+      ],
+      "hypothesis_promoted_to_fact": false
+    },
+    {
+      "family": "br",
+      "verification_status": "VERIFIED_SCOPED",
+      "scope": "DNT_RESULT_NO_ONLY",
+      "meaning": "Official NO result associates br/BR with did-not-finish. Does not establish cause, numeric placing or time. The PDF occurrence is a historical SE start shown in NO-style output; full formatter/namespace mapping not independently proven, so do not automatically apply to that row.",
+      "normalization_permission": "UNKNOWN_CODE_FOR_UNBOUND_PDF_CONTEXT",
+      "occurrences": [
+        {
+          "observation_id": "M7A1-019",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 3,
+          "raw_history_line": "Ren Er JÆ 25.08.26-3|7 7 0 2140 br ag 300 0' Gal e 50. Gal e 50.",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "br ag",
+            "qualification_result": "NOT_REPORTED"
+          }
+        }
+      ],
+      "occurrence_count": 1,
+      "sources": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_NOT_BINARY"
+        },
+        {
+          "archive": "tests/fixtures/m7b1a-official-sources-v1.zip",
+          "member": "dnt-bergen-20260302.html"
+        },
+        {
+          "archive": "tests/fixtures/m7b1a-official-sources-v1.zip",
+          "member": "dnt-momarken-20201202.html"
+        }
+      ],
+      "hypothesis_promoted_to_fact": false
+    },
+    {
+      "family": "ug",
+      "verification_status": "PARTIALLY_DOCUMENTED",
+      "scope": "SE_INDEX_AND_ATG_ROW",
+      "meaning": "Index defines u retirement and g gallop components. Pure Ego exact official row has kmTime u, galloped true and disqualified true. This supports row flags, not a universal compound grammar or numeric value.",
+      "normalization_permission": "UNKNOWN_CODE",
+      "occurrences": [
+        {
+          "observation_id": "M7A1-032",
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "page": 1,
+          "raw_history_line": "Ekl An Ax 17.07.26-2|5 6 d 2140 ug 45 54' ¢c Va 4 I See Tail Lights 1 Isaia Degato 11 Pure Bliss Gal e 200. Gal e 200.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "ug",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-035",
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "page": 1,
+          "raw_history_line": "Ekl An S 27.09.26-1|1111 d 2140 ug 800 163' ¢¢ Va 7 Kagli Zet 2 Morning Rain 1 Janitah Brook 6-4-utv, med 900 kv, dålig rygg, på 650 kv, inv si sv, gal 300 kv. 6-4-utv, med 900 kv, dålig rygg, på 650 kv, inv si sv, gal 300 kv.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "ug",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-052",
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "page": 1,
+          "raw_history_line": "For Mi U 10.10.25-6|1 1 d 2140 ug 47 38' cc Am Kommentar saknas, tekniskt fel. Kommentar saknas, tekniskt fel.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "ug",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-056",
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "page": 1,
+          "raw_history_line": "Wäj Ol U 21.04.26-5|1112 0 2140 ug 556 38' ¢c Am Tappstart, sist i kön, gal e 250. Tappstart, sist i kön, gal e 250.",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "ug",
+            "qualification_result": "NOT_REPORTED"
+          }
+        }
+      ],
+      "occurrence_count": 4,
+      "sources": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_NOT_BINARY"
+        },
+        {
+          "archive": "tests/fixtures/m7b1a-official-sources-v1.zip",
+          "member": "atg-pure-20251010-r6.json"
+        }
+      ],
+      "hypothesis_promoted_to_fact": false
+    },
+    {
+      "family": "kubug",
+      "verification_status": "PARTIALLY_DOCUMENTED",
+      "scope": "SE_INDEX_AND_ATG_ROW",
+      "meaning": "Index describes kub as outside course boundary, u retirement and g gallop. Exact Beautiful Disaster row has kmTime kubu, galloped and disqualified true. Complete code expansion/cause chaining remains unapproved.",
+      "normalization_permission": "UNKNOWN_CODE",
+      "occurrences": [
+        {
+          "observation_id": "M7A1-020",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 2,
+          "raw_history_line": "Mid PO Åm 09.08.26-4|2 2 d 1680 kubug 27 54' ¢c Va 7 Grodda Jet 9 Popup Pellini 5 Maserati Salt Startgal, diskad. Startgal, diskad.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "kubug",
+            "qualification_result": "NOT_REPORTED"
+          }
+        }
+      ],
+      "occurrence_count": 1,
+      "sources": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_NOT_BINARY"
+        },
+        {
+          "archive": "tests/fixtures/m7b1a-official-sources-v1.zip",
+          "member": "atg-beautiful-20260809.json"
+        }
+      ],
+      "hypothesis_promoted_to_fact": false
+    },
+    {
+      "family": "vändg",
+      "verification_status": "PARTIALLY_DOCUMENTED",
+      "scope": "SE_INDEX_AND_ATG_ROW",
+      "meaning": "Index describes turning and not completing the race. Pure Ego row has kmTime vänd and explicit gallop/DQ flags. Full compound remains unapproved; no numeric time or placing.",
+      "normalization_permission": "UNKNOWN_CODE",
+      "occurrences": [
+        {
+          "observation_id": "M7A1-053",
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "page": 1,
+          "raw_history_line": "Tor Ha U 26.10.25-6|1 1 d 2140 vändg 614 54' cc Am 7 Readly Brodde 8 Jimmy Adore 10 Peek a Boo Poof 4-5-inv, gal e 850. 4-5-inv, gal e 850.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "vändg",
+            "qualification_result": "NOT_REPORTED"
+          }
+        }
+      ],
+      "occurrence_count": 1,
+      "sources": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_NOT_BINARY"
+        },
+        {
+          "archive": "tests/fixtures/m7b1a-official-sources-v1.zip",
+          "member": "atg-pure-20251026.json"
+        }
+      ],
+      "hypothesis_promoted_to_fact": false
+    },
+    {
+      "family": "d",
+      "verification_status": "VERIFIED_SCOPED",
+      "scope": "ST_INDEX_SE_PLUS_EXACT_ATG_ROWS",
+      "meaning": "ST placing-cell d denotes disqualification, independently corroborated by selected stable-ID ATG results. Reason is separate; no automatic cross-country mapping or numeric placement.",
+      "normalization_permission": "SCOPED_DISQUALIFICATION_ONLY",
+      "occurrences": [
+        {
+          "observation_id": "M7A1-017",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 2,
+          "raw_history_line": "Sjö Cl Ax 19.07.26-10|66 d 2140 frd8a 392 109' ¢¢ Va 5 Ecuador Broline 3 Have a Drink on Me 11 Sparkling Power Backade direkt, 6-5-utv, med i 3-spår 900 kv, höll hyggligt utan chans. Backade direkt, 6-5-utv, med i 3-spår 900 kv, höll hyggligt utan chans.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "frd8a",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-020",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 2,
+          "raw_history_line": "Mid PO Åm 09.08.26-4|2 2 d 1680 kubug 27 54' ¢c Va 7 Grodda Jet 9 Popup Pellini 5 Maserati Salt Startgal, diskad. Startgal, diskad.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "kubug",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-032",
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "page": 1,
+          "raw_history_line": "Ekl An Ax 17.07.26-2|5 6 d 2140 ug 45 54' ¢c Va 4 I See Tail Lights 1 Isaia Degato 11 Pure Bliss Gal e 200. Gal e 200.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "ug",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-035",
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "page": 1,
+          "raw_history_line": "Ekl An S 27.09.26-1|1111 d 2140 ug 800 163' ¢¢ Va 7 Kagli Zet 2 Morning Rain 1 Janitah Brook 6-4-utv, med 900 kv, dålig rygg, på 650 kv, inv si sv, gal 300 kv. 6-4-utv, med 900 kv, dålig rygg, på 650 kv, inv si sv, gal 300 kv.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "ug",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-038",
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "page": 6,
+          "raw_history_line": "Dju MA S 31.05.26-4|6 6 d 2640 5g 42 109' ¢¢ Va 4 Popeye Tooma 7 Facetime Love 5 Parish Crooks V.S. 3-spår, utv led e 550, ledn 450 kv, gal som slagen 275 kv. 3-spår, utv led e 550, ledn 450 kv, gal som slagen 275 kv.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "5g",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-052",
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "page": 1,
+          "raw_history_line": "For Mi U 10.10.25-6|1 1 d 2140 ug 47 38' cc Am Kommentar saknas, tekniskt fel. Kommentar saknas, tekniskt fel.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "ug",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-053",
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "page": 1,
+          "raw_history_line": "Tor Ha U 26.10.25-6|1 1 d 2140 vändg 614 54' cc Am 7 Readly Brodde 8 Jimmy Adore 10 Peek a Boo Poof 4-5-inv, gal e 850. 4-5-inv, gal e 850.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "vändg",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7B1-H-020",
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "page": 2,
+          "raw_history_line": "Lil Ma S 23.09.26-7|8 8 d 2140 4g 47 87' ¢¢ Am 1 Barn Bank 10 Sherburne S. 3 Good Wine Först utv, testade e 650, svarade pos, höll starkt, gal kort före mål, fyra Först utv, testade e 650, svarade pos, höll starkt, gal kort före mål, fyra",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "4g",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7B1-H-024",
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "page": 2,
+          "raw_history_line": "Säk Ma J 30.09.26-2|8 8 d 2140 8g 156 43' ¢¢ Va 11 Profiles By Finish 9 Le Peak 12 Knight Rider Keka Ner i 2-utv, satt kvar 800 kv, med 550 kv, trea 300 kv, gal 200 kv. Ner i 2-utv, satt kvar 800 kv, med 550 kv, trea 300 kv, gal 200 kv.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "8g",
+            "qualification_result": "NOT_REPORTED"
+          }
+        }
+      ],
+      "occurrence_count": 9,
+      "sources": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_NOT_BINARY"
+        },
+        {
+          "archive": "tests/fixtures/m7b1a-official-sources-v1.zip",
+          "member": "atg-eire-20260719.json"
+        },
+        {
+          "archive": "tests/fixtures/m7b1a-official-sources-v1.zip",
+          "member": "atg-pure-20251026.json"
+        }
+      ],
+      "hypothesis_promoted_to_fact": false
+    },
+    {
+      "family": "digit_g",
+      "verification_status": "VERIFIED_SCOPED",
+      "scope": "ST_INDEX_G_COMPONENT_PLUS_M7A1_ATG",
+      "meaning": "g marker documents gallop. Digit-g tokens in time cells (5g/4g/8g) are non-decimal codes, not seconds/km or final numeric placing. Complete digit meaning is not verified.",
+      "normalization_permission": "G_MARKER_ONLY_REMAINDER_UNKNOWN_CODE",
+      "occurrences": [
+        {
+          "observation_id": "M7A1-038",
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "page": 6,
+          "raw_history_line": "Dju MA S 31.05.26-4|6 6 d 2640 5g 42 109' ¢¢ Va 4 Popeye Tooma 7 Facetime Love 5 Parish Crooks V.S. 3-spår, utv led e 550, ledn 450 kv, gal som slagen 275 kv. 3-spår, utv led e 550, ledn 450 kv, gal som slagen 275 kv.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "5g",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7B1-H-020",
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "page": 2,
+          "raw_history_line": "Lil Ma S 23.09.26-7|8 8 d 2140 4g 47 87' ¢¢ Am 1 Barn Bank 10 Sherburne S. 3 Good Wine Först utv, testade e 650, svarade pos, höll starkt, gal kort före mål, fyra Först utv, testade e 650, svarade pos, höll starkt, gal kort före mål, fyra",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "4g",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7B1-H-024",
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "page": 2,
+          "raw_history_line": "Säk Ma J 30.09.26-2|8 8 d 2140 8g 156 43' ¢¢ Va 11 Profiles By Finish 9 Le Peak 12 Knight Rider Keka Ner i 2-utv, satt kvar 800 kv, med 550 kv, trea 300 kv, gal 200 kv. Ner i 2-utv, satt kvar 800 kv, med 550 kv, trea 300 kv, gal 200 kv.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "8g",
+            "qualification_result": "NOT_REPORTED"
+          }
+        }
+      ],
+      "occurrence_count": 3,
+      "sources": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_NOT_BINARY"
+        },
+        {
+          "archive": "tests/fixtures/m7a1-atg-results-v1.zip",
+          "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+          "member": "atg-2026-05-31_5_4.json"
+        }
+      ],
+      "hypothesis_promoted_to_fact": false
+    },
+    {
+      "family": "zero",
+      "verification_status": "VERIFIED_SCOPED",
+      "scope": "DNT_EXACT_ZERO_ROWS_AND_ST_INDEX",
+      "meaning": "Zero is an unplaced code, not numeric finishing rank and not automatically disqualification. Goffa zero/gallop is distinct from separately labelled DQ runners in the same official table.",
+      "normalization_permission": "UNPLACED_CATEGORY_ONLY",
+      "occurrences": [
+        {
+          "observation_id": "M7A1-006",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 1,
+          "raw_history_line": "Ge Gun BI 24.07.26-6|8 11 0 2620 21,8 g 43 20' cc Va 9 Megatron 3 Newton B.R. 5 Born In The Norway feilet på startsiden feilet på startsiden",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "21,8 g",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-007",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 1,
+          "raw_history_line": "Ge Gun B 11.08.26-9|1212 0 2100 14,8a 94 30' cc Am 4 New First Lady 6 Oh U. Handsomeboy 3 Mefisto Faust femte utv, med i angrep 550 i, hadde lite å sette inn femte utv, med i angrep 550 i, hadde lite å sette inn",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "14,8a",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-008",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 1,
+          "raw_history_line": "Ge Gun B 18.08.26-8|2 2 0 2100 14,4a 71 22' cc Am 7 Peacekeeper 8 Euro S.L. 12 Atomic Pepper bra ut, lederrygg, dødens runden igjen, trakk seg på oppløpet, tøft bra ut, lederrygg, dødens runden igjen, trakk seg på oppløpet, tøft",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "14,4a",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-015",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 2,
+          "raw_history_line": "Kon Jo S 15.05.26-6|7 7 0 2140 16,5ag 710 327' ¢c Va 6 My Creation 4 Love to the Limit 10 Mamma Mia Sisu Gal e 75, kördes runt på avstånd. Gal e 75, kördes runt på avstånd.",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "16,5ag",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-016",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 2,
+          "raw_history_line": "Kih Ör S 31.05.26-14|99 0 2140 12,6a 104 109' ¢¢ Va 3 Västerbo Redless 4 Lotusorchide 5 Hold Me Closer 6-7-inv, 2-spår 700 kv, inv 400 kv, följde med bakom hästar med sparat. 6-7-inv, 2-spår 700 kv, inv 400 kv, följde med bakom hästar med sparat.",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "12,6a",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-019",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 3,
+          "raw_history_line": "Ren Er JÆ 25.08.26-3|7 7 0 2140 br ag 300 0' Gal e 50. Gal e 50.",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "br ag",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-041",
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "page": 1,
+          "raw_history_line": "Tho Ol Hd 08.09.26-6|1212 0 2140 16,2a 633 38' ¢c Va 8 Makin' Peace 1 No Limit Victory 7 Donna Patricia Inv långt ner, utv i kön, 5-inv, dålig rygg si bortre, ut/på si sv, gdk. Inv långt ner, utv i kön, 5-inv, dålig rygg si bortre, ut/på si sv, gdk.",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "16,2a",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-048",
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "page": 1,
+          "raw_history_line": "Lin Co J 06.09.26-3|1111 0 2140 15,2a 1898 54' cc Va 10 Princess Garde 4 Yalla Yalla 5 Alexa's Genius 4-utv, stora problem och ner inv 1000 kv, ut 450 kv, tappade. 4-utv, stora problem och ner inv 1000 kv, ut 450 kv, tappade.",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "15,2a",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-049",
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "page": 1,
+          "raw_history_line": "Lin Co J 16.09.26-8|6 6 0 2140 15,0a 1450 65' cc Va 3 Irene Mum 11 Ögat 4 Luci de Lux Över, sist e 450, avhängd 800 kv, tappade massor. Över, sist e 450, avhängd 800 kv, tappade massor.",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "15,0a",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-056",
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "page": 1,
+          "raw_history_line": "Wäj Ol U 21.04.26-5|1112 0 2140 ug 556 38' ¢c Am Tappstart, sist i kön, gal e 250. Tappstart, sist i kön, gal e 250.",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "ug",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7B1-H-004",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 5,
+          "raw_history_line": "Ja Bje B 13.09.26-3|7 8 0 1609 22,7a 46 40' cc Va 3 Hafell Bris 1 Øygard Stjerna 6 Troll Sterk Bork tredje utvendig, ut på siste bortre, avanserte ikke tredje utvendig, ut på siste bortre, avanserte ikke",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "22,7a",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7B1-H-008",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 5,
+          "raw_history_line": "Ol Mik B 01.09.26-8|3 3 0 1609 24,7a 577 30' cc Va 1 Alf Martin 7 Aske Balder 12 Grislefaksen G.L. fjerde/tredje innvendig, holdt farten etter hinder fjerde/tredje innvendig, holdt farten etter hinder",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "24,7a",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7B1-H-018",
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "page": 2,
+          "raw_history_line": "Kih Ör J 05.09.26-4|5 10 0 2160 20,0g 44 81' c¢ Va 9 Heathcliff D.E. 4 Le Peak 1 Richmond Startgalopp. Startgalopp.",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "20,0g",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7B1-H-019",
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "page": 2,
+          "raw_history_line": "Kih Ör S 16.09.26-6|1010 0 2140 13,6a 85 87' c¢ Am 4 Five Billion 2 Leandro Wibb 1 Freeman Dance 5-6-utv, 4-inv, 2-spår 1100 kv, 4-inv 450 kv, utåt bakom hästar, sparat. 5-6-utv, 4-inv, 2-spår 1100 kv, 4-inv 450 kv, utåt bakom hästar, sparat.",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "13,6a",
+            "qualification_result": "NOT_REPORTED"
+          }
+        }
+      ],
+      "occurrence_count": 14,
+      "sources": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_NOT_BINARY"
+        },
+        {
+          "archive": "tests/fixtures/m7b1a-official-sources-v1.zip",
+          "member": "goffa-20260724.html"
+        },
+        {
+          "archive": "tests/fixtures/m7b1a-official-sources-v1.zip",
+          "member": "goffa-20260818.html"
+        }
+      ],
+      "hypothesis_promoted_to_fact": false
+    },
+    {
+      "family": "qualification",
+      "verification_status": "VERIFIED_SCOPED",
+      "scope": "ST_INDEX_AND_ORIGINAL_PDF_CONTEXT",
+      "meaning": "Contextual k plus approval gdk denotes an approved qualification; k in record-distance context is different. Never count as an ordinary competition start. No new independent official qualifier result row was obtained.",
+      "normalization_permission": "QUALIFICATION_APPROVED_CONTEXT_ONLY",
+      "occurrences": [
+        {
+          "observation_id": "M7A1-013",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 2,
+          "raw_history_line": "Vik LH Ro 29.09.26-13|66 k 2140 17,0 gdk 0'",
+          "raw_codes": {
+            "placing": "k",
+            "km_time": "17,0",
+            "qualification_result": "gdk"
+          }
+        },
+        {
+          "observation_id": "M7A1-057",
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "page": 1,
+          "raw_history_line": "Joh MR Hd 13.07.26-13|77 k 2140 17,9 gdk 0'",
+          "raw_codes": {
+            "placing": "k",
+            "km_time": "17,9",
+            "qualification_result": "gdk"
+          }
+        }
+      ],
+      "occurrence_count": 2,
+      "sources": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_NOT_BINARY"
+        }
+      ],
+      "hypothesis_promoted_to_fact": false
+    },
+    {
+      "family": "missing_time",
+      "verification_status": "VERIFIED_SCOPED",
+      "scope": "ST_INDEX_AND_NONNUMERIC_OFFICIAL_KMTIME",
+      "meaning": "Index it denotes no timing. Non-decimal result codes remain unavailable numeric time; never substitute zero or extract digits from compounds.",
+      "normalization_permission": "NOT_REPORTED_OR_UNKNOWN_CODE",
+      "occurrences": [
+        {
+          "observation_id": "M7A1-003",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 1,
+          "raw_history_line": "To Sol B 12.09.26-3|1011 - 2100 dg a 102 50' ¢c Am 7 Gargo Spritz 5 Amazing Khan 2 C.C. Hammer Time g fra start, angrep 900 i, ny galopp siste bortre g fra start, angrep 900 i, ny galopp siste bortre",
+          "raw_codes": {
+            "placing": "-",
+            "km_time": "dg a",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-017",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 2,
+          "raw_history_line": "Sjö Cl Ax 19.07.26-10|66 d 2140 frd8a 392 109' ¢¢ Va 5 Ecuador Broline 3 Have a Drink on Me 11 Sparkling Power Backade direkt, 6-5-utv, med i 3-spår 900 kv, höll hyggligt utan chans. Backade direkt, 6-5-utv, med i 3-spår 900 kv, höll hyggligt utan chans.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "frd8a",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-019",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 3,
+          "raw_history_line": "Ren Er JÆ 25.08.26-3|7 7 0 2140 br ag 300 0' Gal e 50. Gal e 50.",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "br ag",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-020",
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "page": 2,
+          "raw_history_line": "Mid PO Åm 09.08.26-4|2 2 d 1680 kubug 27 54' ¢c Va 7 Grodda Jet 9 Popup Pellini 5 Maserati Salt Startgal, diskad. Startgal, diskad.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "kubug",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-021",
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "page": 1,
+          "raw_history_line": "Sto Ka Å 27.06.26-3|1010 4 2140 it 38 13' ¢¢ Va 8 Prins Gunnar 2 Eigth Days Ahead 4 Dencos May Day 2-utv, problem att följa i si sv, hakade på skapligt i 2-spår. 2-utv, problem att följa i si sv, hakade på skapligt i 2-spår.",
+          "raw_codes": {
+            "placing": "4",
+            "km_time": "it",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-032",
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "page": 1,
+          "raw_history_line": "Ekl An Ax 17.07.26-2|5 6 d 2140 ug 45 54' ¢c Va 4 I See Tail Lights 1 Isaia Degato 11 Pure Bliss Gal e 200. Gal e 200.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "ug",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-035",
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "page": 1,
+          "raw_history_line": "Ekl An S 27.09.26-1|1111 d 2140 ug 800 163' ¢¢ Va 7 Kagli Zet 2 Morning Rain 1 Janitah Brook 6-4-utv, med 900 kv, dålig rygg, på 650 kv, inv si sv, gal 300 kv. 6-4-utv, med 900 kv, dålig rygg, på 650 kv, inv si sv, gal 300 kv.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "ug",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-038",
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "page": 6,
+          "raw_history_line": "Dju MA S 31.05.26-4|6 6 d 2640 5g 42 109' ¢¢ Va 4 Popeye Tooma 7 Facetime Love 5 Parish Crooks V.S. 3-spår, utv led e 550, ledn 450 kv, gal som slagen 275 kv. 3-spår, utv led e 550, ledn 450 kv, gal som slagen 275 kv.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "5g",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-052",
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "page": 1,
+          "raw_history_line": "For Mi U 10.10.25-6|1 1 d 2140 ug 47 38' cc Am Kommentar saknas, tekniskt fel. Kommentar saknas, tekniskt fel.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "ug",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-053",
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "page": 1,
+          "raw_history_line": "Tor Ha U 26.10.25-6|1 1 d 2140 vändg 614 54' cc Am 7 Readly Brodde 8 Jimmy Adore 10 Peek a Boo Poof 4-5-inv, gal e 850. 4-5-inv, gal e 850.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "vändg",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7A1-056",
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "page": 1,
+          "raw_history_line": "Wäj Ol U 21.04.26-5|1112 0 2140 ug 556 38' ¢c Am Tappstart, sist i kön, gal e 250. Tappstart, sist i kön, gal e 250.",
+          "raw_codes": {
+            "placing": "0",
+            "km_time": "ug",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7B1-H-020",
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "page": 2,
+          "raw_history_line": "Lil Ma S 23.09.26-7|8 8 d 2140 4g 47 87' ¢¢ Am 1 Barn Bank 10 Sherburne S. 3 Good Wine Först utv, testade e 650, svarade pos, höll starkt, gal kort före mål, fyra Först utv, testade e 650, svarade pos, höll starkt, gal kort före mål, fyra",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "4g",
+            "qualification_result": "NOT_REPORTED"
+          }
+        },
+        {
+          "observation_id": "M7B1-H-024",
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "page": 2,
+          "raw_history_line": "Säk Ma J 30.09.26-2|8 8 d 2140 8g 156 43' ¢¢ Va 11 Profiles By Finish 9 Le Peak 12 Knight Rider Keka Ner i 2-utv, satt kvar 800 kv, med 550 kv, trea 300 kv, gal 200 kv. Ner i 2-utv, satt kvar 800 kv, med 550 kv, trea 300 kv, gal 200 kv.",
+          "raw_codes": {
+            "placing": "d",
+            "km_time": "8g",
+            "qualification_result": "NOT_REPORTED"
+          }
+        }
+      ],
+      "occurrence_count": 13,
+      "sources": [
+        {
+          "url": "https://www.travsport.se/siteassets/relaterade-dokument/tavling/tavlingar/forkortningsindex.pdf?235=",
+          "document_version": "2020-05-20",
+          "access": "INDEXED_PRIMARY_DOCUMENT_NOT_BINARY"
+        },
+        {
+          "archive": "tests/fixtures/m7b1a-official-sources-v1.zip",
+          "member": "atg-eire-20260719.json"
+        }
+      ],
+      "hypothesis_promoted_to_fact": false,
+      "additional_source_example_outside_ninety": [
+        {
+          "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+          "pdf_page": 2,
+          "raw_history_line": "Sme Ju Vi 17.09.26-3|4 4 1 2120 15,4a 31 27' ¢¢ Va 4 Mezcal Teorvici 12 Move it Brodde 2 Dream Brodda 3-spår, utv led e 500, press 1000 kv, rygg led 850, utv led 450, grepp 150. 3-spår, utv led e 500, press 1000 kv, rygg led 850, utv led 450, grepp 150.",
+          "role": "SOURCE_CODE_EXAMPLE_ONLY_NOT_ADDED_TO_BENCHMARK"
+        },
+        {
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "pdf_page": 1,
+          "raw_history_line": "Sto Ka Å 27.06.26-3|1010 4 2140 it 38 13' ¢¢ Va 8 Prins Gunnar 2 Eigth Days Ahead 4 Dencos May Day 2-utv, problem att följa i si sv, hakade på skapligt i 2-spår. 2-utv, problem att följa i si sv, hakade på skapligt i 2-spår.",
+          "role": "SOURCE_CODE_EXAMPLE_ONLY_NOT_ADDED_TO_BENCHMARK"
+        },
+        {
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "pdf_page": 2,
+          "raw_history_line": "Str Wi Sä 14.09.26-3|4 4 3 2140 it 36 32' c¢ Va 6 Boba Fett 5 Moni Debbi 4 Good Wine Snabb ut, ledn, rygg led e 200, kvar där in i mål, krafter kvar. Snabb ut, ledn, rygg led e 200, kvar där in i mål, krafter kvar.",
+          "role": "SOURCE_CODE_EXAMPLE_ONLY_NOT_ADDED_TO_BENCHMARK"
+        },
+        {
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "pdf_page": 3,
+          "raw_history_line": "5-års brun v e Make it Happen - Emmylou Love e Symphonic Hanover",
+          "role": "SOURCE_CODE_EXAMPLE_ONLY_NOT_ADDED_TO_BENCHMARK"
+        },
+        {
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "pdf_page": 4,
+          "raw_history_line": "Leo Em Ax 17.07.26-5|4 4 2 1140 it 75 81' ¢¢ Va 8 Mister Kabuki 4 Incomparable 3 King of Trotter Pressade led, ledn 650 kv, drog undan, mattades lite, slagen si biten. Pressade led, ledn 650 kv, drog undan, mattades lite, slagen si biten.",
+          "role": "SOURCE_CODE_EXAMPLE_ONLY_NOT_ADDED_TO_BENCHMARK"
+        },
+        {
+          "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+          "pdf_page": 7,
+          "raw_history_line": "Öst OJ Å 17.09.26-10|77 1 1640 11,8a 13 21' ¢¢ Va 7 Monster Wine 1 Do it Dorothy 6 Crizzy Ledn e 500 via 2-spår, vettig fart, längder i si sv, överlägsen med sparat. Ledn e 500 via 2-spår, vettig fart, längder i si sv, överlägsen med sparat.",
+          "role": "SOURCE_CODE_EXAMPLE_ONLY_NOT_ADDED_TO_BENCHMARK"
+        },
+        {
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "pdf_page": 6,
+          "raw_history_line": "7-års brun hp e Southwind Frank - Some Like it Hot e From Above",
+          "role": "SOURCE_CODE_EXAMPLE_ONLY_NOT_ADDED_TO_BENCHMARK"
+        },
+        {
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "pdf_page": 7,
+          "raw_history_line": "4-års mörkbrun hp e Make it Happen - Staro Mary Lou e Juliano Star",
+          "role": "SOURCE_CODE_EXAMPLE_ONLY_NOT_ADDED_TO_BENCHMARK"
+        },
+        {
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "pdf_page": 8,
+          "raw_history_line": "Joh Gu Hd 22.06.26-7|8 8 2 1609 11,8a 126 109' ¢¢ Va 1 Global Got it All 8 Turfmans Nancy 9 Hybrida 3-spår, utv utan rygg e 550, låg lugn, höll farten bra. 3-spår, utv utan rygg e 550, låg lugn, höll farten bra.",
+          "role": "SOURCE_CODE_EXAMPLE_ONLY_NOT_ADDED_TO_BENCHMARK"
+        },
+        {
+          "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+          "pdf_page": 9,
+          "raw_history_line": "Per St Å 10.08.26-1|3 3 1 1640 12,7a 17 43' c¢ Va 3 Rip Wheeler 11 Vikens Go for it 4 Indian Summer Ledn e 500 via utv led, dämpade e snabb öppning, blev lätt då hotet gal. Ledn e 500 via utv led, dämpade e snabb öppning, blev lätt då hotet gal.",
+          "role": "SOURCE_CODE_EXAMPLE_ONLY_NOT_ADDED_TO_BENCHMARK"
+        }
+      ]
+    }
+  ]
+}
