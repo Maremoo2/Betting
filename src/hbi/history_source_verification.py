@@ -66,12 +66,12 @@ class ResultCells(HTMLParser):
             self.current = None
 
 
-def sources(path):
-    with zipfile.ZipFile(io.BytesIO(checked_bytes(path, SOURCE_SHA))) as z:
+def sources(path, *, expected_sha=SOURCE_SHA, expected_schema="M7B1A_OFFICIAL_SOURCE_ARCHIVE_V1"):
+    with zipfile.ZipFile(io.BytesIO(checked_bytes(path, expected_sha))) as z:
         if len(z.namelist()) != len(set(z.namelist())) or sum(i.file_size for i in z.infolist()) > 10_000_000:
             raise ValueError("INVALID_OFFICIAL_ARCHIVE")
         manifest = json.loads(z.read("manifest.json"))
-        if manifest["schema"] != "M7B1A_OFFICIAL_SOURCE_ARCHIVE_V1":
+        if manifest["schema"] != expected_schema:
             raise ValueError("UNREVIEWED_SOURCE_SCHEMA")
         records = {}
         for member, meta in manifest["sources"].items():
@@ -116,7 +116,8 @@ def dnt_review(row, case, source, program):
     cells, method = matches[0]
     if len(cells) < 6 or name_key(cells[2]) != name_key(row["target_horse_name"]):
         raise ValueError("DNT_OFFICIAL_ROW_CONFLICT")
-    prefixes = {"bjerke-travbane": "BJ", "jarlsberg-travbane": "JA", "biri-travbane": "BI", "momarken-travbane": "MO"}
+    prefixes = {"bjerke-travbane": "BJ", "jarlsberg-travbane": "JA", "biri-travbane": "BI", "momarken-travbane": "MO",
+        "klosterskogen-travbane": "KL", "varig-orkla-arena": "OR"}
     if f"{prefixes[case['track_slug']]}_NR_{row['historical_date']}/{row['historical_race_number']}" not in text:
         raise ValueError("DNT_HISTORICAL_DATE_NOT_CORROBORATED")
     time = re.fullmatch(r"(\d+),(\d)(?:\s*[ag]+)?", cells[5])

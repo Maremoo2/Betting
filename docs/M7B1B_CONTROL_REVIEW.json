@@ -1,0 +1,116 @@
+{
+  "schema": "M7B1B_SOURCE_CONTROL_V1",
+  "reviewed_at": "2026-10-23T07:22:16.072029+00:00",
+  "reviewer": "SAME_CODEX_AGENT",
+  "human": false,
+  "blinded": false,
+  "fully_independent": false,
+  "method": "Separate raw original PDF/codebook/official-source reading pass. Five changed raw PDF codes reread without treating normalized output as source truth. Same agent knows prior tasks and implementation; not independent human/model signoff.",
+  "changed_values": [
+    {
+      "observation_id": "M7A1-003",
+      "field": "disqualification_flag",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "page": 1,
+      "raw_line": "To Sol B 12.09.26-3|1011 - 2100 dg a 102 50' ¢c Am 7 Gargo Spritz 5 Amazing Khan 2 C.C. Hammer Time g fra start, angrep 900 i, ny galopp siste bortre g fra start, angrep 900 i, ny galopp siste bortre",
+      "source_interpretation": "NO dg = DQ in reviewed NO table context",
+      "official_crosscheck": {
+        "name": "dnt-bjerke-20260912.html",
+        "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-12",
+        "final_url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-12",
+        "observed_at": "2026-10-23T06:07:49.933737+00:00",
+        "status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "sha256": "664c27f57c21843690758260133e3b30541abbbaf9515453c559aee3688e8aba",
+        "bytes": 274263
+      },
+      "review_outcome": "SOURCE_CODE_SUPPORTS_DQ_TRUE; numeric placement/time not supplied"
+    },
+    {
+      "observation_id": "M7A1-017",
+      "field": "disqualification_flag",
+      "pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "page": 2,
+      "raw_line": "Sjö Cl Ax 19.07.26-10|66 d 2140 frd8a 392 109' ¢¢ Va 5 Ecuador Broline 3 Have a Drink on Me 11 Sparkling Power Backade direkt, 6-5-utv, med i 3-spår 900 kv, höll hyggligt utan chans. Backade direkt, 6-5-utv, med i 3-spår 900 kv, höll hyggligt utan chans.",
+      "source_interpretation": "SE placing d = DQ in reviewed SE table context",
+      "official_crosscheck": {
+        "name": "atg-eire-20260719.json",
+        "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-07-19_8_10",
+        "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-07-19_8_10",
+        "observed_at": "2026-10-23T06:08:22.248578+00:00",
+        "status": 200,
+        "content_type": "application/json;charset=utf-8",
+        "sha256": "9db677065d1c4c3dd560fdbcb1c27b456435f60f6efea1422d5dd765a6663dfc",
+        "bytes": 43421
+      },
+      "review_outcome": "SOURCE_CODE_SUPPORTS_DQ_TRUE; numeric placement/time not supplied"
+    },
+    {
+      "observation_id": "M7A1-038",
+      "field": "disqualification_flag",
+      "pdf_sha256": "de8671afc24b9f2c1638c97240d0c0a6797be7e8c81bf73d996a06d1f07475ed",
+      "page": 6,
+      "raw_line": "Dju MA S 31.05.26-4|6 6 d 2640 5g 42 109' ¢¢ Va 4 Popeye Tooma 7 Facetime Love 5 Parish Crooks V.S. 3-spår, utv led e 550, ledn 450 kv, gal som slagen 275 kv. 3-spår, utv led e 550, ledn 450 kv, gal som slagen 275 kv.",
+      "source_interpretation": "SE placing d = DQ in reviewed SE table context",
+      "official_crosscheck": {
+        "archive_sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+        "member": "atg-2026-05-31_5_4.json",
+        "member_sha256": "d371f684de9fca653c8a47b3a8d5a8a286373535918e1d532991ce1fb4dbc001",
+        "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-05-31_5_4",
+        "observed_at": "2026-10-22T19:08:18.730278+00:00",
+        "sha256": "d371f684de9fca653c8a47b3a8d5a8a286373535918e1d532991ce1fb4dbc001"
+      },
+      "review_outcome": "SOURCE_CODE_SUPPORTS_DQ_TRUE; numeric placement/time not supplied"
+    },
+    {
+      "observation_id": "M7A1-052",
+      "field": "disqualification_flag",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "page": 1,
+      "raw_line": "For Mi U 10.10.25-6|1 1 d 2140 ug 47 38' cc Am Kommentar saknas, tekniskt fel. Kommentar saknas, tekniskt fel.",
+      "source_interpretation": "SE placing d = DQ in reviewed SE table context",
+      "official_crosscheck": {
+        "name": "atg-pure-20251010-r6.json",
+        "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-10_27_6",
+        "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-10_27_6",
+        "observed_at": "2026-10-23T06:12:07.216430+00:00",
+        "status": 200,
+        "content_type": "application/json;charset=utf-8",
+        "sha256": "7b9e62b4ee258949019603d4ce7506cc38b856bad1735168feccd48319ee1ff7",
+        "bytes": 41914
+      },
+      "review_outcome": "SOURCE_CODE_SUPPORTS_DQ_TRUE; numeric placement/time not supplied"
+    },
+    {
+      "observation_id": "M7A1-053",
+      "field": "disqualification_flag",
+      "pdf_sha256": "dc226fe4a7268591cb73d16edae8c1e2086129ae32a40433b260d31842c28286",
+      "page": 1,
+      "raw_line": "Tor Ha U 26.10.25-6|1 1 d 2140 vändg 614 54' cc Am 7 Readly Brodde 8 Jimmy Adore 10 Peek a Boo Poof 4-5-inv, gal e 850. 4-5-inv, gal e 850.",
+      "source_interpretation": "SE placing d = DQ in reviewed SE table context",
+      "official_crosscheck": {
+        "name": "atg-pure-20251026.json",
+        "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-26_27_6",
+        "final_url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-26_27_6",
+        "observed_at": "2026-10-23T06:09:40.920047+00:00",
+        "status": 200,
+        "content_type": "application/json;charset=utf-8",
+        "sha256": "78f9681772f9d4342013a3a44b2fa505c2f39b57b46abd95f2c25199fd98bfd0",
+        "bytes": 34599
+      },
+      "review_outcome": "SOURCE_CODE_SUPPORTS_DQ_TRUE; numeric placement/time not supplied"
+    }
+  ],
+  "additional_checks": [
+    "Goffa B literal recounted; failed prior Biri/Momarken lookup was a candidate-routing error, new Bjerke exact registration/date results verified",
+    "Single Lane historical B=Bergsåker and Custer/Goffa B=Bjerke source chains separately checked; never a shared global B mapping",
+    "Original archived Jägersro target full field + PDF age/sex/sire/dam corroboration reused for historical source context, not Gate D",
+    "Official Pure Ego u+g with place0 and DQ NOT_REPORTED contrasted with u+g plus explicit DQ; no ug->DQ rule",
+    "Six missing methods have no reliable PDF marker; official AUTO/VOLT not copied",
+    "One ug gallop omission remains unknown composition; no blanket suffix decoding",
+    "Qualifiers and missing dated candidate calendar results stay unverified; God Only Knows cross-page failure remains NOT_REPRODUCED"
+  ],
+  "disagreements": [],
+  "model_eligible": false,
+  "pit_approved": false
+}

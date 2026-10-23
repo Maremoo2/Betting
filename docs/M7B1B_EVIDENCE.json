@@ -1,0 +1,133 @@
+{
+  "schema": "M7B1B_EVIDENCE_V1",
+  "task_id": "M7B.1b",
+  "mode": "RESEARCH_ONLY / PR_AUTHORIZED",
+  "repo": "Maremoo2/Betting",
+  "base_sha": "864d6184474b75cd1de477736552a5b23e1005fe",
+  "reference_pr": 48,
+  "reference_head": "a18acff5aedbdaa4e989f90497ef6a45cd1ac076",
+  "preflight_pr_status": {
+    "44": "MERGED_BY_HQ",
+    "45": "MERGED_BY_HQ",
+    "47": "MERGED_BY_HQ",
+    "48": "MERGED_BY_HQ"
+  },
+  "environment": {
+    "python": "3.12",
+    "venv": "/workspace/Betting-M7B1/.venv",
+    "worktree": "/workspace/Betting-M7B1B",
+    "branch": "codex/m7b1b-gap-policy"
+  },
+  "source_artifacts": [
+    {
+      "path": "tests/fixtures/m7b1b-official-sources-v1.zip",
+      "sha256": "f362a51b18c7cde53c826838011526a9b3aeb6ad1ebd4f7df73af8cbaf58c335"
+    },
+    {
+      "path": "tests/fixtures/m7a-pdf-validation.zip",
+      "sha256": "1d4108180de1a191a3df502fde0e2ff4d2b74fc3f3b6eee30b701a18cb9e81a9"
+    },
+    {
+      "path": "docs/M7B1B_GATE_REPORT.json",
+      "sha256": "2d577dd47e62272da39a994f8ace4fd16bbcbd253fc7f37c513cb7d06557c270"
+    },
+    {
+      "path": "docs/M7B1B_CODEBOOK.json",
+      "sha256": "439f31126ecbb66526cc77e809a48fda20bc3fc0f0e2ef7b7ff73435e0e038c2"
+    },
+    {
+      "path": "docs/M7B1B_TRACK_REGISTER.json",
+      "sha256": "423c1462481530d099dbccef633c4c74041fce7a4ba34e42b4e4c0dce0d5e3d4"
+    },
+    {
+      "path": "docs/M7B1B_REVIEW_CLAIMS.json",
+      "sha256": "f72b244a4f7611222bf96c9f32669a8bd2c57097f93202e4762ef5c61840fc16"
+    },
+    {
+      "path": "docs/M7B1B_CONTROL_REVIEW.json",
+      "sha256": "344b9a373bd8f3c8a0969d9d6776bbe48bc451103ad1547a14f2013f66128aa4"
+    },
+    {
+      "path": "docs/M7B1B_EXCLUSION_POLICY.json",
+      "sha256": "e5fd1a70a3ee22ede3ee5314a63321c09617d551b359220ef3501c3a2bff40d8"
+    }
+  ],
+  "source_archive": {
+    "responses": 57,
+    "collection_timestamps": "Each manifest entry records actual observed_at; no backdated publication/PIT inference."
+  },
+  "tests": [
+    {
+      "command": "PYTHONPATH=src /workspace/Betting-M7B1/.venv/bin/python -m pytest -q",
+      "exit_code": 0,
+      "passed": 539,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 57.07,
+      "evidence_level": "TESTED_LOCAL"
+    },
+    {
+      "command": "/workspace/Betting-M7B1/.venv/bin/ruff check .",
+      "exit_code": 0,
+      "result": "All checks passed!",
+      "evidence_level": "TESTED_LOCAL"
+    },
+    {
+      "command": "python -m hbi.v1_audit --db <isolated-new-db> --output-dir <research-dir>",
+      "exit_code": 0,
+      "result": "PASS_WITH_EVIDENCE_PENDING",
+      "limitations": "Empty isolated DB; provider/replay NO_EVIDENCE, not empirical provider or model validation."
+    }
+  ],
+  "replays": {
+    "history_quality_pretty_sha256": "092edcdcca06db9d72fbbae18ea86c1862f6b8f0e6d164fd14998a3fb4b9dfcb",
+    "repeated_output_identical": true,
+    "unchanged_semantic_sha256": "812a0c4ca9b4e7466c5bd4dfc5115774ccaa11de6e5ccbf61264ff8f19adf623",
+    "unchanged_m7b1a_sha256": "fe17584486385cb459bceff8e814a88d01930234d4b351839ab4f5f5f5944ed0"
+  },
+  "results": {
+    "observations": 90,
+    "original_gaps": 12,
+    "corrected": 5,
+    "not_represented_in_pdf": 6,
+    "intentionally_excluded_unknown_composition": 1,
+    "previously_unverified_reviewed": 73,
+    "venue_before": {
+      "VERIFIED": 17,
+      "CANDIDATE_ONLY": 43,
+      "AMBIGUOUS": 30
+    },
+    "venue_after": {
+      "VERIFIED": 51,
+      "CANDIDATE_ONLY": 25,
+      "AMBIGUOUS": 14
+    },
+    "gate_a_pass": 90,
+    "gate_b_pass": 53,
+    "gate_b_explicit_unknown": 37,
+    "gate_c_pass": 51,
+    "joint_abc": 33,
+    "gate_d_approved": 0,
+    "gate_e_approved": 0,
+    "model_eligible": 0
+  },
+  "control": {
+    "type": "SAME_CODEX_SOURCE_READING_PASS",
+    "human": false,
+    "blinded": false,
+    "fully_independent": false,
+    "report": "docs/M7B1B_CONTROL_REVIEW.json"
+  },
+  "ci": "Exact committed head, run URLs and results recorded in Draft PR after execution; not asserted here before run. Existing provider check unchanged; historical FR/LeTROT failure remains documented.",
+  "remaining_blockers": [
+    "39 venue observations lack positive exact-context evidence",
+    "Compound grammar frd8a/ug/kubug/vändg and Swedish br remain unresolved",
+    "Historical identity Gate D not approved",
+    "Feature availability Gate E not approved",
+    "HISTORY_FEATURE_CONTRACT_NOT_VALIDATED unchanged"
+  ],
+  "recommendation": "M7B2A_GO for bounded research on 51 A+C source-linked observations, preserving semantic exclusions; no model admission.",
+  "risk": "Complete-case selection favors NO target contexts, explicit AUTO and clean finishers in this diagnostic sample; not representative of archive.",
+  "rollback": "Close or revert research PR; no production state changed.",
+  "terminal_status": "READY_FOR_REVIEW; task M7B1B_PASS subject to actual exact-head CI reported separately"
+}
