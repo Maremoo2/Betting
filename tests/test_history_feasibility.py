@@ -188,3 +188,9 @@ def test_test_only_utc_cutoff_equals_local_offset_and_older_date_bound():
     # A local date cannot be treated as UTC midnight when checking completion.
     result = pit_check("2026-10-19", MISSING, "2026-10-20T02:00:00+00:00", {"TEST_ONLY": [ref()]}, "America/New_York")
     assert result["pit_status"] == "PIT_DATE_ONLY"
+
+
+@pytest.mark.parametrize("day,cutoff,zone", [("2026-10-21", CUTOFF, "Europe/Stockholm"),
+    ("2026-10-20", "2026-10-20T01:00:00+00:00", "America/New_York")])
+def test_test_only_future_date_is_violation_even_without_clock(day, cutoff, zone):
+    assert pit_check(day, MISSING, cutoff, {"TEST_ONLY": [ref()]}, zone)["pit_status"] == "PIT_VIOLATION"

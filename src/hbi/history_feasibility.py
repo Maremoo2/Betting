@@ -82,6 +82,8 @@ def pit_check(event_date, event_at, cutoff, chains, event_zone="Europe/Stockholm
     if event_at != MISSING:
         if timestamp(event_at) >= end:
             reasons.append("HISTORICAL_EVENT_NOT_BEFORE_CUTOFF")
+    elif date.fromisoformat(event_date) > end.astimezone(ZoneInfo(event_zone)).date():
+        reasons.append("HISTORICAL_EVENT_NOT_BEFORE_CUTOFF")
     elif timestamp(local_instant((date.fromisoformat(event_date) + timedelta(days=1)).isoformat() + "T00:00", event_zone)) > end:
         reasons.append("EVENT_CLOCK_MISSING_OR_SAME_DAY")
     for role, snapshots in chains.items():

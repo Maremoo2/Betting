@@ -108,12 +108,12 @@
     {
       "command": "PYTHONPATH=src /workspace/Betting-M7B1/.venv/bin/python -m pytest -q",
       "exit_code": 0,
-      "passed": 568,
+      "passed": 570,
       "failed": 0,
       "skipped": 0,
-      "seconds": 66.57,
+      "seconds": 70.33,
       "evidence_level": "TESTED_LOCAL",
-      "log_sha256": "5a67534eb114e5869e015ef405d19ae8e3ed9e0258b7f93cc0e947261ea0e7e7"
+      "log_sha256": "69ed5eaa49101dd78c8cec9f43bb4f2ead3c1cac69cf1f00d5c60dbfb202314e"
     },
     {
       "command": "/workspace/Betting-M7B1/.venv/bin/ruff check .",
@@ -126,6 +126,14 @@
       "exit_code": 0,
       "result": "PASS_WITH_EVIDENCE_PENDING",
       "limitation": "Empty isolated DB, provider/replay NO_EVIDENCE; not operational evidence."
+    },
+    {
+      "command": "python -m pytest -q tests/test_history_feasibility.py",
+      "exit_code": 0,
+      "passed": 31,
+      "failed": 0,
+      "seconds": 10.21,
+      "evidence_level": "TESTED_LOCAL"
     }
   ],
   "reproducibility": {
@@ -188,5 +196,19 @@
   "recommendation": "M7B2_NEXT_RESEARCH; M7B2_HOLD for general integration. No M8 authorization.",
   "scope_deviations": [],
   "rollback": "Close/revert additive research PR; no production state changed.",
-  "terminal_status": "READY_FOR_REVIEW; M7B2A_PASS subject to exact-head CI documented separately"
+  "terminal_status": "READY_FOR_REVIEW; M7B2A_PASS subject to exact-head CI documented separately",
+  "debug_cycle": {
+    "initial_full_suite_passed": 568,
+    "added_future_date_without_clock_tests": "2 failed: safely excluded but classified PIT_DATE_ONLY rather than PIT_VIOLATION",
+    "fix": "Local-day comparison identifies provably future event dates even without clock; same-day unknown clocks remain DATE_ONLY",
+    "final_full_suite_passed": 570,
+    "real_cohort_outputs_unchanged": true
+  },
+  "known_ci_failure": {
+    "head": "15fc01df0133ed371cfa57d52c3cf28c4ad9b4a1",
+    "run_url": "https://github.com/Maremoo2/Betting/actions/runs/39923605787",
+    "result": "FAILURE",
+    "reason": "NO_FULL_FIELD_LIVE_PASS:FR / LETROT_FULL_FIELD_CORROBORATION_FAILED",
+    "action": "Preserved visible; no provider/workflow change or forced rerun. Final new-head result recorded separately."
+  }
 }
