@@ -61,12 +61,12 @@
     },
     {
       "path": "docs/M7B2C_TEST_ONLY_RECEIPT.json",
-      "sha256": "996b12de5d0f7d935b933501e73fd1bfcd8e6bb50a9f1d5561632405b2cdb74d",
+      "sha256": "59142bacbcfcd5be80f05cf4435e5c984417f89745106fb0c6ea04d1962389ca",
       "bytes": 206
     },
     {
       "path": "docs/M7B2C_TEST_ONLY_REPORT.json",
-      "sha256": "e6468d1205fdc784c6c7a155228c288133e9bc6e8ec393a35e47f1ed78775f86",
+      "sha256": "7e5acfdbdac47a4b74c7a151fc354b0af1ac4cc8c9e0ba688b6928c9a2b245bd",
       "bytes": 8370
     },
     {
@@ -76,8 +76,8 @@
     },
     {
       "path": "tests/fixtures/m7b2c-test-only-snapshots.zip",
-      "sha256": "9afdec13fe885e56a7b820a1ee4e286ad0b3069e068bb0f76bd3ab1205d0c5c4",
-      "bytes": 5705
+      "sha256": "81b1874a8eaaf4827785a5b02a3056439eef58f2a1ef914f140fff02d279f219",
+      "bytes": 5744
     },
     {
       "path": "tests/fixtures/m7b2c-unobserved-plan-store.zip",
@@ -88,7 +88,7 @@
   "reproduction": {
     "offline_demo": "python -m hbi.prospective_pit_demo --output-dir /tmp/m7b2c-test-only-new",
     "offline_replay": "python -m hbi.prospective_pit replay --store <store> --seal-sha256 <externally-preserved-hash> --output <new.json>",
-    "demo_repeated_output_sha256": "e6468d1205fdc784c6c7a155228c288133e9bc6e8ec393a35e47f1ed78775f86",
+    "demo_repeated_output_sha256": "7e5acfdbdac47a4b74c7a151fc354b0af1ac4cc8c9e0ba688b6928c9a2b245bd",
     "demo_repeated_byte_identical": true,
     "live_campaign_or_daemon_started": false
   },
@@ -96,17 +96,17 @@
     {
       "command": "PYTHONPATH=src /workspace/Betting-M7B1/.venv/bin/python -m pytest -q",
       "exit_code": 0,
-      "passed": 646,
+      "passed": 647,
       "failed": 0,
       "skipped": 0,
-      "seconds": 76.74,
+      "seconds": 78.48,
       "evidence_level": "TESTED_LOCAL",
-      "log_sha256": "26d5c51a71f06af5ae97de3577f0fd09db4beab3156edfdded9673acd6e620ca"
+      "log_sha256": "1c9cd5e15dd3cdfe9c015d00acda809b5bf0043cee3b8d35984979e7ef1e66af"
     },
     {
       "command": "python -m pytest -q tests/test_prospective_pit.py",
       "exit_code": 0,
-      "passed": 47,
+      "passed": 48,
       "seconds": 0.18,
       "evidence_level": "TESTED_LOCAL"
     },
@@ -142,5 +142,6 @@
   "model_eligible": false,
   "recommendation": "Bounded manual NO/SE field trial after source minimization/history/full-field prerequisites; no general M7B.2 or M8 admission",
   "rollback": "Close/revert additive research PR; no production state changed",
-  "terminal_status": "READY_FOR_REVIEW / M7B2C_PASS for bounded implementation, subject to actual exact-head CI reported separately; genuine collection NOT_YET_OBSERVED, complete replay NOT_PROVEN"
+  "terminal_status": "READY_FOR_REVIEW / M7B2C_PASS for bounded implementation, subject to actual exact-head CI reported separately; genuine collection NOT_YET_OBSERVED, complete replay NOT_PROVEN",
+  "debugging_note": "Unconfigured source has null request/observation clocks; actual command-attempt timestamp is separate. Covered by TEST_ONLY no-fetch test. Historical sources/ledgers unchanged."
 }

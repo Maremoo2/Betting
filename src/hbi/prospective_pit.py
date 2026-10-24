@@ -181,7 +181,7 @@ def capture(root, plan_sha, race_id, minutes, *, fetch=None, clock=None):
         spec = t["sources"][role]
         started = clock()
         timestamp(started.isoformat())
-        item = {"role": role, "purpose": spec["purpose"], "url": spec["url"], "request_started_at": started.isoformat(),
+        item = {"role": role, "purpose": spec["purpose"], "url": spec["url"], "request_started_at": started.isoformat() if spec["url"] else None,
             "planned_cutoff_at": cutoff(t, minutes).isoformat(), "http_status": None, "headers": {},
             "observed_at": None, "body_sha256": None, "body_file": None, "status": "NOT_OBSERVED", "error": None}
         if spec["url"] is None:
@@ -203,7 +203,7 @@ def capture(root, plan_sha, race_id, minutes, *, fetch=None, clock=None):
                 item.update(status="ERROR", error=type(exc).__name__ + ":" + str(exc))
         records.append(item)
     record = {"schema": VERSION, "mode": plan["mode"], "plan_sha256": plan_sha, "race_id": race_id,
-        "cutoff_minutes": minutes, "attempt": attempt, "records": records, "model_eligible": False}
+        "cutoff_minutes": minutes, "attempt": attempt, "attempt_recorded_at": clock().isoformat(), "records": records, "model_eligible": False}
     raw = encode(record)
     write_once(folder / "capture.json", raw)
     return {"capture_sha256": sha(raw), "path": str(folder.relative_to(root)), "records": records,
@@ -226,7 +226,7 @@ def seal(root, plan_sha):
     for folder in root.glob("captures/*/*/*"):
         if folder.is_dir() and not (folder / "capture.json").is_file():
             raise ValueError("INCOMPLETE_CAPTURE_NOT_SEALABLE")
-    issued = now().isoformat() if plan["mode"] == "REAL" else max([plan["created_at"]] + [json.loads(p.read_bytes())["records"][0]["request_started_at"] for p in root.glob("captures/*/*/*/capture.json")])
+    issued = now().isoformat() if plan["mode"] == "REAL" else max([plan["created_at"]] + [json.loads(p.read_bytes())["attempt_recorded_at"] for p in root.glob("captures/*/*/*/capture.json")])
     raw = encode({"schema": VERSION, "plan_sha256": plan_sha, "mode": plan["mode"], "issued_at": issued, "files": store_files(root)})
     write_once(root / "seal.json", raw)
     return {"seal_sha256": sha(raw), "plan_sha256": plan_sha, "mode": plan["mode"], "model_eligible": False}

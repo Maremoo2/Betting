@@ -53,6 +53,9 @@ def test_test_only_demo_is_deterministic_and_honest(tmp_path):
     a = demo(tmp_path / "a")
     b = demo(tmp_path / "b")
     assert a == b
+    metadata = json.loads((tmp_path / "a/store/captures/TEST_ONLY_SE/60/1/capture.json").read_text())
+    missing = next(i for i in metadata["records"] if i["role"] == "HISTORY")
+    assert missing["request_started_at"] is None and missing["observed_at"] is None
     r = a["report"]
     assert r["mode"] == "TEST_ONLY" and r["prospective_collection"] == "NOT_YET_OBSERVED"
     assert r["planned_snapshot_rounds"] == 8 and r["actual_attempts"] == 4
@@ -227,7 +230,7 @@ def test_test_only_future_update_cannot_change_frozen_replay(campaign):
 
 
 @pytest.mark.parametrize("archive,receipt,expected,sha256", [
-    ("m7b2c-test-only-snapshots.zip", "M7B2C_TEST_ONLY_RECEIPT.json", "M7B2C_TEST_ONLY_REPORT.json", "9afdec13fe885e56a7b820a1ee4e286ad0b3069e068bb0f76bd3ab1205d0c5c4"),
+    ("m7b2c-test-only-snapshots.zip", "M7B2C_TEST_ONLY_RECEIPT.json", "M7B2C_TEST_ONLY_REPORT.json", "81b1874a8eaaf4827785a5b02a3056439eef58f2a1ef914f140fff02d279f219"),
     ("m7b2c-unobserved-plan-store.zip", "M7B2C_LIVE_RECEIPT.json", "M7B2C_LIVE_COVERAGE.json", "224e1ea0d0f4350fd85934eaac9c3f231bfb8437e9701b3e350c407a9d602a32"),
 ])
 def test_archived_evidence_replays_offline(tmp_path, archive, receipt, expected, sha256):
@@ -288,3 +291,18 @@ def test_test_only_malformed_structures_are_errors_not_snapshots(campaign):
     for bad in [b'[]', b'null', b'{"races":[7]}', b'{"races":[{"starts":null}]}']:
         with pytest.raises((ValueError, TypeError)):
             privacy_check(bad)
+
+
+def test_test_only_unconfigured_sources_never_get_request_clocks(tmp_path):
+    plan = plan_fixture()
+    for source in plan["targets"][0]["sources"].values():
+        source["url"] = None
+    path = tmp_path / "empty-plan.json";path.write_bytes(encode(plan));root = tmp_path / "empty"
+    receipt = init_store(path, root)
+    at = cutoff(plan["targets"][0], 1440) - timedelta(seconds=1)
+    def forbidden_fetch(url):
+        raise AssertionError("No source is configured")
+    r = capture(root, receipt["plan_sha256"], plan["targets"][0]["race_id"], 1440, fetch=forbidden_fetch, clock=lambda: at)
+    assert all(i["request_started_at"] is None and i["observed_at"] is None for i in r["records"])
+    report = lock_report((root, receipt["plan_sha256"], plan))
+    assert report["actual_attempts"] == 1 and report["stored_source_observations"] == 0
