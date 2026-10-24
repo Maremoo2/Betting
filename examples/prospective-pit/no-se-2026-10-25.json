@@ -1,0 +1,50 @@
+{
+  "schema": "M7B2C_SNAPSHOT_V1",
+  "mode": "REAL",
+  "created_at": "2026-10-24T08:55:47.768634+00:00",
+  "automatic_collection": false,
+  "window_seconds": 300,
+  "model_eligible": false,
+  "targets": [
+    {
+      "country": "NO",
+      "track": "Orkla",
+      "race_id": "2026-10-25_83_1",
+      "number": 1,
+      "scheduled_start_local": "2026-10-25T17:52:00",
+      "timezone": "Europe/Oslo",
+      "scheduled_start_utc": "2026-10-25T16:52:00+00:00",
+      "expected_runner_ids": null,
+      "sources": {
+        "PROGRAM": {
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-25_83_1",
+          "purpose": "INPUT"
+        },
+        "HISTORY": {
+          "url": null,
+          "purpose": "INPUT"
+        }
+      }
+    },
+    {
+      "country": "SE",
+      "track": "Umåker",
+      "race_id": "2026-10-25_27_1",
+      "number": 1,
+      "scheduled_start_local": "2026-10-25T13:45:00",
+      "timezone": "Europe/Stockholm",
+      "scheduled_start_utc": "2026-10-25T12:45:00+00:00",
+      "expected_runner_ids": null,
+      "sources": {
+        "PROGRAM": {
+          "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-25_27_1",
+          "purpose": "INPUT"
+        },
+        "HISTORY": {
+          "url": null,
+          "purpose": "INPUT"
+        }
+      }
+    }
+  ]
+}
