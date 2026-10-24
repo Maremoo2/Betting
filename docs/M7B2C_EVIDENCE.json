@@ -1,0 +1,146 @@
+{
+  "schema": "M7B2C_EVIDENCE_V1",
+  "task_id": "M7B.2c",
+  "repo": "Maremoo2/Betting",
+  "mode": "RESEARCH_ONLY / PR_AUTHORIZED",
+  "base_sha": "2d6322148375adb47395e9a9df097fc1c25524de",
+  "preflight": {
+    "pr51": "MERGED_BY_HQ",
+    "reference_head": "dbc4556d86991ddaeab080ac0b7e1a56c243eb06",
+    "previous_ledgers_known60_locked30": "UNCHANGED",
+    "source_contracts": "Existing public ATG race endpoint / existing UTC and DST/as-of primitives; no provider/parser/model edit"
+  },
+  "environment": {
+    "python": "3.12",
+    "venv": "/workspace/Betting-M7B1/.venv",
+    "worktree": "/workspace/Betting-M7B2C",
+    "branch": "codex/m7b2c-prospective-pit"
+  },
+  "source_discovery": "One public calendar GET, two NO/SE future race descriptors retained; semantic response hash labelled not raw HTTP; no programme data fetched",
+  "real_plan": {
+    "races": 2,
+    "planned_rounds": 8,
+    "required_role_inputs": 16,
+    "actual_program_attempts": 0,
+    "stored_program_sources": 0,
+    "hash_verified_live_program_sources": 0,
+    "missing_role_inputs": 16,
+    "unconfigured_history_role_instances": 8,
+    "identity_evidence": "NOT_OBSERVED; expected full field unknown",
+    "prospective_collection": "NOT_YET_OBSERVED",
+    "complete_historical_replay": "NOT_PROVEN",
+    "complete_historical_replays": 0
+  },
+  "test_only_demo": {
+    "mode": "TEST_ONLY",
+    "planned_rounds": 8,
+    "actual_attempts": 4,
+    "stored_sources": 5,
+    "hash_verified_sources": 5,
+    "missing_role_inputs": 13,
+    "source_failure_records": 2,
+    "source_replay_complete_slots": 1,
+    "genuine_observations": 0,
+    "complete_historical_replays": 0
+  },
+  "artifacts": [
+    {
+      "path": "docs/M7B2C_LIVE_COVERAGE.json",
+      "sha256": "968363985df3f7283fd676ce001927c18f2c88585719c8855bd1b6ed62d1c4e6",
+      "bytes": 5936
+    },
+    {
+      "path": "docs/M7B2C_LIVE_RECEIPT.json",
+      "sha256": "5feffd468627472aa42b30876cc5fbf886b49d346bfe108d8e6115403a48f68d",
+      "bytes": 201
+    },
+    {
+      "path": "docs/M7B2C_TARGET_DISCOVERY.json",
+      "sha256": "de92c3af06f573999296be019b01811fccf1b64d81c690931ab9f5edf7be4cf7",
+      "bytes": 1560
+    },
+    {
+      "path": "docs/M7B2C_TEST_ONLY_RECEIPT.json",
+      "sha256": "996b12de5d0f7d935b933501e73fd1bfcd8e6bb50a9f1d5561632405b2cdb74d",
+      "bytes": 206
+    },
+    {
+      "path": "docs/M7B2C_TEST_ONLY_REPORT.json",
+      "sha256": "e6468d1205fdc784c6c7a155228c288133e9bc6e8ec393a35e47f1ed78775f86",
+      "bytes": 8370
+    },
+    {
+      "path": "examples/prospective-pit/no-se-2026-10-25.json",
+      "sha256": "58c3c83a432c3fe4e4bb8869025c2a24a79319fdb597e9b6ed730cee29712096",
+      "bytes": 1341
+    },
+    {
+      "path": "tests/fixtures/m7b2c-test-only-snapshots.zip",
+      "sha256": "9afdec13fe885e56a7b820a1ee4e286ad0b3069e068bb0f76bd3ab1205d0c5c4",
+      "bytes": 5705
+    },
+    {
+      "path": "tests/fixtures/m7b2c-unobserved-plan-store.zip",
+      "sha256": "224e1ea0d0f4350fd85934eaac9c3f231bfb8437e9701b3e350c407a9d602a32",
+      "bytes": 1130
+    }
+  ],
+  "reproduction": {
+    "offline_demo": "python -m hbi.prospective_pit_demo --output-dir /tmp/m7b2c-test-only-new",
+    "offline_replay": "python -m hbi.prospective_pit replay --store <store> --seal-sha256 <externally-preserved-hash> --output <new.json>",
+    "demo_repeated_output_sha256": "e6468d1205fdc784c6c7a155228c288133e9bc6e8ec393a35e47f1ed78775f86",
+    "demo_repeated_byte_identical": true,
+    "live_campaign_or_daemon_started": false
+  },
+  "tests": [
+    {
+      "command": "PYTHONPATH=src /workspace/Betting-M7B1/.venv/bin/python -m pytest -q",
+      "exit_code": 0,
+      "passed": 646,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 76.74,
+      "evidence_level": "TESTED_LOCAL",
+      "log_sha256": "26d5c51a71f06af5ae97de3577f0fd09db4beab3156edfdded9673acd6e620ca"
+    },
+    {
+      "command": "python -m pytest -q tests/test_prospective_pit.py",
+      "exit_code": 0,
+      "passed": 47,
+      "seconds": 0.18,
+      "evidence_level": "TESTED_LOCAL"
+    },
+    {
+      "command": "ruff check .",
+      "exit_code": 0,
+      "result": "All checks passed!",
+      "evidence_level": "TESTED_LOCAL"
+    },
+    {
+      "command": "python -m hbi.v1_audit --db <isolated research DB> --output-dir <research directory>",
+      "exit_code": 0,
+      "result": "PASS_WITH_EVIDENCE_PENDING",
+      "limitation": "Empty research DB; provider/replay NO_EVIDENCE, not operational proof"
+    }
+  ],
+  "integrity_model": "Exclusive file creation, read-only mode, hash-bound full inventory, externally expected seal hash and refusal to append after sealing. Not admin-proof WORM or independent host-clock notarization. Incomplete capture cannot be sealed.",
+  "privacy_and_source_limits": [
+    "Minimal structured non-personal JSON only; unknown/personal/contact fields rejected without body retention",
+    "Opaque PDF/HTML not auto-cleared and not supported for storage in this version",
+    "Full current ATG cards can contain person/unrelated fields and are not automatically cleared; no such body collected here",
+    "Genuine HISTORY URL unconfigured, expected roster IDs unknown; future minimized source and independent field proof needed",
+    "No automatic scheduler, retry, production collector change or permanent service",
+    "No historical feature values materialized or admitted; HISTORY_FEATURE_CONTRACT_NOT_VALIDATED remains closed"
+  ],
+  "remaining_blockers": [
+    "No genuine programme snapshots observed yet at the four planned cutoffs",
+    "Compliant minimal programme/history source and identity/full-field corroboration required",
+    "Historical semantics, identity lifecycle, correction history and general PIT/model admission still separate research prerequisites"
+  ],
+  "ci": "Exact committed head and actual CI run results recorded in Draft PR after execution; existing Provider Live Smoke failures will remain visible, no bypass or retry to force green",
+  "scope_deviations": [],
+  "model_eligible": false,
+  "recommendation": "Bounded manual NO/SE field trial after source minimization/history/full-field prerequisites; no general M7B.2 or M8 admission",
+  "rollback": "Close/revert additive research PR; no production state changed",
+  "terminal_status": "READY_FOR_REVIEW / M7B2C_PASS for bounded implementation, subject to actual exact-head CI reported separately; genuine collection NOT_YET_OBSERVED, complete replay NOT_PROVEN"
+}
