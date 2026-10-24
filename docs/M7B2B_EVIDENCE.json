@@ -1,0 +1,218 @@
+{
+  "schema": "M7B2B_DELIVERY_EVIDENCE_V1",
+  "task": "M7B.2b",
+  "repo": "Maremoo2/Betting",
+  "mode": "RESEARCH_ONLY / PR_AUTHORIZED",
+  "base_sha": "5cac023dd5ac066b4fc016b90fd58809192c175f",
+  "preflight": {
+    "pr49": "MERGED_BY_HQ",
+    "pr50": "MERGED_BY_HQ",
+    "reference_head": "8170a2cbcc3232fc4814448c271f7ef786f9ced7",
+    "working_tree_on_resume": "CLEAN; existing53 response files and inventory preserved; no completed collection repeated",
+    "diagnostic_stop": "StopIteration from URL dispatch in an exploratory script, corrected JSON dispatch; not missing identity evidence"
+  },
+  "environment": {
+    "python": "3.12",
+    "venv": "/workspace/Betting-M7B1/.venv",
+    "worktree": "/workspace/Betting-M7B2B",
+    "branch": "codex/m7b2b-availability-audit",
+    "collected_at": "2026-10-23T09:05:51.759457+00:00 through 2026-10-23T09:06:21.277744+00:00",
+    "resumed_at": "2026-10-24T08:22:50+00:00",
+    "network": "53 bounded read-only official NO/SE GETs before interruption; source bytes reused offline after resume; GitHub authorized PR only"
+  },
+  "inputs": [
+    {
+      "path": "tests/fixtures/m7a1-ground-truth-v1.json",
+      "sha256": "82ca3f9e043cfc76c672b7efe15efe9da93090387972c762f4e306ffdaf1e39d",
+      "bytes": 186439
+    },
+    {
+      "path": "tests/fixtures/m7b1-holdout-v1.json",
+      "sha256": "f9d9eaf36b778b7af13738dbf49dcff81690119b1987827d0d676d8a95f58b87",
+      "bytes": 94034
+    },
+    {
+      "path": "docs/M7B1B_GATE_REPORT.json",
+      "sha256": "2d577dd47e62272da39a994f8ace4fd16bbcbd253fc7f37c513cb7d06557c270",
+      "bytes": 542832
+    },
+    {
+      "path": "tests/fixtures/m7a-pdf-validation.zip",
+      "sha256": "1d4108180de1a191a3df502fde0e2ff4d2b74fc3f3b6eee30b701a18cb9e81a9",
+      "bytes": 665363
+    },
+    {
+      "path": "tests/fixtures/rikstoto-2026-10-20.zip",
+      "sha256": "a2d9c1b5fd08946c55433fe346a28860bf7721a79ed7e6099dc716b498bdbb6e",
+      "bytes": 1830447
+    },
+    {
+      "path": "tests/fixtures/atg-se-2026-10-20-identity.zip",
+      "sha256": "a053ce855c230c8e10450dfcecca3447873718512269bfc2b132c2d66f84745c",
+      "bytes": 189062
+    },
+    {
+      "path": "tests/fixtures/m7a1-atg-results-v1.zip",
+      "sha256": "f717e0ab2767abc436cadcf0ceecfbbe524233bb162db2ad1d6e71b9d3ebeabf",
+      "bytes": 96867
+    },
+    {
+      "path": "tests/fixtures/m7b1a-official-sources-v1.zip",
+      "sha256": "96d6a3c4a344a61b3d42b8173fff1b02fa44a4c1a430902db559d684960f8eb9",
+      "bytes": 237450
+    },
+    {
+      "path": "tests/fixtures/m7b1b-official-sources-v1.zip",
+      "sha256": "f362a51b18c7cde53c826838011526a9b3aeb6ad1ebd4f7df73af8cbaf58c335",
+      "bytes": 488034
+    },
+    {
+      "path": "docs/M7B2A_CUTOFF_AUDIT.json",
+      "sha256": "6f6559308f5894fa1b4f1a3525e7efe19ecfa280e7f8fc025c391fdb2cd03214",
+      "bytes": 794921
+    },
+    {
+      "path": "docs/M7B2A_GATE_REPORT.json",
+      "sha256": "3eaf6f718ddc547b18431aa5a651f420cce4f96c81f9a3b6162b52f46dd9b3ba",
+      "bytes": 18749
+    },
+    {
+      "path": "docs/M7B2A_IDENTITY_LEDGER.json",
+      "sha256": "f6d8d69bbec02711221ff689197b68919fe34f1315b7c42f96597101106db2fd",
+      "bytes": 154671
+    },
+    {
+      "path": "docs/M7B2A_PIT_EVIDENCE.json",
+      "sha256": "5bc190ae6a042eda1c6458da004770639f8b42d55a1f6a679b5b8c72d4dd874a",
+      "bytes": 170161
+    },
+    {
+      "path": "docs/M7B2A_RACE_IDENTITY_LEDGER.json",
+      "sha256": "9f9f7fc13b690b506dbae3e74bc14579dcb4fe8f1725841ce991ed47a9449bde",
+      "bytes": 79577
+    },
+    {
+      "path": "tests/fixtures/m7b2a-crawler-manifests-v1.zip",
+      "sha256": "e66bbb68234f45822ab26735f4d7bab4fcb9f5ba91ab494b0e8cad772828aee0",
+      "bytes": 18063
+    }
+  ],
+  "source_archive": {
+    "path": "tests/fixtures/m7b2b-official-snapshots-v1.zip",
+    "sha256": "7dd9b3ec393887e4fbc206b8a79c00cdf3957b4e6fc3f8f69fd467a1624e32ed",
+    "bytes": 617897,
+    "public_HTTP_responses": 53,
+    "unique_result_URLs": 49,
+    "horse_profiles": 4,
+    "original_pre_target_starts_members": 1,
+    "original_source_origin": "Unmodified starts.json from existing SHA-verified21Oct release ZIP; original19Oct observation preserved, not reconstructed/backdated from current API."
+  },
+  "outputs": [
+    {
+      "path": "docs/M7B2B_AVAILABILITY_LEDGER.json",
+      "sha256": "f8244f7714ced6d3e704de5c3ba70b2454c46b324358dd285c96d44722c4c6e9",
+      "bytes": 201350
+    },
+    {
+      "path": "docs/M7B2B_CORRECTION_AUDIT.json",
+      "sha256": "1fec8fdd2f3eaae267e12d9174b79a34fd51386a8266b5c86c7a6bf02b26fffb",
+      "bytes": 123725
+    },
+    {
+      "path": "docs/M7B2B_GATE_REPORT.json",
+      "sha256": "cc987b59d1168d92b68ef45391d25d8721f15ded5411581dea55e6861423fd6f",
+      "bytes": 869571
+    },
+    {
+      "path": "docs/M7B2B_HISTORICAL_REPLAY.json",
+      "sha256": "5b7684ccee85739140b539e3e10ff61334557cc693f307545e657a06659f7ab7",
+      "bytes": 19357
+    },
+    {
+      "path": "docs/M7B2B_IDENTITY_REVIEW.json",
+      "sha256": "3fea9fd3ca49856b6087ed838f54f93be0de9b77d27fdc120134e3fabbaa95cf",
+      "bytes": 14591
+    },
+    {
+      "path": "docs/M7B2B_TIMESTAMP_SCAN.json",
+      "sha256": "6397322b1b4aaf7a5e01f002cd4a63a765db0441abd400b63278bf8ac2c941b0",
+      "bytes": 15688
+    },
+    {
+      "path": "tests/fixtures/m7b2b-official-snapshots-v1.zip",
+      "sha256": "7dd9b3ec393887e4fbc206b8a79c00cdf3957b4e6fc3f8f69fd467a1624e32ed",
+      "bytes": 617897
+    }
+  ],
+  "tests": [
+    {
+      "command": "PYTHONPATH=src /workspace/Betting-M7B1/.venv/bin/python -m pytest -q",
+      "exit_code": 0,
+      "passed": 599,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 76.18,
+      "evidence_level": "TESTED_LOCAL",
+      "log_sha256": "98686696f69d32a065249fded2fb7aa010b5d02b6f41587c01f220051316f7df"
+    },
+    {
+      "command": "python -m pytest -q tests/test_history_availability.py",
+      "exit_code": 0,
+      "passed": 29,
+      "seconds": 13.87,
+      "evidence_level": "TESTED_LOCAL"
+    },
+    {
+      "command": "ruff check .",
+      "exit_code": 0,
+      "result": "All checks passed!",
+      "evidence_level": "TESTED_LOCAL"
+    },
+    {
+      "command": "python -m hbi.v1_audit --db <isolated research DB> --output-dir <new research output>",
+      "exit_code": 0,
+      "result": "PASS_WITH_EVIDENCE_PENDING",
+      "limitation": "Empty DB; provider/replay NO_EVIDENCE, not operational provider evidence."
+    }
+  ],
+  "reproducibility": {
+    "command": "python -m hbi.history_availability --output-dir /tmp/m7b2b-new",
+    "outputs_byte_identical_on_repeat": true,
+    "frozen_basis_sha256": "22e8ac8ab764a656e54c9eb527f82318ae6ef20e380ac775cac93875f24d21d0",
+    "output_directory_must_be_new": true,
+    "offline": true
+  },
+  "findings": {
+    "observations": 51,
+    "published_verified": 0,
+    "published_unknown": 51,
+    "official_approval_at_verified": 0,
+    "complete_correction_histories": 0,
+    "scoped_changes_between_snapshots": 0,
+    "opaque_version_token_changes": 32,
+    "source_first_controls": 8,
+    "source_first_conflicts": 0,
+    "organizationally_independent": false,
+    "same_codex_separate_control": true,
+    "authentic_source_replay_scenarios": 4,
+    "complete_verified_historical_input_replay_scenarios": 0,
+    "pdf_pit_before_each_cutoff": 51,
+    "official_chain_pit_before_each_cutoff": 18,
+    "official_chain_unproven_each_cutoff": 33,
+    "research_A_E_each_cutoff": 9,
+    "model_eligible": 0
+  },
+  "limitations": [
+    "Earliest official publication/approval and full correction history unavailable for51",
+    "No original official as-of identity/result chain for completed Solvalla target: full input replay REPLAY_NOT_PROVEN",
+    "Independent human/organizational identity signoff absent;8 risk controls do not validate entire archive",
+    "Selection favors source timing/Jägersro target and complete AUTO clean-finisher histories",
+    "Current control response is label/review evidence, never retroactive input; raw source market columns quarantined",
+    "Existing general M7B.2/history feature/model gates remain CLOSED"
+  ],
+  "ci": "Exact final head and actual CI run links/results will be recorded in Draft PR after execution. Provider Live Smoke will remain visible including failures. No bypass or manual rerun to force green.",
+  "scope_deviations": [],
+  "rollback": "Close/revert additive research PR; no production state changed",
+  "recommendation": "M7B2_NEXT_RESEARCH; general integration HOLD, no M8 authority",
+  "terminal_status": "READY_FOR_REVIEW / M7B2B_PASS subject to actual exact-head CI documented separately"
+}

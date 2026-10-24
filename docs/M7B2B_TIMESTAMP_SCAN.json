@@ -1,0 +1,465 @@
+{
+  "schema": "M7B2B_TIMESTAMP_SCAN_V1",
+  "source_archive_sha256": "7dd9b3ec393887e4fbc206b8a79c00cdf3957b4e6fc3f8f69fd467a1624e32ed",
+  "method": "All49 unique result URLs: inspect root/race/race-result JSON keys matching publish|official|modif|correct|updat (case-insensitive); HTML <time> tags and datePublished/dateModified/publishedTime/modifiedTime markers. All bodies archived. Other undocumented clock formats are not ruled out. currentVersion and HTTP dates are explicitly not accepted as result publication.",
+  "sources": [
+    {
+      "member": "source-000.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-10_27_6",
+      "sha256": "b331746b4dc3b9aab75b668d3978a7d30ba8ed6f2a02ff7b1d929849b06c4fbe",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-001.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2025-10-26_27_6",
+      "sha256": "af56e5ed19c5ca1b793a7f9caff552bfea597f2cbf5c59abbb8914d2cd2780d7",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-002.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-02-25_27_8",
+      "sha256": "fd3463769cf6cfb08f2a7fca433c5a13463bbe6f6029cc0d10c64856f49dac5b",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-003.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-03-04_5_9",
+      "sha256": "e912e4373041457412c86ec2278b76781facc7cb697caf5fd718449a8caf794c",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-004.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-04-08_5_3",
+      "sha256": "fcf635376b6ed46e83de707b1c2a20b3c6b9549187eda839c8eca6a0a3b52a12",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-005.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-04-11_27_6",
+      "sha256": "d1b33a487addca744785b76622adb1ccfe21f66b87c03859f9808bed61109541",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-006.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-04-21_27_5",
+      "sha256": "ef4eaf621e4c1d6165b7acec45b111850e862f71b0674c28a5e9acb23fba9317",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-007.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-05-15_5_6",
+      "sha256": "e7515e8b1cae2acf5cf054e588d3cb1b4ad14648eaed5a3ce13d0694180f1a04",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-008.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-05-31_5_14",
+      "sha256": "75c7f6318453b853811d8dd5c8c14c289ea5d5532e2f14ec56ab0c0eb09f38e8",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-009.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-05-31_5_4",
+      "sha256": "06fa528d044cd3352e5c92859d42a48645ba0bcea19585cc061286acd3b364fa",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-010.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-07-01_43_6",
+      "sha256": "e789061c4c18c47c98c0cec0697095b209a547c123c317e598d4fc51cff4c61a",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-011.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-07-19_8_10",
+      "sha256": "77a131fd766a4909c809b223d6044f16a0cfe127c5cbde9eba6e4dc3385ebb3b",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-012.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-07-21_7_6",
+      "sha256": "8f6feeb98fd5c5a8fd88e911c527ef84b462a528fa76b7bb94942b78abd7c2c0",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-013.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-01_24_6",
+      "sha256": "50475f0d3193aaa084e9cf7aa6bf5934b46dc48983239ac6922ad980d8bfff4b",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-014.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-09_29_4",
+      "sha256": "99fd0b14b535e05f084daba897225082dd973dd18b4b2e0da3798df7e17bf48a",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-015.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-12_46_2",
+      "sha256": "baeebff38ec11212312dc4fae86162f60e712fc59c95090b5ee1bf3f53c484e8",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-016.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-20_9_4",
+      "sha256": "a8194aa78d61003c70be91a458b99ec511461e96ce5b5fd0d72a921ef1100370",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-017.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-23_46_1",
+      "sha256": "e8c69399e5cd45789ede18482cc77b970c3d70bf9cdfa6120334b4ddcc75fdd9",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-018.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-23_46_2",
+      "sha256": "2e56aa018027434f5c392abeefb3725f9c22f9425d9dab6a732d5e2b8a286967",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-019.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-26_5_6",
+      "sha256": "6a03041aac265460985f2c6f183860709c46f26be4d9903f4bb9aafec827ab21",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-020.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-08-27_16_7",
+      "sha256": "b5a1ba89426f5b6175b6f67e55ff7c145077dbca44c3c9b9fd49663769fed5e3",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-021.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-06_7_3",
+      "sha256": "ead3682005c1028bc1391dd44ae560476fac13e3a7d59083f24628e37cca4527",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-022.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-08_18_6",
+      "sha256": "c6040a11b004fc4ce2c585b1c5c0d3d9729497ca61a14a6b0e15fe549d5c5933",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-023.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-12_32_9",
+      "sha256": "9d88fe2c7a5f1c8135ef11301cf1ef1c3d8ea7017c302cf86f119775874061a1",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-024.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-14_43_7",
+      "sha256": "5d24370b921586737ae3adfe031f138f5c29341efd05f9e120feb426452a473e",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-025.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-16_7_8",
+      "sha256": "1433da203d802f9a0b6ae89ef87501db548014bc8ef09af588d16673113c34b2",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-026.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-22_7_1",
+      "sha256": "de684a2e4d7e54981674138d949b6da7e4935da13bd1567fad56632a2bb47f9b",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-027.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-22_7_7",
+      "sha256": "00179828beb04a0764fa31f07822bad924281c4678bdff6b302d35e64fcaae96",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-028.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-09-23_5_8",
+      "sha256": "a0f0cd23d4875866134903baf50223ac509736803547c1d5742f811eed9338d2",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-029.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-06_28_4",
+      "sha256": "d93b6206d9507bd8b0511feccd4f48465e81642c040d3d01d7b41f29a2ed3dab",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-030.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-10_18_7",
+      "sha256": "99c87fd38bb5dd8334ee223f45720835f897a9ee8fc46969ad060b1b55be888a",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-031.bin",
+      "url": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-10-13_7_6",
+      "sha256": "76573e8ec1bc4bbe00d78e15850e7949dd099db0a4270f45a4be00803102a78c",
+      "field_candidates": {
+        "root": [],
+        "race": [],
+        "result": []
+      }
+    },
+    {
+      "member": "source-032.bin",
+      "url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-07-24",
+      "sha256": "76c6f389f93debe5b53d3d380ebe7aab25a7bd67d0a5b0260bd1b12c9f767b87",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    },
+    {
+      "member": "source-033.bin",
+      "url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-07-25",
+      "sha256": "6aa5a1b63c8b82ad7ff35efcbfb8e052c55ae7be41ba3ff7ccd74ac77290e317",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    },
+    {
+      "member": "source-034.bin",
+      "url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-09-18",
+      "sha256": "5d88a48a8e50e6d3e6c5967f3c5bb9efc93e2ad29c7bd159afe93ae60dfe96be",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    },
+    {
+      "member": "source-035.bin",
+      "url": "https://www.travsport.no/travbaner/biri-travbane/results/2026-09-26",
+      "sha256": "00f599c7722a5f69c9cc38763d45e66788d8923338bca0a5952abb3f0aebb199",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    },
+    {
+      "member": "source-036.bin",
+      "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-08-11",
+      "sha256": "691d6dc4e5e49ff80f58ec6b015849dc88560dcea0f531d993bcfa578c13481c",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    },
+    {
+      "member": "source-037.bin",
+      "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-08-18",
+      "sha256": "23457f4224d91ea010973113a746ca1e87638f9fb9003642ead8c003a215971b",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    },
+    {
+      "member": "source-038.bin",
+      "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-01",
+      "sha256": "1ec854481872c6b178e6e129465817a230b688054187f10368acaecfe595879a",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    },
+    {
+      "member": "source-039.bin",
+      "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-12",
+      "sha256": "42c9d895f8ef13a228192a73f3fce9f7af5eaed047f9ccdb4bc92a1ef7e5a62c",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    },
+    {
+      "member": "source-040.bin",
+      "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-09-13",
+      "sha256": "a8badb88b5478dc6aa134c9ef0392a469b79b8ca0819f794a3215488214b79fd",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    },
+    {
+      "member": "source-041.bin",
+      "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-10-03",
+      "sha256": "3162fe00835eda8b155a56f0b1c90d67703c6c28f5987ab4e5286936c5307d53",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    },
+    {
+      "member": "source-042.bin",
+      "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-10-06",
+      "sha256": "11aeac75f41dd01bf844bb7acac9f4c43e9bdd0437980f33a55d0e1e3ca8a022",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    },
+    {
+      "member": "source-043.bin",
+      "url": "https://www.travsport.no/travbaner/bjerke-travbane/results/2026-10-13",
+      "sha256": "96522ff71efb5cec47d8e2199deabf497ac98cf4b796c5f2473a6b9518e51841",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    },
+    {
+      "member": "source-044.bin",
+      "url": "https://www.travsport.no/travbaner/jarlsberg-travbane/results/2026-08-22",
+      "sha256": "5d41d79e89b5dacd09cc7c61424f8d804ac943cf917f9179aafa3f960fa43016",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    },
+    {
+      "member": "source-045.bin",
+      "url": "https://www.travsport.no/travbaner/jarlsberg-travbane/results/2026-09-04",
+      "sha256": "b852baceeb7e3c6a70c061f2ae669d77cffc40b19625faaf6908d99842fc143d",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    },
+    {
+      "member": "source-046.bin",
+      "url": "https://www.travsport.no/travbaner/klosterskogen-travbane/results/2026-08-09",
+      "sha256": "1af485c71a27dee6c4aa6c1f4114c5e86b6dbced6d1d00025a0ab1beb9a85ff9",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    },
+    {
+      "member": "source-047.bin",
+      "url": "https://www.travsport.no/travbaner/momarken-travbane/results/2026-07-06",
+      "sha256": "129e366d646e7fc8e9c24b709f0fbd13e4eb0d4c621c236e43e4f1e8d953f234",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    },
+    {
+      "member": "source-048.bin",
+      "url": "https://www.travsport.no/travbaner/varig-orkla-arena/results/2026-08-15",
+      "sha256": "0947dc8e7e29e8f8dcd1f4a38ae49ca4a045a7d838d09d45b04403b87681569d",
+      "field_candidates": {
+        "html_time_fields": []
+      }
+    }
+  ],
+  "relevant_publication_or_approval_times_verified": 0,
+  "model_eligible": false
+}
