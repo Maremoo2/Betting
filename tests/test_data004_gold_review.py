@@ -133,7 +133,7 @@ def test_broken_gold_ledger_fails_closed(references, fault):
     elif fault == "unlocated_row":
         row["visual_row_locator"] = "not a physical bbox"
     elif fault == "negative_by_absence":
-        row["field"] = "gallop"
+        row = next(item for item in rows if item["field"] == "gallop")
         row["gold_value"] = "False"
     elif fault == "ambiguous_with_value":
         row["gold_status"] = "AMBIGUOUS"
