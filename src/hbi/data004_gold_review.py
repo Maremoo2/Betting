@@ -16,8 +16,8 @@ from pathlib import Path
 from typing import Any
 
 from hbi.data004_diagnostic import FIELDS
-from hbi.data004_original_pdf_audit import verify_original_pdfs
 from hbi.data004_holdout_gate import audit_source_evidence
+from hbi.data004_original_pdf_audit import verify_original_pdfs
 
 REVIEW_COLUMNS = (
     "sample_id", "horse", "meeting", "field", "source_pdf_sha256",
@@ -77,7 +77,7 @@ def validate_source_locators(
         except (TypeError, ValueError, KeyError) as exc:
             raise ValueError(f"Invalid historical date locator for {sid}") from exc
         if not isinstance(record.get("historical_race_token"), str):
-            raise ValueError(f"Missing historical race locator for {sid}")
+            raise TypeError(f"Missing historical race locator for {sid}")
         if record.get("source_locator_origin") != (
             "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
         ):
@@ -198,11 +198,11 @@ def audit_review_ledger(
         if status == "VERIFIED":
             if value == "" or code not in {"PRINTED_CELL", "EXPLICIT_NEGATIVE_MARK"}:
                 raise ValueError(f"Verified field lacks a literal source value: {key!r}")
-            if field in {"gallop", "dq"} and value == "False":
-                if code != "EXPLICIT_NEGATIVE_MARK":
-                    raise ValueError(
-                        "Absence of a gallop/DQ marker is not a verified negative"
-                    )
+            if (field in {"gallop", "dq"} and value == "False"
+                    and code != "EXPLICIT_NEGATIVE_MARK"):
+                raise ValueError(
+                    "Absence of a gallop/DQ marker is not a verified negative"
+                )
         elif status == "AMBIGUOUS":
             if value != "" or code != "AMBIGUOUS_LAYOUT":
                 raise ValueError(f"Ambiguous source cannot assert a value: {key!r}")
