@@ -278,6 +278,32 @@ def write_navigation_csv(report: dict[str, Any], destination: Path) -> None:
             or report.get("independent_source_gold_accepted") != 0
             or report.get("holdout_verified") is not False):
         raise ValueError("Unverified/altered source hint report")
+    rows = report.get("rows")
+    if not isinstance(rows, list) or len(rows) != 30:
+        raise ValueError("Expected 30 frozen source rows")
+    if len({row["sample_id"] for row in rows}) != 30:
+        raise ValueError("Repeated source sample ID")
+    count_hints = 0
+    for row in rows:
+        items = row.get("evidence")
+        if not isinstance(items, list) or len(items) != len(FIELDS):
+            raise ValueError("Incomplete 13-field review row")
+        if {item["field"] for item in items} != set(FIELDS):
+            raise ValueError("Missing/duplicated field in source row")
+        for item in items:
+            status = item.get("hint_status")
+            token = item.get("printed_token")
+            bbox = item.get("printed_bbox_pdf_points")
+            if item.get("hint_only_not_gold") is not True:
+                raise ValueError("Source hint attempted gold approval")
+            if status == "PRINTED_TOKEN_HINT_UNREVIEWED":
+                if not isinstance(token, str) or not token or not isinstance(bbox, list):
+                    raise ValueError("Source hint lacks literal glyph evidence")
+                count_hints += 1
+            elif status != "VISUAL_REVIEW_REQUIRED" or token or bbox is not None:
+                raise ValueError("Unexpected auto-verified or fabricated source hint")
+    if count_hints != report.get("literal_hints_total"):
+        raise ValueError("Source hint report count mismatch")
     with destination.open("x", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=REVIEW_NAV_COLUMNS)
         writer.writeheader()
