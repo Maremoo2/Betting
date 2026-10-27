@@ -71,6 +71,9 @@ def test_even_matching_separate_reviewers_cannot_approve_gold(sources):
     result = compare_independent_reviews(m, e, l, a, b)
     assert result["double_read_fully_clear"]
     assert result["identical_source_values_by_status"]["VERIFIED"] == 390
+    assert result["agreed_verified_scoreable_pairs"] == 390
+    assert result["all_390_fields_scoreable"]
+    assert result["cross_file_reviewer_identity_overlap"] == []
     assert not result["source_pdf_semantics_independently_verified_by_this_code"]
     assert not result["reviewer_independence_externally_verified"]
     assert not result["holdout_verified"]
@@ -109,3 +112,46 @@ def test_invalid_source_or_field_schema_is_rejected(sources, fault):
         b[0]["parser_prediction"] = "TEST"
     with pytest.raises(ValueError):
         compare_independent_reviews(m, e, l, a, b)
+
+
+def test_cross_file_reviewer_overlap_blocks_even_without_same_cell_collision(sources):
+    m, e, l, rows = sources
+    a, b = _synthetic_filled(rows, "reviewer_a"), _synthetic_filled(rows, "reviewer_b")
+    # At the first field reviewer_c contributed to file A, reviewer_a to file B.
+    # reviewer_a still contributed to file A elsewhere. There are no same-field
+    # ID collisions, but the two overall reviewer rosters overlap.
+    a[0]["reviewer_id"] = "reviewer_c"
+    b[0]["reviewer_id"] = "REVIEWER_A"
+    result = compare_independent_reviews(m, e, l, a, b)
+    assert result["reviewer_identity_collisions"] == []
+    assert result["cross_file_reviewer_identity_overlap"] == ["reviewer_a"]
+    assert not result["double_read_fully_clear"]
+    assert not result["all_390_fields_scoreable"]
+    assert not result["holdout_verified"]
+
+
+def test_agreement_on_ambiguous_or_unavailable_does_not_create_scoreable_gold(
+    sources,
+):
+    m, e, l, rows = sources
+    a, b = _synthetic_filled(rows, "reviewer_a"), _synthetic_filled(rows, "reviewer_b")
+    for review in (a, b):
+        review[0].update({
+            "gold_status": "AMBIGUOUS",
+            "gold_value": "",
+            "evidence_code": "AMBIGUOUS_LAYOUT",
+            "review_note": "Printed result and post columns overlap",
+        })
+        review[1].update({
+            "gold_status": "UNAVAILABLE",
+            "gold_value": "",
+            "evidence_code": "NOT_PRINTED",
+            "review_note": "Not shown in the historical source row",
+        })
+    result = compare_independent_reviews(m, e, l, a, b)
+    assert result["double_read_fully_clear"]  # structural agreement only
+    assert result["agreed_verified_scoreable_pairs"] == 388
+    assert result["agreed_ambiguous_unscoreable_pairs"] == 1
+    assert result["agreed_unavailable_unscoreable_pairs"] == 1
+    assert not result["all_390_fields_scoreable"]
+    assert not result["holdout_verified"]

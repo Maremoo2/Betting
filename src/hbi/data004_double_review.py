@@ -36,6 +36,18 @@ def compare_independent_reviews(
     differences: list[dict[str, str]] = []
     pending = []
     reviewer_collisions = []
+    # Disjoint reviewer rosters are necessary (though never sufficient) for
+    # independence. Checking only the same sample/field would miss a reviewer
+    # contributing to BOTH files on different rows.
+    reviewer_roster_a = {
+        row["reviewer_id"].strip().casefold()
+        for row in first if row["gold_status"] != "PENDING_VISUAL_REVIEW"
+    }
+    reviewer_roster_b = {
+        row["reviewer_id"].strip().casefold()
+        for row in second if row["gold_status"] != "PENDING_VISUAL_REVIEW"
+    }
+    cross_file_reviewer_overlap = sorted(reviewer_roster_a & reviewer_roster_b)
     for sample_id, field in sorted(a_by):
         left, right = a_by[(sample_id, field)], b_by[(sample_id, field)]
         key = {"sample_id": sample_id, "field": field}
@@ -70,11 +82,23 @@ def compare_independent_reviews(
         "identical_source_values_by_status": dict(agreement),
         "pending_pairs": pending,
         "reviewer_identity_collisions": reviewer_collisions,
+        "cross_file_reviewer_identity_overlap": cross_file_reviewer_overlap,
         "disagreements": differences,
         "first_review_status": a["status"],
         "second_review_status": b["status"],
+        # Agreement on AMBIGUOUS/UNAVAILABLE is agreement about uncertainty,
+        # not a scoreable ground-truth field. Preserve explicit denominators.
+        "agreed_verified_scoreable_pairs": agreement["VERIFIED"],
+        "agreed_ambiguous_unscoreable_pairs": agreement["AMBIGUOUS"],
+        "agreed_unavailable_unscoreable_pairs": agreement["UNAVAILABLE"],
         "double_read_fully_clear": (
-            not pending and not reviewer_collisions and not differences
+            not pending and not reviewer_collisions
+            and not cross_file_reviewer_overlap and not differences
+        ),
+        "all_390_fields_scoreable": (
+            agreement["VERIFIED"] == 390 and not pending
+            and not reviewer_collisions and not cross_file_reviewer_overlap
+            and not differences
         ),
         "source_pdf_semantics_independently_verified_by_this_code": False,
         "reviewer_independence_externally_verified": False,
@@ -85,6 +109,8 @@ def compare_independent_reviews(
             "Two matching CSV assertions do not prove either reviewer consulted original PDFs.",
             "Matching values may share systematic mistakes; manual source adjudication is mandatory.",
             "Original PDF page/field bounding boxes require independent physical review.",
+            "Even disjoint reviewer IDs do not establish human identity or real independence.",
+            "Matching ambiguous/unavailable cells are not scoreable gold values.",
             "No parser candidate comparison or automatic gold promotion is performed.",
         ],
     }
