@@ -23,8 +23,11 @@ def _race(when: str, track: str, number: int, score: str, status: str,
         "race_date": when,
         "screening_status_formula": status,
         "total_formula": score,
+        "A_WATCH_gate_formula": "NO",
         "data_25": "20",
-        "shape_20": "16",
+        "shape_20": str(
+            int(score) - 30 - int(mispricing) - int(liquidity)
+        ) if score.isdecimal() else "16",
         "mispricing_30": mispricing,
         "liquidity_15": liquidity,
         "today_fit_10": "10",
@@ -212,3 +215,30 @@ def test_export_reader_missing_sheet_and_extra_cells_fail_closed(tmp_path, tabs)
             "unexpected" for _ in range(40)) + "\n")
     with pytest.raises(ValueError, match="Extra unnamed CSV cells"):
         read_exported_tabs(tmp_path)
+
+
+def test_report_flags_arithmetic_and_false_A_WATCH_gate_without_repricing(tabs):
+    row = tabs["PreWatchFunnel"][0]
+    original = deepcopy(row)
+    row["total_formula"] = "68"
+    row["A_WATCH_gate_formula"] = "YES"
+    report = audit_october(tabs)
+    flags = report["quality_anomalies"]
+    assert flags["TOTAL_COMPONENT_ARITHMETIC_MISMATCH_READONLY"] == 1
+    assert flags["A_WATCH_GATE_CONTRADICTS_RECORDED_SCORE"] == 1
+    assert flags["REPORTED_A_WATCH_REQUIRES_INDEPENDENT_VERIFICATION"] == 1
+    assert original["total_formula"] == "69"
+    assert row["total_formula"] == "68"  # audit cannot rewrite source
+
+
+def test_canonical_race_date_disagreement_is_not_fuzzy_joined(tabs):
+    tabs["PreWatchFunnel"][0]["race_date"] = "2026-10-26"
+    with pytest.raises(ValueError, match="race_date and race_id disagree"):
+        audit_october(tabs)
+
+
+def test_component_out_of_bounds_is_flagged_not_interpreted_as_edge(tabs):
+    tabs["PreWatchFunnel"][0]["mispricing_30"] = "40"
+    report = audit_october(tabs)
+    assert report["quality_anomalies"]["COMPONENT_OUTSIDE_FROZEN_RUBRIC_RANGE"] == 1
+    assert report["BET_BLOCKED"]
