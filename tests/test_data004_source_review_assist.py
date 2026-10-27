@@ -1,8 +1,11 @@
 """DATA-004F tests use synthetic PDF glyphs, never accepted racing gold."""
+import copy
+import csv
+
 import fitz
 import pytest
 
-from hbi.data004_source_review_assist import source_field_hints
+from hbi.data004_source_review_assist import source_field_hints, write_navigation_csv
 
 
 def _fixture(*, placing="4", time="15,1a", include_shoes=True,
@@ -134,3 +137,69 @@ def test_wrong_history_marker_fails_closed(bad_marker):
             source_field_hints(page, row)
     finally:
         doc.close()
+
+
+def _synthetic_csv_report():
+    doc, page, row = _fixture()
+    try:
+        one = source_field_hints(page, row)
+    finally:
+        doc.close()
+    records = []
+    for index in range(30):
+        item = copy.deepcopy(one)
+        item["sample_id"] = str(index + 1)
+        records.append(item)
+    return {
+        "schema_version": "DATA004F_ORIGINAL_PDF_REVIEW_HINTS_V1",
+        "locked_rows": 30,
+        "field_assessments": 390,
+        "literal_hints_total": sum(
+            e["hint_status"] == "PRINTED_TOKEN_HINT_UNREVIEWED"
+            for record in records for e in record["evidence"]
+        ),
+        "independent_source_gold_accepted": 0,
+        "holdout_verified": False,
+        "rows": records,
+    }
+
+
+def test_390_cell_navigation_csv_never_contains_accepted_gold(tmp_path):
+    report = _synthetic_csv_report()
+    target = tmp_path / "review_source_hints.csv"
+    write_navigation_csv(report, target)
+    with target.open(encoding="utf-8", newline="") as stream:
+        rows = list(csv.DictReader(stream))
+    assert len(rows) == 390
+    assert len({(r["sample_id"], r["field"]) for r in rows}) == 390
+    assert all(r["source_reading_accepted_gold"] == "NO" for r in rows)
+    assert not any("parser" in key or "gold_value" in key for key in rows[0])
+    assert sum(bool(r["printed_token_hint_unreviewed"]) for r in rows) == (
+        report["literal_hints_total"]
+    )
+    with pytest.raises(FileExistsError):
+        write_navigation_csv(report, target)
+
+
+@pytest.mark.parametrize("fault", [
+    "duplicate_sample", "missing_field", "auto_gold", "hint_count_mismatch",
+    "fabricated_missing_token",
+])
+def test_navigation_export_rejects_bad_source_or_gold_claim(tmp_path, fault):
+    report = _synthetic_csv_report()
+    if fault == "duplicate_sample":
+        report["rows"][-1]["sample_id"] = report["rows"][0]["sample_id"]
+    elif fault == "missing_field":
+        report["rows"][0]["evidence"].pop()
+    elif fault == "auto_gold":
+        report["rows"][0]["evidence"][0]["hint_only_not_gold"] = False
+    elif fault == "hint_count_mismatch":
+        report["literal_hints_total"] += 1
+    elif fault == "fabricated_missing_token":
+        field = next(
+            e for e in report["rows"][0]["evidence"]
+            if e["hint_status"] == "VISUAL_REVIEW_REQUIRED"
+        )
+        field["printed_token"] = "invented"
+    with pytest.raises(ValueError):
+        write_navigation_csv(report, tmp_path / "invalid.csv")
