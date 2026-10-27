@@ -49,7 +49,7 @@ def test_holdout_pdf_byte_evidence_is_complete_but_not_gold_truth():
     assert proof["source_pdf_byte_access_verified"] is True
     assert proof["historical_row_identity_verified"] is False
     assert proof["independent_gold_fields_verified"] is False
-    assert set(row["meeting"] for row in manifest["selected"]) == set(indexed)
+    assert {row["meeting"] for row in manifest["selected"]} == set(indexed)
     assert all(
         len(entry["pdf_sha256"]) == 64
         and entry["pages"] >= 1
