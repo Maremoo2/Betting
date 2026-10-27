@@ -417,6 +417,25 @@ class SQLiteStore:
             )
             return [dict(row) for row in rows]
 
+    def provider_market_at(
+        self,
+        race_id: str,
+        product: str,
+        observed_at_utc: str,
+    ) -> list[dict[str, object]]:
+        """Return precisely the market snapshot cited by a frozen decision.
+
+        Never substitute a later price when the original snapshot is absent.
+        """
+        with self.connect() as connection:
+            rows = connection.execute(
+                "SELECT * FROM provider_market_snapshots "
+                "WHERE race_id=? AND product=? AND observed_at_utc=? "
+                "ORDER BY selection_key",
+                (race_id, product, observed_at_utc),
+            )
+            return [dict(row) for row in rows]
+
     def insert_provider_payload(
         self,
         *,
@@ -711,6 +730,11 @@ class SQLiteStore:
             )
 
     def upsert_decision_provenance(self, record: dict[str, object]) -> None:
+        """Insert once; preserve first provenance even if a watcher retries.
+
+        The legacy method name is retained for callers, but it must not
+        replace an earlier frozen market/policy record.
+        """
         columns = (
             "decision_run_id", "market_odds_json", "combination_policy_json",
             "decision_policy_json", "code_sha", "governance_hash", "recorded_at_utc",
@@ -718,15 +742,8 @@ class SQLiteStore:
         values = [record.get(column) for column in columns]
         with self.connect() as connection:
             connection.execute(
-                f"INSERT INTO decision_provenance ({','.join(columns)}) "
-                f"VALUES ({','.join('?' for _ in columns)}) "
-                "ON CONFLICT(decision_run_id) DO UPDATE SET "
-                "market_odds_json=excluded.market_odds_json,"
-                "combination_policy_json=excluded.combination_policy_json,"
-                "decision_policy_json=excluded.decision_policy_json,"
-                "code_sha=excluded.code_sha,"
-                "governance_hash=excluded.governance_hash,"
-                "recorded_at_utc=excluded.recorded_at_utc",
+                f"INSERT OR IGNORE INTO decision_provenance ({','.join(columns)}) "
+                f"VALUES ({','.join('?' for _ in columns)})",
                 values,
             )
 
