@@ -40,3 +40,32 @@ conflicts, an accepted sealed private gold manifest, and a preregistered
 incumbent-vs-candidate comparison remain pending. No data is silently
 converted to a negative or parser promotion. No V3.3.12, A-WATCH,
 BET-hardgate, betting, production parser, or settlement changes.
+
+## DATA-004E reviewer-independence / scoreability correction
+
+An earlier diagnostic compared reviewer IDs only **per sample/field**.
+That can falsely report `double_read_fully_clear=true` if a person contributed
+to both independent files on *different* fields, despite no same-cell ID
+collision. This correction now checks the **entire normalized reviewer roster**
+for each CSV. Any cross-file overlap blocks structural clearance; a pairwise
+cell collision remains separately reported. An absence of overlapping IDs
+is necessary but does **not** prove real human independence.
+
+The report now exposes:
+- `cross_file_reviewer_identity_overlap`;
+- `agreed_verified_scoreable_pairs`;
+- `agreed_ambiguous_unscoreable_pairs`;
+- `agreed_unavailable_unscoreable_pairs`;
+- `all_390_fields_scoreable`.
+
+Two reviewers can legitimately agree that a field is **AMBIGUOUS** or
+**UNAVAILABLE**. That is agreement *about uncertainty*, not a verified
+source value. `double_read_fully_clear` only means the two review files
+are structurally non-conflicting. No review score, agreement count,
+or `all_390_fields_scoreable` flag accepts the true source gold:
+`holdout_verified=false` and `production_parser_approved=false`
+always remain explicit pending actual original-PDF adjudication.
+
+These checks are tested with wholly synthetic rows. They do **not**
+increase the number of actual independently transcribed cells (still
+zero newly accepted by code alone).
