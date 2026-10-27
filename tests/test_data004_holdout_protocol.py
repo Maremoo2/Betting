@@ -31,3 +31,32 @@ def test_holdout_candidate_manifest_is_disjoint_and_unlabeled_by_contract():
         assert row["source_id"].endswith("structured_program.json")
         assert row["expected_pdf_path"].endswith("full_program.pdf")
         assert "horse" not in row and "gold_value" not in row
+
+
+def test_holdout_pdf_byte_evidence_is_complete_but_not_gold_truth():
+    source = (
+        Path(__file__).parents[1]
+        / "research"
+        / "data004-holdout-source-pdf-evidence-v1.json"
+    )
+    proof = json.loads(source.read_text(encoding="utf-8"))
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    programs = proof["programs"]
+    indexed = {entry["meeting"]: entry for entry in programs}
+    assert len(programs) == proof["distinct_pdf_programs"] == 24
+    assert proof["source_archives"] == 7
+    assert proof["pre_registered_samples"] == 30
+    assert proof["source_pdf_byte_access_verified"] is True
+    assert proof["historical_row_identity_verified"] is False
+    assert proof["independent_gold_fields_verified"] is False
+    assert set(row["meeting"] for row in manifest["selected"]) == set(indexed)
+    assert all(
+        len(entry["pdf_sha256"]) == 64
+        and entry["pages"] >= 1
+        and entry["archive_entry_found"] is True
+        and entry["pdf_opened_with_fitz"] is True
+        for entry in programs
+    )
+    assert proof["holdout_model_acceptance"] == (
+        "BLOCKED_PENDING_ROW_IDENTITY_AND_GOLD_TRANSCRIPTION"
+    )
