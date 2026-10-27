@@ -19,12 +19,34 @@ jobs:
       - name: Detect protected strategy changes
         id: protected
         shell: bash
+        env:
+          # Immutable identities from the triggering PR event, not a moving
+          # origin/main ref that may advance or be truncated by a shallow fetch.
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          git fetch origin "${{ github.base_ref }}" --depth=1
-          CHANGED="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
+          set -euo pipefail
+          # checkout fetch-depth: 0 keeps both parents of the PR merge ref and
+          # their ancestry. Any missing commit/merge-base must FAIL CLOSED.
+          if [ "$(git rev-parse --is-shallow-repository)" != "false" ]; then
+            echo "::error::Protected strategy comparison needs complete Git history."
+            exit 1
+          fi
+          for revision in "$BASE_SHA" "$HEAD_SHA"; do
+            if ! git cat-file -e "${revision}^{commit}" 2>/dev/null; then
+              echo "::error::Missing immutable PR base/head commit; cannot classify changes."
+              exit 1
+            fi
+          done
+          if ! MERGE_BASE="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"; then
+            echo "::error::No merge base for immutable PR revisions; refusing to classify."
+            exit 1
+          fi
+          # --no-renames exposes the original path when protected files move.
+          CHANGED="$(git diff --name-only --no-renames "$MERGE_BASE" "$HEAD_SHA")"
           printf '%s\n' "$CHANGED"
 
-          if git cat-file -e "origin/${{ github.base_ref }}:.github/workflows/protected-strategy-files.yml" 2>/dev/null; then
+          if git cat-file -e "$BASE_SHA:.github/workflows/protected-strategy-files.yml" 2>/dev/null; then
             echo "bootstrap=false" >> "$GITHUB_OUTPUT"
           else
             echo "bootstrap=true" >> "$GITHUB_OUTPUT"
