@@ -6,6 +6,7 @@ They must never populate the accepted holdout or train/promote any parser.
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import re
 from collections import Counter
@@ -260,6 +261,45 @@ def build_original_pdf_review_hints(
     }
 
 
+
+REVIEW_NAV_COLUMNS = (
+    "sample_id", "horse", "meeting", "source_pdf_sha256",
+    "source_pdf_page", "field", "hint_status",
+    "printed_token_hint_unreviewed", "printed_bbox_pdf_points",
+    "source_reading_accepted_gold",
+)
+
+
+def write_navigation_csv(report: dict[str, Any], destination: Path) -> None:
+    """Off-repo 390-cell source-only CSV, with NO review or gold promotion."""
+    if (report.get("schema_version") != "DATA004F_ORIGINAL_PDF_REVIEW_HINTS_V1"
+            or report.get("locked_rows") != 30
+            or report.get("field_assessments") != 390
+            or report.get("independent_source_gold_accepted") != 0
+            or report.get("holdout_verified") is not False):
+        raise ValueError("Unverified/altered source hint report")
+    with destination.open("x", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=REVIEW_NAV_COLUMNS)
+        writer.writeheader()
+        for row in report["rows"]:
+            for evidence in row["evidence"]:
+                box = evidence["printed_bbox_pdf_points"]
+                writer.writerow({
+                    "sample_id": row["sample_id"],
+                    "horse": row["horse"],
+                    "meeting": row["meeting"],
+                    "source_pdf_sha256": row["source_pdf_sha256"],
+                    "source_pdf_page": row["source_pdf_page"],
+                    "field": evidence["field"],
+                    "hint_status": evidence["hint_status"],
+                    "printed_token_hint_unreviewed": evidence["printed_token"],
+                    "printed_bbox_pdf_points": (
+                        ",".join(str(v) for v in box) if box else ""
+                    ),
+                    "source_reading_accepted_gold": "NO",
+                })
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, required=True)
@@ -267,6 +307,7 @@ def main() -> None:
     parser.add_argument("--locators", type=Path, required=True)
     parser.add_argument("--source-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--navigation-csv-output", type=Path)
     args = parser.parse_args()
     manifest, evidence, locators = [
         json.loads(path.read_text(encoding="utf-8"))
@@ -279,6 +320,8 @@ def main() -> None:
     payload = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
     with args.output.open("x", encoding="utf-8") as output:
         output.write(payload)
+    if args.navigation_csv_output is not None:
+        write_navigation_csv(result, args.navigation_csv_output)
     print(json.dumps(
         {key: value for key, value in result.items() if key != "rows"},
         ensure_ascii=False, indent=2,
