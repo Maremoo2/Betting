@@ -24,6 +24,37 @@ pytest -q tests/test_data004_original_pdf_audit.py
 
 The output ledger **must remain private/off-repo** until source rights and review governance are established. Its `gold_status` is always `PENDING_VISUAL_REVIEW`; the empty cells and empty source-page/row locators are intentional. The CLI refuses overwriting an existing ledger.
 
-**Not completed by this PR:** access to those 24 actual PDF bytes in the execution environment; historical row identity independently confirmed from rendered pages; 390 original-column values independently transcribed, ambiguity coded, and reviewed; running existing and candidate parsers against frozen gold; any deployment acceptance. A synthetic PDF fixture is used **only to test checksum/page-count/path rejection**, not to assert that a real source is correct.
+## Actual original-source replay (27 October 2026)
+
+After creating this draft PR, the seven original Collector Actions ZIP artifacts were
+downloaded through the connected GitHub account (artifact IDs already recorded in
+`research/data004-holdout-source-pdf-evidence-v1.json`). Their archived
+`output/daily/.../meetings/.../full_program.pdf` entries were extracted without altering
+their bytes. The extracted folders contained **32** distinct full-program PDFs in total;
+the **24** PDFs referenced by the frozen DATA-004 holdout index were checked.
+
+Actual Python `hashlib.sha256(pdf_bytes)` was compared against the source index, and
+PyMuPDF/`fitz` was used to independently read each PDF's actual page count:
+
+| Control | Result |
+| --- | --- |
+| Available original Collector artifacts | 7/7 |
+| Holdout-referenced original PDF programs | 24/24 located |
+| SHA-256 match against existing source index | 24/24 |
+| Actual PDF page counts match source index | 24/24 |
+| Unexpected source-byte/page-count mismatches | 0 |
+| Independent physical horse-row/column evidence | **NOT verified in this replay** |
+| Independent semantic field gold | **0/390 newly accepted** |
+
+This is a **real source-byte replay**, separate from the synthetic CI fixtures. The
+source-PDF originals and proposed private gold labels were **not committed** to GitHub.
+This report measures exactly the source bytes and page counts; it does not substitute
+for visual horse-row/column verification or independent 13-field labelling.
+The new CLI's behavior is tested by CI; this actual-byte comparison was also performed
+using a separate read-only verifier with the same SHA/page acceptance conditions.
+
+**Still not completed:** independent original-page row ownership, 390 field transcriptions
+with ambiguity states, frozen parser-vs-candidate comparison and production acceptance.
+All betting gates remain blocked. A synthetic PDF fixture is used **only to test checksum/page-count/path rejection**, not to assert that a real source is correct.
 
 Until independent source review and a separate acceptance PR, status is `HOLDOUT_GOLD_PENDING`, with `BET_BLOCKED` unchanged.
