@@ -39,12 +39,21 @@ def record_decision_provenance(
     )
     decision = decisions[0]
 
-    market_rows = store.latest_provider_market(race_id, "V")
+    # Freeze the precise source snapshot used by the decision. Never attach
+    # a later market quote to an already immutable shadow decision.
+    source_time = decision.get("source_market_observed_at_utc")
+    if not isinstance(source_time, str) or not source_time:
+        return None
+    if not decision.get("combined_probabilities_json"):
+        return None
+    market_rows = store.provider_market_at(race_id, "V", source_time)
     odds = {
         str(row["selection_key"]): float(row["odds_decimal"])
         for row in market_rows
         if row.get("odds_decimal") is not None and float(row["odds_decimal"]) > 1
     }
+    if not odds:
+        return None
     governance = load_governance(GOVERNANCE)
     store.upsert_decision_provenance(
         {
