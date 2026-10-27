@@ -76,10 +76,19 @@ python -m hbi.data004_source_review_assist \
   --source-evidence research/data004-holdout-source-pdf-evidence-v1.json \
   --locators research/data004c-holdout-source-locators-v1.json \
   --source-root /private/unaltered-collector-artifacts \
-  --output /private/DATA004F_original_pdf_hints_UNREVIEWED.json
+  --output /private/DATA004F_original_pdf_hints_UNREVIEWED.json \
+  --navigation-csv-output /private/DATA004F_source_review_navigation_390_UNREVIEWED.csv
 
 pytest -q tests/test_data004_source_review_assist.py
 ```
+
+The optional CSV sidecar has **exactly 390 unique sample/field prompts**,
+with one `printed_token_hint_unreviewed` and its PDF-point rectangle where
+available. Its `source_reading_accepted_gold` is always `NO`.
+The exporter rejects duplicated sample IDs, missing fields, unsupported
+statuses, promoted-gold claims and mismatched token counts; it refuses
+overwriting an existing file. The sidecar is for navigation after reading
+the original source, not a substitute for independent blinded transcriptions.
 
 The output must stay **private/off-repo**, alongside the earlier
 `DATA004C_blind_390_fields_UNREVIEWED.csv` and
