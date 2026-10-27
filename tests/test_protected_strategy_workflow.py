@@ -105,6 +105,7 @@ def test_rename_does_not_hide_deletion_of_protected_source(
     repository, tmp_path
 ):
     root, base = repository
+    (root / "docs").mkdir(parents=True, exist_ok=True)
     _git(root, "mv", "src/betting/engine.py", "docs/renamed_engine.py")
     head = _commit(root, "move protected strategy to unprotected path")
     completed, status = _run(root, base, head, tmp_path)
