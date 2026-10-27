@@ -1,0 +1,311 @@
+{
+  "schema_version": "DATA004C_SOURCE_LOCATOR_INDEX_V1",
+  "created_date": "2026-10-27",
+  "origin": "Existing DATA-004_holdout_30_source_mapping.csv; no raw source lines or parser field values copied",
+  "source_mapping_is_independent_gold": false,
+  "visual_horse_row_identity_verified": false,
+  "field_gold_verified": false,
+  "holdout_verified": false,
+  "records": [
+    {
+      "sample_id": "156",
+      "meeting": "S2_NR_2026-10-19",
+      "horse": "C.R.NOBLESS",
+      "pdf_page": 10,
+      "source_date": "2026-08-20",
+      "historical_race_token": "2026.08.-2",
+      "source_pdf_sha256": "65cc98dfdbc0f567e87ea063c41bf4824b4693febfd1340291789922a7a3d1c8",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "50",
+      "meeting": "ST_NR_2026-10-24",
+      "horse": "FIFTYSHADESOFSUN",
+      "pdf_page": 5,
+      "source_date": "2026-08-27",
+      "historical_race_token": "2026.08.-4",
+      "source_pdf_sha256": "05b1a7aab720c2609f1d8bc1c2f5cf6a9671a5d0b05d6a76c2b98645ee4ec046",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "172",
+      "meeting": "S1_NR_2026-10-21",
+      "horse": "ORAZI CESARE",
+      "pdf_page": 3,
+      "source_date": "2026-09-01",
+      "historical_race_token": "2026.09.-6",
+      "source_pdf_sha256": "48c26ed44341936d0da5e1d46e568e8f12cc21f74f815a80b7588b18a060ee53",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "135",
+      "meeting": "BI_NR_2026-10-23",
+      "horse": "RAMSTAD STJERNEN",
+      "pdf_page": 9,
+      "source_date": "2026-07-14",
+      "historical_race_token": "2026.07.-3",
+      "source_pdf_sha256": "4e916614e97b3780445071919b778ffba841f92e74e8690922d7c725b5f23a09",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "161",
+      "meeting": "S1_NR_2026-10-19",
+      "horse": "BLINDING LIGHT",
+      "pdf_page": 10,
+      "source_date": "2026-09-01",
+      "historical_race_token": "2026.09.-7",
+      "source_pdf_sha256": "a022e00e07cecda9a417438fbf14e603ab3a1f2c0184fb842929bc52715fd8ae",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "169",
+      "meeting": "S1_NR_2026-10-20",
+      "horse": "TROLLBACKENS THOR",
+      "pdf_page": 4,
+      "source_date": "2026-08-20",
+      "historical_race_token": "2026.08.-9",
+      "source_pdf_sha256": "6ee050e4ad1e1a0c9caad8d51adb3a98b8bc55e9b2de8b2d117bcfbfd4093aaa",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "19",
+      "meeting": "X1_NR_2026-10-20",
+      "horse": "KEEP THE FAITH",
+      "pdf_page": 3,
+      "source_date": "2026-10-09",
+      "historical_race_token": "2026.10.-2",
+      "source_pdf_sha256": "4dd4503e56b1e102cd865b23e8515586d1c2a9bbc902de436fdcc18db458c3e3",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "73",
+      "meeting": "S2_NR_2026-10-20",
+      "horse": "EIRE",
+      "pdf_page": 8,
+      "source_date": "2026-05-15",
+      "historical_race_token": "2026.05.-6",
+      "source_pdf_sha256": "6c7b7afecfc47d1ede34dbc15a6ece8def59524d7943c9e0d51468cff1e4f54c",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "129",
+      "meeting": "KL_NR_2026-10-22",
+      "horse": "GRISLEGUTTEN G.L.",
+      "pdf_page": 2,
+      "source_date": "2026-08-11",
+      "historical_race_token": "2026.08.-4",
+      "source_pdf_sha256": "b83fccf3fffa97e74f0908f0deb538bdc14e54c6d5a51b38e55e462b87179a68",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "8",
+      "meeting": "X1_NR_2026-10-18",
+      "horse": "JAN LIVAR",
+      "pdf_page": 3,
+      "source_date": "2026-09-20",
+      "historical_race_token": "2026.09.-5",
+      "source_pdf_sha256": "010dce812f6c1d9d8f2e3251872c408c0d650089502c87feee38b4eb9ad3d50b",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "160",
+      "meeting": "S2_NR_2026-10-19",
+      "horse": "ASHLEY JOVALLEY",
+      "pdf_page": 5,
+      "source_date": "2026-08-07",
+      "historical_race_token": "2026.08.-2",
+      "source_pdf_sha256": "65cc98dfdbc0f567e87ea063c41bf4824b4693febfd1340291789922a7a3d1c8",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "68",
+      "meeting": "S2_NR_2026-10-19",
+      "horse": "GREY MARKET",
+      "pdf_page": 7,
+      "source_date": "2026-08-05",
+      "historical_race_token": "2026.08.-1",
+      "source_pdf_sha256": "65cc98dfdbc0f567e87ea063c41bf4824b4693febfd1340291789922a7a3d1c8",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "157",
+      "meeting": "S2_NR_2026-10-19",
+      "horse": "FEARLESS FLIER",
+      "pdf_page": 4,
+      "source_date": "2026-06-18",
+      "historical_race_token": "2026.06.-1",
+      "source_pdf_sha256": "65cc98dfdbc0f567e87ea063c41bf4824b4693febfd1340291789922a7a3d1c8",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "34",
+      "meeting": "S1_NR_2026-10-22",
+      "horse": "HERKULES",
+      "pdf_page": 3,
+      "source_date": "2026-08-07",
+      "historical_race_token": "2026.08.-6",
+      "source_pdf_sha256": "4513aa6ccc50d980e4e1b8bc7bce871c7b5abe3861dd629b34c467bfd01814f3",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "115",
+      "meeting": "BJ_NR_2026-10-20",
+      "horse": "HAGE BALDER",
+      "pdf_page": 1,
+      "source_date": "2026-09-19",
+      "historical_race_token": "2026.09.-4",
+      "source_pdf_sha256": "ef50816cc5bee22677bc89307c4554891c17dca88c5b377d6fca2c288ed3fc52",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "107",
+      "meeting": "BT_NR_2026-10-19",
+      "horse": "ÅSMIN",
+      "pdf_page": 1,
+      "source_date": "2026-07-19",
+      "historical_race_token": "2026.07.-2",
+      "source_pdf_sha256": "d247c8a393a8030f58bd3955fd95da7200af40399a7f0be4a4bea57a01a61415",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "130",
+      "meeting": "S2_NR_2026-10-22",
+      "horse": "AL'S VANELLOPE",
+      "pdf_page": 11,
+      "source_date": "2026-09-25",
+      "historical_race_token": "2026.09.-5",
+      "source_pdf_sha256": "5c11ab2dda69d632c528714ab80afad044dbafb465956c2f8a5866fa71dede71",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "125",
+      "meeting": "S4_NR_2026-10-21",
+      "horse": "CASSIUS CROWN",
+      "pdf_page": 8,
+      "source_date": "2026-08-21",
+      "historical_race_token": "2026.08.-7",
+      "source_pdf_sha256": "47d31cf68f0f6b7bf8c41989332d8e906ab050aa6513efe000ee51519cc9b4e5",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "124",
+      "meeting": "S2_NR_2026-10-21",
+      "horse": "JUAN LES PINS",
+      "pdf_page": 5,
+      "source_date": "2026-09-11",
+      "historical_race_token": "2026.09.-8",
+      "source_pdf_sha256": "27f9f4693a43c5695c1ba3f02e0fa42d1587ca79814e6598c7df09c97accee53",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "148",
+      "meeting": "S1_NR_2026-10-18",
+      "horse": "FLIP FLOP N'FLY",
+      "pdf_page": 4,
+      "source_date": "2026-06-30",
+      "historical_race_token": "2026.06.-7",
+      "source_pdf_sha256": "857755117703ed2c99b7974b82fc58ff3757d67d1f4c8043d7e15e5c0e92be44",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "113",
+      "meeting": "F1_NR_2026-10-20",
+      "horse": "INSEPARABLE (FR)",
+      "pdf_page": 9,
+      "source_date": "2025-11-29",
+      "historical_race_token": "2025.11.-4",
+      "source_pdf_sha256": "aad5cbc35017631e55574727159bdf2168886225616e969354f3ca292853b09d",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "114",
+      "meeting": "F4_NR_2026-10-20",
+      "horse": "LILI D'EVAILLES",
+      "pdf_page": 9,
+      "source_date": "2026-10-11",
+      "historical_race_token": "2026.10.-6",
+      "source_pdf_sha256": "123664865ee5410fde741723a15a31c036ee2d8e2e69bea0dd343370edd70c3d",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "15",
+      "meeting": "F4_NR_2026-10-19",
+      "horse": "MANA TEJY",
+      "pdf_page": 14,
+      "source_date": "2026-08-17",
+      "historical_race_token": "2026.08.-1",
+      "source_pdf_sha256": "e6fd6fee50c3d3e4e08acc553c8a65a6cb2c1eb6a6eb1665f0cb33a238c6ae0e",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "5",
+      "meeting": "S5_NR_2026-10-18",
+      "horse": "PRINCE ALMASTY",
+      "pdf_page": 6,
+      "source_date": "2026-06-06",
+      "historical_race_token": "2026.06.-11",
+      "source_pdf_sha256": "0abac7ad623b0a77f8f83bbeb6dce873e75ed4ffa7fd8827f6fcd8de5ede2b89",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "98",
+      "meeting": "S2_NR_2026-10-18",
+      "horse": "NINASIMONE",
+      "pdf_page": 4,
+      "source_date": "2026-08-11",
+      "historical_race_token": "2026.08.-3",
+      "source_pdf_sha256": "e655b48378f9f4cf6009a9584da9a5ae2f83ae97b0d8a643504006d911f1108f",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "21",
+      "meeting": "F1_NR_2026-10-20",
+      "horse": "MISTER POWER (FR)",
+      "pdf_page": 9,
+      "source_date": "2026-07-18",
+      "historical_race_token": "2026.07.-6",
+      "source_pdf_sha256": "aad5cbc35017631e55574727159bdf2168886225616e969354f3ca292853b09d",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "67",
+      "meeting": "S2_NR_2026-10-19",
+      "horse": "IMOLA EFFE",
+      "pdf_page": 1,
+      "source_date": "2026-08-17",
+      "historical_race_token": "2026.08.-14",
+      "source_pdf_sha256": "65cc98dfdbc0f567e87ea063c41bf4824b4693febfd1340291789922a7a3d1c8",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "154",
+      "meeting": "S2_NR_2026-10-19",
+      "horse": "SANDYSOUL",
+      "pdf_page": 8,
+      "source_date": "2026-06-21",
+      "historical_race_token": "2026.06.-8",
+      "source_pdf_sha256": "65cc98dfdbc0f567e87ea063c41bf4824b4693febfd1340291789922a7a3d1c8",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "103",
+      "meeting": "X1_NR_2026-10-19",
+      "horse": "FLY EXPRESS",
+      "pdf_page": 3,
+      "source_date": "2026-09-26",
+      "historical_race_token": "2026.09.-10",
+      "source_pdf_sha256": "c9d3875ceefb643cfe7f37adcb7bb4a05c9ef104acee3f4ec3fff3e37be0361e",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    },
+    {
+      "sample_id": "100",
+      "meeting": "OR_NR_2026-10-18",
+      "horse": "GASTON DESIGN (DK)",
+      "pdf_page": 10,
+      "source_date": "2026-09-20",
+      "historical_race_token": "2026.09.-10",
+      "source_pdf_sha256": "074f8b5b19081608411af3fd180d3d069c9572c0a7fb9c6af5a7fe6edc694b5e",
+      "source_locator_origin": "EXISTING_TEXT_MAPPING_VISUAL_REVIEW_REQUIRED"
+    }
+  ]
+}
