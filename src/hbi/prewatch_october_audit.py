@@ -11,7 +11,7 @@ import csv
 import hashlib
 import json
 from collections import Counter, defaultdict
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
@@ -58,10 +58,10 @@ def _decimal(value: Any) -> Decimal | None:
 
 def _clock(value: str) -> datetime | None:
     try:
-        instant = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+        instant = datetime.fromisoformat(value.strip())
     except (ValueError, AttributeError):
         return None
-    return instant.astimezone(timezone.utc) if instant.tzinfo else None
+    return instant.astimezone(UTC) if instant.tzinfo else None
 
 
 def _race_date(race_id: str) -> date | None:
@@ -76,7 +76,7 @@ def _race_date(race_id: str) -> date | None:
 
 def _status(row: dict[str, str]) -> str:
     value = row.get("screening_status_formula", "").strip()
-    if value.startswith("#REF!") or value.startswith("#"):
+    if value.startswith("#"):
         return "FORMULA_ERROR"
     return value or "UNKNOWN_STATUS"
 
@@ -280,9 +280,12 @@ def audit_october(
         ]
         if any(v is not None and (v < 0 or v > limit) for v, limit in component_values):
             quality_flags["COMPONENT_OUTSIDE_FROZEN_RUBRIC_RANGE"] += 1
-        if value is not None and all(v is not None for v, _ in component_values):
-            if sum((v for v, _ in component_values if v is not None), Decimal(0)) != value:
-                quality_flags["TOTAL_COMPONENT_ARITHMETIC_MISMATCH_READONLY"] += 1
+        if (
+            value is not None
+            and all(v is not None for v, _ in component_values)
+            and sum((v for v, _ in component_values if v is not None), Decimal(0)) != value
+        ):
+            quality_flags["TOTAL_COMPONENT_ARITHMETIC_MISMATCH_READONLY"] += 1
 
         mispricing = _decimal(frozen.get("mispricing_30", ""))
         liquidity = _decimal(frozen.get("liquidity_15", ""))
