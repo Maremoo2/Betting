@@ -19,7 +19,8 @@ from typing import Any
 REQUIRED_COLUMNS = {
     "PreWatchFunnel": (
         "race_id", "race_date", "screening_status_formula", "total_formula",
-        "data_25", "shape_20", "mispricing_30", "liquidity_15", "today_fit_10",
+        "A_WATCH_gate_formula", "data_25", "shape_20", "mispricing_30",
+        "liquidity_15", "today_fit_10",
         "source_backed_hypothesis", "uncertainty_and_missing",
         "liquidity_source_and_proxy", "candidate_horse_no_name",
     ),
@@ -248,6 +249,8 @@ def audit_october(
     for race_id, frozen in sorted(candidates.items()):
         race_day = _race_date(race_id)
         assert race_day is not None
+        if frozen.get("race_date") != race_day.isoformat():
+            raise ValueError(f"Frozen race_date and race_id disagree: {race_id}")
         candidate_dates.add(race_day.isoformat())
         status = _status(frozen)
         totals[status] += 1
@@ -263,6 +266,23 @@ def audit_october(
             quality_flags["SCORED_STATUS_WITHOUT_NUMERIC_SCORE"] += 1
         if status == "PARTIAL" and value is not None:
             quality_flags["PARTIAL_WITH_NUMERIC_SCORE_NOT_REINTERPRETED"] += 1
+        if frozen.get("A_WATCH_gate_formula", "").strip().upper() == "YES":
+            quality_flags["REPORTED_A_WATCH_REQUIRES_INDEPENDENT_VERIFICATION"] += 1
+            if value is None or value < FROZEN_A_WATCH_MIN:
+                quality_flags["A_WATCH_GATE_CONTRADICTS_RECORDED_SCORE"] += 1
+        component_bounds = (
+            ("data_25", 25), ("shape_20", 20), ("mispricing_30", 30),
+            ("liquidity_15", 15), ("today_fit_10", 10),
+        )
+        component_values = [
+            (_decimal(frozen.get(field, "")), limit)
+            for field, limit in component_bounds
+        ]
+        if any(v is not None and (v < 0 or v > limit) for v, limit in component_values):
+            quality_flags["COMPONENT_OUTSIDE_FROZEN_RUBRIC_RANGE"] += 1
+        if value is not None and all(v is not None for v, _ in component_values):
+            if sum((v for v, _ in component_values if v is not None), Decimal(0)) != value:
+                quality_flags["TOTAL_COMPONENT_ARITHMETIC_MISMATCH_READONLY"] += 1
 
         mispricing = _decimal(frozen.get("mispricing_30", ""))
         liquidity = _decimal(frozen.get("liquidity_15", ""))
