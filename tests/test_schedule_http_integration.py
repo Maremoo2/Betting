@@ -7,6 +7,7 @@ import json
 import sqlite3
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import ClassVar
 from unittest.mock import patch
 
 import pytest
@@ -24,7 +25,7 @@ OBS = datetime(2026, 10, 31, 10, 0, tzinfo=UTC)
 
 class Response:
     status = 200
-    headers = {
+    headers: ClassVar[dict[str, str]] = {
         "Date": "Sat, 31 Oct 2026 10:00:03 GMT",
         "ETag": '"v1"',
         "Last-Modified": "Sat, 31 Oct 2026 09:59:00 GMT",
