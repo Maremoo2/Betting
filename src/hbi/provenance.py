@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from .governance import governance_hash, load_governance
+from .probability import normalize_market_odds
 from .storage import SQLiteStore
 
 ROOT = Path(__file__).parents[2]
@@ -54,6 +56,38 @@ def record_decision_provenance(
     }
     if not odds:
         return None
+
+    # Replay completeness must be checked before the first write-once provenance
+    # attachment. A later quote must never be re-labelled as the price frozen
+    # with an earlier decision. This protects NEW decisions only; older records
+    # are deliberately left unchanged for separate provenance review.
+    try:
+        decision_time = datetime.fromisoformat(str(decision["created_at_utc"]))
+        market_time = datetime.fromisoformat(source_time)
+        if (
+            decision_time.tzinfo is None
+            or decision_time.utcoffset() is None
+            or market_time.tzinfo is None
+            or market_time.utcoffset() is None
+            or market_time > decision_time
+        ):
+            return None
+        stored_market = json.loads(str(decision["market_probabilities_json"]))
+        if not isinstance(stored_market, dict):
+            return None
+        replay_market = normalize_market_odds(odds)
+        if set(stored_market) != set(replay_market) or not all(
+            math.isclose(
+                float(stored_market[selection]), probability,
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            )
+            for selection, probability in replay_market.items()
+        ):
+            return None
+    except (KeyError, ValueError, TypeError, OverflowError, json.JSONDecodeError):
+        return None
+
     governance = load_governance(GOVERNANCE)
     store.upsert_decision_provenance(
         {
