@@ -5,7 +5,14 @@ from unittest.mock import Mock
 
 import pytest
 
-from hbi.source_capture import _atg_starts, _starts, allowed_url, fetch_original, resolve_atg, verify
+from hbi.source_capture import (
+    _atg_starts,
+    _starts,
+    allowed_url,
+    fetch_original,
+    resolve_atg,
+    verify,
+)
 
 
 class Response:
@@ -55,7 +62,7 @@ def test_verify_tamper_detection(tmp_path):
 
 def test_atg_unique_exact_race():
     p={'tracks':[{'countryCode':'NO','sport':'trot','name':'Momarken','races':[{'number':2,'id':'2026-11-01_80_2','startTime':'2026-11-01T19:15:00+01:00'}]}]}
-    from datetime import datetime,UTC
+    from datetime import UTC, datetime
     assert resolve_atg(p,'Momarken',2,datetime(2026,11,1,18,15,tzinfo=UTC),date='2026-11-01')[0]=='2026-11-01_80_2'
     assert resolve_atg(p,'Bjerke',2,datetime(2026,11,1,18,15,tzinfo=UTC),date='2026-11-01')[0] is None
     assert resolve_atg(p,'Momarken',2,datetime(2026,11,1,16,15,tzinfo=UTC),date='2026-11-01')[0] is None
