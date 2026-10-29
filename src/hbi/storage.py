@@ -11,6 +11,7 @@ from uuid import uuid4
 
 from .domain import MarketSnapshot
 from .prewatch import MaterialChange
+from .schedule_provenance import ScheduleEvent, append_observation
 
 
 @dataclass
@@ -88,13 +89,17 @@ class SQLiteStore:
                 applied.append(migration_id)
         return applied
 
-    def upsert_race(self, race: dict[str, object]) -> None:
+    def upsert_race(self, race: dict[str, object], *, schedule_observation: ScheduleEvent | None = None) -> None:
         columns = (
             "race_id", "race_date", "country", "track", "race_no", "start_time_utc",
             "discipline", "distance_m", "start_method", "race_class", "created_at_utc",
         )
         values = [race.get(column) for column in columns]
         with self.connect() as connection:
+            if schedule_observation is not None:
+                if schedule_observation.race_id != race.get("race_id") or schedule_observation.normalized_start_utc != race.get("start_time_utc"):
+                    raise ValueError("SCHEDULE_RACE_ATOMIC_BINDING_CONFLICT")
+                append_observation(connection, schedule_observation)
             connection.execute(
                 f"INSERT INTO races ({','.join(columns)}) VALUES ({','.join('?' for _ in columns)}) "
                 "ON CONFLICT(race_id) DO UPDATE SET "

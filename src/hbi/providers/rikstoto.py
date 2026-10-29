@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import time
 import urllib.error
@@ -28,6 +29,11 @@ class FetchResult:
     status_code: int | None
     latency_ms: float
     error: str | None = None
+    response_body_sha256: str | None = None
+    response_completed_at: datetime | None = None
+    http_date: str | None = None
+    http_etag: str | None = None
+    http_last_modified: str | None = None
 
 
 @dataclass(frozen=True)
@@ -107,14 +113,20 @@ class RikstotoClient:
         started = time.perf_counter()
         try:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
-                body = response.read().decode("utf-8")
-                payload = json.loads(body)
+                body_bytes = response.read()
+                response_completed = datetime.now(UTC)
+                payload = json.loads(body_bytes.decode("utf-8"))
                 return FetchResult(
                     url=url,
                     payload=payload,
                     success=True,
                     status_code=response.status,
                     latency_ms=(time.perf_counter() - started) * 1000,
+                    response_body_sha256=hashlib.sha256(body_bytes).hexdigest(),
+                    response_completed_at=response_completed,
+                    http_date=response.headers.get("Date"),
+                    http_etag=response.headers.get("ETag"),
+                    http_last_modified=response.headers.get("Last-Modified"),
                 )
         except (
             urllib.error.HTTPError,
