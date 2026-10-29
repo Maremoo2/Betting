@@ -1,11 +1,10 @@
 import hashlib
 import json
-from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
 
-from hbi.program_history_probe import allowed, capture, discover_pdf_urls, fetch, verify
+from hbi.program_history_probe import allowed, discover_pdf_urls, fetch, verify
 
 
 class Resp:
