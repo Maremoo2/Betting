@@ -12,6 +12,7 @@ from .provider_capability import CONTRACT, capability, resolve_field
 from .providers.atg import AtgClient, AtgFetchResult
 from .providers.letrot import LeTrotClient
 from .providers.rikstoto import FetchResult, RikstotoClient, RikstotoRace
+from .schedule_provenance import make_event
 from .storage import SQLiteStore
 
 
@@ -80,6 +81,18 @@ class RikstotoCollector:
 
         for race in races:
             local_date = race.start_time_raw[:10]
+            completed = fetch.response_completed_at
+            verified = completed is not None and fetch.response_body_sha256 is not None
+            observation = make_event(
+                race_id=race.race_id, source_uri=fetch.url,
+                observed_at=completed if verified else observed,
+                source_schedule_raw=race.start_time_raw, normalized_start=race.start_time,
+                raw_body_sha256=fetch.response_body_sha256 if verified else None,
+                http_date=fetch.http_date if verified else None,
+                http_etag=fetch.http_etag if verified else None,
+                http_last_modified=fetch.http_last_modified if verified else None,
+                completion_verified=verified,
+            )
             self.store.upsert_race(
                 {
                     "race_id": race.race_id,
@@ -93,7 +106,8 @@ class RikstotoCollector:
                     "start_method": race.start_method,
                     "race_class": None,
                     "created_at_utc": observed.isoformat(),
-                }
+                },
+                schedule_observation=observation,
             )
             self.store.upsert_provider_race_ref(
                 provider=self.PROVIDER,
