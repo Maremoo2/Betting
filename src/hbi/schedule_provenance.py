@@ -96,17 +96,17 @@ def make_event(*, race_id: str, source_uri: str, observed_at: datetime,
     for header in (http_date,http_etag,http_last_modified):
         if header is not None and (not isinstance(header,str) or len(header)>512 or "\r" in header or "\n" in header):
             raise ValueError("INVALID_HTTP_HEADER")
-    details = dict(
-        race_id=race_id, source_uri=source_uri, observed_at_utc=obs.isoformat(),
-        source_schedule_raw=source_schedule_raw, normalized_start_utc=start.isoformat(),
-        source_grade="HASH_ONLY_NO_RAW_BYTES" if completion_verified else "PARSED_ONLY",
-        source_body_sha256=raw_body_sha256,
-        source_time_basis="HTTP_RESPONSE_COMPLETED" if completion_verified else "CALLER_SUPPLIED_UNVERIFIED",
-        http_date=http_date if completion_verified else None,
-        http_etag=http_etag if completion_verified else None,
-        http_last_modified=http_last_modified if completion_verified else None,
-        before_declared_start=int(obs < start),
-    )
+    details = {
+        "race_id": race_id, "source_uri": source_uri, "observed_at_utc": obs.isoformat(),
+        "source_schedule_raw": source_schedule_raw, "normalized_start_utc": start.isoformat(),
+        "source_grade": "HASH_ONLY_NO_RAW_BYTES" if completion_verified else "PARSED_ONLY",
+        "source_body_sha256": raw_body_sha256,
+        "source_time_basis": "HTTP_RESPONSE_COMPLETED" if completion_verified else "CALLER_SUPPLIED_UNVERIFIED",
+        "http_date": http_date if completion_verified else None,
+        "http_etag": http_etag if completion_verified else None,
+        "http_last_modified": http_last_modified if completion_verified else None,
+        "before_declared_start": int(obs < start),
+    }
     digest=hashlib.sha256(json.dumps(details,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
     return ScheduleEvent(event_id=digest,**details)
 

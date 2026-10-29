@@ -8,7 +8,7 @@ An unversioned old race row is never treated as a contemporaneous schedule sourc
 from __future__ import annotations
 
 import sqlite3
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from typing import Any
 

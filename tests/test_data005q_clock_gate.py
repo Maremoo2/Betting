@@ -1,9 +1,11 @@
 import sqlite3
 from datetime import UTC, datetime, timedelta
-import pytest
-from hbi.schedule_clock_gate import assess, parse_utc
-from hbi.schedule_provenance import make_event, append_observation
 from pathlib import Path
+
+import pytest
+
+from hbi.schedule_clock_gate import assess, parse_utc
+from hbi.schedule_provenance import append_observation, make_event
 
 ROOT = Path(__file__).resolve().parents[1]
 DDL = ROOT / 'db' / 'migrations' / '0008_schedule_provenance_research.sql'

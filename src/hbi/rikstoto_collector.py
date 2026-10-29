@@ -12,8 +12,8 @@ from .provider_capability import CONTRACT, capability, resolve_field
 from .providers.atg import AtgClient, AtgFetchResult
 from .providers.letrot import LeTrotClient
 from .providers.rikstoto import FetchResult, RikstotoClient, RikstotoRace
-from .storage import SQLiteStore
 from .schedule_provenance import make_event
+from .storage import SQLiteStore
 
 
 @dataclass(frozen=True)

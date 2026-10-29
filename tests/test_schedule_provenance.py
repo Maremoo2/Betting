@@ -1,5 +1,6 @@
 """Research-only QA of additive schedule provenance. All races are synthetic."""
 from __future__ import annotations
+
 import hashlib
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
@@ -9,7 +10,10 @@ from pathlib import Path
 import pytest
 
 from hbi.schedule_provenance import (
-    append_observation, aware_utc, make_event, schedule_research_status,
+    append_observation,
+    aware_utc,
+    make_event,
+    schedule_research_status,
 )
 
 PKG=Path(__file__).resolve().parents[1]
@@ -22,7 +26,7 @@ MIGRATION=PKG/"db/migrations/0008_schedule_provenance_research.sql"
 
 
 def ev(**kw):
-    data=dict(race_id=RACE,source_uri=URL,observed_at=OBS,source_schedule_raw="2026-11-01T12:00:00+01:00",normalized_start=START)
+    data={"race_id":RACE,"source_uri":URL,"observed_at":OBS,"source_schedule_raw":"2026-11-01T12:00:00+01:00","normalized_start":START}
     data.update(kw)
     return make_event(**data)
 
@@ -106,9 +110,8 @@ def test_changed_schedule_keeps_both_versions(db):
 def test_immutability(db,q):
     with sql(db) as c:
         append_observation(c,ev())
-    with pytest.raises(sqlite3.IntegrityError):
-        with sql(db) as c:
-            c.execute(q)
+    with pytest.raises(sqlite3.IntegrityError), sql(db) as c:
+        c.execute(q)
 
 
 @pytest.mark.parametrize("changes,error",[
@@ -158,19 +161,17 @@ def test_hash_change_never_collapses_to_old_event(db):
 def test_tampered_sql_promotion_is_rejected(db):
     with sql(db) as c:
         append_observation(c,ev())
-    with pytest.raises(sqlite3.IntegrityError):
-        with sql(db) as c:
-            c.execute("INSERT INTO race_schedule_observations (event_id,race_id,source_uri,observed_at_utc,source_schedule_raw,normalized_start_utc,source_grade,source_time_basis,before_declared_start,model_eligible) VALUES ('x','r','u','t','s','t','PARSED_ONLY','CALLER_SUPPLIED_UNVERIFIED',1,1)")
+    with pytest.raises(sqlite3.IntegrityError), sql(db) as c:
+        c.execute("INSERT INTO race_schedule_observations (event_id,race_id,source_uri,observed_at_utc,source_schedule_raw,normalized_start_utc,source_grade,source_time_basis,before_declared_start,model_eligible) VALUES ('x','r','u','t','s','t','PARSED_ONLY','CALLER_SUPPLIED_UNVERIFIED',1,1)")
 
 
 def test_rollback_atomic_with_mock_race_table(db):
     with sql(db) as c:
         c.execute("CREATE TABLE races (race_id TEXT PRIMARY KEY, start_time_utc TEXT NOT NULL)")
         c.execute("CREATE TRIGGER fail_all BEFORE INSERT ON races BEGIN SELECT RAISE(ABORT,'SIMULATED_UPSERT_FAILURE'); END")
-    with pytest.raises(sqlite3.IntegrityError):
-        with sql(db) as c:
-            append_observation(c,ev())
-            c.execute("INSERT INTO races VALUES (?,?)",(RACE,START.isoformat()))
+    with pytest.raises(sqlite3.IntegrityError), sql(db) as c:
+        append_observation(c,ev())
+        c.execute("INSERT INTO races VALUES (?,?)",(RACE,START.isoformat()))
     with sql(db) as c:
         assert c.execute("SELECT count(*) FROM race_schedule_observations").fetchone()[0]==0
 
