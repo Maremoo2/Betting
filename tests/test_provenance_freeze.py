@@ -131,3 +131,42 @@ def test_missing_original_market_never_promotes_later_quote(tmp_path):
     assert _record(store, T0 + timedelta(minutes=1)) is None
     assert store.fetch_table("decision_provenance") == []
     assert run_runtime_replay_parity(store)["status"] == "NO_EVIDENCE"
+
+
+def test_cannot_attach_later_odds_to_frozen_market_distribution(tmp_path):
+    """Even exact source timestamps cannot launder conflicting prices."""
+    store = _store(tmp_path)
+    _insert_quotes(store, T0, {"1": 10.0, "2": 1.5})
+    assert _record(store, T0 + timedelta(minutes=10)) is None
+    assert store.fetch_table("decision_provenance") == []
+    assert run_runtime_replay_parity(store)["status"] == "NO_EVIDENCE"
+
+
+def test_partial_original_market_cannot_attach_provenance(tmp_path):
+    store = _store(tmp_path)
+    _insert_quotes(store, T0, {"1": ODDS["1"]})
+    assert _record(store, T0) is None
+    assert store.fetch_table("decision_provenance") == []
+
+
+def test_market_timestamp_after_frozen_decision_is_rejected(tmp_path):
+    store = _store(tmp_path)
+    future = T0 + timedelta(minutes=1)
+    with store.connect() as connection:
+        connection.execute(
+            "UPDATE shadow_decision_runs SET source_market_observed_at_utc=? "
+            "WHERE decision_run_id='frozen-1'",
+            (future.isoformat(),),
+        )
+    _insert_quotes(store, future, ODDS)
+    assert _record(store, future) is None
+    assert store.fetch_table("decision_provenance") == []
+
+
+def test_valid_later_recording_still_uses_original_quotes(tmp_path):
+    store = _store(tmp_path)
+    _insert_quotes(store, T0, ODDS)
+    _insert_quotes(store, T0 + timedelta(minutes=10), {"1": 10.0, "2": 1.5})
+    assert _record(store, T0 + timedelta(minutes=11)) == "frozen-1"
+    assert json.loads(store.fetch_table("decision_provenance")[0]["market_odds_json"]) == ODDS
+    assert run_runtime_replay_parity(store)["status"] == "PASS"
