@@ -4,7 +4,13 @@ from datetime import date
 import fitz
 import pytest
 
-from hbi.extract_program_history import DATE_TOKEN, extract, infer_dates_backward
+from hbi.extract_program_history import (
+    DATE_TOKEN,
+    PILOT_FIELDS,
+    audit_exit_code,
+    extract,
+    infer_dates_backward,
+)
 
 
 def test_cross_year_not_backdated_from_current_year():
@@ -73,3 +79,14 @@ def test_missing_fifth_form_row_rejected():
 def test_runner_not_found_rejected():
     with pytest.raises(ValueError, match='NAME_ANCHOR_AMBIGUOUS'):
         extract(DummyPage(), ['NOT ON PAGE'], 'RIKSTOTO:FAKE_NR_2026-11-01:2', date(2026, 11, 1), 'a' * 64)
+
+
+def test_program_names_keep_unicode_identity_anchors():
+    assert 'SOLØR HANNA' in PILOT_FIELDS['momarken_20261101'][2]
+    assert 'SØYSET NORAH' in PILOT_FIELDS['bjerke_20261031'][2]
+
+
+def test_empty_or_partial_audit_must_fail_ci():
+    assert audit_exit_code({'all_source_pdf_rows_found': False, 'row_count': 0, 'horses_with_five_rows': 0, 'issues': ['ENCODING']}) == 1
+    assert audit_exit_code({'all_source_pdf_rows_found': True, 'row_count': 60, 'horses_with_five_rows': 12, 'issues': []}) == 1
+    assert audit_exit_code({'all_source_pdf_rows_found': True, 'row_count': 120, 'horses_with_five_rows': 24, 'issues': []}) == 0

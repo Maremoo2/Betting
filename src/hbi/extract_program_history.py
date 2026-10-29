@@ -124,16 +124,16 @@ def run(pdf_by_race: dict[str, Path], names_by_race: dict[str, list[str]], out_c
 PILOT_FIELDS: dict[str, tuple[str, str, list[str]]] = {
     'momarken_20261101': (
         'RIKSTOTO:MO_NR_2026-11-01:2', '2026-11-01', [
-            'SOLÃR HANNA', 'STJERNE LIAM', 'BJÃNNUM RAPPEN', 'ROS LYNET',
-            'STJERNE ORLA', 'MJÃLNER JÃRV', 'BYRTING', 'PROPELL', 'TORILAS',
-            'HAUGESTAD LALLA', 'BENONI', 'BJÃRLI LIZZIE',
+            'SOLØR HANNA', 'STJERNE LIAM', 'BJØNNUM RAPPEN', 'ROS LYNET',
+            'STJERNE ORLA', 'MJØLNER JÆRV', 'BYRTING', 'PROPELL', 'TORILAS',
+            'HAUGESTAD LALLA', 'BENONI', 'BJØRLI LIZZIE',
         ]
     ),
     'bjerke_20261031': (
         'RIKSTOTO:BJ_NR_2026-10-31:2', '2026-10-31', [
-            'HVALSTAD IL', 'KALIDA', 'FINSETH VIND', 'SÃYSET NORAH', 'PREKTIG',
+            'HVALSTAD IL', 'KALIDA', 'FINSETH VIND', 'SØYSET NORAH', 'PREKTIG',
             'NELSON HEIDI', 'KOS FRIGGA', 'JERKELD ODINA', 'RY TORA',
-            'BJÃRLIMINDI (S)', 'ÃYGARD STJERNA', 'MYR TÃTTA',
+            'BJØRLIMINDI (S)', 'ØYGARD STJERNA', 'MYR TØTTA',
         ]
     ),
 }
@@ -208,9 +208,22 @@ def verify_and_export_probe(root: Path) -> dict:
     return report
 
 
+def audit_exit_code(report: dict) -> int:
+    """An extraction failure must fail CI, not produce a green empty artifact."""
+    valid = (
+        report.get('all_source_pdf_rows_found') is True
+        and report.get('row_count') == 120
+        and report.get('horses_with_five_rows') == 24
+        and not report.get('issues')
+    )
+    return 0 if valid else 1
+
+
 if __name__ == '__main__':
     import json
     import os
+    import sys
 
     report = verify_and_export_probe(Path(os.getenv('HBI_PROGRAM_PROBE_DIR', 'history-program-probe')))
     print(json.dumps(report, indent=2, ensure_ascii=False))
+    sys.exit(audit_exit_code(report))
