@@ -57,9 +57,13 @@ CORE-001/002 PIT data ─→ CORE-004 feature lineage/training ─→ P1 preregi
 
 `docs/DEV_WORKFLOW.md` krever eksakt PR-HEAD/HQ-review før merge; arbeidslisten gir ikke agenten merge-, scheduler- eller bet-autorisasjon. Originale gamle beslutninger og grunnkilden skal forbli uendret.
 
+## 30.10 – korrigert fysisk løpsnevner (PR #99)
+
+Den første heldagsrapporten ble beskrevet som 169 *fysiske* travløp, men den arkiverte kilden inneholder 15 `X1`-referanser over flere baner og 8 `S5`-referanser med `Solvalla/Bergsåker`. [PR #99](https://github.com/Maremoo2/Betting/pull/99) og original [GitHub-arkivkjøring 41127284420](https://github.com/Maremoo2/Betting/actions/runs/41127284420) skiller **169 database-referanser** fra **146 enkeltbane-kandidater** og **23 uavklarte kombinasjons-/lokasjonsreferanser**. Ingen av 146 er foreløpig individuelt sertifisert som unik fysisk start. De 23 beholdes synlige for kildekobling, ikke fjernet. Tidligere 17 foreløpig kildeklare og 0 PIT sertifiserte gjelder **alle 169 database-referanser**, ikke en godkjent fysisk løpsdekning.
+
 ## 30.10 – neste parallelle DEV-bølge (#94 og #95)
 
-**CORE-003 heldagsdekning [PR #94](https://github.com/Maremoo2/Betting/pull/94)** – [faktisk GitHub archive-E2E 41125229029](https://github.com/Maremoo2/Betting/actions/runs/41125229029), JSON-artifact **13010796270**, SHA-256 `33febe452c4f8275507fd92106d5ef812ffb1bf2782a70bb62045e2b7e418823`, med opprinnelig HBI SQLite SHA-256 `30b3e281db58589200f123ffae007e5826bf9847bafb21a4302fe505c4bac0c0`. **169** distinkte travløp på alle registrerte land/baner 27.–30.10, **167** etter T−4, **2** framtidige, **17** konservativt råkildeklare, **150** blokkert, **16** tidsavvik, **0 PIT-attesterte**. Første versjon Ruff F401 (ubrukt testimport), rettet; full re-run CI må kontrolleres særskilt. Det er **ikke** den samme kohorten som eldre 108-løpsaudit, så 17 mot 15 er ikke dokumentert dekningstrend.
+**CORE-003 heldagsdekning [PR #94](https://github.com/Maremoo2/Betting/pull/94)** – [faktisk GitHub archive-E2E 41125229029](https://github.com/Maremoo2/Betting/actions/runs/41125229029), JSON-artifact **13010796270**, SHA-256 `33febe452c4f8275507fd92106d5ef812ffb1bf2782a70bb62045e2b7e418823`, med opprinnelig HBI SQLite SHA-256 `30b3e281db58589200f123ffae007e5826bf9847bafb21a4302fe505c4bac0c0`. **169** distinkte *arkiverte travløpsreferanser*, ikke verifisert fysiske løp (**146** enkeltbane-kandidater, **23** kombinerte/uavklarte), 27.–30.10, **167** etter T−4, **2** framtidige, **17** konservativt råkildeklare, **150** blokkert, **16** tidsavvik, **0 PIT-attesterte**. Første versjon Ruff F401 (ubrukt testimport), rettet; full re-run CI må kontrolleres særskilt. Det er **ikke** den samme kohorten som eldre 108-løpsaudit, så 17 mot 15 er ikke dokumentert dekningstrend.
 
 | Land / status | Alle | Råkildeklare | Blokkert | Før T−4 |
 | --- | ---: | ---: | ---: | ---: |
@@ -77,7 +81,7 @@ Diagnostiske hovedblokker (kan opptre samtidig): `NO_PRE_CUTOFF_RIKSTOTO_STARTS=
 
 ### Neste aksepterte utviklingsmål
 - [ ] Review/merge #91/#92/#93/#94/#95 med **separat eksakt HEAD-bundet HQ-godkjenning**; ikke agent-merge.
-- [ ] Øk andel tidsriktige originalkilder på hele løpsdager og bevis uforanderlig `source_published_at`, original startliste og scratchrevisjoner; 0 PIT-attestasjoner i faktisk 169-løpsarkiv.
+- [ ] Øk andel tidsriktige originalkilder på hele løpsdager og bevis uforanderlig `source_published_at`, original startliste og scratchrevisjoner; 0 PIT-attestasjoner i faktisk 169-referansers arkiv.
 - [ ] P0 original resultatkode `place=0`/`kmTime=0,0` for Skive #8 må tolkes av offisiell kontrakt før selv et **papir**-tap kan bokføres.
 - [ ] CORE-004 market-free kildefaktorgrunnlag og forhåndsregistrering, deretter **nye** kronologiske OOS-dager. Fremtidig ytelse/profit kan ikke konstrueres fra fortid.
 
