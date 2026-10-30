@@ -28,7 +28,7 @@ def _stamp(value: Any) -> datetime | None:
     if not isinstance(value, str) or not value.strip():
         return None
     try:
-        result = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        result = datetime.fromisoformat(value)
         return result if result.utcoffset() is not None else None
     except ValueError:
         return None
