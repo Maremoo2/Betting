@@ -49,12 +49,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          printf '%s  %s\n' \
-            30b3e281db58589200f123ffae007e5826bf9847bafb21a4302fe505c4bac0c \
-            "$RUNNER_TEMP/p0-source/data/hbi.sqlite" | sha256sum --check --status
-          printf '%s  %s\n' \
-            fb5f9587e2a7e9bc09d04e66f17f5431d4d710aeb3562a2db7b85dac5233bfd6 \
-            "$RUNNER_TEMP/p0-audit/research-v1/v1-system-audit.json" | sha256sum --check --status
+          actual_db="$(sha256sum "$RUNNER_TEMP/p0-source/data/hbi.sqlite" | cut -d' ' -f1)"
+          actual_audit="$(sha256sum "$RUNNER_TEMP/p0-audit/research-v1/v1-system-audit.json" | cut -d' ' -f1)"
+          printf 'source_sqlite_sha256=%s\nsource_audit_sha256=%s\n' "$actual_db" "$actual_audit"
+          test "$actual_db" = "30b3e281db58589200f123ffae007e5826bf9847bafb21a4302fe505c4bac0c0"
+          test "$actual_audit" = "fb5f9587e2a7e9bc09d04e66f17f5431d4d710aeb3562a2db7b85dac5233bfd6"
 
       - name: Execute merged read-only source-replay diagnostic on pinned archive
         shell: bash
