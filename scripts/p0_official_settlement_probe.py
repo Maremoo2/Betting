@@ -38,6 +38,46 @@ def fetch_summary(result):
     }
 
 
+def participant_evidence(complete, raceday, race_number, selected):
+    """Selected public result's scalar contract fields, not the raw body."""
+    result = {
+        "selected_row_count": 0, "place": None, "km_time": None,
+        "odds": None, "scratched": None, "result_status": None,
+        "winner_selection": None, "winner_dividend_status": None,
+        "winner_dividend_odds": None,
+    }
+    rows = complete.get("results") if isinstance(complete, dict) else None
+    if not isinstance(rows, list):
+        return result
+    chosen = [r for r in rows if isinstance(r, dict)
+              and str(r.get("startNumber")) == selected]
+    result["selected_row_count"] = len(chosen)
+    if len(chosen) == 1:
+        row = chosen[0]
+        result.update({
+            "place": row.get("place") if type(row.get("place")) is int else None,
+            "km_time": str(row["kmTime"])[:60]
+            if row.get("kmTime") is not None else None,
+            "odds": row.get("odds") if type(row.get("odds")) in (int, float) else None,
+            "scratched": row.get("scratched") if type(row.get("scratched")) is bool
+            else None,
+            "result_status": str(row["status"])[:60]
+            if row.get("status") is not None else None,
+        })
+    winners = [str(r.get("startNumber")) for r in rows
+               if isinstance(r, dict) and r.get("place") == 1]
+    if len(winners) != 1:
+        return result
+    result["winner_selection"] = winners[0]
+    try:
+        div = raceday["finalOdds"]["winOdds"][str(race_number)][winners[0]]
+        result["winner_dividend_status"] = div.get("payoutStatus")
+        result["winner_dividend_odds"] = div.get("odds")
+    except (KeyError, TypeError, AttributeError):
+        pass
+    return result
+
+
 def probe(*, client, raceday_key, race_number, selected, cached_winner=None):
     if not isinstance(raceday_key, str) or not raceday_key.startswith("S4_NR_"):
         raise ValueError("Only explicit S4_NR_ raceday source investigation allowed")
@@ -62,10 +102,13 @@ def probe(*, client, raceday_key, race_number, selected, cached_winner=None):
         "selections_json": json.dumps([selected]),
         "provider_raceday_key": raceday_key, "race_number": race_number,
     }
+    complete_payload = client.result_object(complete) if complete.success else None
+    day_payload = client.result_object(raceday) if raceday.success else None
+    details = participant_evidence(complete_payload, day_payload, race_number, selected)
     review = assess_winner_settlement(
         ticket=ticket,
-        complete=client.result_object(complete) if complete.success else None,
-        raceday=client.result_object(raceday) if raceday.success else None,
+        complete=complete_payload,
+        raceday=day_payload,
         cached_winner=cached_winner,
         source_attested=official,
     )
@@ -81,6 +124,7 @@ def probe(*, client, raceday_key, race_number, selected, cached_winner=None):
         "structurally_settlement_ready": review["structurally_settlement_ready"],
         "structural_reasons": review["reasons"],
         "winning_result": review["winning_result"],
+        "public_selected_participant_fields": details,
         "bookkeeping_authority": False,
         "p0_status": "BLOCKED_PENDING_INDEPENDENT_ADJUDICATION",
         "real_money_authority": False,
