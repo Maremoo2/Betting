@@ -5,10 +5,12 @@ import importlib.util
 import json
 import math
 import sqlite3
-from datetime import UTC,datetime
+from datetime import UTC
 from pathlib import Path
 
 import pytest
+
+from hbi.legacy_provenance import _exact_active_market
 
 BASE=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('betting_milestone_audit',BASE/'scripts/betting_milestone_audit.py')
@@ -72,8 +74,8 @@ def test_readonly_database_uri_rejects_write(tmp_path):
     p=tmp_path/'db.sqlite'
     with sqlite3.connect(p) as conn: conn.execute('create table x(n integer)')
     before=audit.sha256(p)
-    with audit.db_open(p) as conn:
-        with pytest.raises(sqlite3.OperationalError):conn.execute('insert into x values(1)')
+    with audit.db_open(p) as conn, pytest.raises(sqlite3.OperationalError):
+        conn.execute('insert into x values(1)')
     assert audit.sha256(p)==before
 
 
@@ -85,7 +87,7 @@ def test_real_archive_replay_and_coverage():
         assert len(replay)==5
         assert sum(r['classification']=='SOURCE_RECONSTRUCTED_LEGACY_ATTACHMENT_MISMATCH' for r in replay)==5
         assert sum(bool(r['excluded_unpriced_original_keys']) for r in replay)==3
-        days,rows,examples=audit.audit_card(conn,['2026-10-28','2026-10-29'],audit.DEFAULT_END)
+        days,_rows,examples=audit.audit_card(conn,['2026-10-28','2026-10-29'],audit.DEFAULT_END)
         assert days[0]['physically_distinct_heuristic']==31
         assert days[0]['both_t4']==9
         assert days[1]['both_t4']==8
@@ -102,14 +104,8 @@ def test_real_archive_replay_and_coverage():
 
 
 def _patch_filter():
-    path=BASE/'patches/legacy_provenance_active_sentinel.patch'
-    lines=path.read_text(encoding='utf-8').splitlines()
-    start=next(i for i,x in enumerate(lines) if x.startswith('+def _exact_active_market('))
-    stop=next(i for i,x in enumerate(lines[start+1:],start+1) if x.startswith(' def classify_legacy_replay('))
-    source='from __future__ import annotations\nimport math\nimport sqlite3\n'+\
-        '\n'.join(x[1:] for x in lines[start:stop] if x.startswith('+'))+'\n'
-    scope={};exec(compile(source,str(path),'exec'),scope)
-    return scope['_exact_active_market']
+    """Read the actual integrated helper rather than a local patch file."""
+    return _exact_active_market
 
 
 def test_repo_patch_helper_reconstructs_real_five_snapshots():
