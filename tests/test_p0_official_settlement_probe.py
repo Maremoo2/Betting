@@ -124,3 +124,34 @@ def test_invalid_scope_rejected_before_network(key, number, selection):
         probe_module.probe(client=client, raceday_key=key,
                            race_number=number, selected=selection)
     assert client.calls == []
+
+
+def test_official_place_zero_participant_fields_preserved_without_accounting():
+    client = FakeClient()
+    client.complete.payload["results"][1].update({
+        "kmTime": "1.19,6", "odds": 12.4, "scratched": False, "status": "finished"
+    })
+    result = check(client)
+    selected = result["public_selected_participant_fields"]
+    assert selected["selected_row_count"] == 1
+    assert selected["place"] == 9
+    assert selected["km_time"] == "1.19,6"
+    assert selected["odds"] == 12.4
+    assert selected["scratched"] is False
+    assert selected["winner_selection"] == "5"
+    assert selected["winner_dividend_status"] == "Dividends"
+    assert result["bookkeeping_authority"] is False
+
+
+def test_zero_place_not_relabeled_as_a_loss_or_valid_participation():
+    client = FakeClient()
+    client.complete.payload["results"][1].update({
+        "place": 0, "kmTime": None, "odds": None, "scratched": True
+    })
+    result = check(client)
+    selected = result["public_selected_participant_fields"]
+    assert selected["place"] == 0
+    assert selected["scratched"] is True
+    assert result["structurally_settlement_ready"] is False
+    assert result["bookkeeping_authority"] is False
+    assert "ZERO_FINISH_NOT_PROVEN_DISQUALIFIED_PARTICIPANT" in result["structural_reasons"]
