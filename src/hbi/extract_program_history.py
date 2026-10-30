@@ -87,7 +87,25 @@ def extract(page: fitz.Page, horse_names: list[str], race_id: str, program_date:
             matched = [w for w in relevant if abs(w[1] - date_word[1]) < 1.35]
             columns: dict[str, str] = {}
             for column, (low, high) in COLUMNS.items():
-                parts = sorted((w for w in matched if low <= w[0] < high), key=lambda w: w[0])
+                # DATA-005Y: right-aligned amounts in these two pilot PDFs can
+                # START to the left of their printed column. Their glyph end
+                # (x1) is the supported column boundary for the source pages.
+                # This remains pilot-specific and is NOT a generic DNT parser.
+                if column == 'km_time_raw':
+                    parts = [w for w in matched if 384 <= w[0] < 414 and w[2] < 414]
+                elif column == 'program_pr_column_raw':
+                    parts = [w for w in matched if 410 <= w[0] < 433 and 414 <= w[2] <= 431]
+                elif column == 'program_odds_column_raw':
+                    parts = [w for w in matched if 429 <= w[0] < 448 and w[2] > 431]
+                else:
+                    parts = [w for w in matched if low <= w[0] < high]
+                parts.sort(key=lambda w: w[0])
+                # A missing numeric column or multiple column-glyphs is an
+                # ambiguous source layout, not an invitation to shift values.
+                if column in ('program_pr_column_raw', 'program_odds_column_raw') and len(parts) != 1:
+                    raise ValueError(f'HISTORY_COLUMN_MISALIGNMENT:{horse}:{i}:{column}:{len(parts)}')
+                if column == 'km_time_raw' and not parts:
+                    raise ValueError(f'HISTORY_COLUMN_MISSING:{horse}:{i}:{column}')
                 columns[column] = ' '.join(w[4] for w in parts)
             if columns['date_program_code'] != date_word[4]:
                 raise ValueError(f'HISTORY_COLUMN_MISALIGNMENT:{horse}:{i}')
@@ -148,9 +166,18 @@ def verify_and_export_probe(root: Path) -> dict:
     import json
     from datetime import UTC, datetime
 
+    # The probe directory is a disposable working copy of source artifacts.
+    # Invalidate any prior derived CSV before processing; failures must never
+    # leave a stale or partial file that looks like an accepted 120-row export.
+    output_path = root / 'candidate_form_rows.csv'
+    output_path.unlink(missing_ok=True)
+    tmp_output_path = root / '.candidate_form_rows.csv.tmp'
+    tmp_output_path.unlink(missing_ok=True)
     manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
     records = {r['label']: r for r in manifest['records']}
     issues = []
+    if len(records) != len(manifest['records']):
+        issues.append('DUPLICATE_RECORD_LABEL')
     rows: list[dict] = []
     for label, (race_id, start_date, names) in PILOT_FIELDS.items():
         record = records.get(f'{label}_program_0')
@@ -165,7 +192,15 @@ def verify_and_export_probe(root: Path) -> dict:
         if not body.startswith(b'%PDF-') or hashlib.sha256(body).hexdigest() != record['sha256']:
             issues.append(f'RAW_PDF_SHA256_MISMATCH:{label}')
             continue
-        capture = datetime.fromisoformat(record['completed_at_utc']).astimezone(UTC)
+        try:
+            capture = datetime.fromisoformat(record['completed_at_utc'])
+        except (KeyError, TypeError, ValueError):
+            issues.append(f'INVALID_CAPTURE_TIMESTAMP:{label}')
+            continue
+        if capture.utcoffset() is None:
+            issues.append(f'CAPTURE_TIMEZONE_MISSING:{label}')
+            continue
+        capture = capture.astimezone(UTC)
         # Source dates are published approximate program times, not certified off-times.
         scheduled = datetime.fromisoformat(
             '2026-11-01T18:15:00+00:00' if label.startswith('momarken')
@@ -185,11 +220,17 @@ def verify_and_export_probe(root: Path) -> dict:
             rows.extend(extracted)
         except (ValueError, RuntimeError) as exc:
             issues.append(f'PDF_STRUCTURE_MISMATCH:{label}:{exc}')
-    if rows:
-        with (root / 'candidate_form_rows.csv').open('w', encoding='utf-8-sig', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=list(rows[0]))
-            writer.writeheader()
-            writer.writerows(rows)
+    if len(rows) == 120 and not issues:
+        # Publish the completed candidate atomically. On interrupted writes,
+        # leave neither a partial CSV nor an abandoned temporary export.
+        try:
+            with tmp_output_path.open('w', encoding='utf-8-sig', newline='') as f:
+                writer = csv.DictWriter(f, fieldnames=list(rows[0]))
+                writer.writeheader()
+                writer.writerows(rows)
+            tmp_output_path.replace(output_path)
+        finally:
+            tmp_output_path.unlink(missing_ok=True)
     report = {
         'schema': 'DATA005X_FIVE_FORM_ROWS_V1',
         'row_count': len(rows), 'horses_with_five_rows': len(rows) // 5,
