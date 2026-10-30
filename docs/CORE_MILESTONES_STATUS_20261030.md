@@ -1,37 +1,35 @@
-# Betting – milepæler og integrasjonsstatus per 30. oktober 2026
+# Betting – oppdatert milepæloversikt, 30. oktober 2026
 
-**Omfang:** Dokumentert status basert på `Maremoo2/Betting` main `9c15934999d67b7c6b2467df30d39d7c491a10d7`, de opprinnelige CORE-001–004 PR-ene, isolert arkiv-/testpakke 30.10 og eksisterende V1-audit. Denne PR-en er **kun forsknings-/diagnostikkode** med foreslått milepælstatus. Ingen autorisasjon til merge, produksjon, modellpromotering eller betting.
+> **Kildehierarki:** GitHub `main` ved merge `e328c196ea236053536a9134e0b8dc89e26f0924` ([PR #80](https://github.com/Maremoo2/Betting/pull/80)), faktisk HBI V1 systemaudit [41107698547](https://github.com/Maremoo2/Betting/actions/runs/41107698547), Watcher-state [41105795195](https://github.com/Maremoo2/Betting/actions/runs/41105795195) og isolert CORE-003 Shadow-pilot [41106155052](https://github.com/Maremoo2/Betting/actions/runs/41106155052). Status er oppgitt per kohort og dato, aldri som en udokumentert generell forbedring.
 
-## Statusnøkler
-- **MERGET:** På main, men ikke automatisk ferdig/validert.
-- **PR / REVIEW:** I den foreliggende integrasjonsgrenen; ingen main-adopsjon.
-- **SHADOW:** Ekte isolert kilde-/research-jobb, ikke V3.3 BET-godkjenning.
-- **BLOKKERT:** Mangler primærbevis/kontrakt eller har P0 FAIL.
-- **VALIDERT:** Krever datert kildegrunnlag og korrekt prospektiv test; ingen slik sluttstatus er gitt her.
+**Definisjon:** `MERGET` = kode finnes på main. `SHADOW` = faktisk isolert kilde-/forskningskjøring. `REVIEW` = foreslått ny kode/diagnostikk, ikke merget. `BLOCKED` = uoppfylt hardport. `VALIDATED` = krever independently attesterte PIT-data og urørt prospektiv testing; ingen slik status her.
 
-| Milepæl | Status på main før denne PR-en | Dette GitHub-integrasjonsforslaget | Neste målbare port |
-|---|---|---|---|
-| CORE-001 – ett helt løp | MERGET (#72), baseline | Strengere as-of/fullfelt-historikk- og markedsvurdering på arkiv | Autentisk PIT-startliste/identitet for hver aktiv hest |
-| CORE-002 – hele dagen | MERGET (#72/#73), historisk 9/31 (28.10) | Heldags- og landvis kilde-audit; tydelig nevner og blokkeringer | Økt sammenlignbar prospektiv FULLY_ASSESSED-andel, uten retrospektiv lekkasje |
-| CORE-003 – prefetch | MERGET (#75–#77), isolert SHADOW | Skrivebeskyttet `core_pit_roster_verification`, tie-/klokkekonflikt- og identitetsgates | Immutable rosterhistorikk, før-T−4 bevis, landvis auditerte hele løpsdager |
-| CORE-004 – flerfaktor | MERGET (#78) forskningskandidat | Datakvalitets- og prospektiv opptaksgate; ingen nye vekter | Verifisert siste-fem/form, klasse, kusk, startmetode; tren kun på PIT-gyldig kronologi |
-| P0-REPLAY-001 | Åpen FAIL (fem legacy mismatch); #67 stopper nye falske vedheftinger | Minimal **diagnostikkrettelse** for ikke-prisede off-field -0.02-rader + negative tester | Reell uavhengig adjudikasjon, ingen omskrivning av frosset proveniens; V1 FAIL står |
-| P0-SETTLEMENT-001 | Åpen FAIL – DK 14.10 løp 6, valgt #8, vinner #5 | `settlement_source_review` er dokumenterende, skriver ikke kvittering | Maskinlesbare komplette offisielle sluttresultater + vinnerdividende før oppgjør |
-| P1 – prospektiv kalibrering | Ikke validert | Forskningsgate og protokollutkast; historisk land-/dag-baseline | Registrer eksperiment før første løp, untouched OOS med marked alene og Champion |
-| Operativ betting | Ikke kvalifisert | **Ingen endring** | Separat HQ/betting-authority gate etter P0 og PIT/OOS, aldri auto-BET |
+| Milepæl | Dokumentert utført | Status 30.10 | Neste akseptansekriterium |
+| --- | --- | --- | --- |
+| **CORE-001 ett løp** | Fullfelt-baseline med separat markedsmodell i [#72](https://github.com/Maremoo2/Betting/pull/72), strengere kilde-/PIT-gates merget i #80 | **MERGET, RESEARCH** | Ett *uavhengig PIT-attestert* fysisk løp med full aktiv identitet, tidsriktig historie og WIN-marked |
+| **CORE-002 hel løpsdag** | Dagsmotor og full blokkeringstrakt i #72/#73, ekstra kildeaudit i #80 | **MERGET, RESEARCH** | Samme denominator/kohort under prospektiv full-dag T−4; øk faktisk dekning fra historiske 9/31 (28.10) |
+| **CORE-003 kildeinnhenting** | #75–#77 + isolert Shadow-pilot; PIT/roster-kontroll i #80 | **SHADOW-OPERATIV, IKKE PIT-VALIDERT** | Versjonert kildepublisering, immutable starter-/scratchrevisjoner, faktisk fullfelt-T−4 per land og dato, [#83](https://github.com/Maremoo2/Betting/issues/83) |
+| **CORE-004 flerfaktormodell** | Beskyttet, *ufittet* forskningskandidat #78 og forskningsopptaksport #80 | **MERGET, IKKE TRENT/VALIDERT** | PIT-verifisert nyere form/kusk/klasse/distanse og pre-registrerte vekter, deretter kronologisk out-of-sample |
+| **P0-REPLAY-001** | Rotårsak fra 5 historiske vedheftinger dokumentert 27.10; #80 forbedret `-0.02`-håndtering i read-only diagnose | **HBI V1 FAIL – ÅPEN [#81](https://github.com/Maremoo2/Betting/issues/81)** | Stabilt hash-/tidsstempelbevis i separat PR; *uavhengig adjudikasjon* og eksplisitt HQ-klarering, uten omskrivning eller waiver |
+| **P0-SETTLEMENT-001** | Skive 14.10 papirvalg #8/vinner #5 isolert; #80 har kun kilde-review | **HBI V1 FAIL – ÅPEN [#82](https://github.com/Maremoo2/Betting/issues/82)** | Originalt `isComplete=true`, bekreftet deltakelse/plassering, vinnerdividende, deretter attestert isolert replay; ingen antatt oppgjør |
+| **P1 kalibrering** | Retrospektiv markedsbenchmark, research-only opptaksport og *utkast* til prospektiv protokoll i #80 | **IKKE VALIDERT** | Preregistrert, låst før framtidige løp, urørt kronologisk OOS, kalibrering/edge/CLV målt separat |
+| **Operativ betting** | Ingen real-money execution eller auto-promotion autorisert | **IKKE KVALIFISERT** | Alle P0/P1-porter + separat, eksplisitt HQ/betting-godkjenning |
 
-## Reproduserbare arkivfunn (ikke promotering)
+## Faktisk progresjon og målt evidens
 
-- Retrospektiv, deduplisert kohort: **108 travløp i fem land**, hvorav **15** tilfredsstilte en avgrenset råkildekontroll ved konservativ T−4 og **0** var fullt PIT-attestert. Fordeling: SE 59/15, NO 16/0, DK 9/0, FR 20/0, DE 4/0 (totalt/kildeklart). Manglende og overlappende blokkeringsårsaker må ikke summeres til distinkte løp.
-- Eldre dagsbaseline for 28.10: 9/31 ferdig analysert med den opprinnelige CORE-002-forskningsmotoren; denne må ikke sammenlignes ujustert med ny 108-løpskohort.
-- **Fem** historiske replay-tilfeller kunne rekonstrueres fra kildeodds ved frosset tidspunkt i isolert state; **tre** inneholdt ekstra ikke-prisede `-0.02`-rader som ga false negatives i gamle `legacy_provenance`. V1 runtime replay skal **ikke** retolkes som PASS.
-- Historisk modellbenchmark: **297** retrospektive sammenlignbare løp, gjennomsnittlig `combined – market` log-loss **+0,0503** (lavere er bedre), median **−0,0165**. 226 SE, 45 DK, 25 NO, 1 FR. Ingen preregistrert OOS-konklusjon.
-- Datapåstander er **ikke** bevis for kildepublisering eller faktisk løpsstart. Prospektiv-porten gir aldri automatisk trenings-/promoteringstillatelse.
+- **PR #80 er merget til main**; GitHub PR-CI var `1130 passed, 47 skipped`. `skipped` er ikke `passed`.
+- **Etter merge:** faktisk gjenopprettet [HBI V1 System Audit 41107698547](https://github.com/Maremoo2/Betting/actions/runs/41107698547) ble **FAIL**: temporal PASS; provider WARN (11 fetchfeil); replay **304 sjekket / 425 skipped / 5 mismatches**; settlement **737 sjekket / 1 uoppgjort**.
+- **Uavhengig originalkilderekonstruksjon:** latest state-artifact **13001685408**, SQLite SHA-256 `4f671ade4510247544c3b6a95e66f6a5c24681814fb4790adf98b847bf1b660e`: alle fem opprinnelige markedsodds matchende frossen p, alle fem vedheftede odds fra senere markeds-kohort. Det er ikke et PASS i V1; se [P0-kilderapport](P0_REPLAY_SOURCE_EVIDENCE_20261030.md).
+- **Separat arkivdekning 27.–30. oktober:** 108 distinkte travløp, 15 konservativt råkildeklare (15 SE), **0 fullt PIT-attesterte**. Ikke sammenlign direkte med CORE-002 9/31 fra 28. oktober.
+- **Senere isolert CORE-003-pilot:** 10 framtidige race-refs i fast kohort, ett svensk løp med 12/12 verifisert historikk og komplett WIN-kilde; et fransk 17-hesters løp blokkeres av `LETROT_FULL_FIELD_CORROBORATION_FAILED`. `roster_pit_verified=false`, ingen BET.
+- **Tidligere retrospektiv P1-deskriptiv analyse:** 297 løp, markedsbaseline bedre enn kombinert modell i gjennomsnitt (delta combined-minus-market log-loss +0,0503), ikke en urørt framtidig modelltest.
 
-## CI, review og leveransegrenser
+## Prioritert arbeid / stopplinje
 
-**I lokal utdypingspakke:** `PYTHONPATH=src python -m pytest -q tests`: **105 passed** på isolert testpakke. Det er ikke hele repositoryets testsett. CI for denne PR-en skal vise ekte `ruff check .`, `pytest -q` og protected-strategy-check før en eventuell HQ merge-godkjenning. Arkivbasert E2E må kjøres separat på uendret SHA-256-verifisert state; ingen rå HBI SQLite eller private payloads committes.
+1. **P0-REPLAY-001:** dokumenter eksakte, kildehash-bundne mismatch og får kontrollert append-only adjudikasjon. Ikke senk toleranse, skjul gamle misforhold eller merk V1 PASS uten bevis.
+2. **P0-SETTLEMENT-001:** hent offisielt resultat og dividende i autorisert kilde-/testmiljø. Ikke bokfør -25 NOK uten primærbevis og separat godkjennelse.
+3. **CORE-003:** forbedre *faktisk* immutable PIT-kildekobling og fullfeltforsøk på flere racingdager/land; bevar denominator.
+4. **CORE-004/P1:** bare etter PIT-klar data – forhåndslåst hypotesetest og uavhengig markedsbaseline; ingen modellpromotering ved grønn kode-CI alene.
+5. **Operativ betting:** OFF. Ingen autospill, tidsplan-/stakingendring eller Sheet-write.
 
-**Ferdiggjøringsrekkefølge:** (1) CI og code review på integrasjonsgren; (2) append-only replay-adjudikasjon og offisielt dansk resultatbevis; (3) forbedre source-PIT ved T−4 i hele løpsdager og land; (4) preregistrere P1-protokoll, trene CORE-004 etter PIT-klar data; (5) evaluere uten etterpåklokskap og holde real-money OFF.
-
-**Rollback:** Steng PR uten merge eller revert forsknings-/diagnostikkcommit; ingen historiske eller operasjonelle data er skrevet.
+**Ny forsknings-PR om replay-evidens er kun en REVIEW-leveranse.** Ingen strategi-, frozen history-, audit-waiver- eller produksjonsrettigheter følger av denne roadmapen.

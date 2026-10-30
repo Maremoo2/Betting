@@ -10,6 +10,7 @@ import math
 import sqlite3
 from contextlib import closing
 from datetime import UTC, datetime
+from hashlib import sha256
 from pathlib import Path
 from urllib.parse import quote
 
@@ -98,8 +99,36 @@ def _exact_active_market(entries: list[sqlite3.Row], active: set[str]) -> tuple[
     return (result, sorted(excluded)) if set(result) == active else ({}, [])
 
 
+
+def _evidence_hash(value: object) -> str:
+    """Stable hash for the interpreted model/source evidence, not an external attestation."""
+    payload = json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    return sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _database_hash(path: Path) -> str:
+    digest = sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(4 * 1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _provenance_is_later(source_time: object, recorded_at: object) -> bool:
+    """Do not classify late attachment from naive, malformed or nonlater timestamps."""
+    try:
+        source = datetime.fromisoformat(str(source_time))
+        recorded = datetime.fromisoformat(str(recorded_at))
+    except (ValueError, TypeError):
+        return False
+    if source.utcoffset() is None or recorded.utcoffset() is None:
+        return False
+    return recorded > source
+
+
 def classify_legacy_replay(db_path: Path) -> dict[str, object]:
     """Reconstruct source evidence without correcting or reclassifying old rows."""
+    database_sha256 = _database_hash(db_path)
     path = "file:" + quote(str(db_path.resolve())) + "?mode=ro&immutable=1"
     with closing(sqlite3.connect(path, uri=True)) as connection:
         connection.row_factory = sqlite3.Row
@@ -144,27 +173,62 @@ def classify_legacy_replay(db_path: Path) -> dict[str, object]:
             source_replay_pass = (
                 source_complete and _replay_matches(row, source_odds)
             )
-            reconstructed += int(source_replay_pass)
-            unresolved += int(not source_replay_pass)
+            proven_later = _provenance_is_later(
+                row["source_market_observed_at_utc"],
+                row["provenance_recorded_at_utc"],
+            )
+            verified_legacy = bool(source_replay_pass and proven_later)
+            reconstructed += int(verified_legacy)
+            unresolved += int(not verified_legacy)
+            frozen_hash = _evidence_hash({
+                "decision_run_id": row["decision_run_id"],
+                "race_id": row["race_id"],
+                "product": row["product"],
+                "source_time": row["source_market_observed_at_utc"],
+                "fundamental": _loads_map(row["fundamental_probabilities_json"]),
+                "combined": _loads_map(row["combined_probabilities_json"]),
+                "conflict_score": str(row["model_market_conflict_score"]),
+            })
+            source_hash = _evidence_hash({
+                "race_id": row["race_id"], "product": row["product"],
+                "observed_at": row["source_market_observed_at_utc"],
+                "active_market_odds": source_odds,
+                "excluded_unpriced": excluded_unpriced,
+            }) if source_complete else None
+            attached_hash = _evidence_hash({
+                "recorded_at": row["provenance_recorded_at_utc"],
+                "market_odds": saved_odds,
+                "combination_policy_raw": row["combination_policy_json"],
+                "decision_policy_raw": row["decision_policy_json"],
+            })
             failures.append({
                 "decision_run_id": row["decision_run_id"],
                 "race_id": row["race_id"],
                 "classification": (
                     "LEGACY_LATE_PROVENANCE_SOURCE_RECONSTRUCTED"
-                    if source_replay_pass else "UNRECONCILED"
+                    if verified_legacy else "UNRECONCILED"
                 ),
                 "decision_source_timestamp": row["source_market_observed_at_utc"],
                 "provenance_recorded_at": row["provenance_recorded_at_utc"],
                 "original_source_selection_count": len(source_odds),
                 "saved_provenance_selection_count": len(saved_odds),
                 "source_field_complete": source_complete,
+                "original_source_replays_frozen": bool(source_replay_pass),
+                "provenance_timestamp_strictly_later": proven_later,
+                "frozen_inputs_sha256": frozen_hash,
+                "exact_source_market_sha256": source_hash,
+                "attached_provenance_sha256": attached_hash,
                 "excluded_unpriced_nonactive_selections": excluded_unpriced,
                 "original_source_differs_from_saved_provenance": (
                     source_odds != saved_odds
                 ),
             })
+    if _database_hash(db_path) != database_sha256:
+        raise RuntimeError("Source database changed during read-only forensic inspection")
     return {
         "schema_version": "HBI_LEGACY_PROVENANCE_DIAGNOSTIC_V1",
+        "source_database_sha256": database_sha256,
+        "source_database_unchanged": True,
         "generated_at_utc": datetime.now(UTC).isoformat(),
         "status": "DIAGNOSTIC_ONLY_NOT_PRODUCTION_CLEARANCE",
         "read_only": True,
