@@ -8,11 +8,11 @@ import json
 import sqlite3
 
 import pytest
-from test_pit_roster_verification import R, T, fixture_db, run
+from test_pit_roster_verification import R, fixture_db, run
 from test_prospective_eval_gate import row
 
 from hbi.core_pit_roster_verification import audit_file
-from hbi.prospective_eval_gate import validate_cohort, validate_one
+from hbi.prospective_eval_gate import validate_cohort
 
 
 def _duplicate_payload(path, provider, category, *, mutate=False):
