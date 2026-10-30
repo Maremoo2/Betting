@@ -4,6 +4,9 @@
 
 Dette er én samlet oversikt over oppnådd **kodeleveranse** versus faktisk **funksjonell akseptanse**. En merget PR, grønn GitHub Actions-kjøring eller simulatorresultat gir aldri i seg selv produsert PIT-bevis, kalibrert modelledge, gyldig oppgjør eller BET-mandat.
 
+> **Oppdatering 30.10, senere kildekontroll:** [PR #92](https://github.com/Maremoo2/Betting/pull/92) har full CI PASS (**1167 pass / 47 skip**) og offisielt start-/strykningsbevis [run 41123773696](https://github.com/Maremoo2/Betting/actions/runs/41123773696). Alle fire Rikstoto GETs er HTTP 200; #8 finnes én gang blant 12 startlisterader, `isScratched=false`, og er **ikke på strykningslisten**. Resultatet forblir `place=0`/`kmTime="0,0"`; **start i selve løpet og gyldig tap er fortsatt ikke sikkert attestert**, ingen -25 NOK bokføring. [PR #93](https://github.com/Maremoo2/Betting/pull/93) stopper tilsvarende *forskningsmodell*-tidslekkasje i CORE-004; [pinned E2E 41124166985](https://github.com/Maremoo2/Betting/actions/runs/41124166985) PASS, mens ekstern Provider Live Smoke rapporterer selvstendig kildeblokkering. **PR #91/#92/#93 ikke merget på tidspunktet for denne oppdateringen.**
+
+
 ## Oversikt
 
 | ID | Arbeidsstrøm | Kode integrert på main | Virkelig testet | Funksjonell milepæl | Neste obligatoriske akseptanse |
