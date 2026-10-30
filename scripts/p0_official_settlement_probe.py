@@ -78,7 +78,58 @@ def participant_evidence(complete, raceday, race_number, selected):
     return result
 
 
-def probe(*, client, raceday_key, race_number, selected, cached_winner=None):
+def original_start_and_scratch_evidence(client, day_key, race_no, selection):
+    """Only explicit per-race starts/scratches, not a guess from place=0."""
+    starts = client.starts(day_key)
+    scratches = client.scratched(day_key)
+    start_meta = fetch_summary(starts)
+    scratch_meta = fetch_summary(scratches)
+    start_items = None
+    scratch_items = None
+    if starts.success:
+        payload = client.result_object(starts)
+        if isinstance(payload, dict):
+            start_items = payload.get(str(race_no))
+    if scratches.success:
+        payload = client.result_object(scratches)
+        if isinstance(payload, dict):
+            scratch_items = payload.get(str(race_no))
+    found = []
+    if isinstance(start_items, list):
+        found = [r for r in start_items if isinstance(r, dict)
+                 and str(r.get("startNumber")) == selection]
+    scratch_markers = []
+    all_scratch_rows_recognized = isinstance(scratch_items, list)
+    if isinstance(scratch_items, list):
+        for entry in scratch_items:
+            if isinstance(entry, dict) and entry.get("startNumber") is not None:
+                scratch_markers.append(str(entry["startNumber"]))
+            elif type(entry) is int:
+                scratch_markers.append(str(entry))
+            else:
+                all_scratch_rows_recognized = False
+    explicit = (
+        found[0].get("isScratched")
+        if len(found) == 1 and type(found[0].get("isScratched")) is bool else None
+    )
+    return {
+        "starts_get": start_meta, "scratches_get": scratch_meta,
+        "selected_in_startlist_rows": len(found),
+        "selected_is_scratched_in_startlist": explicit,
+        "scratched_list_shape_recognized": all_scratch_rows_recognized,
+        "selected_on_scratched_list": (
+            selection in scratch_markers if all_scratch_rows_recognized else None
+        ),
+        "race_startlist_row_count": (
+            len(start_items) if isinstance(start_items, list) else None
+        ),
+        "start_participation_certified": False,
+        "bookkeeping_authority": False,
+    }
+
+
+def probe(*, client, raceday_key, race_number, selected, cached_winner=None,
+          corroborate_starts=False):
     if not isinstance(raceday_key, str) or not raceday_key.startswith("S4_NR_"):
         raise ValueError("Only explicit S4_NR_ raceday source investigation allowed")
     if type(race_number) is not int or race_number < 1:
@@ -112,6 +163,11 @@ def probe(*, client, raceday_key, race_number, selected, cached_winner=None):
         cached_winner=cached_winner,
         source_attested=official,
     )
+    start_corroboration = (
+        original_start_and_scratch_evidence(
+            client, raceday_key, race_number, selected
+        ) if corroborate_starts else None
+    )
     return {
         "schema": "HBI_OFFICIAL_RESULT_READONLY_PROBE_V1",
         "scope": "ONE_PAPER_RACE_SOURCE_EVIDENCE_NO_SETTLEMENT",
@@ -125,6 +181,7 @@ def probe(*, client, raceday_key, race_number, selected, cached_winner=None):
         "structural_reasons": review["reasons"],
         "winning_result": review["winning_result"],
         "public_selected_participant_fields": details,
+        "official_start_and_scratch_corroboration": start_corroboration,
         "bookkeeping_authority": False,
         "p0_status": "BLOCKED_PENDING_INDEPENDENT_ADJUDICATION",
         "real_money_authority": False,
@@ -137,6 +194,8 @@ def main():
     parser.add_argument("--race-number", type=int, required=True)
     parser.add_argument("--selection", required=True)
     parser.add_argument("--cached-winner")
+    parser.add_argument("--probe-start-status", action="store_true",
+                        help="Also perform two GETs for official starts/scratches")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument(
         "--execute-public-get", action="store_true",
@@ -153,6 +212,7 @@ def main():
         race_number=args.race_number,
         selected=args.selection,
         cached_winner=args.cached_winner,
+        corroborate_starts=args.probe_start_status,
     )
     args.output.write_text(
         json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
