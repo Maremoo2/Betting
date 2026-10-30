@@ -274,6 +274,11 @@ def main() -> None:
     parser.add_argument("--audit-json", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
+    if args.output is not None and args.output.resolve() in {
+        args.db.resolve(),
+        *( [args.audit_json.resolve()] if args.audit_json is not None else [] ),
+    }:
+        parser.error("Output must not overwrite input database or source audit")
     result = inspect(args.db, args.audit_json)
     payload = json.dumps(result, indent=2, ensure_ascii=False) + "\n"
     if args.output is not None:
