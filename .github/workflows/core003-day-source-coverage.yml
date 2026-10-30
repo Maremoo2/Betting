@@ -1,0 +1,79 @@
+name: CORE-003 Full Racing Day PIT Coverage (Read Only)
+
+on:
+  pull_request:
+    paths:
+      - "scripts/core003_day_coverage_audit.py"
+      - "tests/test_core003_day_coverage_audit.py"
+      - ".github/workflows/core003-day-source-coverage.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  pinned-whole-day-coverage:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install research source-verifier
+        run: pip install -e .
+      - name: Download original immutable Watcher archive
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run download 41111189754 --repo "$GITHUB_REPOSITORY" \
+            --name hbi-state --dir "$RUNNER_TEMP/core003-archive"
+          db="$RUNNER_TEMP/core003-archive/data/hbi.sqlite"
+          test -s "$db"
+          actual="$(sha256sum "$db" | cut -d' ' -f1)"
+          test "$actual" = "30b3e281db58589200f123ffae007e5826bf9847bafb21a4302fe505c4bac0c0"
+      - name: Audit EVERY physical trot race 27–30 October, not a selection of winners
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/core003_day_coverage_audit.py \
+            --db "$RUNNER_TEMP/core003-archive/data/hbi.sqlite" \
+            --from 2026-10-27 --to 2026-10-30 \
+            --asof 2026-10-30T20:30:00+00:00 \
+            --output core003-whole-day-coverage.json
+      - name: Fail closed on omitted races or false PIT certification
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path("core003-whole-day-coverage.json").read_text())
+          total=x["summary"]["races_total"]
+          assert x["source_db_sha256"]=="30b3e281db58589200f123ffae007e5826bf9847bafb21a4302fe505c4bac0c0"
+          assert x["source_db_unchanged"] is True
+          assert total>=100, "Unexplained collapse in full racing-day denominator"
+          assert total==len(x["races"])
+          assert total==sum(v["races_total"] for v in x["country_days"].values())
+          assert total==sum(v["races_total"] for v in x["track_days"].values())
+          assert x["summary"]["races_t4_elapsed"]+x["summary"]["races_future_not_at_t4"]==total
+          assert x["summary"]["pit_certified"]==0
+          assert all(r["pit_certified"] is False for r in x["races"])
+          assert len({r["race_id"] for r in x["races"]})==total
+          assert x["model_promotion_authority"] is False
+          assert x["betting_authority"] is False
+          print(json.dumps(x["summary"],sort_keys=True))
+          PY
+          sha256sum core003-whole-day-coverage.json
+      - name: Upload derived country/track evidence; never raw archived database
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core003-whole-day-coverage-${{ github.run_id }}
+          path: core003-whole-day-coverage.json
+          if-no-files-found: warn
+          retention-days: 30
