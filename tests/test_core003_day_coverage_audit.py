@@ -103,3 +103,32 @@ def test_source_clock_conflict_is_visible_and_not_pit_certificate(tmp_path):
     assert report["summary"]["raw_input_ready"] == 0
     assert report["summary"]["pit_certified"] == 0
     assert report["races"][0]["clock_disagreement_seconds"] == 180
+
+
+def test_cross_track_x1_race_is_retained_but_not_claimed_physical(tmp_path):
+    path = fixture_db(tmp_path)
+    with sqlite3.connect(path) as c:
+        c.execute(
+            "INSERT INTO races VALUES (?,?,?,?,?,?,?)",
+            ("RIKSTOTO:X1_NR_2026-10-30:1", "2026-10-30", None,
+             "Jarlsberg/Romme", 1, "2026-10-30T15:00:00+00:00", "trot"),
+        )
+    r = run(path)
+    assert r["summary"]["races_total"] == 2
+    assert r["summary"]["single_track_candidates"] == 1
+    assert r["summary"]["unresolved_composite_or_unlocated_refs"] == 1
+    assert r["single_track_is_physical_race_proven"] is False
+    assert r["unresolved_references_retained_in_denominator"] is True
+    bad = next(x for x in r["races"] if x["race_id"].startswith("RIKSTOTO:X1_"))
+    assert bad["race_identity_kind"] == "UNRESOLVED_COMPOSITE_OR_UNLOCATED"
+    assert bad["terminal_status"] == "BLOCKED"
+    assert sum(v["races_total"] for v in r["country_days"].values()) == 2
+
+
+def test_composite_track_not_mislabeled_single_track_when_country_present():
+    assert audit.identity_kind("RIKSTOTO:S3_NR_2026-10-30:4", "SE",
+                               "Romme/Axevalla") == "UNRESOLVED_COMPOSITE_OR_UNLOCATED"
+    assert audit.identity_kind("RIKSTOTO:S3_NR_2026-10-30:4", "SE",
+                               "Romme") == "SINGLE_TRACK_CANDIDATE"
+    assert audit.identity_kind("RIKSTOTO:X1_NR_2026-10-30:4", "SE",
+                               "Romme") == "UNRESOLVED_COMPOSITE_OR_UNLOCATED"
