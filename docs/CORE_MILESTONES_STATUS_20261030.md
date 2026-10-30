@@ -1,5 +1,8 @@
 # Betting – oppdatert milepæloversikt, 30. oktober 2026
 
+> **NY HOVEDOVERSIKT 30.10.2026:** [ROADMAP_MASTER_EXECUTION_20261030.md](ROADMAP_MASTER_EXECUTION_20261030.md) viser oppdatert kode-/kildefremdrift, konkrete akseptanser, P0 offisielt oppgjørsbevis, CORE-003 falsk T−4-positiv og åpne GitHub-spor. Eldre tekst nedenfor beholdes som historisk progresjonsgrunnlag; dagens status står i hovedoversikten.
+
+
 > **Kildehierarki:** GitHub `main` ved merge `e328c196ea236053536a9134e0b8dc89e26f0924` ([PR #80](https://github.com/Maremoo2/Betting/pull/80)), faktisk HBI V1 systemaudit [41107698547](https://github.com/Maremoo2/Betting/actions/runs/41107698547), Watcher-state [41105795195](https://github.com/Maremoo2/Betting/actions/runs/41105795195) og isolert CORE-003 Shadow-pilot [41106155052](https://github.com/Maremoo2/Betting/actions/runs/41106155052). Status er oppgitt per kohort og dato, aldri som en udokumentert generell forbedring.
 
 **Definisjon:** `MERGET` = kode finnes på main. `SHADOW` = faktisk isolert kilde-/forskningskjøring. `REVIEW` = foreslått ny kode/diagnostikk, ikke merget. `BLOCKED` = uoppfylt hardport. `VALIDATED` = krever independently attesterte PIT-data og urørt prospektiv testing; ingen slik status her.
