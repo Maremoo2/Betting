@@ -16,6 +16,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from .core_shadow_pilot import _atg_history_source_diagnostic
 from .race_core_review import _rows, _utc, historical_win_prior
 
 MODEL_ID = "CORE_004_EXPLORATORY_MULTIFACTOR_V0_NOT_FITTED"
@@ -165,6 +166,21 @@ def analyze_multifactor(
     blocks = []
     if cutoff >= start:
         blocks.append("NOT_BEFORE_RECORDED_START")
+    # Research-only safety: mutable canonical start may be later than the
+    # start already documented by a retained independent ATG source.
+    # An earlier source clock constrains T-4 even if no real off-time is proven.
+    source = _atg_history_source_diagnostic(
+        conn, race_id=race_id,
+        cutoff=min(cutoff, start - timedelta(minutes=4)),
+    )
+    earlier = (
+        source.get("earliest_retained_source_start_utc") if source else None
+    )
+    source_start = _utc(earlier).astimezone(UTC) if earlier else None
+    if source_start is not None and cutoff > source_start - timedelta(minutes=4):
+        blocks.append("ASOF_AFTER_EARLIEST_SOURCE_T4")
+    if source and source.get("source_clock_invalid"):
+        blocks.append("INVALID_ARCHIVED_SOURCE_CLOCK")
     roster = _rows(conn, "SELECT selection_id,horse_name,post_position,driver_or_jockey,trainer,scratched FROM runners WHERE race_id=?", (race_id,))
     cohort, observed_at, time_issues = _latest_asof_fundamental_cohort(conn, race_id, cutoff)
     features, problems = _field_features(cohort, roster)
@@ -241,6 +257,12 @@ def analyze_multifactor(
         "authority":"RESEARCH_ONLY_NO_EV_NO_WATCH_NO_BET",
         "race_id":race_id,"track":race.get("track"),"race_no":race.get("race_no"),
         "race_start_utc":start.isoformat(), "decision_as_of_utc":cutoff.isoformat(),
+        "earliest_archived_source_start_utc": (
+            source_start.isoformat() if source_start else None
+        ),
+        "source_start_clock_conflict_seconds": (
+            abs((start-source_start).total_seconds()) if source_start else None
+        ),
         "source_cohort_observed_utc":observed_at,
         "weights_unfitted_illustrative":asdict(weights),
         "scored_factors":SCORED_FACTORS,"unavailable_or_unscored_factors":NOT_SCORED,
