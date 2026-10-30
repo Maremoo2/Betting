@@ -12,7 +12,7 @@ import json
 import math
 import random
 import sqlite3
-from collections import Counter, defaultdict
+from collections import defaultdict
 from pathlib import Path
 from statistics import fmean
 from urllib.parse import quote
@@ -90,7 +90,7 @@ def evaluate(csv_path, db_path):
         'by_decision_status':{k:_summary(v) for k,v in sorted(by_status.items())},
         'excluding_five_legacy_races':_summary(without_legacy),
         'legacy_races_present':sorted(set(ids)&LEGACY_RACES),
-        'date_blocks':len(set(x['race_day'] for x in rows)),
+        'date_blocks':len({x['race_day'] for x in rows}),
         'interpretation':'Descriptive sample conditioned on recorded decisions: cannot validate edge or support model promotion.',
         'betting_authority':False,'model_promotion_authority':False,
     }
