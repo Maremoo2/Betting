@@ -65,7 +65,7 @@ def validate_one(record):
 
 
 def validate_cohort(records, *, experiment_id, frozen_protocol_hash):
-    if not isinstance(records,list):raise ValueError('Expected list of frozen rows')
+    if not isinstance(records,list):raise TypeError('Expected list of frozen rows')
     if not isinstance(experiment_id, str) or not experiment_id.strip():
         raise ValueError('Nonempty experiment ID required')
     if not isinstance(frozen_protocol_hash, str) or re.fullmatch(r'[a-fA-F0-9]{64}', frozen_protocol_hash) is None:
