@@ -4,6 +4,12 @@ on:
   # Pilot only: source acquisition in a dedicated SQLite artifact. Never writes hbi-state.
   schedule:
     - cron: "*/15 7-21 * * *"
+  # One bootstrap run on MAIN when this pilot workflow itself changes.
+  # Unrelated code pushes do not trigger extra provider calls.
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/core-003-shadow-pilot.yml"
   workflow_dispatch:
     inputs:
       execute:
@@ -45,7 +51,7 @@ jobs:
           python - <<'PY' >> "$GITHUB_OUTPUT"
           import os
           from hbi.schedule import evaluate_schedule
-          if os.environ["EVENT_NAME"] == "schedule":
+          if os.environ["EVENT_NAME"] in {"schedule", "push"}:
               decision = evaluate_schedule()
               print(f"run={'true' if decision.should_run else 'false'}")
               print("execute=true")

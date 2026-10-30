@@ -10,6 +10,8 @@ ikke levere data direkte til dagens Watcher. Ingen endringer i V3.3.12.
 
 ## Tidsplan og kjøring
 
+- Ved endring i **pilotens egen workflow-fil på `main`** startes en ekstra, engangs bootstrap-kjøring via en snever push-trigger; vanlige kodepush utløser ikke kildeinnhenting. Oslo-tidsvinduet gjelder også her.
+
 - Cron hvert 15. minutt i UTC-vinduet 07–21. Python gate tillater bare 09:00–21:59 Europe/Oslo.
 - Første kjøring starter fra tom, skjemaopprettet database. Senere kjøringer
   gjenbruker bare siste **isolerte** pilot-artifact på `main`.
