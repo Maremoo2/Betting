@@ -53,3 +53,9 @@ python -m hbi.core_shadow_pilot --db data/core003-pilot.sqlite --out pilot.json 
 
 Ingen periodisk oppgave kan garantere T−4-dekning hvis leverandørkilder mangler
 eller kjøres for sent. Sammenlign rapportene over flere løpsdager før CORE-004.
+
+## 30. oktober: første livepilot og datakvalitetsdiagnose
+
+Se [første liveaudit](CORE_003_FIRST_LIVE_AUDIT_20261030.md). Den første piloten fant komplette startlister for fire Östersund-løp og komplett fullfelthistorikk i tre av dem. I det fjerde blokkerte én kildeinkonsistens (nr. 8 Pave Jerkeld: `LIFETIME_BELOW_YEAR_TOTALS`) hele historikk-kohorten.
+
+Piloten bruker nå et **30-minutters** kildemessig WIN-odds-vindu (tidligere 12) for å redusere risikoen ved 15-minutters planlagte kjøringer. Dette endrer **ikke** tidspunktet for BET-beslutninger eller modelltersklene. Den arkiverte ATG-evidensen inkluderes med blokkerende hester, men kun når tidsstempelet er innenfor tilhørende as-of/T−4 cutoff. En bredere prisinnhenting er ikke det samme som dokumentert komplett T−4-dekning.

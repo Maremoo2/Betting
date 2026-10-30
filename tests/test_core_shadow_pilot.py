@@ -1,5 +1,6 @@
 """Deterministic tests for prospective, isolated CORE-003 pilot metrics."""
 
+import json
 from datetime import datetime, timedelta
 
 import pytest
@@ -137,3 +138,46 @@ def test_empty_plan_still_measures_known_race():
     assert result["before"]["races_checked"] == 1
     assert result["tasks_attempted"] == 0
     assert result["races_in_fixed_cohort"] == [RID]
+
+
+def test_market_prefetch_expands_beyond_15_minute_scheduler_interval():
+    c = make_db()
+    c.execute("UPDATE races SET start_time_utc=?", ((NOW + timedelta(minutes=25)).isoformat(),))
+    report = _pilot(c, execute=False)
+    assert report['tasks_selected'] == 2
+    assert report['task_reason_counts']['MISSING_OR_INCOMPLETE_WIN_MARKET'] == 1
+
+
+def test_atg_source_diagnostic_reports_exact_runner_blocker():
+    c = make_db()
+    c.execute('''CREATE TABLE provider_payloads(
+        provider TEXT, category TEXT, provider_raceday_key TEXT,
+        race_number INTEGER, observed_at_utc TEXT, payload_json TEXT)''')
+    c.execute('''INSERT INTO provider_payloads VALUES (?,?,?,?,?,?)''', (
+        'atg', 'FULL_FIELD_ONLY_V1', RID, 1, NOW.isoformat(),
+        json.dumps({'passed': False, 'matched_complete_runners': 2,
+                    'active_runners': 3, 'reasons': ['INCOMPLETE_RUNNER_HISTORY_OR_IDENTITY'],
+                    'runners': [{'selection_id': '2', 'horse_name': 'Horse 2',
+                                 'schema_ok': False, 'reason': 'LIFETIME_BELOW_YEAR_TOTALS'}]}),
+    ))
+    report = _pilot(c, execute=False)
+    d = report['race_readiness_before'][0]['atg_history_source_diagnostic']
+    assert d['full_field_gate_passed'] is False
+    assert d['matched_complete_runners'] == 2
+    assert d['runner_issues'] == [{
+        'selection_id': '2', 'horse_name': 'Horse 2',
+        'reason': 'LIFETIME_BELOW_YEAR_TOTALS',
+    }]
+
+
+def test_atg_evidence_after_asof_is_not_leaked():
+    c = make_db()
+    c.execute('''CREATE TABLE provider_payloads(
+        provider TEXT, category TEXT, provider_raceday_key TEXT,
+        race_number INTEGER, observed_at_utc TEXT, payload_json TEXT)''')
+    c.execute('INSERT INTO provider_payloads VALUES (?,?,?,?,?,?)', (
+        'atg', 'FULL_FIELD_ONLY_V1', RID, 1,
+        (NOW + timedelta(minutes=1)).isoformat(), json.dumps({'passed': True}),
+    ))
+    report = _pilot(c, execute=False)
+    assert report['race_readiness_before'][0]['atg_history_source_diagnostic'] is None
