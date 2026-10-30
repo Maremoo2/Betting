@@ -14,10 +14,10 @@ from retrospective_sensitivity import _day_cluster_interval, _summary, evaluate
 
 
 def rows():
-    return [dict(race_id=f'R{i}',race_day=f'2026-10-{i+1:02d}',
-        selection_count='5',status='WATCH',fundamental_logloss='1.6',
-        market_logloss='1.0',combined_logloss=str(1.0+i/10),
-        combined_brier='0.8',market_brier='0.7') for i in range(5)]
+    return [{'race_id':f'R{i}','race_day':f'2026-10-{i+1:02d}',
+        'selection_count':'5','status':'WATCH','fundamental_logloss':'1.6',
+        'market_logloss':'1.0','combined_logloss':str(1.0+i/10),
+        'combined_brier':'0.8','market_brier':'0.7'} for i in range(5)]
 
 
 def write_fixture(tmp_path,lines):
