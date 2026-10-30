@@ -1,4 +1,8 @@
+import os
 import sqlite3
+from pathlib import Path
+
+import pytest
 
 from hbi.core_gap_audit import _source_observation, audit_day_sources
 
@@ -30,8 +34,11 @@ def test_observation_before_after():
 
 
 def test_archive_replay(tmp_path):
-    path=str(__import__('pathlib').Path(__file__).resolve().parents[1] / 'reports/core_003_day_fixture.sqlite')
-    conn=sqlite3.connect(f'file:{path}?mode=ro&immutable=1',uri=True)
+    path=Path(os.environ.get('HBI_CORE_003_ARCHIVE',
+        str(Path(__file__).resolve().parents[1]/'reports/core_003_day_fixture.sqlite')))
+    if not path.is_file():
+        pytest.skip('CORE-003 historical SQLite fixture not provided; set HBI_CORE_003_ARCHIVE')
+    conn=sqlite3.connect(f'file:{path.as_posix()}?mode=ro&immutable=1',uri=True)
     conn.row_factory=sqlite3.Row
     try:report=audit_day_sources(conn,race_date='2026-10-28')
     finally:conn.close()

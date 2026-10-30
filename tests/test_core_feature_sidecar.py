@@ -1,4 +1,5 @@
 import json
+import os
 import sqlite3
 from pathlib import Path
 
@@ -51,7 +52,10 @@ def test_invalid_json_is_none():
 
 
 def test_archival_features_from_compact_fixture():
-    path=Path(__file__).resolve().parents[1]/'reports/core_003_day_fixture.sqlite'
+    path=Path(os.environ.get('HBI_CORE_003_ARCHIVE',
+        str(Path(__file__).resolve().parents[1]/'reports/core_003_day_fixture.sqlite')))
+    if not path.is_file():
+        pytest.skip('CORE-003 historical SQLite fixture not provided; set HBI_CORE_003_ARCHIVE')
     conn=sqlite3.connect(f'file:{path.as_posix()}?mode=ro',uri=True);conn.row_factory=sqlite3.Row
     try:r=build_feature_sidecar(conn,race_date='2026-10-28')
     finally:conn.close()
