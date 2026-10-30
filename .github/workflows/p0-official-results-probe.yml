@@ -37,6 +37,7 @@ jobs:
             --race-number 6 \
             --selection 8 \
             --cached-winner 5 \
+            --probe-start-status \
             --execute-public-get \
             --output p0-official-source-receipt.json
       - name: Confirm audit is not authority for bookkeeping or betting
@@ -54,6 +55,9 @@ jobs:
           assert r['raceday_key']=='S4_NR_2026-10-14'
           assert r['race_number']==6
           assert r['selected']=='8'
+          assert r['official_start_and_scratch_corroboration'] is not None
+          assert r['official_start_and_scratch_corroboration']['bookkeeping_authority'] is False
+          assert r['official_start_and_scratch_corroboration']['start_participation_certified'] is False
           print(json.dumps({
               'raceday_http':r['raceday_results']['http_status'],
               'complete_http':r['complete_results']['http_status'],
