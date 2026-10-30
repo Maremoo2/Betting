@@ -2,13 +2,9 @@
 import hashlib
 import json
 import sqlite3
-from datetime import datetime
-from pathlib import Path
-
 import pytest
 
-from hbi.core_pit_roster_verification import (audit_file, audit_race, good_market,
-    good_fundamentals, parse_atg_identity, parse_rikstoto_roster, parse_time)
+from hbi.core_pit_roster_verification import audit_file, parse_time
 
 R='RIKSTOTO:S2_NR_2026-10-30:1'
 REF='S2_NR_2026-10-30'
@@ -32,17 +28,17 @@ def fixture_db(tmp_path, *, raw_time=T, source_start='2026-10-30T15:00:00+00:00'
     starts=[];ident=[]
     for number in [1,2,3]:
         sid=str(number);scratch=number==3;name=f'Horse{number}'
-        starts.append(dict(raceNumber=1,startNumber=number,horseRegistrationNumber=f'TMP-{number}',horseName=name,driverName='Driver',extraDistance=0,raceKey=f'{REF}#1',isScratched=scratch))
+        starts.append({'raceNumber':1,'startNumber':number,'horseRegistrationNumber':f'TMP-{number}','horseName':name,'driverName':'Driver','extraDistance':0,'raceKey':f'{REF}#1','isScratched':scratch})
         c.execute('insert into runners values (?,?,?,?)',(R,sid,int(scratch),name+'-CHANGED' if raw_changed else name))
         c.execute('insert into runner_fundamental_snapshots values (?,?,?,?,?,?,?,?,?)',(R,sid,raw_time,raw_time,1,12,3,'test://history',int(scratch)))
         c.execute('insert into provider_market_snapshots values (?,?,?,?,?,?)',(R,sid,'V',raw_time,None,-0.02 if scratch else 2.5))
-        if not scratch:ident.append(dict(selection_id=sid,horse_name=name,match_method='UNIQUE_NAME_AND_PROGRAM_NUMBER',schema_ok=True,reason=None,provider_horse_id=number if stable_id else None))
+        if not scratch:ident.append({'selection_id':sid,'horse_name':name,'match_method':'UNIQUE_NAME_AND_PROGRAM_NUMBER','schema_ok':True,'reason':None,'provider_horse_id':number if stable_id else None})
     if market_extra is not None:
         c.execute('insert into provider_market_snapshots values (?,?,?,?,?,?)',(R,'99','V',raw_time,None,market_extra))
     starts_payload=json.dumps({'result':{'1':starts}})
-    atg_payload=json.dumps(dict(passed=True,probe_only=False,active_runners=2,matched_complete_runners=2,
-                              active_selections=['1','2'],runners=ident,race_start_utc=source_start,
-                              timestamp_basis='FETCH_COMPLETED',source_published_at_utc=None))
+    atg_payload=json.dumps({'passed':True,'probe_only':False,'active_runners':2,'matched_complete_runners':2,
+                              'active_selections':['1','2'],'runners':ident,'race_start_utc':source_start,
+                              'timestamp_basis':'FETCH_COMPLETED','source_published_at_utc':None})
     c.execute('insert into provider_payloads values (?,?,?,?,?,?,?,?)',('raw-1','rikstoto','RACEDAY_STARTS',REF,1,raw_time,'test://starts',starts_payload))
     c.execute('insert into provider_payloads values (?,?,?,?,?,?,?,?)',('atg-1','atg','FULL_FIELD_ONLY_V1',R,1,raw_time,'test://atg',atg_payload))
     c.commit();c.close();return path
