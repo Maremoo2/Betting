@@ -1,0 +1,82 @@
+name: CORE-003 Historical Clock Recheck (Read Only)
+
+on:
+  pull_request:
+    paths:
+      - "src/hbi/core_shadow_pilot.py"
+      - "scripts/core003_archive_clock_replay.py"
+      - ".github/workflows/core003-clock-recheck.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: core003-clock-e2e-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  pinned-pilot-clock:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing HBI research package
+        run: pip install -e .
+      - name: Download exact original isolated pilot artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run download 41120778717 --repo "$GITHUB_REPOSITORY" \
+            --name core003-pilot-state --dir "$RUNNER_TEMP/clock-pilot-state"
+          gh run download 41120778717 --repo "$GITHUB_REPOSITORY" \
+            --name core003-pilot-report-41120778717 --dir "$RUNNER_TEMP/clock-pilot-report"
+          test -s "$RUNNER_TEMP/clock-pilot-state/core003-pilot.sqlite"
+          test -s "$RUNNER_TEMP/clock-pilot-report/core003-pilot-report.json"
+          actual_state="$(sha256sum "$RUNNER_TEMP/clock-pilot-state/core003-pilot.sqlite" | cut -d' ' -f1)"
+          actual_report="$(sha256sum "$RUNNER_TEMP/clock-pilot-report/core003-pilot-report.json" | cut -d' ' -f1)"
+          test "$actual_state" = "0682fc437ae6f2d4470941ca28733eb1d8728031560a2e9ac5b48b07dd8b3249"
+          test "$actual_report" = "a94a46ecc1e5e9c8b09e7c763e337c16cf84463930fdedd2ca614005a61b802a"
+      - name: Re-run identical fixed cohort with conservative source clocks
+        shell: bash
+        run: |
+          python scripts/core003_archive_clock_replay.py \
+            --db "$RUNNER_TEMP/clock-pilot-state/core003-pilot.sqlite" \
+            --prior-report "$RUNNER_TEMP/clock-pilot-report/core003-pilot-report.json" \
+            --output core003-clock-recheck.json
+      - name: Assert false positive is removed but not converted to PIT success
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = json.loads(Path('core003-clock-recheck.json').read_text())
+          assert p['db_unchanged'] is True
+          assert p['db_sha256'] == '0682fc437ae6f2d4470941ca28733eb1d8728031560a2e9ac5b48b07dd8b3249'
+          assert p['input_report_sha256'] == 'a94a46ecc1e5e9c8b09e7c763e337c16cf84463930fdedd2ca614005a61b802a'
+          assert p['races_in_same_cohort'] == 6
+          assert p['original_races_full_sources'] == 1
+          assert p['conservative_races_full_sources'] == 0
+          assert p['false_positive_ready_removed'] == 1
+          assert p['conservative_earlier_source_clock_races'] >= 1
+          assert p['roster_pit_verified'] is False
+          assert p['prospective_t4_success_proven'] is False
+          assert p['betting_authority'] is False
+          assert p['model_promotion_authority'] is False
+          print('CORE003_CLOCK_FALSE_POSITIVE_REPRODUCED_AND_BLOCKED')
+          PY
+          sha256sum core003-clock-recheck.json
+      - name: Upload derived diagnostic only, never raw pilot SQLite
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core003-clock-recheck-${{ github.run_id }}
+          path: core003-clock-recheck.json
+          if-no-files-found: warn
+          retention-days: 30

@@ -79,10 +79,10 @@ def _atg_history_source_diagnostic(
           ))
         ORDER BY p.observed_at_utc DESC
     """, (race_id, race_id, race_id))
-    eligible = next(
-        (row for row in rows if _utc(str(row['observed_at_utc'])) <= cutoff),
-        None,
-    )
+    eligible_rows = [
+        row for row in rows if _utc(str(row['observed_at_utc'])) <= cutoff
+    ]
+    eligible = eligible_rows[0] if eligible_rows else None
     if eligible is None:
         return None
     try:
@@ -91,6 +91,19 @@ def _atg_history_source_diagnostic(
         return None
     if not isinstance(evidence, dict):
         return None
+    # Earliest archived source-stated off-time is a conservative bound, never
+    # a certification of the actual off-time or source publication instant.
+    source_clocks = []
+    invalid_clock = False
+    for archived in eligible_rows:
+        try:
+            payload = json.loads(str(archived['payload_json']))
+            candidate = payload.get('race_start_utc')
+            if candidate is None:
+                continue
+            source_clocks.append(_utc(str(candidate)).astimezone(UTC))
+        except (ValueError, TypeError, AttributeError):
+            invalid_clock = True
     runner_issues = []
     for runner in evidence.get('runners', []):
         if not isinstance(runner, dict):
@@ -107,6 +120,12 @@ def _atg_history_source_diagnostic(
         'matched_complete_runners': evidence.get('matched_complete_runners'),
         'active_runners': evidence.get('active_runners'),
         'source_reasons': evidence.get('reasons', []),
+        'source_race_start_utc': evidence.get('race_start_utc'),
+        'earliest_retained_source_start_utc': (
+            min(source_clocks).isoformat() if source_clocks else None
+        ),
+        'source_clock_invalid': invalid_clock,
+        'source_published_at_utc': evidence.get('source_published_at_utc'),
         'runner_issues': runner_issues,
     }
 
@@ -117,7 +136,19 @@ def _readiness(conn: sqlite3.Connection, race_id: str, as_of: datetime) -> dict[
     if len(info) != 1:
         raise ValueError("Race missing from source inventory")
     start = _utc(str(info[0]["start_time_utc"])).astimezone(UTC)
-    cutoff = min(as_of.astimezone(UTC), start - timedelta(minutes=4))
+    canonical_t4 = start - timedelta(minutes=4)
+    canonical_cutoff = min(as_of.astimezone(UTC), canonical_t4)
+    source_diagnostic = _atg_history_source_diagnostic(
+        conn, race_id=race_id, cutoff=canonical_cutoff,
+    )
+    earliest = (
+        source_diagnostic.get("earliest_retained_source_start_utc")
+        if source_diagnostic else None
+    )
+    source_start = _utc(earliest).astimezone(UTC) if earliest else None
+    effective_start = min(start, source_start) if source_start else start
+    conservative_t4 = effective_start - timedelta(minutes=4)
+    cutoff = min(as_of.astimezone(UTC), conservative_t4)
     rows = _rows(conn, "SELECT selection_id, scratched FROM runners WHERE race_id = ?", (race_id,))
     fundamentals, fundamental_at = _cohort(
         conn, "runner_fundamental_snapshots", race_id, cutoff.isoformat()
@@ -127,9 +158,23 @@ def _readiness(conn: sqlite3.Connection, race_id: str, as_of: datetime) -> dict[
     )
     full_history, verified_active = _verified_fundamentals(fundamentals, rows)
     market_complete = _market_complete(market, rows) if rows else False
+    if source_diagnostic and source_diagnostic["source_clock_invalid"]:
+        full_history = False
+        market_complete = False
     return {
         "race_id": race_id,
-        "t4_cutoff_utc": (start - timedelta(minutes=4)).isoformat(),
+        "canonical_t4_cutoff_utc": canonical_t4.isoformat(),
+        "t4_cutoff_utc": conservative_t4.isoformat(),
+        "canonical_start_utc": start.isoformat(),
+        "earliest_retained_source_start_utc": (
+            source_start.isoformat() if source_start else None
+        ),
+        "start_clock_disagreement_seconds": (
+            abs((start - source_start).total_seconds()) if source_start else None
+        ),
+        "source_clock_conservative_guard_applied": (
+            source_start is not None and source_start < start
+        ),
         "evidence_as_of_utc": cutoff.isoformat(),
         "roster_rows": len(rows),
         "active_runners_known": sum(not bool(row["scratched"]) for row in rows),
@@ -139,9 +184,7 @@ def _readiness(conn: sqlite3.Connection, race_id: str, as_of: datetime) -> dict[
         "history_complete_as_of_t4": full_history,
         "win_market_complete_as_of_t4": market_complete,
         "all_inputs_complete_as_of_t4": full_history and market_complete,
-        "atg_history_source_diagnostic": _atg_history_source_diagnostic(
-            conn, race_id=race_id, cutoff=cutoff,
-        ),
+        "atg_history_source_diagnostic": source_diagnostic,
     }
 
 
@@ -154,6 +197,9 @@ def _aggregate(readiness: list[dict[str, Any]]) -> dict[str, int]:
         "races_full_history": sum(r["history_complete_as_of_t4"] for r in readiness),
         "races_full_win_market": sum(r["win_market_complete_as_of_t4"] for r in readiness),
         "races_full_sources": sum(r["all_inputs_complete_as_of_t4"] for r in readiness),
+        "races_with_earlier_source_clock": sum(
+            r["source_clock_conservative_guard_applied"] for r in readiness
+        ),
     }
 
 
