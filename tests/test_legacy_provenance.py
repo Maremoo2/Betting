@@ -178,3 +178,69 @@ def test_invalid_active_quote_cannot_be_suppressed(tmp_path):
     report = classify_legacy_replay(path)
     assert report["legacy_source_reconstructed"] == 0
     assert report["unreconciled"] == 1
+
+
+def test_evidence_manifest_hashes_are_deterministic_and_source_is_unchanged(tmp_path):
+    path = _db(tmp_path, provenance_odds=LATE_ODDS)
+    original_sha256 = _checksum(path)
+    first = classify_legacy_replay(path)
+    second = classify_legacy_replay(path)
+    assert first["source_database_sha256"] == original_sha256
+    assert second["source_database_sha256"] == original_sha256
+    assert first["source_database_unchanged"] is True
+    assert _checksum(path) == original_sha256
+    for field in ("frozen_inputs_sha256", "exact_source_market_sha256",
+                  "attached_provenance_sha256"):
+        assert first["exceptions"][0][field] == second["exceptions"][0][field]
+        assert len(first["exceptions"][0][field]) == 64
+    assert first["exceptions"][0]["provenance_timestamp_strictly_later"] is True
+    assert first["exceptions"][0]["original_source_replays_frozen"] is True
+
+
+def test_same_instant_provenance_is_not_mislabeled_late(tmp_path):
+    path = _db(tmp_path, provenance_odds=LATE_ODDS)
+    with sqlite3.connect(path) as connection:
+        connection.execute(
+            "UPDATE decision_provenance SET recorded_at_utc=?", (SOURCE_TIME,)
+        )
+    report = classify_legacy_replay(path)
+    assert report["legacy_source_reconstructed"] == 0
+    assert report["unreconciled"] == 1
+    item = report["exceptions"][0]
+    assert item["classification"] == "UNRECONCILED"
+    assert item["original_source_replays_frozen"] is True
+    assert item["provenance_timestamp_strictly_later"] is False
+
+
+def test_naive_provenance_time_cannot_prove_late_attachment(tmp_path):
+    path = _db(tmp_path, provenance_odds=LATE_ODDS)
+    with sqlite3.connect(path) as connection:
+        connection.execute(
+            "UPDATE decision_provenance SET recorded_at_utc=?",
+            ("2026-10-09T17:57:30",),
+        )
+    report = classify_legacy_replay(path)
+    assert report["legacy_source_reconstructed"] == 0
+    assert report["unreconciled"] == 1
+    assert report["exceptions"][0]["provenance_timestamp_strictly_later"] is False
+
+
+def test_missing_exact_source_does_not_emit_fake_market_hash(tmp_path):
+    path = _db(tmp_path, provenance_odds=LATE_ODDS, include_original=False)
+    report = classify_legacy_replay(path)
+    assert report["unreconciled"] == 1
+    assert report["exceptions"][0]["exact_source_market_sha256"] is None
+    assert report["exceptions"][0]["original_source_replays_frozen"] is False
+
+
+def test_unparseable_policy_does_not_crash_forensic_hashing(tmp_path):
+    path = _db(tmp_path, provenance_odds=LATE_ODDS)
+    with sqlite3.connect(path) as connection:
+        connection.execute(
+            "UPDATE decision_provenance SET combination_policy_json=?",
+            ("{bad-json",),
+        )
+    report = classify_legacy_replay(path)
+    assert report["unreconciled"] == 1
+    assert report["legacy_source_reconstructed"] == 0
+    assert len(report["exceptions"][0]["attached_provenance_sha256"]) == 64
