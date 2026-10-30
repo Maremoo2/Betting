@@ -213,14 +213,40 @@ def audit_race(conn, race_id, *, asof):
         return {'race_id': race_id, 'status': 'BLOCKED', 'pit_certified': False,
                 'raw_input_ready_at_cutoff': False,
                 'blockers': ['CONFLICTING_SAME_INSTANT_ATG_CLOCK_SOURCE']}
+    # A later source refresh cannot extend T-4 past the first *retained*
+    # independently reported race clock. Compare the full archived source
+    # history observed by canonical T-4, not merely its latest snapshot.
+    historic_clocks = []
+    invalid_historical_clock = False
+    observed_payloads = {}
+    for candidate in source_rows(conn, 'atg', 'FULL_FIELD_ONLY_V1', race_id, rn):
+        instant = parse_time(candidate['observed_at_utc'])
+        if instant is None or instant > min(db_cut, asof):
+            continue
+        observed_payloads.setdefault(instant.isoformat(), set()).add(
+            hashlib.sha256(str(candidate['payload_json']).encode()).hexdigest()
+        )
+        try:
+            payload = json.loads(candidate['payload_json'])
+            time = parse_time(payload.get('race_start_utc')) if isinstance(payload, dict) else None
+        except (TypeError, ValueError, json.JSONDecodeError):
+            time = None
+        if time is None:
+            invalid_historical_clock = True
+        else:
+            historic_clocks.append(time)
+    conflicting_revisions = any(len(values) > 1 for values in observed_payloads.values())
     reasons=[];atg_payload={};atg_clock=None
+    if invalid_historical_clock:reasons.append('INVALID_RETAINED_ATG_RACE_CLOCK')
+    if conflicting_revisions:reasons.append('CONFLICTING_RETAINED_ATG_CLOCK_SNAPSHOTS')
     if source_atg is None: reasons.append('NO_PRE_DB_T4_ATG_CLOCK_SOURCE')
     else:
         try:atg_payload=json.loads(source_atg['payload_json'])
         except (TypeError,ValueError):reasons.append('INVALID_ATG_PAYLOAD')
         atg_clock=parse_time(atg_payload.get('race_start_utc')) if isinstance(atg_payload,dict) else None
         if atg_clock is None:reasons.append('ATG_RACE_CLOCK_MISSING')
-    anchor=min(canonical,atg_clock) if atg_clock else canonical
+    earliest_clock = min(historic_clocks) if historic_clocks else None
+    anchor=min(canonical,earliest_clock) if earliest_clock else canonical
     cutoff=anchor-TOLERANCE
     try:
         source_starts=latest_asof(conn,
@@ -271,12 +297,16 @@ def audit_race(conn, race_id, *, asof):
         curr={str(row['selection_id']):{'scratched':bool(row['scratched']),'name':row['horse_name']} for row in mutable}
         canonical_agreement=curr=={k:{'scratched':v['scratched'],'name':v['name']} for k,v in roster['all'].items()}
         if not canonical_agreement:reasons.append('MUTABLE_ROSTER_DIFFERS_FROM_RAW')
-    raw_ready=bool(roster and identity_ok and fund_ready and market_ready and canonical_agreement)
+    raw_ready=bool(roster and identity_ok and fund_ready and market_ready and canonical_agreement and not invalid_historical_clock and not conflicting_revisions)
     # Publishing/source clock provenance isn't demonstrated by FETCH_COMPLETED timestamp.
     return {'race_id':race_id,'country':race['country'],'track':race['track'],
             'start_database_utc':canonical.isoformat(),
             'start_atg_reported_utc':atg_clock.isoformat() if atg_clock else None,
-            'clock_disagreement_seconds':(canonical-atg_clock).total_seconds() if atg_clock else None,
+            'earliest_retained_atg_clock_utc':earliest_clock.isoformat() if earliest_clock else None,
+            'retained_atg_clock_count':len(historic_clocks),
+            'retained_atg_clock_invalid':invalid_historical_clock,
+            'retained_atg_same_instant_conflict':conflicting_revisions,
+            'clock_disagreement_seconds':(canonical-earliest_clock).total_seconds() if earliest_clock else None,
             'conservative_cutoff_utc':cutoff.isoformat(),
             'raw_starts_reconstructed':bool(roster),'raw_active_count':len(roster['active']) if roster else None,
             'identity_matched_at_source_time':identity_ok,'fundamental_complete_at_cutoff':fund_ready,
