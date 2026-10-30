@@ -75,7 +75,7 @@ jobs:
           assert p["authority"] == "RESEARCH_EVIDENCE_ONLY_NO_AUDIT_OVERRIDE", p
           assert p["p0_status"] == "BLOCKED", p["p0_status"]
           assert p["source_database_unchanged"] is True
-          assert p["source_database_sha256"] == "30b3e281db58589200f123ffae007e5826bf9847bafb21a4302fe505c4bac0c"
+          assert p["source_database_sha256"] == "30b3e281db58589200f123ffae007e5826bf9847bafb21a4302fe505c4bac0c0"
           assert p["total_decisions"] == 732, p["total_decisions"]
           assert p["market_replay_mismatches"] == 5, p["market_replay_mismatches"]
           assert p["original_source_and_late_provenance_confirmed"] == 5, p
