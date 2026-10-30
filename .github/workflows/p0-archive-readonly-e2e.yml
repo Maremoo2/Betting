@@ -1,0 +1,112 @@
+name: P0 Archived State Read-Only E2E
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/p0-archive-readonly-e2e.yml"
+      - "scripts/p0_archive_readonly_e2e.py"
+      - "tests/test_p0_archive_readonly_e2e.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: p0-pinned-archive-e2e-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  pinned-archive:
+    # Never run archived private-state research for external/forked PR code.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exactly the candidate code
+        uses: actions/checkout@v4
+
+      - name: Set up Python standard library
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download the two separately pinned historical artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/p0-source" "$RUNNER_TEMP/p0-audit"
+          gh run download 41111189754 --repo "$GITHUB_REPOSITORY" \
+            --name hbi-state --dir "$RUNNER_TEMP/p0-source"
+          gh run download 41111521341 --repo "$GITHUB_REPOSITORY" \
+            --name hbi-v1-system-audit-41111521341 --dir "$RUNNER_TEMP/p0-audit"
+          test -s "$RUNNER_TEMP/p0-source/data/hbi.sqlite"
+          test -s "$RUNNER_TEMP/p0-audit/research-v1/v1-system-audit.json"
+
+      - name: Verify exact SHA-256 of independent source evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' \
+            30b3e281db58589200f123ffae007e5826bf9847bafb21a4302fe505c4bac0c \
+            "$RUNNER_TEMP/p0-source/data/hbi.sqlite" | sha256sum --check --status
+          printf '%s  %s\n' \
+            fb5f9587e2a7e9bc09d04e66f17f5431d4d710aeb3562a2db7b85dac5233bfd6 \
+            "$RUNNER_TEMP/p0-audit/research-v1/v1-system-audit.json" | sha256sum --check --status
+
+      - name: Execute merged read-only source-replay diagnostic on pinned archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/p0_archive_readonly_e2e.py \
+            --db "$RUNNER_TEMP/p0-source/data/hbi.sqlite" \
+            --audit-json "$RUNNER_TEMP/p0-audit/research-v1/v1-system-audit.json" \
+            --output p0-archive-e2e.json > "$RUNNER_TEMP/p0-cli-stdout.json"
+
+      - name: Fail closed on unexpected evidence or inadvertent P0 clearance
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = json.loads(Path("p0-archive-e2e.json").read_text(encoding="utf-8"))
+          assert p["authority"] == "RESEARCH_EVIDENCE_ONLY_NO_AUDIT_OVERRIDE", p
+          assert p["p0_status"] == "BLOCKED", p["p0_status"]
+          assert p["source_database_unchanged"] is True
+          assert p["source_database_sha256"] == "30b3e281db58589200f123ffae007e5826bf9847bafb21a4302fe505c4bac0c"
+          assert p["total_decisions"] == 732, p["total_decisions"]
+          assert p["market_replay_mismatches"] == 5, p["market_replay_mismatches"]
+          assert p["original_source_and_late_provenance_confirmed"] == 5, p
+          assert p["unreconciled_market_replays"] == 0, p
+          assert len(p["open_shadow_tickets"]) == 1, p
+          assert p["open_shadow_tickets"][0]["settlement_authority"] is False
+          assert p["open_shadow_tickets"][0]["archived_official_result_payloads"] == 0
+          assert p["audit_reference"]["audit_status"] == "FAIL"
+          assert p["audit_reference"]["audit_mismatch_ids_match_state"] is True, p["audit_reference"]
+          assert p["audit_reference"]["exact_same_decision_denominator"] is False
+          assert p["model_promotion_authority"] is False
+          assert p["real_money_authority"] is False
+          print(json.dumps({
+              "status": "PINNED_ARCHIVE_EVIDENCE_VERIFIED_ONLY",
+              "source_decisions": p["total_decisions"],
+              "market_replay_mismatches": p["market_replay_mismatches"],
+              "exact_source_confirmed": p["original_source_and_late_provenance_confirmed"],
+              "unsettled_shadow_tickets": len(p["open_shadow_tickets"]),
+              "p0_status": p["p0_status"],
+              "audit_cohort_identical": p["audit_reference"]["exact_same_decision_denominator"],
+              "report_sha256": p["report_sha256"],
+          }, sort_keys=True))
+          PY
+          sha256sum p0-archive-e2e.json
+
+      - name: Upload diagnostics only, never raw archived SQLite
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-archive-e2e-${{ github.run_id }}
+          path: p0-archive-e2e.json
+          if-no-files-found: warn
+          retention-days: 30
