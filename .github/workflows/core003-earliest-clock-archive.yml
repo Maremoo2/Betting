@@ -1,0 +1,83 @@
+name: CORE-003 Earliest Source Clock Archive Gate (Read Only)
+
+on:
+  pull_request:
+    paths:
+      - "src/hbi/core_pit_roster_verification.py"
+      - "tests/test_pit_roster_verification.py"
+      - ".github/workflows/core003-earliest-clock-archive.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  archive-clock-revisions:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - name: Fetch immutable primary HBI archive
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run download 41111189754 --repo "$GITHUB_REPOSITORY" \
+            --name hbi-state --dir "$RUNNER_TEMP/pit-source"
+          actual="$(sha256sum "$RUNNER_TEMP/pit-source/data/hbi.sqlite" | cut -d' ' -f1)"
+          test "$actual" = "30b3e281db58589200f123ffae007e5826bf9847bafb21a4302fe505c4bac0c0"
+      - name: Rerun all archived race IDs with earliest clock-revision guard
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os, sqlite3
+          from pathlib import Path
+          db=Path(os.environ["RUNNER_TEMP"])/"pit-source/data/hbi.sqlite"
+          conn=sqlite3.connect(f"file:{db}?mode=ro&immutable=1",uri=True)
+          try:
+              ids=[r[0] for r in conn.execute(
+                  "SELECT race_id FROM races WHERE race_date BETWEEN '2026-10-27' AND '2026-10-30' "
+                  "AND lower(discipline)='trot' ORDER BY race_id")]
+          finally:
+              conn.close()
+          assert len(ids)==169 and len(ids)==len(set(ids)),len(ids)
+          Path("cohort-169.json").write_text(json.dumps(ids))
+          PY
+          python -m hbi.core_pit_roster_verification \
+            --db "$RUNNER_TEMP/pit-source/data/hbi.sqlite" \
+            --race-ids cohort-169.json --asof 2026-10-30T20:30:00+00:00 \
+            --output pit-earliest-clock-169.json
+      - name: Assert no retrospective promotion and input source unchanged
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path("pit-earliest-clock-169.json").read_text())
+          assert r["total"]==169
+          assert r["pit_certified"]==0
+          assert r["raw_ready"]<=17, "Clock revision cannot produce new retrospective readiness"
+          assert r["authority"]=="SOURCE_RESEARCH_ONLY_NO_PWIN_EV_OR_BET"
+          assert all(x["pit_certified"] is False for x in r["races"])
+          print(json.dumps({"total":r["total"],"raw_ready":r["raw_ready"],
+                            "pit_certified":r["pit_certified"],
+                            "clock_conflicts":r["clock_conflicts"],
+                            "blockers":r["blocker_counts"]},sort_keys=True))
+          PY
+          actual="$(sha256sum "$RUNNER_TEMP/pit-source/data/hbi.sqlite" | cut -d' ' -f1)"
+          test "$actual" = "30b3e281db58589200f123ffae007e5826bf9847bafb21a4302fe505c4bac0c0"
+          sha256sum pit-earliest-clock-169.json
+      - name: Upload derived source diagnostics only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit-earliest-clock-169-${{ github.run_id }}
+          path: pit-earliest-clock-169.json
+          if-no-files-found: warn
+          retention-days: 30
