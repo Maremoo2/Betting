@@ -187,7 +187,7 @@ def classify_legacy_replay(db_path: Path) -> dict[str, object]:
                 "source_time": row["source_market_observed_at_utc"],
                 "fundamental": _loads_map(row["fundamental_probabilities_json"]),
                 "combined": _loads_map(row["combined_probabilities_json"]),
-                "conflict_score": row["model_market_conflict_score"],
+                "conflict_score": str(row["model_market_conflict_score"]),
             })
             source_hash = _evidence_hash({
                 "race_id": row["race_id"], "product": row["product"],
@@ -198,8 +198,8 @@ def classify_legacy_replay(db_path: Path) -> dict[str, object]:
             attached_hash = _evidence_hash({
                 "recorded_at": row["provenance_recorded_at_utc"],
                 "market_odds": saved_odds,
-                "combination_policy": json.loads(str(row["combination_policy_json"])),
-                "decision_policy": json.loads(str(row["decision_policy_json"])),
+                "combination_policy_raw": row["combination_policy_json"],
+                "decision_policy_raw": row["decision_policy_json"],
             })
             failures.append({
                 "decision_run_id": row["decision_run_id"],
