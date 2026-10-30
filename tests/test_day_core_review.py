@@ -254,6 +254,8 @@ def test_outfile_json_csv_md_and_rows(day,tmp_path):
 
 
 def test_cli_generates_all_per_race_reports(tmp_path):
+    if not ARCHIVE.is_file():
+        pytest.skip('CORE-002 historical SQLite fixture not provided; set HBI_CORE_002_ARCHIVE')
     assert main(['--db',str(ARCHIVE),'--date','2026-10-28',
                  '--track','Solvalla','--out',str(tmp_path),'--details']) == 0
     assert len(list((tmp_path/'races').glob('*/race_core.md'))) == 10
@@ -301,6 +303,8 @@ def test_extractor_refuses_missing_source_or_overwrite(tmp_path):
 
 
 def test_extractor_from_small_fixture_identical_replay(tmp_path):
+    if not ARCHIVE.is_file():
+        pytest.skip('CORE-002 historical SQLite fixture not provided; set HBI_CORE_002_ARCHIVE')
     dst=tmp_path/'small.sqlite'
     stats=extract_day_fixture(ARCHIVE,dst,'2026-10-28',track='Solvalla')
     assert stats['races']==10
