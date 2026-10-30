@@ -1,6 +1,8 @@
 """BET-001B3 tests are local/deterministic and never touch Sheets."""
 from copy import deepcopy
+
 import pytest
+
 from hbi.prewatch_ledger_recovery import diagnose_row, dry_run_future_formulas, row_formula
 
 
