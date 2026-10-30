@@ -40,7 +40,8 @@ def validate_one(record):
     for k in keys:
         if k not in record:errors.append('MISSING_'+k.upper())
     if errors:return {'race_id':record.get('race_id'),'status':'BLOCKED','reasons':errors}
-    times={k:utc_time(record.get(k)) for k in (+        'race_start_utc','preregistered_at_utc','frozen_at_utc',
+    times={k:utc_time(record.get(k)) for k in (
+        'race_start_utc','preregistered_at_utc','frozen_at_utc',
         'feature_max_asof_utc','market_snapshot_at_utc','outcome_observed_at_utc')}
     if any(v is None for v in times.values()): errors.append('MISSING_OR_NAIVE_TIME')
     else:
