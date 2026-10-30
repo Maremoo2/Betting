@@ -22,7 +22,7 @@ CORE-004 bygger en **kildedokumentert faktormatrise** for hele feltet fra den ny
 
 Baseline `p0_i` gjenbruker **nøyaktig** `historical_win_prior` for samme kohort. For aktiv hest `i`:
 
-- `top3_i = (wins_i + seconds_i + thirds_i + 6*(3/n)) / (starts_i + 6)`;
+- `top3_i = (wins_i + seconds_i + thirds_i + 6*min(1,3/n)) / (starts_i + 6)`;
 - `earn_i = ln(1 + lifetime_earnings_i/(starts_i+1))`;
 - `experience_i = ln(1+starts_i)`;
 - hver sekundær variabel sentreres, deles på løpsfeltets SD og klippes til `[-2,2]`;
