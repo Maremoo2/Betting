@@ -7,16 +7,16 @@ No BET instruction is ever issued. All records are historical, as-of reconstruct
 from __future__ import annotations
 
 import argparse
-from collections import Counter, defaultdict
 import csv
-from datetime import date, datetime, timedelta
 import json
 import math
-from pathlib import Path
 import sqlite3
+from collections import Counter, defaultdict
+from datetime import date, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
-from .race_core_review import MODEL_VERSION, analyze_race, write_report
+from .race_core_review import analyze_race, MODEL_VERSION, write_report
 
 FEATURE_KEYS = (
     'post_position', 'driver_or_jockey', 'trainer', 'age', 'sex',
@@ -118,15 +118,15 @@ def analyze_day(
         for group in groups.values():
             if len(group) < 2:
                 continue
-            times = [datetime.fromisoformat(str(v['start_time_utc']).replace('Z', '+00:00')) for v in group]
+            times = [datetime.fromisoformat(str(v['start_time_utc'])) for v in group]
             if (max(times) - min(times)).total_seconds() > 600:
                 continue
             counts = {str(v['race_id']): conn.execute(
                 'select count(*) from runners where race_id=?', (v['race_id'],)
             ).fetchone()[0] for v in group}
-            chosen = sorted(group, key=lambda v: (
+            chosen = min(group, key=lambda v: (
                 -counts[str(v['race_id'])], str(v['start_time_utc']), str(v['race_id'])
-            ))[0]
+            ))
             for v in group:
                 if v['race_id'] != chosen['race_id']:
                     duplicates[str(v['race_id'])] = str(chosen['race_id'])
@@ -134,7 +134,6 @@ def analyze_day(
         race_id = str(r['race_id'])
         roster = _read(conn, 'select selection_id,horse_name,scratched from runners '
                              'where race_id=? order by selection_id', (race_id,))
-        roster_by_id = {str(x['selection_id']): x for x in roster}
         active_roster = [x for x in roster if not bool(x['scratched'])]
         nonempty_rosters += bool(roster)
         row: dict[str, Any] = {
@@ -155,7 +154,7 @@ def analyze_day(
         elif race_id in duplicates:
             row['stage'] = 'SKIPPED_DUPLICATE_REFERENCE'
         else:
-            start = datetime.fromisoformat(str(r['start_time_utc']).replace('Z', '+00:00'))
+            start = datetime.fromisoformat(str(r['start_time_utc']))
             if start.tzinfo is None or start.utcoffset() is None:
                 raise ValueError(f'Naive start timestamp for {race_id}')
             cutoff = (start - timedelta(minutes=cutoff_minutes)).isoformat()
@@ -293,10 +292,10 @@ def write_day_report(day: dict[str, Any], folder: Path) -> None:
         f"**{s['full_baseline_races']}/{s['attempted_races']} løpsreferanser** har komplett, smal Champion-baseline ({_pct(s['race_baseline_coverage_pct'])}).",
         f"**{s['runners_with_p_win']}/{s['roster_active_attempted']} kjente aktive hester** har p(win) ({_pct(s['runner_p_coverage_pct'])}).",
         f"**{s['runners_with_model_ev']}/{s['roster_active_attempted']}** har modell-EV ({_pct(s['runner_ev_coverage_pct'])}).", '',
-        f"**Inventar:** {s['races_in_inventory']} løps-ID-er; {s['skipped_discipline']} annen disiplin, {s['skipped_composite']} kombinerte produkter utelatt. "
+        (f"**Inventar:** {s['races_in_inventory']} løps-ID-er; {s['skipped_discipline']} annen disiplin, {s['skipped_composite']} kombinerte produkter utelatt. "
         f"{s['skipped_duplicate_references']} andre referanser for sannsynlig samme fysiske løp. "
         f"{s['fundamental_only_races']} kun fundamentale, {s['blocked_races']} blokkert. "
-        f"{s['watch_runners']} forsknings-WATCH og **0 BET**.", '',
+        f"{s['watch_runners']} forsknings-WATCH og **0 BET**."), '',
         '## Løp for løp', '',
         '| Bane | Løp | Aktive i kjent roster | p(win) | EV | Status | Hovedblokkering |',
         '|---|---:|---:|---:|---:|---|---|',

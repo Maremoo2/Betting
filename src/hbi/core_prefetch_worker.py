@@ -6,13 +6,13 @@ shadow decision engine and it is not installed into any production workflow.
 from __future__ import annotations
 
 import argparse
-from datetime import UTC, datetime
 import json
+from collections.abc import Callable
+from datetime import datetime, UTC
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from .core_prefetch import execute_prefetch, plan_prefetch
-
 
 def run_tick(*, store: Any, collector: Any, now: datetime, clock: Callable[[], datetime],
              horizon_minutes: float = 90., max_tasks: int = 12,

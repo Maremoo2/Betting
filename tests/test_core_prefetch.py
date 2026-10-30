@@ -1,13 +1,9 @@
-from datetime import UTC, datetime, timedelta
-from pathlib import Path
-import json
 import sqlite3
+from datetime import datetime, timedelta, UTC
 
 import pytest
 
-from hbi.core_prefetch import SCHEMA, execute_prefetch, plan_prefetch
-from hbi.race_core_review import analyze_race
-
+from hbi.core_prefetch import execute_prefetch, plan_prefetch, SCHEMA
 
 NOW=datetime(2026,10,30,12,0,tzinfo=UTC)
 START=(NOW+timedelta(minutes=8)).isoformat()

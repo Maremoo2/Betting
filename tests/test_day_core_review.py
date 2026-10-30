@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
 import csv
 import json
-import math
 import os
-from pathlib import Path
 import sqlite3
+from datetime import datetime, timedelta
+from pathlib import Path
 
 import pytest
 
 from hbi.day_core_review import analyze_day, main, write_day_report
 from hbi.day_fixture_extract import extract_day_fixture
-from test_race_core_review import fixture, START, RACE
+from test_race_core_review import fixture, RACE
 
 ARCHIVE = Path(os.environ.get('HBI_CORE_002_ARCHIVE',
     Path(__file__).resolve().parents[1] / 'reports/core_002_28oct_fixture.sqlite'))

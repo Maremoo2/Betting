@@ -6,10 +6,9 @@ settlement information is copied. Used for reproducible CORE-003 gap forensics.
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
-import sqlite3
 import shutil
-
+import sqlite3
+from pathlib import Path
 
 def build_gap_fixture(archived_db: Path, core002_fixture: Path, output: Path,
                       *, race_date: str) -> dict[str,int]:

@@ -7,16 +7,15 @@ pre-cutoff, full-field-verified snapshot cohort can supply derived features.
 from __future__ import annotations
 
 import argparse
-from collections import Counter
-from datetime import datetime,timedelta
 import json
-from pathlib import Path
 import sqlite3
+from collections import Counter
+from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 from .day_core_review import analyze_day
 from .race_core_review import _cohort
-
 
 def extract_year_features(row: dict[str,Any], decision_at: str) -> dict[str,Any] | None:
     """Conservatively recover year starts/earnings from snapshotted JSON only."""
@@ -31,7 +30,7 @@ def extract_year_features(row: dict[str,Any], decision_at: str) -> dict[str,Any]
         if not isinstance(atg,dict):return None
         years=atg.get('yearCrosscheck')
         if not isinstance(years,dict):return None
-        year=str(datetime.fromisoformat(decision_at.replace('Z','+00:00')).year)
+        year=str(datetime.fromisoformat(decision_at).year)
         record=years.get(year)
         if not isinstance(record,dict):return None
         starts=record.get('starts'); earnings=record.get('earnings')

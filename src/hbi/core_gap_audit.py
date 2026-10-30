@@ -6,16 +6,15 @@ cutoff. The audit does not try to change a historical p(win) or produce bets.
 from __future__ import annotations
 
 import argparse
+import json
+import sqlite3
 from collections import Counter
 from datetime import datetime
-import json
 from pathlib import Path
-import sqlite3
 from typing import Any
 
 from .day_core_review import analyze_day
 from .race_core_review import _rows
-
 
 def _payload_times(db: sqlite3.Connection, *, race_id: str, raceday_key: str,
                    race_no: int, category: str) -> list[str]:
@@ -35,8 +34,8 @@ def _payload_times(db: sqlite3.Connection, *, race_id: str, raceday_key: str,
 
 
 def _source_observation(timestamps: list[str], cutoff: str) -> dict[str, Any]:
-    pre=[t for t in timestamps if datetime.fromisoformat(t.replace('Z','+00:00')) <=
-          datetime.fromisoformat(cutoff.replace('Z','+00:00'))]
+    pre=[t for t in timestamps if datetime.fromisoformat(t) <=
+          datetime.fromisoformat(cutoff)]
     return {'events_total':len(timestamps), 'events_pre_cutoff':len(pre),
             'latest_pre_cutoff_utc':pre[-1] if pre else None,
             'first_after_cutoff_utc':next((t for t in timestamps if t not in pre),None),

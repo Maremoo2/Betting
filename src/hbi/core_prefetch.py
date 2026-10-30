@@ -11,10 +11,11 @@ import argparse
 import json
 import math
 import sqlite3
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from .race_core_review import _cohort, _rows, _utc
 
@@ -170,7 +171,7 @@ def execute_prefetch(plan: dict[str, Any], collector: Any, *, now: datetime,
     The caller owns the store and is responsible for a single process. Execution
     reports what the provider returned, not proof of full-field readiness.
     """
-    now_utc = _utc(now.isoformat()).astimezone(UTC)
+    _utc(now.isoformat())  # Validate aware timestamp
     clock = clock or (lambda: datetime.now(UTC))
     events = []
     if plan.get('schema_version') != SCHEMA or plan.get('authority') != 'SHADOW_RESEARCH_ONLY':
@@ -189,7 +190,7 @@ def execute_prefetch(plan: dict[str, Any], collector: Any, *, now: datetime,
                 status='FETCHED_NOT_PROVEN_COMPLETE' if fetched else 'SOURCE_UNAVAILABLE'
                 events.append({'race_id':task['race_id'],'action':task['action'],
                                'status':status,'rows_inserted':inserted,'source_uri':uri})
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - isolate provider failures
                 events.append({'race_id':task['race_id'],'action':task['action'],
                                'status':'PROVIDER_EXCEPTION','exception_type':type(exc).__name__})
         elif task['action']=='COLLECT_WIN_MARKET':
@@ -200,7 +201,7 @@ def execute_prefetch(plan: dict[str, Any], collector: Any, *, now: datetime,
                 events.append({'race_id':task['race_id'],'action':task['action'],
                                'status':'FETCHED_NOT_PROVEN_COMPLETE' if failures==0 else 'SOURCE_UNAVAILABLE',
                                'rows_inserted':inserted,'fetch_failures':failures})
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - isolate provider failures
                 events.append({'race_id':task['race_id'],'action':task['action'],
                                'status':'PROVIDER_EXCEPTION','exception_type':type(exc).__name__})
         else:

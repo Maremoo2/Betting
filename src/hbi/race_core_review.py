@@ -23,7 +23,7 @@ SAFETY_MARGIN = 0.05
 
 
 def _utc(value: str) -> datetime:
-    dt = datetime.fromisoformat(value.replace('Z', '+00:00'))
+    dt = datetime.fromisoformat(value)
     if dt.utcoffset() is None:
         raise ValueError(f"Naive UTC timestamp: {value}")
     return dt

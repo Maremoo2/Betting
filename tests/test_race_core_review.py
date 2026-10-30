@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from hbi.race_core_review import analyze_race, historical_win_prior, write_report, main
+from hbi.race_core_review import analyze_race, historical_win_prior, write_report
 
 RACE = 'RIKSTOTO:TEST:1'
 T0 = '2026-10-28T18:23:05+00:00'

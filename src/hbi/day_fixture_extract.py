@@ -6,9 +6,10 @@ latest eligible pre-cutoff input cohorts only. No results or settlement tables.
 from __future__ import annotations
 
 import argparse
+import sqlite3
 from datetime import datetime, timedelta
 from pathlib import Path
-import sqlite3
+
 from .day_core_review import _latest_cohort, _valid_date
 
 TABLES = ('races', 'runners', 'runner_fundamental_snapshots',
@@ -45,7 +46,7 @@ def extract_day_fixture(source: Path, destination: Path, race_date: str,
             counts[table] = 0
         for race in rows:
             race_id = race['race_id']
-            start = datetime.fromisoformat(race['start_time_utc'].replace('Z', '+00:00'))
+            start = datetime.fromisoformat(race['start_time_utc'])
             cutoff = (start - timedelta(minutes=cutoff_minutes)).isoformat()
             payloads = {
                 'races': [race],
