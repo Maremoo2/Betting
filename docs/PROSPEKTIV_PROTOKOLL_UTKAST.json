@@ -1,0 +1,32 @@
+{
+  "schema": "CORE004_PROSPECTIVE_PROTOCOL_DRAFT_V1",
+  "status": "DRAFT_NOT_PREREGISTERED_NOT_APPROVED",
+  "created_for_review": "2026-10-30",
+  "first_eligible_future_day_proposed": "2026-10-31",
+  "no_historical_backfill": true,
+  "scope": "future-only, paired full-field trot predictions with prospectively sealed roster/clock/market timestamps",
+  "no_reuse_for_untouched_oos": ["2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30"],
+  "hard_gates": [
+    "original source publication as-of before race T-4 verified",
+    "immutable scheduled time revisions / earlier clock provenance verified",
+    "immutable complete active field, scratches and provider identity match",
+    "source and feature timestamp <= frozen decision timestamp",
+    "all model and market probabilities normalized over exact identical selection set",
+    "candidate market-free inputs verified with complete field",
+    "same race cohort and outcome source for all comparisons",
+    "winner result observed after race start, complete official source",
+    "no candidate refit on evaluation outcomes"
+  ],
+  "comparison": {
+    "primary": "paired race-level logarithmic loss (candidate minus normalized market-only)",
+    "secondary": ["multiclass Brier", "calibration reliability", "coverage", "full-field missingness", "country/day clustered uncertainty"],
+    "economic_metrics": "separate descriptive layer; no ROI/edge or stake promotion by predictive result alone",
+    "baseline_models": ["existing shadow Champion frozen version", "market-only normalized same pre-start snapshot"],
+    "research_candidate": "CORE-004 unfitted until pre-experiment training protocol approved"
+  },
+  "minimum_observation": "at least 30 consecutive days for operational M3; matched statistical sample size must be independently preregistered after design/power review",
+  "known_blockers": ["no proven source publication timestamps", "multiple start clock versions", "no complete prospective roster identity", "CORE-004 coefficients not fitted", "legacy replay parity FAIL", "pending official settlement"],
+  "manual_approval_required": true,
+  "automatic_model_promotion": false,
+  "real_money_betting": false
+}

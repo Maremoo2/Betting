@@ -66,6 +66,38 @@ def _replay_matches(row: sqlite3.Row, odds: dict[str, float]) -> bool:
     )
 
 
+
+def _exact_active_market(entries: list[sqlite3.Row], active: set[str]) -> tuple[dict[str, float], list[str]]:
+    """Exact frozen-active WIN odds; ignore only observed, unpriced -0.02 markers.
+
+    A duplicate, missing active quote or priced off-field selection blocks
+    reconstruction. This forensic routine never edits V1 parity or history.
+    """
+    if len(active) < 2:
+        return {}, []
+    result: dict[str, float] = {}
+    excluded: list[str] = []
+    seen: set[str] = set()
+    for item in entries:
+        key = str(item["selection_key"])
+        if key in seen or item["odds_decimal"] is None:
+            return {}, []
+        seen.add(key)
+        try:
+            price = float(item["odds_decimal"])
+        except (ValueError, TypeError, OverflowError):
+            return {}, []
+        if not math.isfinite(price):
+            return {}, []
+        if key in active and price > 1:
+            result[key] = price
+        elif key not in active and price == -0.02:
+            excluded.append(key)
+        else:
+            return {}, []
+    return (result, sorted(excluded)) if set(result) == active else ({}, [])
+
+
 def classify_legacy_replay(db_path: Path) -> dict[str, object]:
     """Reconstruct source evidence without correcting or reclassifying old rows."""
     path = "file:" + quote(str(db_path.resolve())) + "?mode=ro&immutable=1"
@@ -104,19 +136,11 @@ def classify_legacy_replay(db_path: Path) -> dict[str, object]:
                 (row["race_id"], row["product"],
                  row["source_market_observed_at_utc"]),
             ).fetchall()
-            valid = all(
-                entry["odds_decimal"] is not None
-                and math.isfinite(float(entry["odds_decimal"]))
-                and float(entry["odds_decimal"]) > 1
-                for entry in entries
+            frozen = _loads_map(row["fundamental_probabilities_json"])
+            source_odds, excluded_unpriced = _exact_active_market(
+                entries, set(frozen) if frozen else set()
             )
-            source_odds = ({
-                str(entry["selection_key"]): float(entry["odds_decimal"])
-                for entry in entries
-            } if valid else {})
-            source_complete = bool(
-                entries and valid and len(source_odds) == len(entries)
-            )
+            source_complete = bool(source_odds)
             source_replay_pass = (
                 source_complete and _replay_matches(row, source_odds)
             )
@@ -134,6 +158,7 @@ def classify_legacy_replay(db_path: Path) -> dict[str, object]:
                 "original_source_selection_count": len(source_odds),
                 "saved_provenance_selection_count": len(saved_odds),
                 "source_field_complete": source_complete,
+                "excluded_unpriced_nonactive_selections": excluded_unpriced,
                 "original_source_differs_from_saved_provenance": (
                     source_odds != saved_odds
                 ),

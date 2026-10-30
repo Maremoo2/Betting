@@ -1,4 +1,5 @@
 # Betting – prioritert roadmap (revidert 30.10.2026)
+> **Ny GitHub-integrasjonsstatus:** [CORE_MILESTONES_STATUS_20261030.md](CORE_MILESTONES_STATUS_20261030.md) – sporbar PR-review av research/PIT/replay/settlement, med fortsatt P0- og OOS-blokkering.
 
 > **Autoritet og datagrunnlag:** GitHub `main` ved commit `78747aaaf69c5c597ddaae5e72b4fa509de5714b`; CI, V1-systemaudit og isolerte CORE-003-pilotrapporter 30.10.2026. Dette er en **status- og prioriteringsplan**, ikke strategi-, modell-, workflow- eller BET-godkjenning. Den tidligere versjonen beskrev kun lokal CORE-001/002-utvikling og er foreldet. Alle historiske tall nedenfor er avgrenset til oppgitt kohort og tid.
 
