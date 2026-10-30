@@ -5,6 +5,8 @@ import hashlib
 import importlib.util
 import json
 import sqlite3
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -198,3 +200,14 @@ def test_extra_official_payload_not_claimed_valid_settlement(tmp_path):
     assert report["open_shadow_tickets"][0]["archived_official_result_payloads"] == 1
     assert report["open_shadow_tickets"][0]["settlement_authority"] is False
     assert report["p0_status"] == "BLOCKED"
+
+def test_cli_rejects_writing_report_over_source_database(tmp_path):
+    path = fixture_db(tmp_path)
+    before = file_sha(path)
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--db", str(path), "--output", str(path)],
+        capture_output=True, text=True, check=False,
+    )
+    assert result.returncode != 0
+    assert "Output must not overwrite input database" in result.stderr
+    assert file_sha(path) == before
