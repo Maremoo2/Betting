@@ -34,8 +34,38 @@
 
 **Ny forsknings-PR om replay-evidens er kun en REVIEW-leveranse.** Ingen strategi-, frozen history-, audit-waiver- eller produksjonsrettigheter følger av denne roadmapen.
 
+## Operativ status fra faktiske GitHub-runs 30. oktober 2026
+
+**Hovedgren:** [PR #80](https://github.com/Maremoo2/Betting/pull/80), [PR #84](https://github.com/Maremoo2/Betting/pull/84) og [PR #85](https://github.com/Maremoo2/Betting/pull/85) er **MERGET**; main ved `fc59aae82d41c03c32faca155c22261232a0d8fd`. [PR #86](https://github.com/Maremoo2/Betting/pull/86) er **åpen** som en isolert E2E workflow-/dokumentasjonsendring, ikke en godkjent merge.
+
+**Nytt, etterprøvbart P0-delresultat:** [Github Actions P0 pinned archive 41116541999](https://github.com/Maremoo2/Betting/actions/runs/41116541999) **PASS på nøyaktig arkivkontroll**. Original SQLite SHA-256 `30b3e281db58589200f123ffae007e5826bf9847bafb21a4302fe505c4bac0c0`, 732 beslutninger, 321 sammenlignbare WIN-markedsreplay, 316 match, **5 mismatch**, **5/5** samme original-/senere odds-kilde og **én uoppgjort Shadow-kupong**. Reproduserbar rapport i Github artifact `p0-archive-e2e-41116541999` (ID `13005058521`), SHA-256 `ad93d78b229fa8eb96687f28571fe636903b034893eaa9e6e55cc81c5a46445f`. Databasen uendret.
+
+| ID | Leveranse | Kode-status | Faktisk evidensstatus | Målt neste ferdigport |
+| --- | --- | --- | --- | --- |
+| **CORE-001** | Et helt løp | MERGET / forskningsmotor | Foreløpig ingen PIT-attestert fullfeltstart | Ett komplett uavhengig kilde-/starttid-/felt-attestert løp |
+| **CORE-002** | Helt dagskort | MERGET / forskningsmotor | Historisk 28.10: 9/31 på tidligere definisjon | Prospektiv hel-dag-kohort med full denominator og målbar økning |
+| **CORE-003** | Pre-fetch og PIT | MERGET / operativ SHADOW | Retrospektiv 15/108 kildeklare, **0 PIT-attesterte**; piloter 0/10 og 0/12 komplett | Løs dokumentert kilde-ID/tidsavvik, historisk versjonert startliste, T−4 per land |
+| **CORE-004** | Flerfaktorkandidat | MERGET / **ufittet** | Historikk/marked alene er ikke godkjent treningsgrunnlag | Verifiser nyere formdata og PIT-godkjent OOS, deretter forhåndslåst trening |
+| **P0-REPLAY-ENG** | Skrivebeskyttet bevis- og arkiv-E2E | PR #84/#85 MERGET; PR #86 workflow i REVIEW | **Hash-låst faktisk CLI-run PASS, 5/5** | PR #86 code review/merge og arkivmanifest vedlagt #81 |
+| **P0-REPLAY-INTEGRITY** | Historiske V1 parity | Åpent #81 | **FAIL**: fem mismatch i offisiell audit, selv om årsak rekonstruert | Uavhengig append-only adjudikasjon med explicit HQ-godkjennelse |
+| **P0-SETTLEMENT** | DK 14.10 Shadow | Åpent #82 | **FAIL**: én kupong, 0 offisielle komplett-resultater arkivert | Offisiell `isComplete`, #8 deltakerstatus, vinnerdividende, isolert settlement-replay |
+| **P1** | Prospektiv kalibrering | Gate/protokollutkast MERGET | **NOT_VALIDATED**; retrospektiv 297-løps markedsoverlegenhet ingen OOS | Låst urørt framtidig par-sammenligning av marked/Champion/kandidat |
+| **BETTING** | Autoriserte spill | Uendret | **OFF / IKKE KVALIFISERT** | P0 + P1 + separat, eksplisitt spilleautorisasjon |
+
+Merk at den reelle V1 combined-engine [audit 41111521341](https://github.com/Maremoo2/Betting/actions/runs/41111521341) undersøkte **305**, hoppet over **426**, hadde **5** mismatch og `settlement_integrity=FAIL`. Den kom fra **et annet db-tidspunkt** (731 beslutninger) enn den hash-låste WIN-only-kontrollen (732 beslutninger). De fem avviks-ID-ene matcher, men **nevnerne skal ikke blandes**. Kode-CI eller rekonstruksjon er aldri autoritet til å sette V1 PASS.
+
+### Prioritert rekkefølge
+
+1. **P0-REPLAY-ENG:** review/merge PR #86 etter all grønn CI og nøyaktig 732-row arkivrapport; dette lukker *teknisk reproduksjon*, ikke historisk V1.
+2. **P0-SETTLEMENT:** innhent offisiell Rikstoto-resultatpayload/dividende for Skive 14.10 #8 på autorisert kilde, replay på isolert kopi; ingen håndskrevet -25 NOK.
+3. **P0-REPLAY-INTEGRITY:** kildedokumentert formell append-only adjudikasjon; ikke skriv over gamle snapshots/decision_provenance eller reduser testnevner.
+4. **CORE-003:** avklar `PROVIDER_RACE_IDENTITY_OR_TIME` på Romme #6 (12/12 hester matchet men hele kilden blokkert); ikke endre beskyttet gate uten godkjenning. Kjør reell T−4-dekningsmåling over hele dager, separat per land.
+5. **CORE-004/P1:** forbedre verifiserte faktorer, preregistrer hypotese før nye starter, evaluer markedsbaseline og kalibrering OOS. Fortsett `PASS`/ingen real-money til særskilt godkjenning.
+
+---
+
 ## Ny teknisk delmilepæl – uavhengig arkiv-E2E
 
 [Dokumentert E2E-kontrakt og kilder](P0_ARCHIVE_RESTORED_E2E_20261030.md). En skrivebeskyttet, markedsbasert kontroll av **531 MB** arkivert SQLite ble gjennomført på nyeste Watcher-state: **732** beslutningsrader, **321** sammenlignbare markedsfordelinger, **316** samsvar, **5** avvik, **5/5** rekonstruert fra original WIN-kilde og bekreftet senere oddsvedlegg. Dette er **ikke** full HBI kombinert replay eller samme nevner som senere systemauditens 305 vurderte/426 hoppede. Den danske uoppgjorte Shadow-kupongen står fortsatt åpen og P0 `FAIL`.
 
-Forslag til reproducerbar forsknings-CLI + syntetiske regresjonstester er i egen review-PR. Delmilepælen `ARCHIVE_MARKET_FORENSICS_EVIDENCE` er fullført på dette spesifikke datagrunnlaget; `ARCHIVE_CLI_INTEGRATED` er **IN_REVIEW** inntil CI/review/merge, og `CANONICAL_P0_PASS` er fremdeles **BLOCKED**.
+CLI er **MERGET via PR #85**. En påfølgende hash-låst ekte GitHub Actions-run i **PR #86 har PASS**, men workflowen er ikke ferdig reviewet/merget. `ARCHIVE_MARKET_FORENSICS_EVIDENCE` og `ARCHIVE_CLI_INTEGRATED` er **DONE** på kodenivå; `PINNED_ARCHIVE_CI_EVIDENCE` er **VERIFIED** for kildesnapshotet; `CANONICAL_P0_PASS` er fortsatt **BLOCKED**.
