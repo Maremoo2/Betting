@@ -112,7 +112,7 @@ def evaluate(manifest: dict, records: list[dict], *, protocol_bytes: bytes) -> d
             except (TypeError, ValueError):
                 errors.append("INVALID_DECLARED_RACE_TIME")
                 continue
-            if recorded <= registered:
+            if recorded < registered or (field == "race_start_utc" and recorded == registered):
                 errors.append(reason)
     if errors:
         report["status"] = "BLOCKED_COHORT_INTEGRITY"
