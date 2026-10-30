@@ -1,0 +1,74 @@
+name: P0 Official Results Source Probe (Read Only)
+
+on:
+  pull_request:
+    paths:
+      - "scripts/p0_official_settlement_probe.py"
+      - "tests/test_p0_official_settlement_probe.py"
+      - ".github/workflows/p0-official-results-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p0-official-source-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  official-receipt-only:
+    # Do not execute HTTP probes for fork PR code.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install source review dependencies
+        run: pip install -e .
+      - name: Fetch ONLY two public official result endpoints, no settlement
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/p0_official_settlement_probe.py \
+            --raceday-key S4_NR_2026-10-14 \
+            --race-number 6 \
+            --selection 8 \
+            --cached-winner 5 \
+            --execute-public-get \
+            --output p0-official-source-receipt.json
+      - name: Confirm audit is not authority for bookkeeping or betting
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('p0-official-source-receipt.json').read_text())
+          assert r['scope']=='ONE_PAPER_RACE_SOURCE_EVIDENCE_NO_SETTLEMENT'
+          assert r['bookkeeping_authority'] is False
+          assert r['real_money_authority'] is False
+          assert r['p0_status']=='BLOCKED_PENDING_INDEPENDENT_ADJUDICATION'
+          assert r['raceday_key']=='S4_NR_2026-10-14'
+          assert r['race_number']==6
+          assert r['selected']=='8'
+          print(json.dumps({
+              'raceday_http':r['raceday_results']['http_status'],
+              'complete_http':r['complete_results']['http_status'],
+              'primary_payloads_observed':r['both_official_http_payloads_observed'],
+              'structurally_ready':r['structurally_settlement_ready'],
+              'blockers':r['structural_reasons'],
+              'p0_status':r['p0_status'],
+          }))
+          PY
+          sha256sum p0-official-source-receipt.json
+      - name: Upload derived receipt only, never complete provider payload
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-official-source-receipt-${{ github.run_id }}
+          path: p0-official-source-receipt.json
+          if-no-files-found: warn
+          retention-days: 30
