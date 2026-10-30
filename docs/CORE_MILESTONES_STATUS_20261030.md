@@ -36,6 +36,6 @@
 
 ## Ny teknisk delmilepæl – uavhengig arkiv-E2E
 
-[Dokumentert E2E-kontrakt og kilder](P0_ARCHIVE_RESTORED_E2E_20261030.md). En lesebeskyttet, markedsbasert kontrolle av **532 MB** arkivert SQLite ble gjennomført på nyeste Watcher-state: **732** beslutningsrader, **321** sammenlignbare markedsfordelinger, **316** samsvar, **5** avvik, **5/5** rekonstruert fra original WIN-kilde og bekreftet senere oddsvedlegg. Dette er **ikke** full HBI kombinert replay eller samme nevner som senere systemauditens 305 vurderte/426 hoppede. Den norske/danske uoppgjorte Shadow-kupongen står fortsatt åpen og P0 `FAIL`.
+[Dokumentert E2E-kontrakt og kilder](P0_ARCHIVE_RESTORED_E2E_20261030.md). En skrivebeskyttet, markedsbasert kontroll av **531 MB** arkivert SQLite ble gjennomført på nyeste Watcher-state: **732** beslutningsrader, **321** sammenlignbare markedsfordelinger, **316** samsvar, **5** avvik, **5/5** rekonstruert fra original WIN-kilde og bekreftet senere oddsvedlegg. Dette er **ikke** full HBI kombinert replay eller samme nevner som senere systemauditens 305 vurderte/426 hoppede. Den danske uoppgjorte Shadow-kupongen står fortsatt åpen og P0 `FAIL`.
 
 Forslag til reproducerbar forsknings-CLI + syntetiske regresjonstester er i egen review-PR. Delmilepælen `ARCHIVE_MARKET_FORENSICS_EVIDENCE` er fullført på dette spesifikke datagrunnlaget; `ARCHIVE_CLI_INTEGRATED` er **IN_REVIEW** inntil CI/review/merge, og `CANONICAL_P0_PASS` er fremdeles **BLOCKED**.
