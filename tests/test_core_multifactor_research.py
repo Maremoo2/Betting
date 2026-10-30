@@ -227,3 +227,55 @@ def test_cli_real_fixture_when_supplied(tmp_path):
     dest=tmp_path/"out.json"
     assert main(["--db",str(path),"--date","2026-10-30","--track","Östersund","--out",str(dest)])==0
     assert json.loads(dest.read_text())["candidate_ready"]==3
+
+
+def _source_clock_fixture(conn, *, source_at=T0, source_start="2026-10-30T14:54:00+00:00"):
+    conn.executescript("""
+    CREATE TABLE IF NOT EXISTS provider_payloads (
+      provider TEXT, category TEXT, provider_raceday_key TEXT,
+      race_number INTEGER, observed_at_utc TEXT, payload_json TEXT
+    );
+    CREATE TABLE IF NOT EXISTS provider_race_refs (
+      race_id TEXT, provider_raceday_key TEXT
+    );
+    """)
+    conn.execute("INSERT INTO provider_payloads VALUES (?,?,?,?,?,?)", (
+        "atg", "FULL_FIELD_ONLY_V1", RACE, 1, source_at,
+        json.dumps({"race_start_utc": source_start, "passed": True, "runners": []}),
+    ))
+
+
+def test_core004_rejects_canonical_t4_when_original_source_clock_was_earlier():
+    c = db()
+    _source_clock_fixture(c)
+    r = report(c)
+    assert "ASOF_AFTER_EARLIEST_SOURCE_T4" in r["blocked_reasons"]
+    assert r["earliest_archived_source_start_utc"] == "2026-10-30T14:54:00+00:00"
+    assert r["source_start_clock_conflict_seconds"] == 360
+    assert r["status"] == "BLOCKED"
+    assert all(x["p_candidate"] is None for x in r["runners"])
+    assert r["bet_count"] == 0
+    # This is not a workaround: only earlier-than-T4 input may remain provisional.
+    early = report(c, as_of=T0)
+    assert "ASOF_AFTER_EARLIEST_SOURCE_T4" not in early["blocked_reasons"]
+    assert early["roster_point_in_time_attested"] is False
+
+
+def test_source_start_revision_cannot_reopen_core004_t4_gate():
+    c = db()
+    _source_clock_fixture(c)
+    _source_clock_fixture(
+        c, source_at="2026-10-30T14:55:00+00:00",
+        source_start="2026-10-30T14:59:00+00:00",
+    )
+    r = report(c)
+    assert "ASOF_AFTER_EARLIEST_SOURCE_T4" in r["blocked_reasons"]
+    assert r["earliest_archived_source_start_utc"] == "2026-10-30T14:54:00+00:00"
+
+
+def test_invalid_atg_source_clock_blocks_even_if_factors_are_complete():
+    c = db()
+    _source_clock_fixture(c, source_start="not-a-time")
+    r = report(c)
+    assert "INVALID_ARCHIVED_SOURCE_CLOCK" in r["blocked_reasons"]
+    assert r["status"] == "BLOCKED"
