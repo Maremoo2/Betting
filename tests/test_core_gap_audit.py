@@ -2,6 +2,7 @@ import sqlite3
 
 from hbi.core_gap_audit import _source_observation, audit_day_sources
 
+
 def test_observation_none():
     assert _source_observation([], '2026-10-28T10:00:00+00:00')['status']=='NO_ARCHIVED_PAYLOAD'
 

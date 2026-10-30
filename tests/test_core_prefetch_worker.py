@@ -2,9 +2,10 @@ from contextlib import contextmanager
 from datetime import datetime
 
 import pytest
+from test_core_prefetch import NOW, CollectorStub, make_db
 
 from hbi.core_prefetch_worker import run_tick
-from test_core_prefetch import CollectorStub, make_db, NOW
+
 
 class StoreStub:
     def __init__(self, conn):self.conn=conn

@@ -16,6 +16,7 @@ from typing import Any
 from .day_core_review import analyze_day
 from .race_core_review import _rows
 
+
 def _payload_times(db: sqlite3.Connection, *, race_id: str, raceday_key: str,
                    race_no: int, category: str) -> list[str]:
     if category == 'RACEDAY_STARTS':

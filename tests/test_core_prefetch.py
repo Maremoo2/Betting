@@ -1,9 +1,9 @@
 import sqlite3
-from datetime import datetime, timedelta, UTC
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from hbi.core_prefetch import execute_prefetch, plan_prefetch, SCHEMA
+from hbi.core_prefetch import SCHEMA, execute_prefetch, plan_prefetch
 
 NOW=datetime(2026,10,30,12,0,tzinfo=UTC)
 START=(NOW+timedelta(minutes=8)).isoformat()

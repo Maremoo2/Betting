@@ -10,6 +10,7 @@ import shutil
 import sqlite3
 from pathlib import Path
 
+
 def build_gap_fixture(archived_db: Path, core002_fixture: Path, output: Path,
                       *, race_date: str) -> dict[str,int]:
     if output.exists():raise FileExistsError(output)

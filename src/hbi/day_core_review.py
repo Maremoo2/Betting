@@ -16,7 +16,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from .race_core_review import analyze_race, MODEL_VERSION, write_report
+from .race_core_review import MODEL_VERSION, analyze_race, write_report
 
 FEATURE_KEYS = (
     'post_position', 'driver_or_jockey', 'trainer', 'age', 'sex',

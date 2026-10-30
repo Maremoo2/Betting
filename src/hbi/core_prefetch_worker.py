@@ -8,11 +8,12 @@ from __future__ import annotations
 import argparse
 import json
 from collections.abc import Callable
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from .core_prefetch import execute_prefetch, plan_prefetch
+
 
 def run_tick(*, store: Any, collector: Any, now: datetime, clock: Callable[[], datetime],
              horizon_minutes: float = 90., max_tasks: int = 12,
@@ -59,8 +60,8 @@ def main(argv:list[str]|None=None)->int:
     if args.max_tasks<1:p.error('max-tasks must be >=1')
     output=Path(args.out);output.parent.mkdir(parents=True,exist_ok=True)
     if args.execute:
-        from .storage import SQLiteStore
         from .rikstoto_collector import RikstotoCollector
+        from .storage import SQLiteStore
         store=SQLiteStore(str(db));collector=RikstotoCollector(store)
         result=run_tick(store=store,collector=collector,now=datetime.now(UTC),
                         clock=lambda:datetime.now(UTC),horizon_minutes=args.horizon_minutes,

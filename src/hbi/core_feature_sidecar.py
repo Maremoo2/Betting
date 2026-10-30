@@ -17,6 +17,7 @@ from typing import Any
 from .day_core_review import analyze_day
 from .race_core_review import _cohort
 
+
 def extract_year_features(row: dict[str,Any], decision_at: str) -> dict[str,Any] | None:
     """Conservatively recover year starts/earnings from snapshotted JSON only."""
     if not bool(row.get('full_field_history_complete')):
