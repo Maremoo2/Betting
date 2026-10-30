@@ -1,8 +1,4 @@
 """Proof that official Winner settlement gate does not guess losses or payout."""
-import json
-from pathlib import Path
-
-import pytest
 from hbi.settlement_source_review import assess_winner_settlement, audit_archived_ticket_only
 
 T={'ticket_id':'test-paper','provider_raceday_key':'S4_NR_2026-10-14','race_number':6,
@@ -13,7 +9,7 @@ DAY={'finalOdds':{'winOdds':{'6':{'5':{'payoutStatus':'Dividends','odds':4.82}}}
 
 
 def check(**updates):
-    args=dict(ticket=T,complete=COMPLETE,raceday=DAY,cached_winner='5',source_attested=True)
+    args={'ticket':T,'complete':COMPLETE,'raceday':DAY,'cached_winner':'5','source_attested':True}
     args.update(updates)
     return assess_winner_settlement(**args)
 
