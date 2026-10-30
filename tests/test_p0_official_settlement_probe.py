@@ -155,3 +155,68 @@ def test_zero_place_not_relabeled_as_a_loss_or_valid_participation():
     assert result["structurally_settlement_ready"] is False
     assert result["bookkeeping_authority"] is False
     assert "ZERO_FINISH_NOT_PROVEN_DISQUALIFIED_PARTICIPANT" in result["structural_reasons"]
+
+
+class FakeWithStarts(FakeClient):
+    def __init__(self, *, is_scratched=False, scratch_entries=None):
+        super().__init__()
+        self.is_scratched = is_scratched
+        self.scratch_entries = [] if scratch_entries is None else scratch_entries
+
+    def starts(self, key):
+        self.calls.append(("starts", key))
+        response = fetch("complete", {"6": [
+            {"startNumber": 5, "isScratched": False},
+            {"startNumber": 8, "isScratched": self.is_scratched},
+        ]})
+        response.url = f"https://www.rikstoto.no/api/racedays/{key}/starts"
+        return response
+
+    def scratched(self, key):
+        self.calls.append(("scratched", key))
+        response = fetch("complete", {"6": self.scratch_entries})
+        response.url = f"https://www.rikstoto.no/api/racedays/{key}/scratched"
+        return response
+
+
+def test_official_raceday_starts_and_scratches_are_not_automatic_start_proof():
+    client = FakeWithStarts()
+    report = probe_module.probe(
+        client=client, raceday_key="S4_NR_2026-10-14",
+        race_number=6, selected="8", cached_winner="5",
+        corroborate_starts=True,
+    )
+    item = report["official_start_and_scratch_corroboration"]
+    assert item["starts_get"]["http_status"] == 200
+    assert item["scratches_get"]["http_status"] == 200
+    assert item["selected_in_startlist_rows"] == 1
+    assert item["selected_is_scratched_in_startlist"] is False
+    assert item["selected_on_scratched_list"] is False
+    assert item["start_participation_certified"] is False
+    assert item["bookkeeping_authority"] is False
+    assert report["bookkeeping_authority"] is False
+    assert len(client.calls) == 4
+
+
+def test_original_scratched_marker_does_not_get_cleared():
+    client = FakeWithStarts(is_scratched=True, scratch_entries=[{"startNumber": 8}])
+    report = probe_module.probe(
+        client=client, raceday_key="S4_NR_2026-10-14",
+        race_number=6, selected="8", corroborate_starts=True,
+    )
+    item = report["official_start_and_scratch_corroboration"]
+    assert item["selected_is_scratched_in_startlist"] is True
+    assert item["selected_on_scratched_list"] is True
+    assert report["bookkeeping_authority"] is False
+
+
+def test_unknown_scratch_shape_cannot_be_interpreted_as_not_scratched():
+    client = FakeWithStarts(scratch_entries=[{"other": 8}])
+    report = probe_module.probe(
+        client=client, raceday_key="S4_NR_2026-10-14",
+        race_number=6, selected="8", corroborate_starts=True,
+    )
+    item = report["official_start_and_scratch_corroboration"]
+    assert item["scratched_list_shape_recognized"] is False
+    assert item["selected_on_scratched_list"] is None
+    assert item["start_participation_certified"] is False
