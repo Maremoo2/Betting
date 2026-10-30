@@ -127,3 +127,40 @@ def test_different_selected_sets_are_not_paired():
     out = evaluate([item])
     assert "NONPAIRED_SELECTION_SETS" in out["blockers"]
     assert out["metrics"] is None
+
+
+def test_protocol_registered_after_race_prereg_but_before_start_is_rejected():
+    m = manifest()
+    # A protocol committed on October 30 cannot truthfully claim it had
+    # preregistered its race record on October 29, even if the race has not run.
+    m["protocol_registered_at_utc"] = "2026-10-30T10:00:00+00:00"
+    out = evaluate([row()], m)
+    assert out["status"] == "BLOCKED_COHORT_INTEGRITY"
+    assert "RACE_PREREG_PRECEDES_PROTOCOL" in out["blockers"]
+    assert out["metrics"] is None
+
+
+def test_protocol_registered_after_freeze_but_before_race_is_rejected():
+    m = manifest()
+    m["protocol_registered_at_utc"] = "2026-10-31T14:55:00+00:00"
+    out = evaluate([row()], m)
+    assert "RACE_FREEZE_PRECEDES_PROTOCOL" in out["blockers"]
+    assert out["metrics"] is None
+    assert out["p1_validated"] is False
+
+
+def test_equal_declared_prereg_and_manifest_registration_is_not_a_false_error():
+    item = row()
+    m = manifest()
+    m["protocol_registered_at_utc"] = item["preregistered_at_utc"]
+    out = evaluate([item], m)
+    assert "RACE_PREREG_PRECEDES_PROTOCOL" not in out["blockers"]
+    assert out["status"] == "EXPLORATORY_CLAIMS_ONLY_UNATTESTED"
+
+
+def test_naive_declared_prereg_in_manifest_contract_fails_closed():
+    item = row()
+    item["preregistered_at_utc"] = "2026-10-29T12:00:00"
+    out = evaluate([item])
+    assert out["metrics"] is None
+    assert "INVALID_DECLARED_RACE_TIME" in out["blockers"]
