@@ -56,3 +56,28 @@ CORE-001/002 PIT data ─→ CORE-004 feature lineage/training ─→ P1 preregi
 **Original source:** GitHub Actions artifact/hash/SQLite og originale `RikstotoClient` HTTP response SHA. **Vår tolkning:** T−4-guard, kombinasjonsmodell, prospektiv kontrakt – forskningshypoteser, ikke garantert utbytte. **Brukerens egne prospektive resultater:** ikke tilgjengelige som kalibrert ROI-bevis.
 
 `docs/DEV_WORKFLOW.md` krever eksakt PR-HEAD/HQ-review før merge; arbeidslisten gir ikke agenten merge-, scheduler- eller bet-autorisasjon. Originale gamle beslutninger og grunnkilden skal forbli uendret.
+
+## 30.10 – neste parallelle DEV-bølge (#94 og #95)
+
+**CORE-003 heldagsdekning [PR #94](https://github.com/Maremoo2/Betting/pull/94)** – [faktisk GitHub archive-E2E 41125229029](https://github.com/Maremoo2/Betting/actions/runs/41125229029), JSON-artifact **13010796270**, SHA-256 `33febe452c4f8275507fd92106d5ef812ffb1bf2782a70bb62045e2b7e418823`, med opprinnelig HBI SQLite SHA-256 `30b3e281db58589200f123ffae007e5826bf9847bafb21a4302fe505c4bac0c0`. **169** distinkte travløp på alle registrerte land/baner 27.–30.10, **167** etter T−4, **2** framtidige, **17** konservativt råkildeklare, **150** blokkert, **16** tidsavvik, **0 PIT-attesterte**. Første versjon Ruff F401 (ubrukt testimport), rettet; full re-run CI må kontrolleres særskilt. Det er **ikke** den samme kohorten som eldre 108-løpsaudit, så 17 mot 15 er ikke dokumentert dekningstrend.
+
+| Land / status | Alle | Råkildeklare | Blokkert | Før T−4 |
+| --- | ---: | ---: | ---: | ---: |
+| Sverige | 77 | 17 | 60 | 0 |
+| Norge | 24 | 0 | 24 | 0 |
+| Danmark | 17 | 0 | 17 | 0 |
+| Frankrike | 32 | 0 | 30 | 2 |
+| Tyskland | 4 | 0 | 4 | 0 |
+| Land ikke normalisert | 15 | 0 | 15 | 0 |
+| **Sum** | **169** | **17** | **150** | **2** |
+
+Diagnostiske hovedblokker (kan opptre samtidig): `NO_PRE_CUTOFF_RIKSTOTO_STARTS=118`, `NO_PRE_DB_T4_ATG_CLOCK_SOURCE=116`, `NO_RECONSTRUCTED_ACTIVE_FIELD=121`, `INCOMPLETE_FUNDAMENTAL_ASOF_FIELD=24`, `ATG_FULL_FIELD_GATE_NOT_PASSED=23`. Beste konkrete videre arbeid: original tidsriktig startliste, stabilt fullfelt og mapping av 15 UNKNOWN-country før noen modelltrening.
+
+**P1 forhåndslåst kohort [PR #95](https://github.com/Maremoo2/Betting/pull/95)** – separate kilde-/protokoll-/fullfeltkontrakter med SHA-256, ikke-ettervalgbare løp, test for sene odds og etterregistrerte løp, parvis log loss/Brier for marked/Champion/CORE-004. **Ikke prospektivt evaluert** og ingen original GitHub-ekstern registreringsattest: alle aggregater merkes eksplisitt `EXPLORATORY_CLAIMS_ONLY_UNATTESTED` og `p1_validated=false`. Nye 30+ dager og reell tidsriktig originalkilde er fortsatt harde porter.
+
+### Neste aksepterte utviklingsmål
+- [ ] Review/merge #91/#92/#93/#94/#95 med **separat eksakt HEAD-bundet HQ-godkjenning**; ikke agent-merge.
+- [ ] Øk andel tidsriktige originalkilder på hele løpsdager og bevis uforanderlig `source_published_at`, original startliste og scratchrevisjoner; 0 PIT-attestasjoner i faktisk 169-løpsarkiv.
+- [ ] P0 original resultatkode `place=0`/`kmTime=0,0` for Skive #8 må tolkes av offisiell kontrakt før selv et **papir**-tap kan bokføres.
+- [ ] CORE-004 market-free kildefaktorgrunnlag og forhåndsregistrering, deretter **nye** kronologiske OOS-dager. Fremtidig ytelse/profit kan ikke konstrueres fra fortid.
+
