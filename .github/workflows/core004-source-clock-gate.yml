@@ -1,0 +1,73 @@
+name: CORE-004 Pinned Source Clock Gate (Read Only)
+
+on:
+  pull_request:
+    paths:
+      - "src/hbi/core_multifactor_research.py"
+      - ".github/workflows/core004-source-clock-gate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: core004-clock-archive-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  historical-clock-gate:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install research-only package
+        run: pip install -e .
+      - name: Download immutable pilot source from original run
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run download 41120778717 --repo "$GITHUB_REPOSITORY" \
+            --name core003-pilot-state --dir "$RUNNER_TEMP/core004-pit-source"
+          actual="$(sha256sum "$RUNNER_TEMP/core004-pit-source/core003-pilot.sqlite" | cut -d' ' -f1)"
+          test "$actual" = "0682fc437ae6f2d4470941ca28733eb1d8728031560a2e9ac5b48b07dd8b3249"
+      - name: Evaluate CORE-004 at former canonical T-4, expected BLOCKED
+        run: |
+          python -m hbi.core_multifactor_research \
+            --db "$RUNNER_TEMP/core004-pit-source/core003-pilot.sqlite" \
+            --race-id RIKSTOTO:S3_NR_2026-10-30:8 \
+            --as-of '2026-10-30T20:21:00+00:00' \
+            --out core004-clock-gate.json
+      - name: Verify strict source clock fail-closed and unchanged original
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('core004-clock-gate.json').read_text())
+          assert r['status']=='BLOCKED'
+          assert 'ASOF_AFTER_EARLIEST_SOURCE_T4' in r['blocked_reasons']
+          assert r['earliest_archived_source_start_utc']=='2026-10-30T19:56:00+00:00'
+          assert r['source_start_clock_conflict_seconds']==1740
+          assert r['bet_count']==0 and r['watch_count']==0
+          assert r['roster_point_in_time_attested'] is False
+          assert all(x['p_candidate'] is None for x in r['runners'])
+          print('CORE004_SOURCE_TIME_LEAKAGE_BLOCKED_ON_PINNED_HISTORIC_RACE')
+          PY
+          actual="$(sha256sum "$RUNNER_TEMP/core004-pit-source/core003-pilot.sqlite" | cut -d' ' -f1)"
+          test "$actual" = "0682fc437ae6f2d4470941ca28733eb1d8728031560a2e9ac5b48b07dd8b3249"
+          sha256sum core004-clock-gate.json
+      - name: Upload derived blocked research output only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core004-source-clock-gate-${{ github.run_id }}
+          path: core004-clock-gate.json
+          if-no-files-found: warn
+          retention-days: 30
