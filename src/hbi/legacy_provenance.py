@@ -8,9 +8,9 @@ import argparse
 import json
 import math
 import sqlite3
-from hashlib import sha256
 from contextlib import closing
 from datetime import UTC, datetime
+from hashlib import sha256
 from pathlib import Path
 from urllib.parse import quote
 
