@@ -130,3 +130,51 @@ def test_source_timestamp_does_not_fallback_to_newer_market(tmp_path):
     report = classify_legacy_replay(path)
     assert report["unreconciled"] == 1
     assert report["legacy_source_reconstructed"] == 0
+
+
+def test_unpriced_inactive_original_source_reconstructed(tmp_path):
+    path = _db(tmp_path, provenance_odds=LATE_ODDS)
+    with sqlite3.connect(path) as conn:
+        conn.execute(
+            "INSERT INTO provider_market_snapshots VALUES (?,?,?,?,?,?)",
+            ("unpriced-3", "TEST:race:1", "V", "3", SOURCE_TIME, -0.02),
+        )
+    report = classify_legacy_replay(path)
+    assert report["legacy_source_reconstructed"] == 1
+    assert report["unreconciled"] == 0
+    assert report["exceptions"][0]["excluded_unpriced_nonactive_selections"] == ["3"]
+
+
+def test_extra_priced_selection_cannot_be_excluded(tmp_path):
+    path = _db(tmp_path, provenance_odds=LATE_ODDS)
+    with sqlite3.connect(path) as conn:
+        conn.execute(
+            "INSERT INTO provider_market_snapshots VALUES (?,?,?,?,?,?)",
+            ("priced-3", "TEST:race:1", "V", "3", SOURCE_TIME, 8.0),
+        )
+    report = classify_legacy_replay(path)
+    assert report["legacy_source_reconstructed"] == 0
+    assert report["unreconciled"] == 1
+
+
+def test_unknown_market_marker_cannot_be_excluded(tmp_path):
+    path = _db(tmp_path, provenance_odds=LATE_ODDS)
+    with sqlite3.connect(path) as conn:
+        conn.execute(
+            "INSERT INTO provider_market_snapshots VALUES (?,?,?,?,?,?)",
+            ("unknown-3", "TEST:race:1", "V", "3", SOURCE_TIME, -0.01),
+        )
+    report = classify_legacy_replay(path)
+    assert report["legacy_source_reconstructed"] == 0
+    assert report["unreconciled"] == 1
+
+
+def test_invalid_active_quote_cannot_be_suppressed(tmp_path):
+    path = _db(tmp_path, provenance_odds=LATE_ODDS)
+    with sqlite3.connect(path) as conn:
+        conn.execute(
+            "UPDATE provider_market_snapshots SET odds_decimal=-0.02 WHERE selection_key='2'"
+        )
+    report = classify_legacy_replay(path)
+    assert report["legacy_source_reconstructed"] == 0
+    assert report["unreconciled"] == 1
