@@ -181,3 +181,65 @@ def test_atg_evidence_after_asof_is_not_leaked():
     ))
     report = _pilot(c, execute=False)
     assert report['race_readiness_before'][0]['atg_history_source_diagnostic'] is None
+
+
+def _add_atg_clock(c, observed, source_start):
+    c.execute("""CREATE TABLE IF NOT EXISTS provider_payloads(
+        provider TEXT, category TEXT, provider_raceday_key TEXT,
+        race_number INTEGER, observed_at_utc TEXT, payload_json TEXT)""")
+    c.execute("INSERT INTO provider_payloads VALUES (?,?,?,?,?,?)", (
+        "atg", "FULL_FIELD_ONLY_V1", RID, 1, observed.isoformat(),
+        json.dumps({
+            "passed": True, "race_start_utc": source_start,
+            "matched_complete_runners": 3, "active_runners": 3,
+            "reasons": [], "runners": [],
+        }),
+    ))
+
+
+def test_source_clock_earlier_than_canonical_blocks_late_market_from_ready():
+    c = make_db()
+    fundamental(c, now=NOW - timedelta(minutes=2))
+    market(c, now=NOW)
+    source_start = NOW + timedelta(minutes=3)
+    _add_atg_clock(c, NOW - timedelta(minutes=2), source_start.isoformat())
+    report = _pilot(c, execute=False)
+    case = report["race_readiness_before"][0]
+    assert case["source_clock_conservative_guard_applied"] is True
+    assert case["start_clock_disagreement_seconds"] == 300
+    assert case["t4_cutoff_utc"] == (NOW - timedelta(minutes=1)).isoformat()
+    assert case["canonical_t4_cutoff_utc"] == (NOW + timedelta(minutes=4)).isoformat()
+    assert case["history_complete_as_of_t4"] is True
+    assert case["win_market_complete_as_of_t4"] is False
+    assert case["all_inputs_complete_as_of_t4"] is False
+    assert report["before"]["races_full_sources"] == 0
+    assert report["before"]["races_with_earlier_source_clock"] == 1
+    assert report["roster_pit_verified"] is False
+
+
+def test_earliest_source_clock_wins_over_later_schedule_revision():
+    c = make_db()
+    fundamental(c, now=NOW - timedelta(minutes=2))
+    market(c, now=NOW)
+    first = NOW + timedelta(minutes=3)
+    revised = NOW + timedelta(minutes=9)
+    _add_atg_clock(c, NOW - timedelta(minutes=2), first.isoformat())
+    _add_atg_clock(c, NOW - timedelta(minutes=1), revised.isoformat())
+    report = _pilot(c, execute=False)
+    case = report["race_readiness_before"][0]
+    assert case["earliest_retained_source_start_utc"] == first.isoformat()
+    assert case["atg_history_source_diagnostic"]["source_race_start_utc"] == revised.isoformat()
+    assert case["all_inputs_complete_as_of_t4"] is False
+
+
+def test_invalid_archived_source_clock_fails_closed():
+    c = make_db()
+    fundamental(c)
+    market(c)
+    _add_atg_clock(c, NOW, "not-an-ISO-clock")
+    report = _pilot(c, execute=False)
+    case = report["race_readiness_before"][0]
+    assert case["atg_history_source_diagnostic"]["source_clock_invalid"] is True
+    assert case["all_inputs_complete_as_of_t4"] is False
+    assert report["before"]["races_full_sources"] == 0
+    assert report["prospective_t4_success_proven"] is False
