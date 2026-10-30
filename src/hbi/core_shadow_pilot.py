@@ -54,6 +54,63 @@ def _pilot_race_ids(conn: sqlite3.Connection, *, now: datetime, horizon: float) 
     return [str(row["race_id"]) for row, _ in selected]
 
 
+
+def _atg_history_source_diagnostic(
+    conn: sqlite3.Connection, *, race_id: str, cutoff: datetime,
+) -> dict[str, Any] | None:
+    """Latest observed ATG full-field evidence, with explicit runner blockers.
+
+    Read-only optional diagnostic: source evidence is not guaranteed to exist in
+    synthetic fixtures or historical databases. Never infer validity from a
+    mutable roster or from an ATG payload recorded after the decision cutoff.
+    """
+    has_payloads = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='provider_payloads'"
+    ).fetchone()
+    if has_payloads is None:
+        return None
+    rows = _rows(conn, """
+        SELECT p.payload_json, p.observed_at_utc
+        FROM provider_payloads p
+        WHERE p.provider='atg' AND p.category='FULL_FIELD_ONLY_V1'
+          AND p.race_number = (SELECT race_no FROM races WHERE race_id = ?)
+          AND (p.provider_raceday_key = ? OR p.provider_raceday_key IN (
+              SELECT provider_raceday_key FROM provider_race_refs WHERE race_id = ?
+          ))
+        ORDER BY p.observed_at_utc DESC
+    """, (race_id, race_id, race_id))
+    eligible = next(
+        (row for row in rows if _utc(str(row['observed_at_utc'])) <= cutoff),
+        None,
+    )
+    if eligible is None:
+        return None
+    try:
+        evidence = json.loads(str(eligible['payload_json']))
+    except (ValueError, TypeError):
+        return None
+    if not isinstance(evidence, dict):
+        return None
+    runner_issues = []
+    for runner in evidence.get('runners', []):
+        if not isinstance(runner, dict):
+            continue
+        if runner.get('reason') or runner.get('schema_ok') is False:
+            runner_issues.append({
+                'selection_id': str(runner.get('selection_id')),
+                'horse_name': runner.get('horse_name'),
+                'reason': runner.get('reason') or 'UNVERIFIED_RUNNER_SCHEMA',
+            })
+    return {
+        'observed_at_utc': eligible['observed_at_utc'],
+        'full_field_gate_passed': bool(evidence.get('passed')),
+        'matched_complete_runners': evidence.get('matched_complete_runners'),
+        'active_runners': evidence.get('active_runners'),
+        'source_reasons': evidence.get('reasons', []),
+        'runner_issues': runner_issues,
+    }
+
+
 def _readiness(conn: sqlite3.Connection, race_id: str, as_of: datetime) -> dict[str, Any]:
     """Source-evidence diagnostic, NOT an executable model or PIT roster proof."""
     info = _rows(conn, "SELECT start_time_utc FROM races WHERE race_id = ?", (race_id,))
@@ -82,6 +139,9 @@ def _readiness(conn: sqlite3.Connection, race_id: str, as_of: datetime) -> dict[
         "history_complete_as_of_t4": full_history,
         "win_market_complete_as_of_t4": market_complete,
         "all_inputs_complete_as_of_t4": full_history and market_complete,
+        "atg_history_source_diagnostic": _atg_history_source_diagnostic(
+            conn, race_id=race_id, cutoff=cutoff,
+        ),
     }
 
 
@@ -99,7 +159,8 @@ def _aggregate(readiness: list[dict[str, Any]]) -> dict[str, int]:
 
 def run_pilot(
     *, store: Any, collector: Any, now: datetime, clock: Callable[[], datetime],
-    horizon_minutes: float = 90.0, max_tasks: int = 4, discover: bool = True,
+    horizon_minutes: float = 90.0, max_tasks: int = 4,
+    market_window_minutes: float = 30.0, discover: bool = True,
     execute: bool = False,
 ) -> dict[str, Any]:
     """One bounded measurement tick; identical race universe before and after."""
@@ -114,7 +175,7 @@ def run_pilot(
     with store.connect() as conn:
         plan = plan_prefetch(
             conn, now=started.isoformat(), horizon_minutes=horizon_minutes,
-            max_tasks=max_tasks,
+            max_tasks=max_tasks, market_window_minutes=market_window_minutes,
         )
         race_ids = _pilot_race_ids(conn, now=started, horizon=horizon_minutes)
         before = [_readiness(conn, race_id, started) for race_id in race_ids]
@@ -161,6 +222,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", required=True)
     parser.add_argument("--horizon-minutes", type=float, default=90.0)
     parser.add_argument("--max-tasks", type=int, default=4)
+    parser.add_argument("--market-window-minutes", type=float, default=30.0)
     parser.add_argument("--execute", action="store_true", help="Fetch real source data, no bets")
     args = parser.parse_args(argv)
     path = Path(args.db)
@@ -177,7 +239,8 @@ def main(argv: list[str] | None = None) -> int:
     result = run_pilot(
         store=store, collector=collector, now=datetime.now(UTC),
         clock=lambda: datetime.now(UTC), horizon_minutes=args.horizon_minutes,
-        max_tasks=args.max_tasks, execute=args.execute,
+        max_tasks=args.max_tasks, market_window_minutes=args.market_window_minutes,
+        execute=args.execute,
     )
     if args.execute:
         store.checkpoint()
