@@ -162,6 +162,8 @@ def test_scratched_horse_excluded_when_consistent():
     assert r["status"]=="CANDIDATE_READY_UNCALIBRATED"
     assert r["runners"][2]["p_candidate"] is None
     assert len([x for x in r["runners"] if x["p_candidate"] is not None])==2
+    assert all(x["scored_source_features"]["career_top3_rate_smoothed"] <= 1.0
+               for x in r["runners"] if x["p_candidate"] is not None)
 
 
 def test_no_earnings_across_races_and_invalid_coefficients():
