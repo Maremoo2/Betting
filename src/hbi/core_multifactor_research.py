@@ -185,7 +185,7 @@ def analyze_multifactor(
     if not blocks:
         n = len(features)
         place = {
-            sid: (f["wins"]+f["seconds"]+f["thirds"]+6*(3/n))/(f["starts"]+6)
+            sid: (f["wins"]+f["seconds"]+f["thirds"]+6*min(1.0, 3/n))/(f["starts"]+6)
             for sid, f in features.items()
         }
         # Earnings are source-native (no FX conversion) and compared ONLY inside one race.
