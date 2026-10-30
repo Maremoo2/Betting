@@ -420,10 +420,6 @@ def run(db_path,output_dir,as_of=DEFAULT_END,dates=None):
         evaluation,paired=audit_paired(conn,as_of)
     checksum_after=sha256(db_path)
     if checksum_before!=checksum_after:raise AssertionError('Source DB mutated during audit')
-    as_json(output_dir/'day_coverage.json',{'dates':days,'days':days,'summary':days if False else None,'rows':days}) if False else None
-    as_json(output_dir/'card_coverage.json',{'schema':'CORE_EVIDENCE_CARD_AUDIT_20261030_V1',
-         'as_of_utc':as_of.isoformat(),'days':days,'roster_PIT_attested':False,
-         'source_db_sha256':checksum_before,'daily':days if False else days}) if False else None
     # All user-facing structured files are explicit: no fake success for uncovered races.
     as_json(output_dir/'day_coverage.json',{'schema':'CORE_EVIDENCE_CARD_AUDIT_V1','as_of_utc':as_of.isoformat(),
                                             'source_db_sha256':checksum_before,'days':days})
