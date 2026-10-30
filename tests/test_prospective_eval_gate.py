@@ -1,7 +1,6 @@
-import json
-from pathlib import Path
 import pytest
-from hbi.prospective_eval_gate import validate_cohort,validate_one
+
+from hbi.prospective_eval_gate import validate_cohort, validate_one
 
 def row():
     p={'1':0.6,'2':0.4};q={'1':0.7,'2':0.3}
