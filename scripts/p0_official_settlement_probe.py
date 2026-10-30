@@ -78,6 +78,42 @@ def participant_evidence(complete, raceday, race_number, selected):
     return result
 
 
+def race_result_status_distribution(complete):
+    """Aggregate only anonymous original result-code shapes for review.
+
+    No individual runner names or additional ticket selections are exposed.
+    The code distribution is *descriptive*, never a payout rule.
+    """
+    rows = complete.get("results") if isinstance(complete, dict) else None
+    if not isinstance(rows, list):
+        return {"parseable": False, "rows": 0, "place_zero": 0,
+                "zero_km_time_categories": {}, "payout_authority": False}
+    counts = {"Dsk": 0, "ZERO_TIME": 0, "OTHER_TIME": 0, "MISSING_TIME": 0}
+    zeros = 0
+    for item in rows:
+        if not isinstance(item, dict):
+            continue
+        if type(item.get("place")) is not int or item["place"] != 0:
+            continue
+        zeros += 1
+        value = item.get("kmTime")
+        if value == "Dsk":
+            counts["Dsk"] += 1
+        elif value == "0,0":
+            counts["ZERO_TIME"] += 1
+        elif value is None:
+            counts["MISSING_TIME"] += 1
+        else:
+            counts["OTHER_TIME"] += 1
+    return {
+        "parseable": True,
+        "rows": len(rows),
+        "place_zero": zeros,
+        "zero_km_time_categories": counts,
+        "payout_authority": False,
+    }
+
+
 def original_start_and_scratch_evidence(client, day_key, race_no, selection):
     """Only explicit per-race starts/scratches, not a guess from place=0."""
     starts = client.starts(day_key)
@@ -181,6 +217,7 @@ def probe(*, client, raceday_key, race_number, selected, cached_winner=None,
         "structural_reasons": review["reasons"],
         "winning_result": review["winning_result"],
         "public_selected_participant_fields": details,
+        "anonymous_result_code_distribution": race_result_status_distribution(complete_payload),
         "official_start_and_scratch_corroboration": start_corroboration,
         "bookkeeping_authority": False,
         "p0_status": "BLOCKED_PENDING_INDEPENDENT_ADJUDICATION",
