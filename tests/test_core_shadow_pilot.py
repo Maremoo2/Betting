@@ -1,6 +1,6 @@
 """Deterministic tests for prospective, isolated CORE-003 pilot metrics."""
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 
 import pytest
 from test_core_prefetch import (
