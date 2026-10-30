@@ -2,6 +2,7 @@ import pytest
 
 from hbi.prospective_eval_gate import validate_cohort, validate_one
 
+
 def row():
     p={'1':0.6,'2':0.4};q={'1':0.7,'2':0.3}
     return {'race_id':'T:1','race_start_utc':'2026-10-31T15:00:00+00:00',
