@@ -203,8 +203,6 @@ def audit_race(conn, race_id, *, asof):
     db_cut=canonical-TOLERANCE
     if db_cut>asof:
         return {'race_id':race_id,'status':'FUTURE','blockers':['TMINUS4_NOT_OBSERVED'],'pit_certified':False}
-    starts=source_rows(conn,'rikstoto','RACEDAY_STARTS',key,rn)
-    atgs=source_rows(conn,'atg','FULL_FIELD_ONLY_V1',race_id,rn)
     # Chronological source candidate: as-of canonical T-4, not merely closest after start.
     try:
         source_atg=latest_asof(conn,
@@ -257,8 +255,8 @@ def audit_race(conn, race_id, *, asof):
             except (TypeError,ValueError): identity_payload={}
             identity_ok,err=parse_atg_identity(identity_payload,roster['active'],roster['all'])
             if err:reasons.append(err)
-    fundamentals,ft=latest_cohort(conn,'runner_fundamental_snapshots',race_id,cutoff)
-    market,mt=latest_cohort(conn,'provider_market_snapshots',race_id,cutoff,product='V')
+    fundamentals,_ft=latest_cohort(conn,'runner_fundamental_snapshots',race_id,cutoff)
+    market,_mt=latest_cohort(conn,'provider_market_snapshots',race_id,cutoff,product='V')
     if not roster:
         reasons.append('NO_RECONSTRUCTED_ACTIVE_FIELD')
         fund_ready=market_ready=False
