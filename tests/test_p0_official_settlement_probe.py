@@ -220,3 +220,39 @@ def test_unknown_scratch_shape_cannot_be_interpreted_as_not_scratched():
     assert item["scratched_list_shape_recognized"] is False
     assert item["selected_on_scratched_list"] is None
     assert item["start_participation_certified"] is False
+
+
+def test_anonymous_place_zero_shapes_are_counted_without_status_interpretation():
+    client = FakeWithStarts()
+    client.complete.payload["results"].extend([
+        {"startNumber": 7, "place": 0, "kmTime": "0,0"},
+        {"startNumber": 9, "place": 0, "kmTime": "Dsk"},
+        {"startNumber": 10, "place": 0, "kmTime": None},
+    ])
+    report = probe_module.probe(
+        client=client, raceday_key="S4_NR_2026-10-14",
+        race_number=6, selected="8", corroborate_starts=True,
+    )
+    shape = report["anonymous_result_code_distribution"]
+    assert shape["parseable"] is True
+    assert shape["rows"] == 5
+    assert shape["place_zero"] == 3
+    assert shape["zero_km_time_categories"]["ZERO_TIME"] == 1
+    assert shape["zero_km_time_categories"]["Dsk"] == 1
+    assert shape["zero_km_time_categories"]["MISSING_TIME"] == 1
+    assert shape["payout_authority"] is False
+    assert report["bookkeeping_authority"] is False
+
+
+def test_unavailable_complete_results_never_fabricates_place_zero_statistics():
+    client = FakeWithStarts()
+    client.complete.success = False
+    client.complete.payload = None
+    result = probe_module.probe(
+        client=client, raceday_key="S4_NR_2026-10-14",
+        race_number=6, selected="8", corroborate_starts=True,
+    )
+    distribution = result["anonymous_result_code_distribution"]
+    assert distribution["parseable"] is False
+    assert distribution["rows"] == 0
+    assert result["bookkeeping_authority"] is False
