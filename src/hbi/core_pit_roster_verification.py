@@ -148,8 +148,14 @@ def latest_cohort(conn, table, race_id, cutoff, product=None):
     ts = max(eligible,key=lambda x:x[0])[1]
     rows = conn.execute('SELECT * FROM '+table+' WHERE race_id=?'+product_clause+' AND observed_at_utc=?',(race_id,ts)).fetchall()
     internal = 'feature_as_of_utc' if table == 'runner_fundamental_snapshots' else 'provider_updated_at_utc'
-    if any(row[internal] and (parse_time(row[internal]) is None or parse_time(row[internal])>cutoff) for row in rows):
-        return [],ts
+    for row in rows:
+        value = row[internal]
+        # Fundamental features require a real, timezone-aware as-of clock.
+        # A missing feature clock cannot be inferred from fetch observation.
+        if table == 'runner_fundamental_snapshots' and not value:
+            return [],ts
+        if value and (parse_time(value) is None or parse_time(value)>cutoff):
+            return [],ts
     return rows,ts
 
 
@@ -159,7 +165,12 @@ def good_fundamentals(rows, active, roster):
         # Require each source-roster member, including scratched rows, to match.
         return False
     for key, record in roster.items():
-        if bool(by[key]['scratched']) != bool(record['scratched']):
+        # An unknown or non-boolean snapshot scratch state is not evidence
+        # that a horse was active at T-4. SQLite stores booleans as 0/1.
+        observed_scratch = by[key]['scratched']
+        if type(observed_scratch) is not int or observed_scratch not in (0, 1):
+            return False
+        if bool(observed_scratch) != record['scratched']:
             return False
     for key in active:
         row=by[key];starts=row['history_total_starts'];wins=row['history_total_wins']
@@ -199,6 +210,13 @@ def audit_race(conn, race_id, *, asof):
     canonical=parse_time(race['start_time_utc'])
     if canonical is None or not refs:
         return {'race_id':race_id,'status':'BLOCKED','blockers':['NO_CANONICAL_CLOCK_OR_REF'],'pit_certified':False}
+    # One physical race cannot silently inherit whichever of multiple
+    # incompatible provider race-day identities happens to sort first.
+    distinct_keys = {ref['provider_raceday_key'] for ref in refs}
+    if len(distinct_keys) != 1 or not next(iter(distinct_keys)):
+        return {'race_id': race_id, 'status': 'BLOCKED',
+                'raw_input_ready_at_cutoff': False, 'pit_certified': False,
+                'blockers': ['AMBIGUOUS_RIKSTOTO_RACEDAY_REFERENCE']}
     ref=refs[0];key=ref['provider_raceday_key'];rn=int(race['race_no'])
     db_cut=canonical-TOLERANCE
     if db_cut>asof:
@@ -248,6 +266,14 @@ def audit_race(conn, race_id, *, asof):
     earliest_clock = min(historic_clocks) if historic_clocks else None
     anchor=min(canonical,earliest_clock) if earliest_clock else canonical
     cutoff=anchor-TOLERANCE
+    # Retrospectively linked race identity is not an as-of identity. A later
+    # duplicate reference does not invalidate one genuinely observed pre-T-4.
+    reference_known_at_cutoff = any(
+        (stamp := parse_time(row['discovered_at_utc'])) is not None and stamp <= cutoff
+        for row in refs
+    )
+    if not reference_known_at_cutoff:
+        reasons.append('NO_PRE_CUTOFF_RACE_REFERENCE')
     try:
         source_starts=latest_asof(conn,
         'SELECT observed_at_utc,payload_json,source_uri,payload_id FROM provider_payloads '
@@ -297,7 +323,8 @@ def audit_race(conn, race_id, *, asof):
         curr={str(row['selection_id']):{'scratched':bool(row['scratched']),'name':row['horse_name']} for row in mutable}
         canonical_agreement=curr=={k:{'scratched':v['scratched'],'name':v['name']} for k,v in roster['all'].items()}
         if not canonical_agreement:reasons.append('MUTABLE_ROSTER_DIFFERS_FROM_RAW')
-    raw_ready=bool(roster and identity_ok and fund_ready and market_ready and canonical_agreement and not invalid_historical_clock and not conflicting_revisions)
+    raw_ready=bool(roster and identity_ok and fund_ready and market_ready and canonical_agreement
+                   and reference_known_at_cutoff and not invalid_historical_clock and not conflicting_revisions)
     # Publishing/source clock provenance isn't demonstrated by FETCH_COMPLETED timestamp.
     return {'race_id':race_id,'country':race['country'],'track':race['track'],
             'start_database_utc':canonical.isoformat(),
@@ -308,6 +335,7 @@ def audit_race(conn, race_id, *, asof):
             'retained_atg_same_instant_conflict':conflicting_revisions,
             'clock_disagreement_seconds':(canonical-earliest_clock).total_seconds() if earliest_clock else None,
             'conservative_cutoff_utc':cutoff.isoformat(),
+            'race_reference_known_at_cutoff':reference_known_at_cutoff,
             'raw_starts_reconstructed':bool(roster),'raw_active_count':len(roster['active']) if roster else None,
             'identity_matched_at_source_time':identity_ok,'fundamental_complete_at_cutoff':fund_ready,
             'win_market_complete_at_cutoff':market_ready,'mutable_roster_agrees_now':canonical_agreement,
