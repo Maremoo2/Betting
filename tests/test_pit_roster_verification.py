@@ -172,3 +172,80 @@ def test_null_extra_market_price_is_rejected(tmp_path):
     with sqlite3.connect(path) as c:
         c.execute('insert into provider_market_snapshots values (?,?,?,?,?,?)',(R,'99','V',T,None,None))
     assert not run(path)['win_market_complete_at_cutoff']
+
+
+def _insert_atg_revision(path, *, at, start, payload_id):
+    with sqlite3.connect(path) as conn:
+        raw=json.loads(conn.execute(
+            "SELECT payload_json FROM provider_payloads WHERE payload_id='atg-1'"
+        ).fetchone()[0])
+        raw["race_start_utc"]=start
+        conn.execute(
+            "INSERT INTO provider_payloads VALUES (?,?,?,?,?,?,?,?)",
+            (payload_id, "atg", "FULL_FIELD_ONLY_V1", R, 1, at,
+             "test://atg-revision", json.dumps(raw)),
+        )
+
+
+def test_earliest_archived_atg_clock_overrides_later_revised_clock(tmp_path):
+    path=fixture_db(tmp_path)
+    # Existing latest 14:54 payload says 15:00. Earlier independent evidence
+    # already said 14:57, hence T-4 was 14:53 and the 14:54 features are late.
+    _insert_atg_revision(
+        path, at="2026-10-30T14:53:00+00:00",
+        start="2026-10-30T14:57:00+00:00",
+        payload_id="atg-earlier",
+    )
+    r=run(path)
+    assert r["start_atg_reported_utc"]=="2026-10-30T15:00:00+00:00"
+    assert r["earliest_retained_atg_clock_utc"]=="2026-10-30T14:57:00+00:00"
+    assert r["conservative_cutoff_utc"]=="2026-10-30T14:53:00+00:00"
+    assert r["clock_disagreement_seconds"]==180
+    assert r["retained_atg_clock_count"]==2
+    assert r["raw_input_ready_at_cutoff"] is False
+    assert "NO_PRE_CUTOFF_RIKSTOTO_STARTS" in r["blockers"]
+
+
+def test_malformed_older_clock_cannot_be_ignored_when_latest_valid(tmp_path):
+    path=fixture_db(tmp_path)
+    _insert_atg_revision(
+        path, at="2026-10-30T14:53:00+00:00",
+        start="invalid", payload_id="atg-invalid-early",
+    )
+    r=run(path)
+    assert r["retained_atg_clock_invalid"] is True
+    assert "INVALID_RETAINED_ATG_RACE_CLOCK" in r["blockers"]
+    assert r["raw_input_ready_at_cutoff"] is False
+    assert r["pit_certified"] is False
+
+
+def test_conflicting_older_same_instant_clock_prevents_green(tmp_path):
+    path=fixture_db(tmp_path)
+    for suffix,time in enumerate((
+        "2026-10-30T15:01:00+00:00",
+        "2026-10-30T14:59:00+00:00",
+    )):
+        _insert_atg_revision(
+            path, at="2026-10-30T14:53:00+00:00",
+            start=time, payload_id=f"atg-earlier-{suffix}",
+        )
+    r=run(path)
+    assert r["retained_atg_same_instant_conflict"] is True
+    assert "CONFLICTING_RETAINED_ATG_CLOCK_SNAPSHOTS" in r["blockers"]
+    assert r["raw_input_ready_at_cutoff"] is False
+
+
+def test_same_instant_identical_duplicate_clock_does_not_invent_conflict(tmp_path):
+    path=fixture_db(tmp_path)
+    _insert_atg_revision(
+        path, at="2026-10-30T14:53:00+00:00",
+        start="2026-10-30T15:00:00+00:00", payload_id="atg-old-identical",
+    )
+    _insert_atg_revision(
+        path, at="2026-10-30T14:53:00+00:00",
+        start="2026-10-30T15:00:00+00:00", payload_id="atg-old-identical-2",
+    )
+    r=run(path)
+    assert r["retained_atg_same_instant_conflict"] is False
+    assert r["raw_input_ready_at_cutoff"] is True
+    assert r["retained_atg_clock_count"]==3
