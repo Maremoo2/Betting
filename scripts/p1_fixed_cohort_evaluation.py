@@ -96,12 +96,24 @@ def evaluate(manifest: dict, records: list[dict], *, protocol_bytes: bytes) -> d
         errors.append("MISSING_DECLARED_RACES")
     if unexpected:
         errors.append("UNEXPECTED_UNPREREGISTERED_RACES")
-    if records and any(
-        _aware(record["race_start_utc"]) <= registered
-        for record in records
-        if "race_start_utc" in record
-    ):
-        errors.append("PROTOCOL_REGISTERED_AFTER_RACE_START")
+    # A self-declared frozen record must not purport to have been
+    # preregistered or frozen before the *manifest protocol* existed.
+    # This is necessary, though not independently sufficient, evidence.
+    for record in records:
+        for field, reason in (
+            ("race_start_utc", "PROTOCOL_REGISTERED_AFTER_RACE_START"),
+            ("preregistered_at_utc", "RACE_PREREG_PRECEDES_PROTOCOL"),
+            ("frozen_at_utc", "RACE_FREEZE_PRECEDES_PROTOCOL"),
+        ):
+            if field not in record:
+                continue
+            try:
+                recorded = _aware(record[field])
+            except (TypeError, ValueError):
+                errors.append("INVALID_DECLARED_RACE_TIME")
+                continue
+            if recorded < registered or (field == "race_start_utc" and recorded == registered):
+                errors.append(reason)
     if errors:
         report["status"] = "BLOCKED_COHORT_INTEGRITY"
         return report
