@@ -1,6 +1,6 @@
 """Whole-day, no-cherry-picking CORE-003 source/PIT coverage from one immutable archive.
 
-This script reports all physical trotting races in a date interval, including
+This script reports all archived trotting race *references* in an interval, including
 FUTURE, BLOCKED, incomplete and non-Rikstoto-provider cases. It does not
 certify PIT, predict winners, place bets, alter source or migrate production.
 """
@@ -26,12 +26,34 @@ def sha256(path: Path) -> str:
     return h.hexdigest()
 
 
+def identity_kind(race_id: str, country: str, track: str) -> str:
+    """A composite X1/multi-track reference is not a verified physical race.
+
+    Keep it in the archive ledger instead of silently dropping it or
+    letting it inflate the single-track physical race denominator.
+    """
+    if (
+        race_id.startswith("RIKSTOTO:X1_NR_")
+        or country == "UNKNOWN"
+        or "/" in track
+    ):
+        return "UNRESOLVED_COMPOSITE_OR_UNLOCATED"
+    return "SINGLE_TRACK_CANDIDATE"
+
+
 def _summary(records: list[dict]) -> dict:
     count = Counter(r["terminal_status"] for r in records)
     blockers = Counter(code for r in records for code in r["blockers"])
     assessed = [r for r in records if r["terminal_status"] != "FUTURE"]
     return {
         "races_total": len(records),
+        "single_track_candidates": sum(
+            r["race_identity_kind"] == "SINGLE_TRACK_CANDIDATE" for r in records
+        ),
+        "unresolved_composite_or_unlocated_refs": sum(
+            r["race_identity_kind"] == "UNRESOLVED_COMPOSITE_OR_UNLOCATED"
+            for r in records
+        ),
         "races_t4_elapsed": len(assessed),
         "races_future_not_at_t4": count["FUTURE"],
         "source_observed_not_attested": count["SOURCE_OBSERVED_UNATTESTED"],
@@ -84,6 +106,10 @@ def analyze(db: Path, *, start_date: str, end_date: str, asof: str) -> dict:
                 "race_date": row["race_date"],
                 "country": row["country"] or "UNKNOWN",
                 "track": row["track"] or "UNKNOWN",
+                "race_identity_kind": identity_kind(
+                    race_id, row["country"] or "UNKNOWN",
+                    row["track"] or "UNKNOWN",
+                ),
                 "terminal_status": status,
                 "raw_input_ready": bool(reviewed.get("raw_input_ready_at_cutoff", False)),
                 "pit_certified": False,
@@ -113,6 +139,8 @@ def analyze(db: Path, *, start_date: str, end_date: str, asof: str) -> dict:
         "source_db_sha256": before,
         "source_db_unchanged": True,
         "summary": total,
+        "single_track_is_physical_race_proven": False,
+        "unresolved_references_retained_in_denominator": True,
         "country_days": {k: _summary(v) for k, v in sorted(by_date_country.items())},
         "track_days": {k: _summary(v) for k, v in sorted(by_date_track.items())},
         "races": output,
