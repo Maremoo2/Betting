@@ -125,6 +125,36 @@ def test_wrong_race_key_blocks(tmp_path):
     assert 'RACE_KEY_MISMATCH' in run(path)['blockers']
 
 
+def test_null_fundamental_asof_blocks_without_backfilling(tmp_path):
+    path = fixture_db(tmp_path)
+    change(path, "UPDATE runner_fundamental_snapshots SET feature_as_of_utc=NULL WHERE selection_id='1'")
+    result = run(path)
+    assert not result['fundamental_complete_at_cutoff']
+    assert not result['raw_input_ready_at_cutoff']
+    assert 'INCOMPLETE_FUNDAMENTAL_ASOF_FIELD' in result['blockers']
+    assert result['pit_certified'] is False
+
+
+def test_unknown_active_scratch_state_cannot_pass_fundamentals(tmp_path):
+    path = fixture_db(tmp_path)
+    change(path, "UPDATE runner_fundamental_snapshots SET scratched=NULL WHERE selection_id='1'")
+    result = run(path)
+    assert not result['fundamental_complete_at_cutoff']
+    assert not result['raw_input_ready_at_cutoff']
+    assert result['pit_certified'] is False
+
+
+def test_conflicting_raceday_references_block_instead_of_first_match(tmp_path):
+    path = fixture_db(tmp_path)
+    change(path, "INSERT INTO provider_race_refs VALUES (?,?,?,?)",
+           (R, 'rikstoto', 'OTHER_NR_2026-10-30', '2026-10-30T13:01:00+00:00'))
+    result = run(path)
+    assert result['status'] == 'BLOCKED'
+    assert 'AMBIGUOUS_RIKSTOTO_RACEDAY_REFERENCE' in result['blockers']
+    assert result['raw_input_ready_at_cutoff'] is False
+    assert result['pit_certified'] is False
+
+
 def test_unknown_fundamental_asof_blocks(tmp_path):
     path=fixture_db(tmp_path)
     change(path,"update runner_fundamental_snapshots set feature_as_of_utc='2026-10-30T15:01:00+00:00'")
