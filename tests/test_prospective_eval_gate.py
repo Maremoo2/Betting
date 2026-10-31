@@ -73,3 +73,18 @@ def test_cohort_hash_determinism_and_duplicate_rejection():
 def test_existing_archived_records_cannot_pass_without_pit():
     r=row();r['roster_pit_certified']=False;r['source_publication_attested']=False
     assert validate_one(r)['status']=='BLOCKED'
+
+
+@pytest.mark.parametrize("invalid", [
+    {'1': '0.6', '2': 0.4},
+    {'1': 0.6, '2': '0.4'},
+    {'1': True, '2': 0.0},
+    {'1': 0.6, '': 0.4},
+    {1: 0.6, '2': 0.4},
+])
+def test_untyped_probability_or_runner_identity_cannot_pass(invalid):
+    r = row()
+    r['candidate_probabilities'] = invalid
+    result = validate_one(r)
+    assert result['status'] == 'BLOCKED'
+    assert 'INVALID_DISTRIBUTION' in result['reasons']

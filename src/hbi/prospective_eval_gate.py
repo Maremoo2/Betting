@@ -22,6 +22,9 @@ def utc_time(value):
 
 def distribution(value):
     if not isinstance(value,dict) or len(value)<2:return False
+    # JSON strings and booleans are not numeric probability evidence.
+    if any(type(v) not in (int, float) for v in value.values()):return False
+    if any(not isinstance(k,str) or not k.strip() for k in value):return False
     try:
         vals=[float(v) for v in value.values()]
     except (TypeError,ValueError,OverflowError):return False
