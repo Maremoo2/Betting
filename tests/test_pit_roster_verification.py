@@ -155,6 +155,21 @@ def test_conflicting_raceday_references_block_instead_of_first_match(tmp_path):
     assert result['pit_certified'] is False
 
 
+@pytest.mark.parametrize('ref_clock', [
+    None,
+    '2026-10-30T14:59:00+00:00',
+    '2026-10-30T13:00:00',
+])
+def test_reference_discovered_after_cutoff_or_without_utc_blocks(tmp_path, ref_clock):
+    path = fixture_db(tmp_path)
+    change(path, "UPDATE provider_race_refs SET discovered_at_utc=?", (ref_clock,))
+    result = run(path)
+    assert result['race_reference_known_at_cutoff'] is False
+    assert result['raw_input_ready_at_cutoff'] is False
+    assert 'NO_PRE_CUTOFF_RACE_REFERENCE' in result['blockers']
+    assert result['pit_certified'] is False
+
+
 def test_unknown_fundamental_asof_blocks(tmp_path):
     path=fixture_db(tmp_path)
     change(path,"update runner_fundamental_snapshots set feature_as_of_utc='2026-10-30T15:01:00+00:00'")
