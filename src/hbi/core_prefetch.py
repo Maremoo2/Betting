@@ -41,33 +41,55 @@ class PrefetchTask:
     issued_at_utc: str
 
 
+def _scratch_state(value: Any) -> int | None:
+    """Only explicit 0/1 source states count; NULL is never an active runner."""
+    return value if type(value) is int and value in (0, 1) else None
+
+
+def _roster_states(roster: list[dict[str, Any]]) -> dict[str, int] | None:
+    ids = [str(r['selection_id']) for r in roster]
+    if (len(ids) < 2 or len(ids) != len(set(ids))
+            or any(not key or key == 'None' for key in ids)):
+        return None
+    states = {str(r['selection_id']): _scratch_state(r['scratched']) for r in roster}
+    return states if all(state is not None for state in states.values()) else None
+
+
 def _verified_fundamentals(fund: list[dict[str, Any]], roster: list[dict[str, Any]]) -> tuple[bool, int]:
-    ids = {str(r['selection_id']) for r in roster}
-    fids = {str(r['selection_id']) for r in fund}
-    if not ids or len(fids) != len(fund) or ids != fids:
+    states = _roster_states(roster)
+    if states is None:
         return False, 0
-    verified = sum(bool(r.get('full_field_history_complete'))
-                   and r.get('history_total_starts') is not None
-                   and r.get('history_total_wins') is not None
-                   and r.get('source_uri')
-                   and not bool(r.get('scratched')) for r in fund)
-    active = sum(not bool(r.get('scratched')) for r in fund)
-    # Existing Champion's full-field gate requires all active history *verified*.
-    return active >= 2 and verified == active, verified
+    fids = [str(r['selection_id']) for r in fund]
+    if len(fids) != len(set(fids)) or set(fids) != set(states):
+        return False, 0
+    if any(_scratch_state(r['scratched']) != states[str(r['selection_id'])] for r in fund):
+        return False, 0
+    active = [r for r in fund if states[str(r['selection_id'])] == 0]
+    verified = sum(
+        r.get('full_field_history_complete') == 1
+        and type(r.get('history_total_starts')) is int
+        and type(r.get('history_total_wins')) is int
+        and 0 <= r['history_total_wins'] <= r['history_total_starts']
+        and isinstance(r.get('source_uri'), str) and bool(r['source_uri'].strip())
+        for r in active
+    )
+    # Research-only source freshness, never immutable roster/PIT certification.
+    return len(active) >= 2 and verified == len(active), verified
 
 
 def _market_complete(market: list[dict[str, Any]], roster: list[dict[str, Any]]) -> bool:
-    mids = [str(r['selection_key']) for r in market]
-    if not mids or len(mids) != len(set(mids)):
+    states = _roster_states(roster)
+    if states is None:
         return False
-    if set(mids) != {str(r['selection_id']) for r in roster}:
+    mids = [str(r['selection_key']) for r in market]
+    if not mids or len(mids) != len(set(mids)) or set(mids) != set(states):
         return False
     for row in market:
-        if str(row['selection_key']) not in {str(r['selection_id']) for r in roster if not r['scratched']}:
-            continue
+        if states[str(row['selection_key'])] != 0:
+            continue  # Scratched runners have no required WIN quote.
         try:
             odds = float(row['odds_decimal'])
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, OverflowError):
             return False
         if not math.isfinite(odds) or odds <= 1:
             return False
@@ -126,6 +148,8 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
         complete_market = _market_complete(market, roster)
         if not roster:
             why = 'MISSING_STARTLIST'
+        elif _roster_states(roster) is None:
+            why = 'UNVERIFIED_ROSTER_SCRATCH_OR_ID'
         elif not fund:
             why = 'MISSING_HORSE_HISTORY'
         elif not complete_fund:
