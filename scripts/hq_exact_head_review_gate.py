@@ -18,7 +18,7 @@ def _instant(value: object) -> datetime | None:
     if not isinstance(value, str) or not value:
         return None
     try:
-        timestamp = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        timestamp = datetime.fromisoformat(value)
     except ValueError:
         return None
     return timestamp if timestamp.utcoffset() is not None else None
@@ -64,9 +64,9 @@ def evaluate(
         or not isinstance(author, str)
     ):
         raise ValueError("Incomplete PR identity or original head SHA")
-    if "full_name" in (pr.get("base") or {}).get("repo", {}):
-        if pr["base"]["repo"]["full_name"].casefold() != repository.casefold():
-            raise ValueError("PR does not belong to requested repository")
+    base_repo = (pr.get("base") or {}).get("repo") or {}
+    if not isinstance(base_repo, dict) or base_repo.get("full_name") != repository:
+        raise ValueError("PR does not belong to requested repository")
     names = {
         name.strip().casefold() for name in reviewer_logins.split(",")
         if name.strip()
@@ -138,7 +138,7 @@ def evaluate(
         when = _instant(item.get("created_at"))
         if when is None or when < approval["when"]:
             continue
-        if item.get("body", "").strip() == expected:
+        if isinstance(item.get("body"), str) and item["body"].strip() == expected:
             answer["exact_head_signoff_present"] = True
             answer["status"] = "HQ_REVIEW_EVIDENCE_PRESENT_RULESET_ENFORCEMENT_UNVERIFIED"
             return answer
