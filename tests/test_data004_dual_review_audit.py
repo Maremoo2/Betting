@@ -126,7 +126,7 @@ def test_one_conflicting_value_stays_disputed(review_sources):
 
 
 def test_different_page_requires_explicit_adjudication(review_sources):
-    manifest, evidence, root, a, b, paths = review_sources
+    a, b = review_sources[3:5]
     # Synthetic PDF source is one page only; a real two-page source needed
     # for a valid but conflicting page. Testing page out-of-range is stricter.
     edit(a, lambda rows: populate(rows, "reviewer-a", count=1))
@@ -143,7 +143,7 @@ def test_different_page_requires_explicit_adjudication(review_sources):
     "unknown_status", "pending_with_value", "duplicate_cell", "bad_sha", "wrong_meeting",
 ])
 def test_broken_source_or_review_field_blocks(review_sources, fault):
-    *_, a, b, _ = review_sources
+    a = review_sources[3]
     def mutate(rows):
         populate(rows, "reviewer-a", count=1)
         row = rows[0]
