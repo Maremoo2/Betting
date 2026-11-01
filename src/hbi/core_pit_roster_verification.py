@@ -181,11 +181,16 @@ def good_fundamentals(rows, active, roster):
     return True
 
 
-def good_market(rows, active):
+def good_market(rows, active, roster):
+    """Require exact archived WIN membership, including scratched selections.
+
+    A valid negative-price sentinel for a scratched horse is never proof that
+    a previously unknown/off-roster selection belongs in the physical race.
+    """
     seen=set();price={}
     for row in rows:
         key=str(row['selection_key'])
-        if key in seen:
+        if key in seen or key not in roster:
             return False
         seen.add(key)
         try: v=float(row['odds_decimal'])
@@ -196,7 +201,7 @@ def good_market(rows, active):
             price[key]=v
         elif v != -0.02:  # Explicit archived Rikstoto unpriced marker only
             return False
-    return set(price)==active
+    return seen == set(roster) and set(price)==active
 
 
 def audit_race(conn, race_id, *, asof):
@@ -314,14 +319,37 @@ def audit_race(conn, race_id, *, asof):
         fund_ready=market_ready=False
     else:
         fund_ready=good_fundamentals(fundamentals,roster['active'],roster['all'])
-        market_ready=good_market(market,roster['active'])
+        market_ready=good_market(market,roster['active'],roster['all'])
         if not fund_ready:reasons.append('INCOMPLETE_FUNDAMENTAL_ASOF_FIELD')
         if not market_ready:reasons.append('INCOMPLETE_WIN_ASOF_FIELD')
     canonical_agreement=None
     if roster:
         mutable=conn.execute('SELECT selection_id,scratched,horse_name FROM runners WHERE race_id=?',(race_id,)).fetchall()
-        curr={str(row['selection_id']):{'scratched':bool(row['scratched']),'name':row['horse_name']} for row in mutable}
-        canonical_agreement=curr=={k:{'scratched':v['scratched'],'name':v['name']} for k,v in roster['all'].items()}
+        # A mutable NULL/invalid scratch is not evidence of an active runner;
+        # duplicates must not silently collapse in a dict comprehension.
+        mutable_well_formed = (
+            len(mutable) == len(roster['all'])
+            and all(
+                type(row['scratched']) is int and row['scratched'] in (0, 1)
+                and isinstance(row['horse_name'], str) and row['horse_name'].strip()
+                and row['selection_id'] is not None
+                for row in mutable
+            )
+        )
+        curr = {
+            str(row['selection_id']): {
+                'scratched': bool(row['scratched']), 'name': row['horse_name']
+            }
+            for row in mutable
+        } if mutable_well_formed else {}
+        canonical_agreement = (
+            mutable_well_formed
+            and len(curr) == len(mutable)
+            and curr == {
+                k: {'scratched': v['scratched'], 'name': v['name']}
+                for k, v in roster['all'].items()
+            }
+        )
         if not canonical_agreement:reasons.append('MUTABLE_ROSTER_DIFFERS_FROM_RAW')
     raw_ready=bool(roster and identity_ok and fund_ready and market_ready and canonical_agreement
                    and reference_known_at_cutoff and not invalid_historical_clock and not conflicting_revisions)
