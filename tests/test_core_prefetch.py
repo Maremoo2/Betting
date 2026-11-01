@@ -128,6 +128,47 @@ def test_scratched_invalid_market_quote_ignored():
     assert plan_prefetch(c,now=NOW.isoformat())['tasks']==[]
 
 
+def test_unknown_roster_scratch_never_suppresses_source_fetch():
+    c = make_db()
+    fundamental(c); market(c)
+    c.execute("UPDATE runners SET scratched=NULL WHERE selection_id='2'")
+    p = plan_prefetch(c, now=NOW.isoformat())
+    assert actions(p) == ['COLLECT_FUNDAMENTALS', 'COLLECT_WIN_MARKET']
+    assert p['tasks'][0]['reason'] == 'UNVERIFIED_ROSTER_SCRATCH_OR_ID'
+
+
+def test_conflicting_fundamental_scratch_retries_source():
+    c = make_db()
+    fundamental(c); market(c)
+    c.execute("UPDATE runner_fundamental_snapshots SET scratched=1 WHERE selection_id='2'")
+    p = plan_prefetch(c, now=NOW.isoformat())
+    assert actions(p) == ['COLLECT_FUNDAMENTALS']
+    assert p['tasks'][0]['reason'] == 'INCOMPLETE_FULL_FIELD_HISTORY'
+
+
+def test_missing_snapshot_scratch_retries_source():
+    c = make_db()
+    fundamental(c); market(c)
+    c.execute("UPDATE runner_fundamental_snapshots SET scratched=NULL WHERE selection_id='1'")
+    assert actions(plan_prefetch(c, now=NOW.isoformat())) == ['COLLECT_FUNDAMENTALS']
+
+
+def test_invalid_history_record_retries_source():
+    c = make_db()
+    fundamental(c); market(c)
+    c.execute("UPDATE runner_fundamental_snapshots SET history_total_wins=11 WHERE selection_id='1'")
+    assert actions(plan_prefetch(c, now=NOW.isoformat())) == ['COLLECT_FUNDAMENTALS']
+
+
+def test_duplicate_roster_id_never_counts_full_field():
+    c = make_db()
+    fundamental(c); market(c)
+    c.execute("INSERT INTO runners SELECT * FROM runners WHERE selection_id='1'")
+    p = plan_prefetch(c, now=NOW.isoformat())
+    assert actions(p) == ['COLLECT_FUNDAMENTALS', 'COLLECT_WIN_MARKET']
+    assert p['tasks'][0]['reason'] == 'UNVERIFIED_ROSTER_SCRATCH_OR_ID'
+
+
 def test_no_market_fetch_more_than_twelve_minutes_before_start():
     c=make_db();c.execute('update races set start_time_utc=?',((NOW+timedelta(minutes=30)).isoformat(),))
     assert actions(plan_prefetch(c,now=NOW.isoformat()))==['COLLECT_FUNDAMENTALS']
