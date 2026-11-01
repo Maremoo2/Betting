@@ -121,9 +121,13 @@ def test_incomplete_or_tampered_original_archive_never_passes(inputs, fault):
             if row["meeting"] == first["meeting"]:
                 row["expected_pdf_path"] = "../fake/full_program.pdf"
     elif fault == "inconsistent_meeting_path":
-        rows = [x for x in manifest["selected"] if x["meeting"] == first["meeting"]]
-        if len(rows) < 2:
-            pytest.skip("The first sample meeting has no two source rows")
+        # Select an actually duplicated locked meeting, not whichever
+        # first program appears in the archive evidence index.
+        counts = {m: sum(r["meeting"] == m for r in manifest["selected"])
+                  for m in paths}
+        meeting = next(m for m, count in counts.items() if count > 1)
+        rows = [r for r in manifest["selected"] if r["meeting"] == meeting]
+        assert len(rows) > 1
         rows[1]["expected_pdf_path"] = "different/full_program.pdf"
     elif fault == "wrong_source_evidence_sha":
         first["pdf_sha256"] = "0" * 64
