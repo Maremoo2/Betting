@@ -1,0 +1,83 @@
+name: V1 P0 Exact-State Forensics (Read Only, No Admission)
+
+on:
+  pull_request:
+    paths:
+      - 'src/hbi/v1_p0_triage.py'
+      - 'tests/test_v1_p0_triage.py'
+      - '.github/workflows/v1-p0-exact-state-forensics.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  v1-p0-evidence:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install offline read-only research and tests
+        run: python -m pip install -e '.[dev]'
+      - name: Pure synthetic negative tests do not write active data
+        run: python -m pytest -q tests/test_v1_p0_triage.py tests/test_legacy_provenance.py
+      - name: Restore genuine latest main branch source state in temporary workspace
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REF_NAME: main
+          HBI_DB_PATH: ${{ runner.temp }}/original-frozen-hbi.sqlite
+        run: |
+          set -euo pipefail
+          python -m hbi.state_artifact | tee "$RUNNER_TEMP/source-state.txt"
+          grep -qx 'STATE_RESTORE=RESTORED' "$RUNNER_TEMP/source-state.txt"
+          test -s "$HBI_DB_PATH"
+      - name: Read-only diagnose original frozen replay and overdue paper tickets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m hbi.v1_p0_triage \
+            --db "$RUNNER_TEMP/original-frozen-hbi.sqlite" \
+            --output "$RUNNER_TEMP/v1-p0-readonly-triage.json" \
+            > "$RUNNER_TEMP/diagnostic-summary.json"
+      - name: Assert V1 fail-gates remain fail-closed with no source write
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          p = json.loads((Path(os.environ['RUNNER_TEMP']) / 'v1-p0-readonly-triage.json').read_text())
+          assert p['schema'] == 'HBI_V1_P0_READ_ONLY_TRIAGE_V1'
+          assert p['status'] == 'DIAGNOSTIC_ONLY_P0_NOT_CLEARED'
+          assert len(p['source_database_sha256']) == 64
+          assert p['source_database_unchanged'] is True
+          assert p['snapshot_rewritten'] is False
+          assert p['v1_system_audit_failure_overridden'] is False
+          assert p['prospective_pit_validated'] is False
+          assert p['model_or_bet_authority'] is False
+          assert p['replay']['original_v1_audit_overridden'] is False
+          assert p['settlement']['stored_outcome_is_payout_evidence'] is False
+          assert p['settlement']['money_movement_performed'] is False
+          assert all(x['settlement_or_refund_authorized'] is False
+                     for x in p['settlement']['tickets'])
+          print('V1_P0_ORIGINAL_SOURCE_DIAGNOSED_NOT_CLEARED_NO_MONEY_MOVED')
+          print('Legacy source reconstructed:', p['replay']['legacy_late_attachment_original_source_reconstructed'])
+          print('Legacy unreconciled:', p['replay']['historical_replay_unreconciled'])
+          print('Overdue unsettled tickets:', p['settlement']['overdue_unsettled_with_stored_outcome'])
+          PY
+      - name: Upload forensic report only, not original SQLite or raw provider payloads
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v1-p0-original-state-forensics-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/v1-p0-readonly-triage.json
+            ${{ runner.temp }}/source-state.txt
+          if-no-files-found: warn
+          retention-days: 30
