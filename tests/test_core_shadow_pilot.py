@@ -1,7 +1,7 @@
 """Deterministic tests for prospective, isolated CORE-003 pilot metrics."""
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from test_core_prefetch import (
@@ -455,3 +455,64 @@ def test_atg_rejection_after_t4_is_not_backdated_into_prior_source_observation()
     assert row["atg_history_source_diagnostic"] is None
     assert row["all_inputs_complete_as_of_t4"] is True
     assert report["prospective_t4_success_proven"] is False
+
+
+
+@pytest.mark.parametrize(("table", "field", "expected"), [
+    ("runner_fundamental_snapshots", "observed_at_utc",
+     "FUNDAMENTAL_OBSERVED_AT_UTC_AFTER_CUTOFF"),
+    ("runner_fundamental_snapshots", "feature_as_of_utc",
+     "FUNDAMENTAL_FEATURE_AS_OF_UTC_AFTER_CUTOFF"),
+    ("provider_market_snapshots", "observed_at_utc",
+     "WIN_MARKET_OBSERVED_AT_UTC_AFTER_CUTOFF"),
+    ("provider_market_snapshots", "provider_updated_at_utc",
+     "WIN_MARKET_PROVIDER_UPDATED_AT_UTC_AFTER_CUTOFF"),
+])
+def test_offset_encoded_future_snapshot_never_counts_as_t4_source(
+    table, field, expected,
+):
+    c = make_db()
+    fundamental(c)
+    market(c)
+    # 11:55 -01:00 is 12:55 UTC, i.e. 55 min AFTER the noon
+    # as-of instant, but is lexically <= the SQLite cutoff "12:00+00:00".
+    future = (NOW + timedelta(minutes=55)).astimezone(
+        timezone(timedelta(hours=-1))
+    ).isoformat()
+    c.execute(f"UPDATE {table} SET {field}=?", (future,))
+    row = _pilot(c, execute=False)["race_readiness_before"][0]
+    assert expected in row["selected_snapshot_timestamp_problems"]
+    assert row["selected_source_clock_guard_passed"] is False
+    assert row["history_complete_as_of_t4"] is False
+    assert row["win_market_complete_as_of_t4"] is False
+    assert row["all_inputs_complete_as_of_t4"] is False
+
+
+def test_invalid_but_lexically_earlier_selected_source_clock_fails_closed():
+    c = make_db()
+    fundamental(c)
+    market(c)
+    c.execute("UPDATE provider_market_snapshots SET observed_at_utc=?",
+              ("1999-invalid-source-clock",))
+    row = _pilot(c, execute=False)["race_readiness_before"][0]
+    assert "WIN_MARKET_OBSERVED_AT_UTC_INVALID" in row[
+        "selected_snapshot_timestamp_problems"
+    ]
+    assert row["all_inputs_complete_as_of_t4"] is False
+
+
+def test_timezone_encoded_genuinely_past_source_stays_provisional_only():
+    c = make_db()
+    fundamental(c)
+    market(c)
+    # 11:00 +00:00 remains before noon and lexically admissible.
+    past = (NOW - timedelta(hours=1)).astimezone(
+        timezone(timedelta(hours=-1))
+    ).isoformat()
+    c.execute("UPDATE runner_fundamental_snapshots SET observed_at_utc=?, feature_as_of_utc=?",
+              (past, past))
+    c.execute("UPDATE provider_market_snapshots SET observed_at_utc=?", (past,))
+    row = _pilot(c, execute=False)["race_readiness_before"][0]
+    assert row["selected_snapshot_timestamp_problems"] == []
+    assert row["selected_source_clock_guard_passed"] is True
+    assert _pilot(c, execute=False)["prospective_t4_success_proven"] is False
