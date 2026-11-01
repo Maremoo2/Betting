@@ -40,7 +40,7 @@ def add_race(c, *, rid=RID, start=START, track='Testbane', no=1, roster=True, co
     if roster:
         for n in (1,2,3):
             c.execute('insert into runners values (?,?,?,?,?,?,?)',
-                      (rid,str(n),f'Horse {n}',0,n,'Driver','Trainer'))
+                      (rid,str(n),f'Named Runner {n}',0,n,'Driver','Trainer'))
     c.commit()
 
 
@@ -48,7 +48,7 @@ def fundamental(c, *, rid=RID, now=NOW, complete=True, one_missing=False):
     for n in ((1,2) if one_missing else (1,2,3)):
         c.execute('insert into runner_fundamental_snapshots values (?,?,?,?,?,?,?,?,?,?,?,?,?)',
                   (rid,str(n),now.isoformat(),now.isoformat(),10,n,
-                   'https://example.test/source',int(complete),0,f'Horse {n}',n,'Driver','FULL_FIELD_HISTORY_ATG'))
+                   'https://example.test/source',int(complete),0,f'Named Runner {n}',n,'Driver','FULL_FIELD_HISTORY_ATG'))
     c.commit()
 
 
@@ -122,7 +122,7 @@ def test_scratched_invalid_market_quote_ignored():
     # fund scratch corresponding
     for n in (1,2,3):
         c.execute('insert into runner_fundamental_snapshots values (?,?,?,?,?,?,?,?,?,?,?,?,?)',
-                  (RID,str(n),NOW.isoformat(),NOW.isoformat(),10,n,'source',1,int(n==3),f'Horse {n}',n,'D','Q'))
+                  (RID,str(n),NOW.isoformat(),NOW.isoformat(),10,n,'source',1,int(n==3),f'Named Runner {n}',n,'D','Q'))
     market(c,odds=4.)
     c.execute('update provider_market_snapshots set odds_decimal=null where selection_key="3"')
     assert plan_prefetch(c,now=NOW.isoformat())['tasks']==[]
@@ -277,3 +277,33 @@ def test_not_refresh_complete_cohort_if_still_fresh():
     c=make_db();fundamental(c,now=NOW);market(c,now=NOW)
     p=plan_prefetch(c,now=(NOW+timedelta(minutes=1)).isoformat())
     assert p['tasks']==[]
+
+
+def test_generic_sql_horse_name_never_suppresses_prefetch():
+    c = make_db()
+    fundamental(c)
+    market(c)
+    c.execute("UPDATE runners SET horse_name='Häst 1' WHERE selection_id='1'")
+    p = plan_prefetch(c, now=NOW.isoformat())
+    assert actions(p) == ["COLLECT_FUNDAMENTALS", "COLLECT_WIN_MARKET"]
+    assert p["tasks"][0]["reason"] == "UNRESOLVED_PLACEHOLDER_ROSTER_IDENTITY"
+
+
+def test_scratched_generic_name_also_blocks_source_readiness():
+    c = make_db()
+    fundamental(c)
+    market(c)
+    c.execute("UPDATE runners SET horse_name='Horse 3', scratched=1 WHERE selection_id='3'")
+    c.execute("UPDATE runner_fundamental_snapshots SET scratched=1 WHERE selection_id='3'")
+    p = plan_prefetch(c, now=NOW.isoformat())
+    assert actions(p) == ["COLLECT_FUNDAMENTALS", "COLLECT_WIN_MARKET"]
+    assert p["tasks"][0]["reason"] == "UNRESOLVED_PLACEHOLDER_ROSTER_IDENTITY"
+
+
+def test_non_placeholder_named_horse_remains_eligible_for_source_completion():
+    c = make_db()
+    fundamental(c)
+    market(c)
+    c.execute("UPDATE runners SET horse_name='Horse Power 1' WHERE selection_id='1'")
+    p = plan_prefetch(c, now=NOW.isoformat())
+    assert p["tasks"] == []
