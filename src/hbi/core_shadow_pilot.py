@@ -201,6 +201,38 @@ def _atg_history_source_diagnostic(
     }
 
 
+
+def _selected_cohort_timestamp_problems(
+    rows: list[dict[str, Any]], cutoff: datetime, *, market: bool,
+) -> list[str]:
+    """Prevent lexical SQLite ISO comparison from admitting future snapshots.
+
+    This checks the rows actually selected by the legacy read-only research
+    cohort query, without changing that helper or frozen Champion formulas.
+    Missing source clock evidence never becomes a PIT certification.
+    """
+    prefix = "WIN_MARKET" if market else "FUNDAMENTAL"
+    fields = (
+        ("observed_at_utc", "provider_updated_at_utc")
+        if market else ("observed_at_utc", "feature_as_of_utc")
+    )
+    problems: set[str] = set()
+    for row in rows:
+        for field in fields:
+            value = row.get(field)
+            if market and field == "provider_updated_at_utc" and value is None:
+                continue
+            try:
+                if not isinstance(value, str):
+                    raise ValueError("Source clock must be ISO text")
+                observed = _utc(value).astimezone(UTC)
+                if observed > cutoff:
+                    problems.add(f"{prefix}_{field.upper()}_AFTER_CUTOFF")
+            except (TypeError, ValueError, OverflowError):
+                problems.add(f"{prefix}_{field.upper()}_INVALID")
+    return sorted(problems)
+
+
 def _readiness(conn: sqlite3.Connection, race_id: str, as_of: datetime) -> dict[str, Any]:
     """Source-evidence diagnostic, NOT an executable model or PIT roster proof."""
     info = _rows(conn, "SELECT start_time_utc FROM races WHERE race_id = ?", (race_id,))
@@ -229,6 +261,15 @@ def _readiness(conn: sqlite3.Connection, race_id: str, as_of: datetime) -> dict[
     )
     full_history, verified_active = _verified_fundamentals(fundamentals, rows)
     market_complete = _market_complete(market, rows) if rows else False
+    selected_timestamp_problems = (
+        _selected_cohort_timestamp_problems(fundamentals, cutoff, market=False)
+        + _selected_cohort_timestamp_problems(market, cutoff, market=True)
+    )
+    if selected_timestamp_problems:
+        # The underlying read-only _cohort uses lexical SQLite filtering;
+        # this research-only veto must never miscount UTC-future inputs.
+        full_history = False
+        market_complete = False
     if source_diagnostic and not source_diagnostic["full_field_gate_passed"]:
         full_history = False
         market_complete = False
@@ -252,6 +293,8 @@ def _readiness(conn: sqlite3.Connection, race_id: str, as_of: datetime) -> dict[
         "verified_active_history": verified_active,
         "fundamental_cohort_at_utc": fundamental_at,
         "win_market_cohort_at_utc": market_at,
+        "selected_snapshot_timestamp_problems": selected_timestamp_problems,
+        "selected_source_clock_guard_passed": not selected_timestamp_problems,
         "history_complete_as_of_t4": full_history,
         "win_market_complete_as_of_t4": market_complete,
         "all_inputs_complete_as_of_t4": full_history and market_complete,
