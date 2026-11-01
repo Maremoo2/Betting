@@ -51,6 +51,9 @@ jobs:
             --archive "12219187865=$RUNNER_TEMP/12219187865.zip" \
             --archive "12219320854=$RUNNER_TEMP/12219320854.zip" \
             --blank-ledger-output "$RUNNER_TEMP/data004-blank-review.csv" \
+            --source-locators research/data004c-holdout-source-locators-v1.json \
+            --review-hints-output "$RUNNER_TEMP/data004-review-hints-UNREVIEWED.json" \
+            --navigation-csv-output "$RUNNER_TEMP/data004-source-navigation-UNREVIEWED.csv" \
             --report-output "$RUNNER_TEMP/data004-original-archive-report.json"
       - name: Original source integrity does not certify human gold, PIT or BET
         run: |
@@ -73,6 +76,17 @@ jobs:
           assert {r["gold_status"] for r in rows} == {"PENDING_VISUAL_REVIEW"}
           assert all(not r["gold_value"] for r in rows)
           assert report["source_byte_checks_performed_in_this_run"] is True
+          assert report["historical_source_row_geometry_found"] == 30
+          assert report["unreviewed_glyph_hints"] >= 0
+          hint = json.loads((root / "data004-review-hints-UNREVIEWED.json").read_text())
+          assert hint["locked_rows"] == 30
+          assert hint["field_assessments"] == 390
+          assert hint["independent_source_gold_accepted"] == 0
+          assert hint["holdout_verified"] is False
+          with (root / "data004-source-navigation-UNREVIEWED.csv").open(newline="") as s:
+              navigation = list(csv.DictReader(s))
+          assert len(navigation) == 390
+          assert {r["source_reading_accepted_gold"] for r in navigation} == {"NO"}
           assert report["source_row_identity_independently_accepted"] is False
           assert report["gold_fields_independently_verified"] is False
           assert report["holdout_validated"] is False
@@ -88,5 +102,7 @@ jobs:
           path: |
             ${{ runner.temp }}/data004-original-archive-report.json
             ${{ runner.temp }}/data004-blank-review.csv
+            ${{ runner.temp }}/data004-review-hints-UNREVIEWED.json
+            ${{ runner.temp }}/data004-source-navigation-UNREVIEWED.csv
           if-no-files-found: warn
           retention-days: 30
