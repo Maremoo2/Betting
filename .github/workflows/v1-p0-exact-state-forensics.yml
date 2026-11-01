@@ -77,6 +77,11 @@ jobs:
           assert p['prospective_pit_validated'] is False
           assert p['model_or_bet_authority'] is False
           assert p['replay']['original_v1_audit_overridden'] is False
+          assert p['replay_coverage']['total_decisions_examined'] == p['replay']['total_decisions']
+          assert p['replay_coverage']['eligible_with_original_saved_provenance'] == p['replay']['provenance_eligible_checked']
+          assert p['replay_coverage']['incomplete_replay_evidence'] == p['replay']['incomplete_provenance_skipped']
+          assert p['replay_coverage']['missing_historical_evidence_inferred_as_pass'] is False
+          assert p['replay_coverage']['shadow_executable_status_granted'] is False
           assert p['settlement']['stored_outcome_is_payout_evidence'] is False
           assert p['settlement']['money_movement_performed'] is False
           assert all(x['settlement_or_refund_authorized'] is False
@@ -85,6 +90,8 @@ jobs:
           print('Legacy source reconstructed:', p['replay']['legacy_late_attachment_original_source_reconstructed'])
           print('Legacy unreconciled:', p['replay']['historical_replay_unreconciled'])
           print('Overdue unsettled tickets:', p['settlement']['overdue_unsettled_with_stored_outcome'])
+          print('Unreplayable eligible decision statuses:', p['replay_coverage']['incomplete_evidence_for_priced_or_watched_decision'])
+          print('Skipped evidence groups:', p['replay_coverage']['reason_by_frozen_status'])
           PY
       - name: Probe ORIGINAL official results/starts for the one pinned unsettled paper ticket (GET only)
         shell: bash
