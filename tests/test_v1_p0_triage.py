@@ -9,7 +9,11 @@ from pathlib import Path
 import pytest
 
 from hbi.storage import SQLiteStore
-from hbi.v1_p0_triage import build_triage, inspect_unsettled_outcomes
+from hbi.v1_p0_triage import (
+    build_triage,
+    classify_missing_replay_provenance,
+    inspect_unsettled_outcomes,
+)
 
 SCHEMA = Path(__file__).parents[1] / "db" / "schema.sql"
 T0 = datetime(2026, 10, 26, 18, 0, tzinfo=UTC)
@@ -152,3 +156,51 @@ def test_multiple_overdue_tickets_report_each_without_bookkeeping(tmp_path):
     assert report["overdue_unsettled_with_stored_outcome"] == 2
     assert [x["ticket_id"] for x in report["tickets"]] == ["t1", "t2"]
     assert all(x["settlement_or_refund_authorized"] is False for x in report["tickets"])
+
+
+
+def test_477_style_skips_are_split_by_frozen_decision_status_not_silently_passed(
+    tmp_path,
+):
+    store, db = _store(tmp_path)
+    for decision_id, status, with_probabilities in (
+        ("blocked-no-input", "NOT_EXECUTABLE", False),
+        ("unpriced-source-missing", "PASS", True),
+        ("watch-source-missing", "WATCH", True),
+    ):
+        store.insert_shadow_decision_run({
+            "decision_run_id": decision_id,
+            "race_id": RACE,
+            "provider_raceday_key": "BJ_NR_2026-10-26",
+            "product": "V",
+            "created_at_utc": (T0 - timedelta(minutes=4)).isoformat(),
+            "race_start_time_utc": T0.isoformat(),
+            "decision_status": status,
+            "reason": "SYNTHETIC",
+            "shadow_model_version": "SYNTHETIC_REPLAY_ONLY",
+            "target_minutes_to_start": 4.0,
+            "fundamental_probabilities_json": (
+                json.dumps({"1": 0.6, "2": 0.4}) if with_probabilities else None
+            ),
+            "combined_probabilities_json": (
+                json.dumps({"1": 0.55, "2": 0.45}) if with_probabilities else None
+            ),
+        })
+    result = classify_missing_replay_provenance(db)
+    assert result["total_decisions_examined"] == 3
+    assert result["incomplete_replay_evidence"] == 3
+    assert result["eligible_with_original_saved_provenance"] == 0
+    assert result["incomplete_evidence_for_priced_or_watched_decision"] == 2
+    assert result["reason_by_frozen_status"] == {
+        "NOT_EXECUTABLE:FROZEN_FUNDAMENTAL_OR_COMBINED_DISTRIBUTION_ABSENT": 1,
+        "PASS:NO_FROZEN_MARKET_PROVENANCE": 1,
+        "WATCH:NO_FROZEN_MARKET_PROVENANCE": 1,
+    }
+    assert result["missing_historical_evidence_inferred_as_pass"] is False
+    before = _filehash(db)
+    triage = build_triage(db, now=T0 + timedelta(days=2))
+    assert triage["source_database_sha256"] == before == _filehash(db)
+    assert triage["replay_coverage"]["incomplete_replay_evidence"] == 3
+    assert triage["replay"]["incomplete_provenance_skipped"] == 3
+    assert triage["replay_coverage"]["shadow_executable_status_granted"] is False
+
