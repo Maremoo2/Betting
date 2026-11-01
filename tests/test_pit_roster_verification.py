@@ -100,6 +100,41 @@ def test_off_field_priced_or_unrecognized_marker_blocks(tmp_path,price):
     assert not run(fixture_db(tmp_path,market_extra=price))['win_market_complete_at_cutoff']
 
 
+def test_unrostered_unpriced_win_sentinel_is_not_a_complete_field(tmp_path):
+    path = fixture_db(tmp_path, market_extra=-0.02)
+    result = run(path)
+    assert not result['win_market_complete_at_cutoff']
+    assert not result['raw_input_ready_at_cutoff']
+    assert 'INCOMPLETE_WIN_ASOF_FIELD' in result['blockers']
+    assert result['pit_certified'] is False
+
+
+def test_missing_scratched_selection_market_quote_blocks(tmp_path):
+    path = fixture_db(tmp_path)
+    change(path, "DELETE FROM provider_market_snapshots WHERE selection_key='3'")
+    result = run(path)
+    assert not result['win_market_complete_at_cutoff']
+    assert 'INCOMPLETE_WIN_ASOF_FIELD' in result['blockers']
+
+
+def test_unknown_mutable_roster_scratch_never_matches_raw_source(tmp_path):
+    path = fixture_db(tmp_path)
+    change(path, "UPDATE runners SET scratched=NULL WHERE selection_id='2'")
+    result = run(path)
+    assert result['mutable_roster_agrees_now'] is False
+    assert 'MUTABLE_ROSTER_DIFFERS_FROM_RAW' in result['blockers']
+    assert not result['raw_input_ready_at_cutoff']
+
+
+def test_duplicate_mutable_selection_id_blocks_snapshot_consistency(tmp_path):
+    path = fixture_db(tmp_path)
+    change(path, "INSERT INTO runners SELECT * FROM runners WHERE selection_id='1'")
+    result = run(path)
+    assert result['mutable_roster_agrees_now'] is False
+    assert 'MUTABLE_ROSTER_DIFFERS_FROM_RAW' in result['blockers']
+    assert not result['raw_input_ready_at_cutoff']
+
+
 def test_duplicate_start_number_blocks(tmp_path):
     path=fixture_db(tmp_path)
     with sqlite3.connect(path) as c:
