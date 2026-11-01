@@ -148,3 +148,26 @@ def test_zip_with_unrelated_non_source_files_cannot_satisfy_missing_original(inp
     archives[artifact_id] = changed
     with pytest.raises(ValueError, match="Original PDF absent"):
         audit_archives(manifest, evidence, archives)
+
+
+def test_unreviewed_navigation_output_cannot_run_without_source_locator_index(inputs):
+    manifest, evidence, archives, root, _ = inputs
+    destination = root / "forbidden-review-hints.json"
+    with pytest.raises(ValueError, match="needs frozen original locator"):
+        audit_archives(
+            manifest, evidence, archives, review_hints_output=destination,
+        )
+    assert not destination.exists()
+
+
+def test_unverified_or_changed_locator_index_does_not_generate_gold_hints(inputs):
+    manifest, evidence, archives, root, _ = inputs
+    target = root / "no-fabricated-gold.csv"
+    with pytest.raises(ValueError):
+        audit_archives(
+            manifest, evidence, archives,
+            source_locators={"schema_version": "FAKE_MAPPED_GOLD",
+                             "rows": [], "holdout_verified": True},
+            navigation_csv_output=target,
+        )
+    assert not target.exists()
