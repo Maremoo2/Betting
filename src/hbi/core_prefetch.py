@@ -99,6 +99,16 @@ def _market_complete(market: list[dict[str, Any]], roster: list[dict[str, Any]])
     return True
 
 
+def _source_observation_as_of(value: str | None, cutoff: datetime) -> bool:
+    """Never treat a malformed or UTC-future selected cohort as available."""
+    if not isinstance(value, str):
+        return False
+    try:
+        return _utc(value).astimezone(UTC) <= cutoff
+    except (TypeError, ValueError, OverflowError):
+        return False
+
+
 def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float = 90.0,
                   lead_minutes: float = 4.0, market_window_minutes: float = 12.0,
                   max_tasks: int | None = None) -> dict[str, Any]:
@@ -149,6 +159,33 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
         market, market_at = _cohort(conn, 'provider_market_snapshots', race_id, current.isoformat(), product='V')
         complete_fund, verified = _verified_fundamentals(fund, roster)
         complete_market = _market_complete(market, roster)
+        # _cohort's legacy SQLite text comparison can admit a timestamp
+        # whose true UTC instant is AFTER current, or an invalid ISO clock.
+        # Keep the collection queue fail-closed rather than crashing/stopping.
+        fundamental_clocks_valid = (
+            _source_observation_as_of(fundamental_at, current)
+            and all(
+                _source_observation_as_of(row.get("observed_at_utc"), current)
+                and _source_observation_as_of(row.get("feature_as_of_utc"), current)
+                for row in fund
+            )
+        )
+        market_clocks_valid = (
+            _source_observation_as_of(market_at, current)
+            and all(
+                _source_observation_as_of(row.get("observed_at_utc"), current)
+                and (row.get("provider_updated_at_utc") is None
+                     or _source_observation_as_of(
+                         row["provider_updated_at_utc"], current
+                     ))
+                for row in market
+            )
+        )
+        if not fundamental_clocks_valid:
+            complete_fund = False
+            verified = 0
+        if not market_clocks_valid:
+            complete_market = False
         if not roster:
             why = 'MISSING_STARTLIST'
         elif any(is_generic_horse_identity(row.get('horse_name')) for row in roster):
@@ -159,7 +196,7 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
             why = 'MISSING_HORSE_HISTORY'
         elif not complete_fund:
             why = 'INCOMPLETE_FULL_FIELD_HISTORY'
-        elif minutes <= 8 and fundamental_at and (current-_utc(fundamental_at)).total_seconds()>3*60:
+        elif minutes <= 8 and fundamental_at and (current-_utc(fundamental_at).astimezone(UTC)).total_seconds()>3*60:
             why = 'REFRESH_VERIFIED_FUNDAMENTALS_NEAR_START'
         else:
             why = ''
@@ -171,7 +208,7 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
                 'COLLECT_FUNDAMENTALS',why,phase,0 if minutes <= 12 else 1,
                 len(roster),verified,len(market),current.isoformat()))
         market_stale = (complete_market and market_at is not None and minutes <= 8 and
-                        (current-_utc(market_at)).total_seconds()>2*60)
+                        (current-_utc(market_at).astimezone(UTC)).total_seconds()>2*60)
         if minutes <= market_window_minutes and (not complete_market or market_stale):
             market_reason = ('REFRESH_WIN_MARKET_NEAR_START' if market_stale else
                              'MISSING_OR_INCOMPLETE_WIN_MARKET')
