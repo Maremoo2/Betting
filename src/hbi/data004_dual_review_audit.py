@@ -137,16 +137,29 @@ def audit_dual_review(
             pending += 1
             continue
         both_submitted += 1
-        if (ls == rs and left["gold_value"] == right["gold_value"]
-                and left["source_pdf_page"] == right["source_pdf_page"]):
+        # An identical textual answer on the same *page* is not agreement
+        # about the historical source row. Two different horse-history rows
+        # can legitimately share a time/placing/equipment string.
+        status_equal = ls == rs
+        value_equal = left["gold_value"] == right["gold_value"]
+        page_equal = left["source_pdf_page"] == right["source_pdf_page"]
+        locator_equal = (
+            left["visual_row_locator"].strip() == right["visual_row_locator"].strip()
+        )
+        if status_equal and value_equal and page_equal and locator_equal:
             aligned += 1
         else:
             unresolved.append({
                 "sample_id": sample_id, "field": field,
-                "reason": "INDEPENDENT_REVIEWS_DISAGREE",
+                "reason": (
+                    "INDEPENDENT_SOURCE_ROW_LOCATOR_MISMATCH"
+                    if status_equal and value_equal and page_equal
+                    else "INDEPENDENT_REVIEWS_DISAGREE"
+                ),
                 "status_one": ls, "status_two": rs,
-                "value_equal": left["gold_value"] == right["gold_value"],
-                "page_equal": left["source_pdf_page"] == right["source_pdf_page"],
+                "value_equal": value_equal,
+                "page_equal": page_equal,
+                "row_locator_equal": locator_equal,
             })
     result = {
         "schema": "DATA004_INDEPENDENT_DUAL_PDF_REVIEW_AUDIT_V1",
