@@ -177,8 +177,9 @@ def test_477_style_skips_are_split_by_frozen_decision_status_not_silently_passed
             "race_start_time_utc": T0.isoformat(),
             "decision_status": status,
             "reason": "SYNTHETIC",
-            "shadow_model_version": "SYNTHETIC_REPLAY_ONLY",
+            "shadow_model_version": f"SYNTHETIC_REPLAY_ONLY_{decision_id}",
             "target_minutes_to_start": 4.0,
+            "ticket_count": 0,
             "fundamental_probabilities_json": (
                 json.dumps({"1": 0.6, "2": 0.4}) if with_probabilities else None
             ),
