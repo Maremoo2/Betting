@@ -132,9 +132,12 @@ def _atg_history_source_diagnostic(
             source_clocks.append(_utc(str(candidate)).astimezone(UTC))
         except (ValueError, TypeError, AttributeError):
             invalid_clock = True
+    source_runners = evidence.get("runners", [])
+    runner_list_invalid = not isinstance(source_runners, list)
     runner_issues = []
-    for runner in evidence.get('runners', []):
+    for runner in source_runners if isinstance(source_runners, list) else []:
         if not isinstance(runner, dict):
+            runner_list_invalid = True
             continue
         if runner.get('reason') or runner.get('schema_ok') is False:
             runner_issues.append({
@@ -142,19 +145,47 @@ def _atg_history_source_diagnostic(
                 'horse_name': runner.get('horse_name'),
                 'reason': runner.get('reason') or 'UNVERIFIED_RUNNER_SCHEMA',
             })
+    declared_reasons = evidence.get("reasons", [])
+    declared_reasons_valid = (
+        isinstance(declared_reasons, list)
+        and all(isinstance(reason, str) for reason in declared_reasons)
+    )
+    matched = evidence.get("matched_complete_runners")
+    active = evidence.get("active_runners")
+    totals_invalid = (
+        type(matched) is not int or type(active) is not int
+        or active < 2 or matched < 0 or matched > active
+    )
+    totals_conflict = (
+        type(matched) is int and type(active) is int and matched != active
+    )
+    full_field_reasons = (
+        (["ATG_FULL_FIELD_GATE_NOT_PASSED"] if evidence.get("passed") is not True else [])
+        + (["ATG_FULL_FIELD_RUNNER_TOTALS_INVALID"] if totals_invalid else [])
+        + (["ATG_FULL_FIELD_RUNNER_COUNT_CONFLICT"] if totals_conflict else [])
+        + (["ATG_FULL_FIELD_RUNNER_SCHEMA_REJECTED"] if runner_issues else [])
+        + (["ATG_FULL_FIELD_RUNNER_LIST_INVALID"] if runner_list_invalid else [])
+        + (["ATG_FULL_FIELD_PROVIDER_REASONS_PRESENT"]
+           if declared_reasons_valid and declared_reasons else [])
+        + (["ATG_FULL_FIELD_PROVIDER_REASONS_INVALID"]
+           if not declared_reasons_valid else [])
+    )
     return {
         'observed_at_utc': eligible['observed_at_utc'] if eligible is not None else None,
         'full_field_gate_passed': (
-            evidence.get('passed') is True
+            not full_field_reasons
             and not source_cohort_ambiguous
             and not invalid_observation_clock
+            and not invalid_clock
         ),
+        'full_field_rejection_reasons': full_field_reasons,
         'source_cohort_ambiguous': source_cohort_ambiguous,
         'invalid_observation_clock': invalid_observation_clock,
         'matched_complete_runners': evidence.get('matched_complete_runners'),
         'active_runners': evidence.get('active_runners'),
         'source_reasons': (
-            (evidence.get('reasons', []) if isinstance(evidence.get('reasons'), list) else [])
+            (declared_reasons if declared_reasons_valid else [])
+            + full_field_reasons
             + (['CONFLICTING_SAME_INSTANT_ATG_FULL_FIELD_SOURCES']
                if source_cohort_ambiguous else [])
             + (['ATG_SOURCE_OBSERVATION_CLOCK_INVALID']
@@ -198,11 +229,7 @@ def _readiness(conn: sqlite3.Connection, race_id: str, as_of: datetime) -> dict[
     )
     full_history, verified_active = _verified_fundamentals(fundamentals, rows)
     market_complete = _market_complete(market, rows) if rows else False
-    if source_diagnostic and (
-        source_diagnostic["source_clock_invalid"]
-        or source_diagnostic["source_cohort_ambiguous"]
-        or source_diagnostic["invalid_observation_clock"]
-    ):
+    if source_diagnostic and not source_diagnostic["full_field_gate_passed"]:
         full_history = False
         market_complete = False
     return {
