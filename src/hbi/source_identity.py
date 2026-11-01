@@ -5,6 +5,7 @@ Rikstoto source views contain the same text. Observed in ORIGINAL Milano
 2026-11-01, S3 races 7 and 8: "Häst 1" etc. The lexical detector is narrow;
 not proof that every name outside this grammar is independently verified.
 """
+
 from __future__ import annotations
 
 import re
