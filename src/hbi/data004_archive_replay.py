@@ -15,6 +15,10 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 from .data004_original_pdf_audit import verify_original_pdfs, write_blank_gold_ledger
+from .data004_source_review_assist import (
+    build_original_pdf_review_hints,
+    write_navigation_csv,
+)
 
 MAX_PDF_BYTES = 50 * 1024 * 1024
 
@@ -33,12 +37,19 @@ def audit_archives(
     archives: dict[int, Path],
     *,
     blank_ledger_output: Path | None = None,
+    source_locators: dict[str, Any] | None = None,
+    review_hints_output: Path | None = None,
+    navigation_csv_output: Path | None = None,
 ) -> dict[str, Any]:
     """Re-read exact original PDFs INSIDE archive ZIPs and the frozen source gate.
 
     No extraction outside a disposable temp directory. Never trusts a path
     inside the ZIP for writing: only a locked manifest path is used.
     """
+    if (review_hints_output is not None or navigation_csv_output is not None) and (
+        source_locators is None
+    ):
+        raise ValueError("Source review output needs frozen original locator evidence")
     programs = evidence.get("programs")
     if not isinstance(programs, list):
         raise TypeError("Expected original source program evidence")
@@ -98,6 +109,24 @@ def audit_archives(
         report = verify_original_pdfs(manifest, evidence, root)
         if blank_ledger_output is not None:
             write_blank_gold_ledger(manifest, report, blank_ledger_output)
+        review_hints = None
+        if source_locators is not None:
+            # Independent source geometry and literal glyphs remain UNREVIEWED.
+            # Not used to prefill gold, nor accepted as PDF field truth.
+            review_hints = build_original_pdf_review_hints(
+                manifest, evidence, source_locators, root
+            )
+            if (review_hints["locked_rows"] != 30
+                    or review_hints["field_assessments"] != 390
+                    or review_hints["independent_source_gold_accepted"] != 0
+                    or review_hints["holdout_verified"] is not False):
+                raise ValueError("Unverified review hints attempted gold promotion")
+            if review_hints_output is not None:
+                with review_hints_output.open("x", encoding="utf-8") as stream:
+                    json.dump(review_hints, stream, ensure_ascii=False, indent=2)
+                    stream.write("\n")
+            if navigation_csv_output is not None:
+                write_navigation_csv(review_hints, navigation_csv_output)
 
     if report["verified_pdf_programs"] != 24 or len(received) != 24:
         raise ValueError("Incomplete locked 24-original-PDF physical replay")
@@ -110,6 +139,13 @@ def audit_archives(
         "locked_sample_rows": report["locked_sample_rows"],
         "original_holdout_cells": report["field_assessments_required"],
         "source_byte_checks_performed_in_this_run": True,
+        "historical_source_row_geometry_found": (
+            review_hints["locked_rows"] if review_hints else None
+        ),
+        "unreviewed_glyph_hints": (
+            review_hints["literal_hints_total"] if review_hints else None
+        ),
+        "review_source_navigation_is_not_gold": True,
         "verified_original_pdfs": sorted(received, key=lambda x: x["meeting"]),
         "source_row_identity_independently_accepted": False,
         "gold_fields_independently_verified": False,
@@ -132,6 +168,9 @@ def main() -> None:
     parser.add_argument("--archive", action="append", required=True,
                         help="One original GitHub Actions artifact: ID=/path/original.zip")
     parser.add_argument("--blank-ledger-output", type=Path)
+    parser.add_argument("--source-locators", type=Path)
+    parser.add_argument("--review-hints-output", type=Path)
+    parser.add_argument("--navigation-csv-output", type=Path)
     parser.add_argument("--report-output", type=Path)
     args = parser.parse_args()
     archives = {}
@@ -144,8 +183,17 @@ def main() -> None:
         archives[int(key)] = Path(path)
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     evidence = json.loads(args.source_evidence.read_text(encoding="utf-8"))
-    report = audit_archives(manifest, evidence, archives,
-                            blank_ledger_output=args.blank_ledger_output)
+    source_locators = (
+        json.loads(args.source_locators.read_text(encoding="utf-8"))
+        if args.source_locators is not None else None
+    )
+    report = audit_archives(
+        manifest, evidence, archives,
+        blank_ledger_output=args.blank_ledger_output,
+        source_locators=source_locators,
+        review_hints_output=args.review_hints_output,
+        navigation_csv_output=args.navigation_csv_output,
+    )
     if args.report_output is not None:
         if args.report_output.exists():
             parser.error("Refusing overwrite existing original replay report")
