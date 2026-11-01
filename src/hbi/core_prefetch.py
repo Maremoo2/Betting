@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from .race_core_review import _cohort, _rows, _utc
+from .source_identity import is_generic_horse_identity
 
 SCHEMA = 'CORE_003_PREFETCH_V1'
 REQUIRED_HISTORY_RATIO = 0.8
@@ -47,6 +48,8 @@ def _scratch_state(value: Any) -> int | None:
 
 
 def _roster_states(roster: list[dict[str, Any]]) -> dict[str, int] | None:
+    if any(is_generic_horse_identity(r.get('horse_name')) for r in roster):
+        return None
     ids = [str(r['selection_id']) for r in roster]
     if (len(ids) < 2 or len(ids) != len(set(ids))
             or any(not key or key == 'None' for key in ids)):
@@ -141,13 +144,15 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
     for r, minutes in selected:
         race_id = str(r['race_id'])
         eligible_races.add(race_id)
-        roster = _rows(conn, 'select selection_id,scratched from runners where race_id=?', (race_id,))
+        roster = _rows(conn, 'select selection_id,scratched,horse_name from runners where race_id=?', (race_id,))
         fund, fundamental_at = _cohort(conn, 'runner_fundamental_snapshots', race_id, current.isoformat())
         market, market_at = _cohort(conn, 'provider_market_snapshots', race_id, current.isoformat(), product='V')
         complete_fund, verified = _verified_fundamentals(fund, roster)
         complete_market = _market_complete(market, roster)
         if not roster:
             why = 'MISSING_STARTLIST'
+        elif any(is_generic_horse_identity(row.get('horse_name')) for row in roster):
+            why = 'UNRESOLVED_PLACEHOLDER_ROSTER_IDENTITY'
         elif _roster_states(roster) is None:
             why = 'UNVERIFIED_ROSTER_SCRATCH_OR_ID'
         elif not fund:
