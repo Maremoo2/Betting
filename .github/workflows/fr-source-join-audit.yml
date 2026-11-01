@@ -1,0 +1,65 @@
+name: FR Independent Exact Source Calendar Diagnostic (read only)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/hbi/fr_source_join_audit.py'
+      - 'tests/test_fr_source_join_audit.py'
+      - '.github/workflows/fr-source-join-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-fr-original-sources:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install bounded research dependencies
+        run: python -m pip install -e '.[dev]'
+      - name: Test cross-provider misjoin, ambiguity, clock and failed-schema
+        run: python -m pytest -q tests/test_fr_source_join_audit.py
+      - name: Fetch official Rikstoto and ATG FR calendars once (no writes)
+        run: |
+          python -m hbi.fr_source_join_audit \
+            --horizon-days 7 \
+            --output "$RUNNER_TEMP/fr-exact-source-calendar-diagnostic.json"
+      - name: Refuse source calendar identity as French full-field or BET
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          p = json.loads((Path(os.environ["RUNNER_TEMP"]) /
+                          "fr-exact-source-calendar-diagnostic.json").read_text())
+          assert p["schema"] == "FR_INDEPENDENT_EXACT_SOURCE_JOIN_DIAGNOSTIC_V1"
+          assert p["rikstoto_source_success"] is True
+          assert p["atg_calendar_source_success_count"] == len(
+              p["atg_calendar_dates_queried"])
+          assert p["full_field_history_join_performed"] is False
+          assert p["live_full_field_fr_pass"] is False
+          assert p["source_snapshot_first_published_at_verified"] is False
+          assert p["pit_certified"] is False
+          assert p["bet_authority"] is False
+          assert all(row["full_field_history_verified"] is False and
+                     row["bet_authority"] is False for row in p["races"])
+          print("FR_OFFICIAL_SOURCE_CALENDAR_DIAGNOSED__FULL_FIELD_AND_BET_BLOCKED")
+          print("Source races:", p["rikstoto_fr_races_in_window"])
+          print("Exact identical-source race matches:", p["exact_calendar_identity_matches"])
+          print("Failure reasons:", p["reasons"])
+          PY
+      - name: Upload read-only calendar identity report without horse names/odds
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fr-official-exact-calendar-identity-${{ github.run_id }}
+          path: ${{ runner.temp }}/fr-exact-source-calendar-diagnostic.json
+          if-no-files-found: warn
+          retention-days: 21
