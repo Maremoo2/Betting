@@ -18,12 +18,12 @@ RACEDAY = "F1_NR_2026-11-01"
 
 
 def race(**change):
-    kwargs = dict(
-        raceday_key=RACEDAY, raceday_name="Laval", track_code="5305",
-        country_code="FR", sport_type="trot", race_number=4, start_time=START,
-        start_time_raw="2026-11-01T15:15:00+01:00", start_method="auto",
-        progress_status="Future", pools=(), single_leg_products=("V",),
-    )
+    kwargs = {
+        "raceday_key": RACEDAY, "raceday_name": "Laval", "track_code": "5305",
+        "country_code": "FR", "sport_type": "trot", "race_number": 4, "start_time": START,
+        "start_time_raw": "2026-11-01T15:15:00+01:00", "start_method": "auto",
+        "progress_status": "Future", "pools": (), "single_leg_products": ("V",),
+    }
     return RikstotoRace(**{**kwargs, **change})
 
 
