@@ -9,7 +9,6 @@ not proof that every name outside this grammar is independently verified.
 import re
 import unicodedata
 
-
 _PLACEHOLDER = re.compile(r"(?:hast|horse|cavallo|cheval)(?:[1-9]|[12]\d|30)\Z")
 
 
