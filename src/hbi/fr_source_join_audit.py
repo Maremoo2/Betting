@@ -57,7 +57,7 @@ def classify_original_fr_race(
         "pit_source_published_before_event_verified": False,
         "bet_authority": False,
     }
-    if race.country_code != "FR" or race.sport_type not in {"trot", "Trot"}:
+    if race.country_code != "FR" or race.sport_type.upper() not in {"T", "TROT"}:
         return {**ref, "reason": "NOT_CANONICAL_FRENCH_TROT"}
     if race.start_time.utcoffset() is None or type(race.race_number) is not int:
         return {**ref, "reason": "INVALID_CANONICAL_RACE_IDENTITY"}
@@ -152,7 +152,7 @@ def run_source_overlap_audit(
     races = [
         r for r in rik.discover_races(original)
         if r.country_code == "FR"
-        and r.sport_type.lower() == "trot"
+        and r.sport_type.upper() in {"T", "TROT"}
         and r.progress_status == "Future"
         and clock < r.start_time <= future_cutoff
     ]
