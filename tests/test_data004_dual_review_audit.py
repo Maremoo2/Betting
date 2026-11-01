@@ -144,6 +144,39 @@ def test_two_reviewers_disagree_when_one_claims_unavailable(review_sources):
     assert not result["holdout_validated"]
 
 
+def test_same_value_on_different_horse_history_row_needs_human_adjudication(review_sources):
+    a, b = review_sources[3:5]
+    edit(a, lambda rows: populate(rows, "reviewer-a"))
+    def different_source_horse_row(rows):
+        populate(rows, "reviewer-b")
+        rows[0]["visual_row_locator"] = "Synthetic page row - OTHER HORSE"
+    edit(b, different_source_horse_row)
+    result = run(review_sources)
+    assert result["status"] == "REVIEW_DISAGREEMENTS_NEED_ADJUDICATION"
+    assert result["both_submitted_cells"] == 390
+    assert result["disputed_cells"] == 1
+    assert result["matching_submissions_needing_human_authentication"] == 389
+    assert result["disputes"][0]["reason"] == "INDEPENDENT_SOURCE_ROW_LOCATOR_MISMATCH"
+    assert result["disputes"][0]["value_equal"] is True
+    assert result["disputes"][0]["page_equal"] is True
+    assert result["disputes"][0]["row_locator_equal"] is False
+    assert result["holdout_validated"] is False
+
+
+def test_same_normalized_literal_locator_does_not_invent_gold(review_sources):
+    a, b = review_sources[3:5]
+    edit(a, lambda rows: populate(rows, "reviewer-a"))
+    def same_row_with_whitespace(rows):
+        populate(rows, "reviewer-b")
+        rows[0]["visual_row_locator"] = "  Synthetic page row  "
+    edit(b, same_row_with_whitespace)
+    result = run(review_sources)
+    assert result["status"] == "STRUCTURAL_CONSENSUS_REQUIRES_HUMAN_SOURCE_SIGNOFF"
+    assert result["matching_submissions_needing_human_authentication"] == 390
+    assert result["source_row_identity_independently_accepted"] is False
+    assert result["gold_fields_semantically_verified"] is False
+
+
 def test_one_conflicting_value_stays_disputed(review_sources):
     *_, a, b, _ = review_sources
     edit(a, lambda rows: populate(rows, "reviewer-a"))
