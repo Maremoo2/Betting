@@ -18,6 +18,8 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from urllib.parse import quote
 
+from .source_identity import is_generic_horse_identity
+
 TOLERANCE = timedelta(minutes=4)
 
 
@@ -83,6 +85,8 @@ def parse_rikstoto_roster(raw, race_no, raceday):
         scratch = item.get('isScratched')
         if type(sid) is not int or sid < 1 or not isinstance(name, str) or not name.strip() or type(scratch) is not bool:
             return None, 'MALFORMED_START_ROW'
+        if is_generic_horse_identity(name):
+            return None, 'PLACEHOLDER_ROSTER_HORSE_IDENTITY'
         if item.get('raceKey') != f'{raceday}#{race_no}':
             return None, 'RACE_KEY_MISMATCH'
         key = str(sid)
