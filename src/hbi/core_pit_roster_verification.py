@@ -71,7 +71,12 @@ def parse_rikstoto_roster(raw, race_no, raceday):
         return None, 'NO_PRE_CUTOFF_RIKSTOTO_STARTS'
     try:
         parsed = json.loads(raw)
-        items = parsed['result'][str(race_no)]
+        if not isinstance(parsed, dict) or parsed.get('success') is not True:
+            return None, 'STARTLIST_RESPONSE_NOT_SUCCESSFUL'
+        result = parsed.get('result')
+        if not isinstance(result, dict):
+            return None, 'INVALID_STARTS_ENVELOPE'
+        items = result[str(race_no)]
     except (TypeError, KeyError, ValueError, json.JSONDecodeError):
         return None, 'INVALID_STARTS_ENVELOPE'
     if not isinstance(items, list) or len(items) < 2:
@@ -87,6 +92,10 @@ def parse_rikstoto_roster(raw, race_no, raceday):
             return None, 'MALFORMED_START_ROW'
         if is_generic_horse_identity(name):
             return None, 'PLACEHOLDER_ROSTER_HORSE_IDENTITY'
+        # The race key and each participant's original row number must both
+        # identify this exact race, not a stale or accidentally joined leg.
+        if type(item.get('raceNumber')) is not int or item['raceNumber'] != race_no:
+            return None, 'STARTLIST_ROW_RACE_NUMBER_MISMATCH'
         if item.get('raceKey') != f'{raceday}#{race_no}':
             return None, 'RACE_KEY_MISMATCH'
         key = str(sid)

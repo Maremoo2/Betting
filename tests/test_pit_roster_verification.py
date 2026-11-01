@@ -36,7 +36,7 @@ def fixture_db(tmp_path, *, raw_time=T, source_start='2026-10-30T15:00:00+00:00'
         if not scratch:ident.append({'selection_id':sid,'horse_name':name,'match_method':'UNIQUE_NAME_AND_PROGRAM_NUMBER','schema_ok':True,'reason':None,'provider_horse_id':number if stable_id else None})
     if market_extra is not None:
         c.execute('insert into provider_market_snapshots values (?,?,?,?,?,?)',(R,'99','V',raw_time,None,market_extra))
-    starts_payload=json.dumps({'result':{'1':starts}})
+    starts_payload=json.dumps({'success':True,'result':{'1':starts}})
     atg_payload=json.dumps({'passed':True,'probe_only':False,'active_runners':2,'matched_complete_runners':2,
                               'active_selections':['1','2'],'runners':ident,'race_start_utc':source_start,
                               'timestamp_basis':'FETCH_COMPLETED','source_published_at_utc':None})
@@ -133,6 +133,60 @@ def test_duplicate_mutable_selection_id_blocks_snapshot_consistency(tmp_path):
     assert result['mutable_roster_agrees_now'] is False
     assert 'MUTABLE_ROSTER_DIFFERS_FROM_RAW' in result['blockers']
     assert not result['raw_input_ready_at_cutoff']
+
+
+@pytest.mark.parametrize('invalid_status', [False, None, "true", 1])
+def test_failed_or_ambiguous_original_http_envelope_never_proves_roster(tmp_path, invalid_status):
+    path = fixture_db(tmp_path)
+    with sqlite3.connect(path) as c:
+        current = json.loads(c.execute(
+            "SELECT payload_json FROM provider_payloads WHERE payload_id='raw-1'"
+        ).fetchone()[0])
+        current['success'] = invalid_status
+        c.execute("UPDATE provider_payloads SET payload_json=? WHERE payload_id='raw-1'",
+                  (json.dumps(current),))
+    result = run(path)
+    assert result['pit_certified'] is False
+    assert result['raw_input_ready_at_cutoff'] is False
+    assert result['raw_starts_reconstructed'] is False
+    assert 'STARTLIST_RESPONSE_NOT_SUCCESSFUL' in result['blockers']
+
+
+def test_original_startlist_missing_success_field_blocks(tmp_path):
+    path = fixture_db(tmp_path)
+    with sqlite3.connect(path) as c:
+        current = json.loads(c.execute(
+            "SELECT payload_json FROM provider_payloads WHERE payload_id='raw-1'"
+        ).fetchone()[0])
+        del current['success']
+        c.execute("UPDATE provider_payloads SET payload_json=? WHERE payload_id='raw-1'",
+                  (json.dumps(current),))
+    assert 'STARTLIST_RESPONSE_NOT_SUCCESSFUL' in run(path)['blockers']
+
+
+@pytest.mark.parametrize('wrong_race', [0, 2, "1", True, None])
+def test_startlist_row_race_must_match_selected_official_race(tmp_path, wrong_race):
+    path = fixture_db(tmp_path)
+    with sqlite3.connect(path) as c:
+        current = json.loads(c.execute(
+            "SELECT payload_json FROM provider_payloads WHERE payload_id='raw-1'"
+        ).fetchone()[0])
+        current['result']['1'][0]['raceNumber'] = wrong_race
+        c.execute("UPDATE provider_payloads SET payload_json=? WHERE payload_id='raw-1'",
+                  (json.dumps(current),))
+    result = run(path)
+    assert 'STARTLIST_ROW_RACE_NUMBER_MISMATCH' in result['blockers']
+    assert not result['raw_starts_reconstructed']
+    assert not result['raw_input_ready_at_cutoff']
+    assert result['pit_certified'] is False
+
+
+def test_raw_source_valid_successful_envelope_remains_observed_not_pit(tmp_path):
+    r = run(fixture_db(tmp_path))
+    assert r['raw_starts_reconstructed'] is True
+    assert r['raw_input_ready_at_cutoff'] is True
+    assert r['pit_certified'] is False
+    assert r['source_publication_proven'] is False
 
 
 def test_duplicate_start_number_blocks(tmp_path):
