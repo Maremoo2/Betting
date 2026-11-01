@@ -86,6 +86,47 @@ jobs:
           print('Legacy unreconciled:', p['replay']['historical_replay_unreconciled'])
           print('Overdue unsettled tickets:', p['settlement']['overdue_unsettled_with_stored_outcome'])
           PY
+      - name: Probe ORIGINAL official results/starts for the one pinned unsettled paper ticket (GET only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          root = Path(os.environ["RUNNER_TEMP"])
+          triage = json.loads((root / "v1-p0-readonly-triage.json").read_text())
+          tickets = triage["settlement"]["tickets"]
+          # Pinned original HBI state, not a new or inferred selection.
+          assert len(tickets) == 1, "Pinned original backlog denominator changed"
+          ticket = tickets[0]
+          assert (ticket["provider_raceday_key"], ticket["race_number"],
+                  ticket["selected_runner"], ticket["winner_from_stored_outcome"]) == (
+                      "S4_NR_2026-10-14", 6, "8", "5"
+                  ), "Original old source ticket identity changed"
+          subprocess.run([
+              sys.executable, "scripts/p0_official_settlement_probe.py",
+              "--raceday-key", ticket["provider_raceday_key"],
+              "--race-number", str(ticket["race_number"]),
+              "--selection", ticket["selected_runner"],
+              "--cached-winner", ticket["winner_from_stored_outcome"],
+              "--probe-start-status", "--execute-public-get",
+              "--output", str(root / "v1-p0-original-official-result-GET-only.json"),
+          ], check=True)
+          p = json.loads(
+              (root / "v1-p0-original-official-result-GET-only.json").read_text()
+          )
+          assert p["bookkeeping_authority"] is False
+          assert p["real_money_authority"] is False
+          assert p["p0_status"] == "BLOCKED_PENDING_INDEPENDENT_ADJUDICATION"
+          assert p["scope"] == "ONE_PAPER_RACE_SOURCE_EVIDENCE_NO_SETTLEMENT"
+          print("OFFICIAL_SOURCE_PROBE_REVIEW_ONLY_NO_SETTLEMENT")
+          print("Structural evidence reasons:", p["structural_reasons"])
+          print("Publisher payload observed:", p["both_official_http_payloads_observed"])
+          PY
       - name: Upload forensic report only, not original SQLite or raw provider payloads
         if: always()
         uses: actions/upload-artifact@v4
@@ -94,5 +135,6 @@ jobs:
           path: |
             ${{ runner.temp }}/v1-p0-readonly-triage.json
             ${{ runner.temp }}/source-state.txt
+            ${{ runner.temp }}/v1-p0-original-official-result-GET-only.json
           if-no-files-found: warn
           retention-days: 30
