@@ -110,6 +110,40 @@ def test_complete_matching_transcripts_never_self_approve_gold(review_sources):
     assert not result["pit_or_model_admission_approved"]
 
 
+@pytest.mark.parametrize("status", ["GOLD_UNAVAILABLE", "GOLD_AMBIGUOUS"])
+def test_independent_uncertain_or_unavailable_gold_does_not_invent_false(review_sources, status):
+    a, b = review_sources[3:5]
+    def fill_one(rows, reviewer):
+        populate(rows, reviewer, count=1)
+        rows[0]["gold_status"] = status
+        rows[0]["gold_value"] = ""
+        rows[0]["visual_row_locator"] = "Original page inspected; unreadable or absent"
+    edit(a, lambda rows: fill_one(rows, "reviewer-a"))
+    edit(b, lambda rows: fill_one(rows, "reviewer-b"))
+    result = run(review_sources)
+    assert result["status"] == "REVIEW_SUBMISSIONS_INCOMPLETE"
+    assert result["matching_submissions_needing_human_authentication"] == 1
+    assert result["pending_cells"] == 389
+    assert result["gold_fields_semantically_verified"] is False
+    assert result["holdout_validated"] is False
+
+
+def test_two_reviewers_disagree_when_one_claims_unavailable(review_sources):
+    a, b = review_sources[3:5]
+    edit(a, lambda rows: populate(rows, "reviewer-a"))
+    def change(rows):
+        populate(rows, "reviewer-b")
+        rows[0]["gold_status"] = "GOLD_UNAVAILABLE"
+        rows[0]["gold_value"] = ""
+    edit(b, change)
+    result = run(review_sources)
+    assert result["status"] == "REVIEW_DISAGREEMENTS_NEED_ADJUDICATION"
+    assert result["disputed_cells"] == 1
+    assert result["disputes"][0]["status_one"] == "GOLD_VALUE_RECORDED"
+    assert result["disputes"][0]["status_two"] == "GOLD_UNAVAILABLE"
+    assert not result["holdout_validated"]
+
+
 def test_one_conflicting_value_stays_disputed(review_sources):
     *_, a, b, _ = review_sources
     edit(a, lambda rows: populate(rows, "reviewer-a"))
