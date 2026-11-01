@@ -79,23 +79,51 @@ def _atg_history_source_diagnostic(
           ))
         ORDER BY p.observed_at_utc DESC
     """, (race_id, race_id, race_id))
-    eligible_rows = [
-        row for row in rows if _utc(str(row['observed_at_utc'])) <= cutoff
-    ]
-    eligible = eligible_rows[0] if eligible_rows else None
-    if eligible is None:
+    eligible_rows = []
+    invalid_observation_clock = False
+    for row in rows:
+        try:
+            observed = _utc(str(row["observed_at_utc"])).astimezone(UTC)
+        except (TypeError, ValueError, AttributeError):
+            # A malformed clock cannot prove a source was available before
+            # cutoff. Do not choose a convenient later revision instead.
+            invalid_observation_clock = True
+            continue
+        if observed <= cutoff:
+            eligible_rows.append((observed, row))
+    if not eligible_rows and not invalid_observation_clock:
         return None
+    # SQL's TEXT ordering of timestamps is not chronological for different
+    # offset spellings. Normalize to aware UTC instants before comparing.
+    if eligible_rows:
+        latest = max(observed for observed, _ in eligible_rows)
+        newest = [row for observed, row in eligible_rows if observed == latest]
+        eligible = min(newest, key=lambda row: str(row["payload_json"]))
+    else:
+        eligible = None
+    payloads_at_time = {}
+    for observed, row in eligible_rows:
+        payloads_at_time.setdefault(observed, set()).add(
+            str(row["payload_json"])
+        )
+    # A collision at ANY previously observed instant cannot be resolved by
+    # choosing a revised later source, even when the latest row is unique.
+    source_cohort_ambiguous = any(
+        len(bodies) > 1 for bodies in payloads_at_time.values()
+    )
     try:
-        evidence = json.loads(str(eligible['payload_json']))
+        evidence = json.loads(str(eligible["payload_json"])) if eligible is not None else {}
     except (ValueError, TypeError):
-        return None
+        evidence = {}
+        source_cohort_ambiguous = True
     if not isinstance(evidence, dict):
-        return None
+        evidence = {}
+        source_cohort_ambiguous = True
     # Earliest archived source-stated off-time is a conservative bound, never
     # a certification of the actual off-time or source publication instant.
     source_clocks = []
     invalid_clock = False
-    for archived in eligible_rows:
+    for _, archived in eligible_rows:
         try:
             payload = json.loads(str(archived['payload_json']))
             candidate = payload.get('race_start_utc')
@@ -115,11 +143,23 @@ def _atg_history_source_diagnostic(
                 'reason': runner.get('reason') or 'UNVERIFIED_RUNNER_SCHEMA',
             })
     return {
-        'observed_at_utc': eligible['observed_at_utc'],
-        'full_field_gate_passed': bool(evidence.get('passed')),
+        'observed_at_utc': eligible['observed_at_utc'] if eligible is not None else None,
+        'full_field_gate_passed': (
+            evidence.get('passed') is True
+            and not source_cohort_ambiguous
+            and not invalid_observation_clock
+        ),
+        'source_cohort_ambiguous': source_cohort_ambiguous,
+        'invalid_observation_clock': invalid_observation_clock,
         'matched_complete_runners': evidence.get('matched_complete_runners'),
         'active_runners': evidence.get('active_runners'),
-        'source_reasons': evidence.get('reasons', []),
+        'source_reasons': (
+            (evidence.get('reasons', []) if isinstance(evidence.get('reasons'), list) else [])
+            + (['CONFLICTING_SAME_INSTANT_ATG_FULL_FIELD_SOURCES']
+               if source_cohort_ambiguous else [])
+            + (['ATG_SOURCE_OBSERVATION_CLOCK_INVALID']
+               if invalid_observation_clock else [])
+        ),
         'source_race_start_utc': evidence.get('race_start_utc'),
         'earliest_retained_source_start_utc': (
             min(source_clocks).isoformat() if source_clocks else None
@@ -158,7 +198,11 @@ def _readiness(conn: sqlite3.Connection, race_id: str, as_of: datetime) -> dict[
     )
     full_history, verified_active = _verified_fundamentals(fundamentals, rows)
     market_complete = _market_complete(market, rows) if rows else False
-    if source_diagnostic and source_diagnostic["source_clock_invalid"]:
+    if source_diagnostic and (
+        source_diagnostic["source_clock_invalid"]
+        or source_diagnostic["source_cohort_ambiguous"]
+        or source_diagnostic["invalid_observation_clock"]
+    ):
         full_history = False
         market_complete = False
     return {

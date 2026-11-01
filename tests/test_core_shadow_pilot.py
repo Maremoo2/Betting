@@ -243,3 +243,127 @@ def test_invalid_archived_source_clock_fails_closed():
     assert case["all_inputs_complete_as_of_t4"] is False
     assert report["before"]["races_full_sources"] == 0
     assert report["prospective_t4_success_proven"] is False
+
+
+
+def _insert_conflicting_atg_payload(c, observed, *, source_start, marker):
+    """Untrusted original timestamp and body; no PIT-publisher attestation."""
+    c.execute("""CREATE TABLE IF NOT EXISTS provider_payloads(
+        provider TEXT, category TEXT, provider_raceday_key TEXT,
+        race_number INTEGER, observed_at_utc TEXT, payload_json TEXT)""")
+    c.execute(
+        "INSERT INTO provider_payloads VALUES (?,?,?,?,?,?)",
+        (
+            "atg", "FULL_FIELD_ONLY_V1", RID, 1, observed,
+            json.dumps({
+                "passed": True, "race_start_utc": source_start,
+                "matched_complete_runners": marker,
+                "active_runners": 3, "reasons": [], "runners": [],
+            }),
+        ),
+    )
+
+
+def test_conflicting_atg_same_instant_blocks_apparently_complete_t4_field():
+    c = make_db()
+    fundamental(c)
+    market(c)
+    assert _pilot(c, execute=False)["before"]["races_full_sources"] == 1
+    start = (NOW + timedelta(minutes=8)).isoformat()
+    _insert_conflicting_atg_payload(
+        c, NOW.isoformat(), source_start=start, marker=3,
+    )
+    _insert_conflicting_atg_payload(
+        c, NOW.isoformat(), source_start=start, marker=2,
+    )
+    report = _pilot(c, execute=False)
+    row = report["race_readiness_before"][0]
+    diagnostic = row["atg_history_source_diagnostic"]
+    assert diagnostic["source_cohort_ambiguous"] is True
+    assert "CONFLICTING_SAME_INSTANT_ATG_FULL_FIELD_SOURCES" in diagnostic["source_reasons"]
+    assert diagnostic["full_field_gate_passed"] is False
+    assert row["history_complete_as_of_t4"] is False
+    assert row["win_market_complete_as_of_t4"] is False
+    assert row["all_inputs_complete_as_of_t4"] is False
+    assert report["prospective_t4_success_proven"] is False
+    assert report["bet_count"] == 0
+
+
+def test_duplicated_identical_atg_snapshot_does_not_invent_source_conflict():
+    c = make_db()
+    fundamental(c)
+    market(c)
+    start = (NOW + timedelta(minutes=8)).isoformat()
+    for _ in range(2):
+        _insert_conflicting_atg_payload(
+            c, NOW.isoformat(), source_start=start, marker=3,
+        )
+    row = _pilot(c, execute=False)["race_readiness_before"][0]
+    diagnostic = row["atg_history_source_diagnostic"]
+    assert diagnostic["source_cohort_ambiguous"] is False
+    assert diagnostic["full_field_gate_passed"] is True
+    assert row["all_inputs_complete_as_of_t4"] is True
+    assert _pilot(c, execute=False)["prospective_t4_success_proven"] is False
+
+
+def test_older_same_instant_source_conflict_cannot_be_hidden_by_later_revision():
+    c = make_db()
+    fundamental(c)
+    market(c)
+    clock = (NOW + timedelta(minutes=8)).isoformat()
+    _insert_conflicting_atg_payload(
+        c, (NOW - timedelta(minutes=1)).isoformat(),
+        source_start=clock, marker=3,
+    )
+    _insert_conflicting_atg_payload(
+        c, (NOW - timedelta(minutes=1)).isoformat(),
+        source_start=clock, marker=2,
+    )
+    _insert_conflicting_atg_payload(c, NOW.isoformat(), source_start=clock, marker=3)
+    row = _pilot(c, execute=False)["race_readiness_before"][0]
+    assert row["atg_history_source_diagnostic"]["source_cohort_ambiguous"] is True
+    assert row["all_inputs_complete_as_of_t4"] is False
+
+
+def test_timezone_spellings_same_instant_do_not_escape_atg_source_collision():
+    c = make_db()
+    fundamental(c)
+    market(c)
+    clock = (NOW + timedelta(minutes=8)).isoformat()
+    _insert_conflicting_atg_payload(
+        c, NOW.isoformat(), source_start=clock, marker=3,
+    )
+    _insert_conflicting_atg_payload(
+        c, NOW.isoformat().replace("+00:00", "Z"), source_start=clock, marker=2,
+    )
+    row = _pilot(c, execute=False)["race_readiness_before"][0]
+    assert row["atg_history_source_diagnostic"]["source_cohort_ambiguous"] is True
+    assert row["all_inputs_complete_as_of_t4"] is False
+
+
+def test_malformed_atg_observed_time_blocks_instead_of_cherrypicking_valid_row():
+    c = make_db()
+    fundamental(c)
+    market(c)
+    clock = (NOW + timedelta(minutes=8)).isoformat()
+    _insert_conflicting_atg_payload(c, NOW.isoformat(), source_start=clock, marker=3)
+    _insert_conflicting_atg_payload(c, "not-an-observed-clock", source_start=clock, marker=3)
+    row = _pilot(c, execute=False)["race_readiness_before"][0]
+    diagnostic = row["atg_history_source_diagnostic"]
+    assert diagnostic["invalid_observation_clock"] is True
+    assert "ATG_SOURCE_OBSERVATION_CLOCK_INVALID" in diagnostic["source_reasons"]
+    assert row["all_inputs_complete_as_of_t4"] is False
+
+
+def test_only_malformed_atg_observed_clock_never_produces_readiness():
+    c = make_db()
+    fundamental(c)
+    market(c)
+    _insert_conflicting_atg_payload(
+        c, "not-a-time", source_start=(NOW + timedelta(minutes=8)).isoformat(),
+        marker=3,
+    )
+    row = _pilot(c, execute=False)["race_readiness_before"][0]
+    assert row["atg_history_source_diagnostic"]["invalid_observation_clock"] is True
+    assert row["atg_history_source_diagnostic"]["observed_at_utc"] is None
+    assert row["all_inputs_complete_as_of_t4"] is False
