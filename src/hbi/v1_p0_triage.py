@@ -16,7 +16,7 @@ from hashlib import sha256
 from pathlib import Path
 from urllib.parse import quote
 
-from .legacy_provenance import classify_legacy_replay
+from .legacy_provenance import _loads_map, classify_legacy_replay
 
 SCHEMA = "HBI_V1_P0_READ_ONLY_TRIAGE_V1"
 
@@ -130,6 +130,58 @@ def inspect_unsettled_outcomes(
     }
 
 
+
+def classify_missing_replay_provenance(database: Path) -> dict[str, object]:
+    """Explain skipped replay rows by frozen decision status, never as PASS."""
+    uri = "file:" + quote(str(database.resolve(strict=True))) + "?mode=ro&immutable=1"
+    with closing(sqlite3.connect(uri, uri=True)) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            "SELECT d.decision_run_id, d.race_id, d.decision_status, "
+            "d.fundamental_probabilities_json, d.combined_probabilities_json, "
+            "p.market_odds_json "
+            "FROM shadow_decision_runs d "
+            "LEFT JOIN decision_provenance p ON p.decision_run_id=d.decision_run_id "
+            "ORDER BY d.decision_run_id"
+        ).fetchall()
+    counted = Counter()
+    examples: dict[str, list[dict[str, str]]] = {}
+    replayable = 0
+    actionable = 0
+    for row in rows:
+        if row["fundamental_probabilities_json"] is None or (
+            row["combined_probabilities_json"] is None
+        ):
+            why = "FROZEN_FUNDAMENTAL_OR_COMBINED_DISTRIBUTION_ABSENT"
+        elif row["market_odds_json"] is None:
+            why = "NO_FROZEN_MARKET_PROVENANCE"
+        elif _loads_map(row["market_odds_json"]) is None:
+            why = "UNREADABLE_FROZEN_MARKET_PROVENANCE"
+        else:
+            replayable += 1
+            continue
+        status = str(row["decision_status"])
+        key = f"{status}:{why}"
+        counted[key] += 1
+        if len(examples.setdefault(key, [])) < 5:
+            examples[key].append({
+                "decision_run_id": row["decision_run_id"],
+                "race_id": row["race_id"],
+            })
+        if status in {"SHADOW_BET", "PASS", "WATCH"}:
+            actionable += 1
+    return {
+        "total_decisions_examined": len(rows),
+        "eligible_with_original_saved_provenance": replayable,
+        "incomplete_replay_evidence": sum(counted.values()),
+        "incomplete_evidence_for_priced_or_watched_decision": actionable,
+        "reason_by_frozen_status": dict(sorted(counted.items())),
+        "red_path_examples_max_five_per_class": examples,
+        "missing_historical_evidence_inferred_as_pass": False,
+        "shadow_executable_status_granted": False,
+    }
+
+
 def build_triage(
     database: Path,
     *,
@@ -144,6 +196,15 @@ def build_triage(
     settlement = inspect_unsettled_outcomes(
         database, now=now or datetime.now(UTC),
     )
+    incomplete = classify_missing_replay_provenance(database)
+    if (
+        incomplete["total_decisions_examined"] != legacy["total_decisions"]
+        or incomplete["eligible_with_original_saved_provenance"]
+        != legacy["provenance_eligible_checked"]
+        or incomplete["incomplete_replay_evidence"]
+        != legacy["incomplete_provenance_skipped"]
+    ):
+        raise ValueError("Frozen replay denominator and source diagnostic disagree")
     after = _hash_file(database)
     if before != after or legacy["source_database_sha256"] != before:
         raise RuntimeError("Original HBI state changed during forensic read")
@@ -173,6 +234,7 @@ def build_triage(
             "frozen_probabilities_or_policies_modified": False,
         },
         "settlement": settlement,
+        "replay_coverage": incomplete,
         "snapshot_rewritten": False,
         "v1_system_audit_failure_overridden": False,
         "prospective_pit_validated": False,
