@@ -41,7 +41,7 @@ def audit_archives(
     """
     programs = evidence.get("programs")
     if not isinstance(programs, list):
-        raise ValueError("Expected original source program evidence")
+        raise TypeError("Expected original source program evidence")
     required = {p["artifact_id"] for p in programs}
     if len(required) != 7 or set(archives) != required or any(
         type(i) is not int for i in archives
@@ -53,7 +53,7 @@ def audit_archives(
     for sample in manifest.get("selected", []):
         meeting, relative = sample.get("meeting"), sample.get("expected_pdf_path")
         if not isinstance(meeting, str) or not isinstance(relative, str):
-            raise ValueError("Missing locked source path")
+            raise TypeError("Missing locked source path")
         if not relative.endswith("/full_program.pdf"):
             raise ValueError("Not the original full PDF")
         if relative.startswith("/") or "\\" in relative or ".." in PurePosixPath(relative).parts:
