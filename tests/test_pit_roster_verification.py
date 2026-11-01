@@ -28,7 +28,7 @@ def fixture_db(tmp_path, *, raw_time=T, source_start='2026-10-30T15:00:00+00:00'
     c.execute('insert into provider_race_refs values (?,?,?,?)',(R,'rikstoto',REF,'2026-10-30T13:00:00+00:00'))
     starts=[];ident=[]
     for number in [1,2,3]:
-        sid=str(number);scratch=number==3;name=f'Horse{number}'
+        sid=str(number);scratch=number==3;name=f'Named Runner {number}'
         starts.append({'raceNumber':1,'startNumber':number,'horseRegistrationNumber':f'TMP-{number}','horseName':name,'driverName':'Driver','extraDistance':0,'raceKey':f'{REF}#1','isScratched':scratch})
         c.execute('insert into runners values (?,?,?,?)',(R,sid,int(scratch),name+'-CHANGED' if raw_changed else name))
         c.execute('insert into runner_fundamental_snapshots values (?,?,?,?,?,?,?,?,?)',(R,sid,raw_time,raw_time,1,12,3,'test://history',int(scratch)))
@@ -329,3 +329,55 @@ def test_same_instant_identical_duplicate_clock_does_not_invent_conflict(tmp_pat
     assert r["retained_atg_same_instant_conflict"] is False
     assert r["raw_input_ready_at_cutoff"] is True
     assert r["retained_atg_clock_count"]==3
+
+
+@pytest.mark.parametrize("name", ["Häst 1", "HÄST 10", "Horse 2", "Cavallo 30", "Cheval 8"])
+def test_retained_roster_generic_identity_blocks_source_readiness(tmp_path, name):
+    path = fixture_db(tmp_path)
+    with sqlite3.connect(path) as conn:
+        raw = json.loads(conn.execute(
+            "SELECT payload_json FROM provider_payloads WHERE payload_id='raw-1'"
+        ).fetchone()[0])
+        raw["result"]["1"][0]["horseName"] = name
+        conn.execute(
+            "UPDATE provider_payloads SET payload_json=? WHERE payload_id='raw-1'",
+            (json.dumps(raw),),
+        )
+    result = run(path)
+    assert "PLACEHOLDER_ROSTER_HORSE_IDENTITY" in result["blockers"]
+    assert not result["raw_starts_reconstructed"]
+    assert not result["raw_input_ready_at_cutoff"]
+    assert not result["pit_certified"]
+
+
+def test_scratched_placeholder_is_not_a_complete_original_roster(tmp_path):
+    path = fixture_db(tmp_path)
+    with sqlite3.connect(path) as conn:
+        raw = json.loads(conn.execute(
+            "SELECT payload_json FROM provider_payloads WHERE payload_id='raw-1'"
+        ).fetchone()[0])
+        raw["result"]["1"][2]["horseName"] = "Häst 3"
+        conn.execute(
+            "UPDATE provider_payloads SET payload_json=? WHERE payload_id='raw-1'",
+            (json.dumps(raw),),
+        )
+    r = run(path)
+    assert "PLACEHOLDER_ROSTER_HORSE_IDENTITY" in r["blockers"]
+    assert not r["raw_input_ready_at_cutoff"]
+
+
+def test_non_placeholder_name_not_preemptively_rejected(tmp_path):
+    path = fixture_db(tmp_path)
+    with sqlite3.connect(path) as conn:
+        raw = json.loads(conn.execute(
+            "SELECT payload_json FROM provider_payloads WHERE payload_id='raw-1'"
+        ).fetchone()[0])
+        raw["result"]["1"][0]["horseName"] = "Häst Power 1"
+        conn.execute(
+            "UPDATE provider_payloads SET payload_json=? WHERE payload_id='raw-1'",
+            (json.dumps(raw),),
+        )
+    r = run(path)
+    assert "PLACEHOLDER_ROSTER_HORSE_IDENTITY" not in r["blockers"]
+    assert r["raw_starts_reconstructed"]
+    assert not r["raw_input_ready_at_cutoff"]  # actual name disagreement is blocked
