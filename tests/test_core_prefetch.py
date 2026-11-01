@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 
@@ -307,3 +307,62 @@ def test_non_placeholder_named_horse_remains_eligible_for_source_completion():
     c.execute("UPDATE runners SET horse_name='Horse Power 1' WHERE selection_id='1'")
     p = plan_prefetch(c, now=NOW.isoformat())
     assert p["tasks"] == []
+
+
+
+@pytest.mark.parametrize(("table", "field", "reason"), [
+    ("runner_fundamental_snapshots", "observed_at_utc",
+     "INCOMPLETE_FULL_FIELD_HISTORY"),
+    ("runner_fundamental_snapshots", "feature_as_of_utc",
+     "INCOMPLETE_FULL_FIELD_HISTORY"),
+    ("provider_market_snapshots", "observed_at_utc",
+     "MISSING_OR_INCOMPLETE_WIN_MARKET"),
+    ("provider_market_snapshots", "provider_updated_at_utc",
+     "MISSING_OR_INCOMPLETE_WIN_MARKET"),
+])
+def test_prefetch_never_accepts_lexically_early_but_utc_future_snapshot(
+    table, field, reason,
+):
+    c = make_db()
+    fundamental(c)
+    market(c)
+    future = (NOW + timedelta(minutes=55)).astimezone(
+        timezone(timedelta(hours=-1))
+    ).isoformat()
+    assert future[:13] < NOW.isoformat()[:13]
+    c.execute(f"UPDATE {table} SET {field}=?", (future,))
+    plan = plan_prefetch(c, now=NOW.isoformat())
+    assert reason in plan["reason_counts"]
+    assert plan["authority"] == "SHADOW_RESEARCH_ONLY"
+
+
+@pytest.mark.parametrize(("table", "reason"), [
+    ("runner_fundamental_snapshots", "INCOMPLETE_FULL_FIELD_HISTORY"),
+    ("provider_market_snapshots", "MISSING_OR_INCOMPLETE_WIN_MARKET"),
+])
+def test_prefetch_invalid_selected_iso_clock_is_source_refresh_not_exception(
+    table, reason,
+):
+    c = make_db()
+    fundamental(c)
+    market(c)
+    c.execute(f"UPDATE {table} SET observed_at_utc=?",
+              ("1999-invalid-source-clock",))
+    plan = plan_prefetch(c, now=NOW.isoformat())
+    assert reason in plan["reason_counts"]
+    assert plan["tasks_returned"] >= 1
+
+
+def test_prefetch_valid_utc_offset_with_true_past_snapshot_is_accepted():
+    c = make_db()
+    fundamental(c)
+    market(c)
+    past = (NOW - timedelta(minutes=5)).astimezone(
+        timezone(timedelta(hours=-1))
+    ).isoformat()
+    c.execute("UPDATE runner_fundamental_snapshots SET observed_at_utc=?, feature_as_of_utc=?",
+              (past, past))
+    c.execute("UPDATE provider_market_snapshots SET observed_at_utc=?", (past,))
+    plan = plan_prefetch(c, now=NOW.isoformat())
+    assert "INCOMPLETE_FULL_FIELD_HISTORY" not in plan["reason_counts"]
+    assert "MISSING_OR_INCOMPLETE_WIN_MARKET" not in plan["reason_counts"]
