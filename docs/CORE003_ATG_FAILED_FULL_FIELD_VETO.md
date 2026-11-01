@@ -55,3 +55,29 @@ remain false.
 Use the existing archived original CORE-003 time-recheck job and full CI
 on exact PR HEAD, then independent HQ approval. A successful check of the
 diagnostic does not count as a functional CORE-001/002/003 PIT acceptance.
+
+
+## Additional offset-normalized timestamp safety in source-only pilot
+
+The historical \`race_core_review._cohort\` research helper uses SQLite
+text comparison of ISO timestamps. It may admit an *actually future*
+source row whose representation happens to sort earlier as a string:
+\`11:55-01:00\` is \`12:55 UTC\`, not available at \`12:00 UTC\`.
+The same hazard exists for \`feature_as_of_utc\` and an optional
+\`provider_updated_at_utc\` on market snapshots.
+
+Without altering the existing formula or shared helper, the isolated pilot
+now **rechecks all selected fundamental and WIN snapshot row clocks** as
+actual UTC datetimes against its conservative existing T−4/as-of cutoff.
+Future or malformed selected clocks set both provisional completeness
+booleans to false and record
+\`selected_snapshot_timestamp_problems\` with the specific invalid
+source timestamp field. Correct genuinely historical snapshots remain
+provisional only; no source-first-publication assertion is made.
+
+This is a **false-positive rejection guard**, not a complete repair for all
+historical timezone-normalization issues in \`_cohort\`. A genuinely past
+offset-formatted snapshot excluded by the old lexical query can still
+result in a conservative false negative, never automatic PIT certification.
+Separate centrally reviewed work would be required to replace that
+shared research selection helper safely.
