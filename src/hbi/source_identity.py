@@ -6,8 +6,6 @@ Rikstoto source views contain the same text. Observed in ORIGINAL Milano
 not proof that every name outside this grammar is independently verified.
 """
 
-from __future__ import annotations
-
 import re
 import unicodedata
 
