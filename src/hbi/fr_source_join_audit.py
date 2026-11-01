@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 from collections import Counter
 from datetime import UTC, datetime, timedelta
 from hashlib import sha256
@@ -44,7 +43,10 @@ def classify_original_fr_race(
         "rikstoto_race_id": race.race_id,
         "rikstoto_track": race.raceday_name,
         "rikstoto_race_number": race.race_number,
-        "rikstoto_start_time_utc": race.start_time.astimezone(UTC).isoformat(),
+        "rikstoto_start_time_utc": (
+            race.start_time.astimezone(UTC).isoformat()
+            if race.start_time.utcoffset() is not None else None
+        ),
         "atg_source_url": response.url,
         "atg_http_status": response.status_code,
         "atg_parsed_payload_sha256_not_raw_http": (
