@@ -224,7 +224,7 @@ def _selected_cohort_timestamp_problems(
                 continue
             try:
                 if not isinstance(value, str):
-                    raise ValueError("Source clock must be ISO text")
+                    raise TypeError("Source clock must be ISO text")
                 observed = _utc(value).astimezone(UTC)
                 if observed > cutoff:
                     problems.add(f"{prefix}_{field.upper()}_AFTER_CUTOFF")
