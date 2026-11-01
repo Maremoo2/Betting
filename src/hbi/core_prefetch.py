@@ -162,10 +162,29 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
         # _cohort's legacy SQLite text comparison can admit a timestamp
         # whose true UTC instant is AFTER current, or an invalid ISO clock.
         # Keep the collection queue fail-closed rather than crashing/stopping.
-        if not _source_observation_as_of(fundamental_at, current):
+        fundamental_clocks_valid = (
+            _source_observation_as_of(fundamental_at, current)
+            and all(
+                _source_observation_as_of(row.get("observed_at_utc"), current)
+                and _source_observation_as_of(row.get("feature_as_of_utc"), current)
+                for row in fund
+            )
+        )
+        market_clocks_valid = (
+            _source_observation_as_of(market_at, current)
+            and all(
+                _source_observation_as_of(row.get("observed_at_utc"), current)
+                and (row.get("provider_updated_at_utc") is None
+                     or _source_observation_as_of(
+                         row["provider_updated_at_utc"], current
+                     ))
+                for row in market
+            )
+        )
+        if not fundamental_clocks_valid:
             complete_fund = False
             verified = 0
-        if not _source_observation_as_of(market_at, current):
+        if not market_clocks_valid:
             complete_market = False
         if not roster:
             why = 'MISSING_STARTLIST'
