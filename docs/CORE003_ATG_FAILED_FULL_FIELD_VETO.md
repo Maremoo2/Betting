@@ -81,3 +81,18 @@ offset-formatted snapshot excluded by the old lexical query can still
 result in a conservative false negative, never automatic PIT certification.
 Separate centrally reviewed work would be required to replace that
 shared research selection helper safely.
+
+
+## Malformed source timestamps in prefetch planner
+
+The same offset/time pathology affected \`core_prefetch.plan_prefetch\`.
+It previously parsed the selected SQL cohort timestamp directly during
+staleness checks; e.g. \`1999-invalid-source-clock\` could crash the
+whole isolated pilot *before* the source-readiness veto was reached.
+The plan now validates **all selected** fundamental \`observed_at_utc\`,
+\`feature_as_of_utc\`, market \`observed_at_utc\`, and optional
+\`provider_updated_at_utc\` as aware UTC instants not after the
+planning observation time. Invalid/future clocks set completeness to
+false and request re-fetch; no exception, no automatic market or
+fundamental completion. This remains a research-only queue; a source
+refresh is not a published PIT record or a BET signal.
