@@ -367,3 +367,91 @@ def test_only_malformed_atg_observed_clock_never_produces_readiness():
     assert row["atg_history_source_diagnostic"]["invalid_observation_clock"] is True
     assert row["atg_history_source_diagnostic"]["observed_at_utc"] is None
     assert row["all_inputs_complete_as_of_t4"] is False
+
+
+
+def _add_atg_fullfield_claim(c, *, claim, observed=NOW):
+    c.execute("""CREATE TABLE IF NOT EXISTS provider_payloads(
+        provider TEXT, category TEXT, provider_raceday_key TEXT,
+        race_number INTEGER, observed_at_utc TEXT, payload_json TEXT)""")
+    c.execute("INSERT INTO provider_payloads VALUES (?,?,?,?,?,?)", (
+        "atg", "FULL_FIELD_ONLY_V1", RID, 1, observed.isoformat(),
+        json.dumps(claim),
+    ))
+
+
+@pytest.mark.parametrize(("change", "required_reason"), [
+    ({"passed": False}, "ATG_FULL_FIELD_GATE_NOT_PASSED"),
+    ({"passed": None}, "ATG_FULL_FIELD_GATE_NOT_PASSED"),
+    ({"matched_complete_runners": 2}, "ATG_FULL_FIELD_RUNNER_COUNT_CONFLICT"),
+    ({"matched_complete_runners": True}, "ATG_FULL_FIELD_RUNNER_TOTALS_INVALID"),
+    ({"active_runners": None}, "ATG_FULL_FIELD_RUNNER_TOTALS_INVALID"),
+    ({"reasons": ["HORSE_HISTORY_NOT_PROVEN"]}, "ATG_FULL_FIELD_PROVIDER_REASONS_PRESENT"),
+    ({"runners": [
+        {"selection_id": "2", "horse_name": "Horse 2",
+         "schema_ok": False, "reason": "LIFETIME_BELOW_YEAR_TOTALS"},
+    ]}, "ATG_FULL_FIELD_RUNNER_SCHEMA_REJECTED"),
+    ({"runners": None}, "ATG_FULL_FIELD_RUNNER_LIST_INVALID"),
+    ({"reasons": "INCOMPLETE"}, "ATG_FULL_FIELD_PROVIDER_REASONS_INVALID"),
+])
+def test_explicit_atg_full_field_failure_vetoes_provisional_full_sources(
+    change, required_reason,
+):
+    c = make_db()
+    fundamental(c)
+    market(c)
+    assert _pilot(c, execute=False)["before"]["races_full_sources"] == 1
+    claim = {
+        "passed": True, "matched_complete_runners": 3,
+        "active_runners": 3, "reasons": [], "runners": [],
+        "race_start_utc": (NOW + timedelta(minutes=8)).isoformat(),
+    }
+    claim.update(change)
+    _add_atg_fullfield_claim(c, claim=claim)
+    report = _pilot(c, execute=False)
+    row = report["race_readiness_before"][0]
+    diagnostic = row["atg_history_source_diagnostic"]
+    assert required_reason in diagnostic["full_field_rejection_reasons"]
+    assert required_reason in diagnostic["source_reasons"]
+    assert diagnostic["full_field_gate_passed"] is False
+    assert row["history_complete_as_of_t4"] is False
+    assert row["win_market_complete_as_of_t4"] is False
+    assert row["all_inputs_complete_as_of_t4"] is False
+    assert report["before"]["races_full_sources"] == 0
+    assert report["prospective_t4_success_proven"] is False
+    assert report["roster_pit_verified"] is False
+    assert report["bet_count"] == report["model_invocations"] == 0
+
+
+def test_consistent_atg_full_field_diagnostic_does_not_manufacture_pit():
+    c = make_db()
+    fundamental(c)
+    market(c)
+    claim = {
+        "passed": True, "matched_complete_runners": 3,
+        "active_runners": 3, "reasons": [], "runners": [],
+        "race_start_utc": (NOW + timedelta(minutes=8)).isoformat(),
+    }
+    _add_atg_fullfield_claim(c, claim=claim)
+    report = _pilot(c, execute=False)
+    row = report["race_readiness_before"][0]
+    diagnostic = row["atg_history_source_diagnostic"]
+    assert diagnostic["full_field_rejection_reasons"] == []
+    assert diagnostic["full_field_gate_passed"] is True
+    assert row["all_inputs_complete_as_of_t4"] is True
+    assert report["prospective_t4_success_proven"] is False
+    assert report["roster_pit_verified"] is False
+    assert report["bet_count"] == 0
+
+
+def test_atg_rejection_after_t4_is_not_backdated_into_prior_source_observation():
+    c = make_db()
+    fundamental(c)
+    market(c)
+    _add_atg_fullfield_claim(c, claim={"passed": False},
+                             observed=NOW + timedelta(minutes=5))
+    report = _pilot(c, execute=False)
+    row = report["race_readiness_before"][0]
+    assert row["atg_history_source_diagnostic"] is None
+    assert row["all_inputs_complete_as_of_t4"] is True
+    assert report["prospective_t4_success_proven"] is False
