@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import sqlite3
 import time
 from collections.abc import Callable
@@ -353,6 +354,25 @@ def verify_collector_original(
             if digest(raw) != entry.get("sha256"):
                 return None
             matched[role] = (entry, raw)
+        # Replay the actual independent original PDF off-time; the separate
+        # Collector calendar alone is NOT independent physical clock proof.
+        try:
+            import fitz
+
+            pdf = fitz.open(stream=matched["pdf"][1], filetype="pdf")
+            original_text = "\\n".join(page.get_text() for page in pdf)
+            pdf.close()
+        except (ImportError, ValueError, RuntimeError, OSError):
+            return None
+        observed_clocks = re.findall(
+            r"\\b(?:L[oø]p|Lopp)\\s+1\\b.{0,850}?START\\s+KL\\.?\\s*(\\d{1,2}:\\d{2})",
+            original_text, flags=re.IGNORECASE | re.DOTALL,
+        )
+        if len(observed_clocks) != 1:
+            return None
+        hhmm = observed_clocks[0].split(":")
+        if f"{int(hhmm[0]):02d}:{int(hhmm[1]):02d}" != local.strftime("%H:%M"):
+            return None
         original, err = parse_rikstoto_roster(
             matched["starts"][1].decode("utf-8"), race_no, key
         )
