@@ -8,9 +8,9 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from hbi.core_shadow_pilot import plan_t4_source_receipts
-from hbi.core_t4_receipt import capture_one, digest, run_attestation
 from hbi.core_pit_roster_verification import attest_t4_receipt
+from hbi.core_shadow_pilot import plan_t4_source_receipts
+from hbi.core_t4_receipt import capture_one, digest
 from hbi.providers.rikstoto import FetchResult
 
 
