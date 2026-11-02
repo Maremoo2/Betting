@@ -14,6 +14,7 @@ import json
 import math
 import sqlite3
 from collections import Counter
+from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from urllib.parse import quote
@@ -384,6 +385,242 @@ def audit_race(conn, race_id, *, asof):
             'pit_certified':False,'source_publication_proven':False,
             'blockers':sorted(set(reasons)),'source_snapshots':source_info,
             'status':'SOURCE_OBSERVED_UNATTESTED' if raw_ready else 'BLOCKED'}
+
+
+@dataclass(frozen=True)
+class VerifiedCollectorEvidence:
+    """Created only after replaying an authenticated original Collector artifact."""
+
+    race_id: str
+    archive_sha256: str
+    github_run_id: int
+    source_repository: str
+    observed_at_utc: str
+    original_bytes_sha256_verified: bool
+    full_field_pdf_startlist_reconciled: bool
+    origin_authenticated_independently: bool
+    version_identical_to_t4: bool
+
+
+def attest_t4_receipt(
+    receipt: dict, *, receipt_dir: Path,
+    model_report: dict | None, model_raw: bytes | None,
+    collector_archive: VerifiedCollectorEvidence | dict | None = None,
+    provenance_mode: str = "LIVE",
+) -> dict:
+    """Independent model-free source/time check plus frozen report hash binding.
+
+    No dictionary assertion alone grants live certification. Independently
+    authenticated Collector artifacts must be verified before being admitted.
+    Offline tests may establish a positive CONTRACT_PASS, never live authority.
+    """
+    if provenance_mode not in {"LIVE", "TEST_ONLY"}:
+        raise ValueError("INVALID_PROVENANCE_MODE")
+    if provenance_mode == "LIVE" and not isinstance(collector_archive, VerifiedCollectorEvidence):
+        collector_origin_wired = False
+    else:
+        collector_origin_wired = isinstance(collector_archive, VerifiedCollectorEvidence)
+    if isinstance(collector_archive, VerifiedCollectorEvidence):
+        collector_archive = asdict(collector_archive)
+    blocks: set[str] = set(receipt.get("blockers", []))
+    if not isinstance(receipt, dict) or receipt.get("schema") != "PIT_T4_SOURCE_RECEIPT_V1":
+        raise ValueError("UNRECOGNIZED_T4_RECEIPT")
+    t4 = parse_time(receipt.get("t_minus_4_utc"))
+    start = parse_time(receipt.get("canonical_start_utc"))
+    race_id = receipt.get("race_id")
+    if t4 is None or start is None or not isinstance(race_id, str):
+        blocks.add("INVALID_OR_MISSING_RACE_CLOCK")
+    if start is not None and t4 is not None and start <= t4:
+        blocks.add("INVALID_T4_START_ORDER")
+    evidence = []
+    for role in ("racedays", "starts", "scratched"):
+        row = receipt.get("sources", {}).get(role)
+        if not isinstance(row, dict):
+            blocks.add("INCOMPLETE_T4_SOURCE_SET")
+            continue
+        request = parse_time(row.get("request_started_at_utc"))
+        observed = parse_time(row.get("source_observed_at_utc"))
+        received = parse_time(row.get("collector_received_at_utc"))
+        raw_name = row.get("raw_path")
+        if not isinstance(raw_name, str) or raw_name != role + ".raw.json":
+            blocks.add("ORIGINAL_RAW_ARCHIVE_UNAVAILABLE")
+            continue
+        raw_path = receipt_dir / raw_name
+        if raw_path.is_symlink() or not raw_path.is_file():
+            blocks.add("ORIGINAL_RAW_ARCHIVE_UNAVAILABLE")
+            continue
+        raw_bytes = raw_path.read_bytes()
+        actual_hash = hashlib.sha256(raw_bytes).hexdigest()
+        if actual_hash != row.get("raw_sha256"):
+            blocks.add("ORIGINAL_RAW_HASH_MISMATCH")
+        if (request is None or observed is None or received is None
+                or t4 is None or not request <= observed <= received < t4):
+            blocks.add("INVALID_OR_POST_CUTOFF_SOURCE_CLOCK")
+        if row.get("http_status") != 200:
+            blocks.add("SOURCE_HTTP_NOT_SUCCESSFUL")
+        evidence.append({
+            "role": role, "source_uri": row.get("source_uri"),
+            "sha256": actual_hash, "observed_at_utc": row.get("source_observed_at_utc"),
+            "received_at_utc": row.get("collector_received_at_utc"),
+        })
+        # HTTP Date, fetch completion, and Last-Modified are not original
+        # first-publication evidence. Never substitute any one for another.
+        published = parse_time(row.get("source_published_at_utc"))
+        if published is not None and (observed is None or published > observed):
+            blocks.add("INVALID_PUBLICATION_CLOCK")
+    roster = receipt.get("runners")
+    if not isinstance(roster, list) or len(roster) < 2:
+        blocks.add("INCOMPLETE_ACTIVE_FIELD")
+        roster = []
+    nums = [r.get("start_number") for r in roster if isinstance(r, dict)]
+    regs = [r.get("registration_number") for r in roster if isinstance(r, dict)]
+    if (len(nums) != len(roster) or len(set(nums)) != len(nums)
+            or any(type(n) is not int or n <= 0 for n in nums)):
+        blocks.add("DUPLICATED_OR_INVALID_START_NUMBERS")
+    if (len(regs) != len(roster) or len(set(regs)) != len(regs)
+            or any(not isinstance(r, str) or not r.strip()
+                   or r.upper().startswith(("TMP", "TEMP", "UNKNOWN"))
+                   for r in regs)):
+        blocks.add("STABLE_CROSS_PROVIDER_ID_NOT_ATTESTED")
+    if any(not isinstance(row, dict) or type(row.get("scratched")) is not bool
+           for row in roster):
+        blocks.add("UNKNOWN_SCRATCH_STATE")
+    active = [row for row in roster if isinstance(row, dict) and row.get("scratched") is False]
+    if len(active) < 2:
+        blocks.add("INCOMPLETE_ACTIVE_FIELD")
+
+    model_digest = hashlib.sha256(model_raw).hexdigest() if model_raw is not None else None
+    if model_report is None or model_raw is None:
+        blocks.add("FROZEN_MODEL_REPORT_NOT_AVAILABLE")
+    else:
+        if model_report.get("race", {}).get("race_id") != race_id:
+            blocks.add("MODEL_RACE_ID_MISMATCH")
+        asof = parse_time(model_report.get("as_of_utc"))
+        freeze = parse_time(model_report.get("report_created_at_utc"))
+        if (asof is None or freeze is None or t4 is None
+                or not asof <= freeze <= t4):
+            blocks.add("MODEL_ASOF_OR_FREEZE_AFTER_T4")
+        calculated = parse_time(model_report.get("model_calculated_at_utc"))
+        if calculated is None or freeze is None or calculated > freeze:
+            blocks.add("MODEL_CALCULATION_CLOCK_INVALID")
+        source_audit = model_report.get("source_audit") or {}
+        historical_clock = parse_time(source_audit.get("fundamental_observed_at_utc"))
+        if historical_clock is None or asof is None or historical_clock > asof:
+            blocks.add("FUTURE_OR_MISSING_FUNDAMENTAL_OBSERVATION")
+        source_capture = model_report.get("collector_source_evidence") or {}
+        capture_finished = parse_time(source_capture.get("finished_at_utc"))
+        if capture_finished is None or asof is None or capture_finished > asof:
+            blocks.add("FUTURE_OR_MISSING_CORE003_CAPTURE")
+        model_database_sha = model_report.get("source_database_sha256")
+        if (
+            not isinstance(model_database_sha, str)
+            or len(model_database_sha) != 64
+            or any(char not in "0123456789abcdef" for char in model_database_sha)
+        ):
+            blocks.add("FROZEN_MODEL_SOURCE_DATABASE_HASH_MISSING")
+        for member in model_report.get("runners", []):
+            position_stamp = member.get("start_number_observed_at_utc")
+            if position_stamp is not None and (
+                parse_time(position_stamp) is None or asof is None
+                or parse_time(position_stamp) > asof
+            ):
+                blocks.add("FUTURE_START_NUMBER_SOURCE")
+        if model_report.get("model_status") != "MODEL_READY":
+            blocks.add("FROZEN_MODEL_NOT_READY")
+        if model_report.get("bet_authority") is not False:
+            blocks.add("MODEL_BET_AUTHORITY_NOT_FALSE")
+        model_roster = {
+            str(row.get("start_number")): (
+                str(row.get("horse_name")), bool(row.get("scratched"))
+            )
+            for row in model_report.get("runners", [])
+        }
+        source_roster = {
+            str(row.get("start_number")): (
+                str(row.get("horse_name")), row.get("scratched")
+            )
+            for row in roster if isinstance(row, dict)
+        }
+        if model_roster != source_roster or len(model_roster) != len(roster):
+            blocks.add("MODEL_ROSTER_NOT_T4_MATCHED")
+        if not (model_report.get("champion_p_sum") is not None
+                and model_report.get("core004_p_sum") is not None
+                and abs(model_report["champion_p_sum"] - 1) <= 1e-9
+                and abs(model_report["core004_p_sum"] - 1) <= 1e-9):
+            blocks.add("INCOMPLETE_MODEL_FULL_FIELD_PROBABILITIES")
+        if model_report.get("run_kind") != "PROSPECTIVE_ATTEMPT":
+            blocks.add("MODEL_NOT_PROSPECTIVE")
+        for runner in model_report.get("runners", []):
+            if runner.get("scratched"):
+                continue
+            if not runner.get("history_source_uri"):
+                blocks.add("MODEL_HISTORY_SOURCE_MISSING")
+
+    # A distinct original Collector archive must be authenticated and replayed
+    # against the actual source bytes. A caller-provided boolean is not proof.
+    if collector_archive is None:
+        blocks.add("COLLECTOR_ARCHIVE_UNAVAILABLE")
+    elif not isinstance(collector_archive, dict) or (
+            collector_archive.get("original_bytes_sha256_verified") is not True
+            or collector_archive.get("full_field_pdf_startlist_reconciled") is not True
+            or collector_archive.get("race_id") != race_id
+            or parse_time(collector_archive.get("observed_at_utc")) is None
+            or t4 is None
+            or parse_time(collector_archive["observed_at_utc"]) >= t4):
+        blocks.add("INDEPENDENT_COLLECTOR_ARCHIVE_NOT_VERIFIED")
+    # Source publication proof is NOT established by source timestamps that
+    # derive from our own GET. An independent original version is an acceptable
+    # alternative only after externally authenticated source provenance.
+    if not (isinstance(collector_archive, dict)
+            and collector_archive.get("origin_authenticated_independently") is True
+            and collector_archive.get("version_identical_to_t4") is True):
+        blocks.add("INDEPENDENT_SOURCE_PUBLICATION_UNATTESTED")
+    # Remove only diagnostic placeholders from capture, never a real failure.
+    if isinstance(collector_archive, dict):
+        if ("COLLECTOR_ARCHIVE_NOT_CORROBORATED" in blocks
+                and collector_archive.get("original_bytes_sha256_verified") is True
+                and collector_archive.get("full_field_pdf_startlist_reconciled") is True):
+            blocks.discard("COLLECTOR_ARCHIVE_NOT_CORROBORATED")
+        if ("SOURCE_PUBLICATION_UNATTESTED" in blocks
+                and collector_archive.get("origin_authenticated_independently") is True
+                and collector_archive.get("version_identical_to_t4") is True):
+            blocks.discard("SOURCE_PUBLICATION_UNATTESTED")
+    # A purported LIVE Collector attestation supplied as an arbitrary JSON
+    # dictionary must never be trusted. Require a separate authenticated
+    # GitHub artifact verifier entrypoint, which is deliberately not in this
+    # first read-only sidecar integration.
+    if provenance_mode == "LIVE" and not collector_origin_wired:
+        blocks.add("INDEPENDENT_COLLECTOR_ORIGIN_GATE_NOT_WIRED")
+    contract_pass = not blocks
+    if contract_pass and provenance_mode == "TEST_ONLY":
+        status = "TEST_ONLY_CONTRACT_PASS"
+    elif contract_pass and collector_origin_wired and provenance_mode == "LIVE":
+        status = "INDEPENDENT_PIT_CERTIFIED"
+    else:
+        status = "PIT_NOT_CERTIFIED"
+    return {
+        "schema": "PIT_T4_ATTESTATION_V1", "race_id": race_id,
+        "status": status, "pit_status": status,
+        "source_observed_before_t4": (
+            len(evidence) == 3 and not any(
+                b in blocks for b in (
+                    "INVALID_OR_POST_CUTOFF_SOURCE_CLOCK",
+                    "ORIGINAL_RAW_HASH_MISMATCH", "INCOMPLETE_T4_SOURCE_SET",
+                    "RESPONSE_AFTER_T4", "MISSED_T4"
+                )
+            )
+        ),
+        "independent_pit_certified": status == "INDEPENDENT_PIT_CERTIFIED",
+        "blockers": sorted(blocks), "sources": evidence,
+        "model_report_sha256": model_digest,
+        "model_report_frozen_at_utc": (
+            model_report.get("report_created_at_utc") if model_report else None
+        ),
+        "t_minus_4_utc": receipt.get("t_minus_4_utc"),
+        "source_published_at_utc": receipt.get("source_published_at_utc"),
+        "mode": provenance_mode, "bet_authority": False,
+        "research_only": True,
+    }
 
 
 def audit_file(db_path, race_ids, *, asof):

@@ -373,19 +373,25 @@ def test_original_arjang_fundamental_excerpt_replays_actual_model_modules():
 
 
 def test_core003_shadow_workflow_preserves_fixed_cohort_and_blocked_races():
-    """Check the existing workflow executes ALL frozen races, not first only."""
+    """Contract: the full unchanged CORE-003 cohort is processed or accounted for.
+
+    The selector itself has behavioral fixture regressions in
+    tests/test_bet_mvp_shadow.py; do not pin obsolete inline Python text.
+    """
     workflow = (ROOT / ".github" / "workflows" /
                 "core-003-shadow-pilot.yml").read_text(encoding="utf-8")
-    assert "cohort = source.get('races_in_fixed_cohort', [])" in workflow
-    assert "readiness = source.get('race_readiness_after', [])" in workflow
-    assert "set(by_race) != set(cohort)" in workflow
-    assert "for race_id in cohort:" in workflow
-    assert "for _, _, race_id in sorted(selected):" in workflow
-    assert "min(upcoming" not in workflow
-    assert "--run-kind', 'PROSPECTIVE_ATTEMPT'" in workflow
-    assert "'MODEL_INVOCATION_FAILED'" in workflow
-    assert "model_status': shadow['model_status']" in workflow
-    assert "market_status': shadow['market_status']" in workflow
-    assert "pit_status': shadow['pit_status']" in workflow
+    from hbi.bet_mvp_shadow import select_fixed_cohort_races
+
+    assert callable(select_fixed_cohort_races)
+    assert "selection = select_fixed_cohort_races(connection, source_report, as_of)" in workflow
+    assert "for number, entry in enumerate(selection['eligible'], start=1):" in workflow
+    assert "'original_cohort': selection['original_cohort']" in workflow
+    assert "'not_processed': selection['not_processed']" in workflow
+    assert "'processed': []" in workflow
+    assert "'report_sha256': sha256(destination / 'shadow.json')" in workflow
+    assert "'model_status': report['model_status']" in workflow
+    assert "'market_status': report['market_status']" in workflow
+    assert "'pit_status': report['pit_status']" in workflow
     assert "'bet_authority': False" in workflow
-    assert "root / 'index.json'" in workflow
+    assert "--run-kind', 'PROSPECTIVE_ATTEMPT'" in workflow
+    assert "min(upcoming" not in workflow

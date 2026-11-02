@@ -317,6 +317,102 @@ def _aggregate(readiness: list[dict[str, Any]]) -> dict[str, int]:
     }
 
 
+def plan_t4_source_receipts(
+    conn: sqlite3.Connection, *, now: datetime,
+    horizon_minutes: float = 8.0, max_races: int = 2,
+) -> dict[str, Any]:
+    """Race-relative source receipts; NOT a change to prefetch/model admission.
+
+    All candidates and capacity exclusions are retained. The caller must fetch
+    original bytes and verify source identity; no mutable roster is trusted.
+    """
+    if now.utcoffset() is None or not 1 <= horizon_minutes <= 15 or max_races < 1:
+        raise ValueError("INVALID_T4_PLAN_ARGUMENTS")
+    now_utc = now.astimezone(UTC)
+    candidates = _rows(conn, """
+        SELECT r.race_id, r.track, r.country, r.race_no, r.start_time_utc,
+               r.discipline, p.provider_raceday_key, p.discovered_at_utc
+        FROM races r JOIN provider_race_refs p ON p.race_id=r.race_id
+        WHERE p.provider='rikstoto' AND lower(r.discipline)='trot'
+        ORDER BY r.start_time_utc, r.race_id
+    """)
+    by_race: dict[str, list[dict[str, Any]]] = {}
+    for record in candidates:
+        by_race.setdefault(str(record["race_id"]), []).append(record)
+    selected = []
+    excluded = []
+    for race_id, matches in by_race.items():
+        row = matches[0]
+        try:
+            start = _utc(str(row["start_time_utc"])).astimezone(UTC)
+        except (ValueError, TypeError):
+            excluded.append({"race_id": race_id, "reason": "UNVERIFIED_START_CLOCK"})
+            continue
+        minutes = (start - timedelta(minutes=4) - now_utc).total_seconds() / 60
+        if minutes < -2 or minutes > horizon_minutes:
+            continue
+        refs = {str(m["provider_raceday_key"]) for m in matches}
+        if len(refs) != 1 or not next(iter(refs)):
+            excluded.append({"race_id": race_id, "reason": "AMBIGUOUS_RACE_REFERENCE"})
+            continue
+        if not any(
+            (stamp := _safe_aware(m.get("discovered_at_utc"))) is not None
+            and stamp <= now_utc for m in matches
+        ):
+            excluded.append({"race_id": race_id, "reason": "RACE_NOT_DISCOVERED_AS_OF"})
+            continue
+        diagnostic = _atg_history_source_diagnostic(
+            conn, race_id=race_id, cutoff=min(now_utc, start - timedelta(minutes=4))
+        )
+        if diagnostic and (
+            diagnostic.get("source_clock_invalid")
+            or diagnostic.get("invalid_observation_clock")
+            or diagnostic.get("source_cohort_ambiguous")
+        ):
+            excluded.append({"race_id": race_id, "reason": "SOURCE_START_CLOCK_CONFLICT"})
+            continue
+        earliest = diagnostic.get("earliest_retained_source_start_utc") if diagnostic else None
+        source_start = _safe_aware(earliest) if earliest else None
+        effective_start = min(start, source_start) if source_start else start
+        t4 = effective_start - timedelta(minutes=4)
+        delta = (t4 - now_utc).total_seconds()
+        if delta < 0:
+            status = "MISSED_T4"
+        else:
+            status = "DUE"
+        selected.append({
+            "race_id": race_id, "raceday_key": next(iter(refs)),
+            "race_number": row["race_no"], "country": row["country"],
+            "canonical_start_utc": start.isoformat(),
+            "earliest_source_start_utc": source_start.isoformat() if source_start else None,
+            "effective_t4_utc": t4.isoformat(), "seconds_to_t4": delta,
+            "status": status,
+        })
+    selected.sort(key=lambda item: (item["effective_t4_utc"], item["race_id"]))
+    eligible = [r for r in selected if r["status"] == "DUE"]
+    for item in selected:
+        if item["status"] == "MISSED_T4":
+            excluded.append({"race_id": item["race_id"], "reason": "MISSED_T4"})
+    for item in eligible[max_races:]:
+        excluded.append({"race_id": item["race_id"], "reason": "NOT_PROCESSED_CAPACITY"})
+    return {
+        "schema": "CORE003_T4_SOURCE_PLAN_V1",
+        "planned_at_utc": now_utc.isoformat(),
+        "eligible": eligible[:max_races],
+        "excluded": excluded,
+        "bet_authority": False,
+    }
+
+
+def _safe_aware(value: Any) -> datetime | None:
+    if not isinstance(value, str):
+        return None
+    try:
+        return _utc(value).astimezone(UTC)
+    except (TypeError, ValueError, OverflowError):
+        return None
+
+
 def run_pilot(
     *, store: Any, collector: Any, now: datetime, clock: Callable[[], datetime],
     horizon_minutes: float = 90.0, max_tasks: int = 4,
