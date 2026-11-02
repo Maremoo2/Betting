@@ -40,7 +40,7 @@ class FetchResult:
 class OriginalBytesFetchResult(FetchResult):
     """Opt-in T-4 source receipt; default FetchResult never exposes raw bodies."""
 
-    raw_body: bytes
+    raw_body: bytes = b""
 
 
 @dataclass(frozen=True)
