@@ -177,21 +177,23 @@ def test_two_original_aerjang_freeze_times_and_original_report_bytes_are_preserv
 def _position_fixture(*, race_id="RIKSTOTO:S1_NR_2026-11-02:1",
                       as_of="2026-11-02T10:21:36+00:00",
                       source_at="2026-11-02T10:08:37+00:00",
-                      distances=(0, 0, 0, 0, 0, 20, 20, 20, 20, 40)):
-    """Synthetic, source-shaped fixture: identities/offsets from archived Årjäng."""
+                      distances=(0, 0, 0, 0, 0, 20, 20, 20, 20, 40),
+                      names=None, scratched_ids=()):
+    """Synthetic source-shaped fixture with identities from original programs."""
     from hbi.bet_mvp_shadow import aware, verified_program_positions
-    names = ["Arevs Madicken", "Solurstjärn", "Mörten", "Hornnes Odd",
-             "Lykkje Trolla", "Balder Töffen S.K.", "Komnes Hera",
-             "Troll Winther", "Vik Tor", "Remjahn"]
+    if names is None:
+        names = ["Arevs Madicken", "Solurstjärn", "Mörten", "Hornnes Odd",
+                 "Lykkje Trolla", "Balder Töffen S.K.", "Komnes Hera",
+                 "Troll Winther", "Vik Tor", "Remjahn"]
     meeting, race_text = race_id.removeprefix("RIKSTOTO:").rsplit(":", 1)
     race_number = int(race_text)
     roster = [
-        {"selection_id": str(i), "horse_name": name, "post_position": i, "scratched": 0}
+        {"selection_id": str(i), "horse_name": name, "post_position": i, "scratched": int(i in scratched_ids)}
         for i, name in enumerate(names, 1)
     ]
     starts = [
         {"raceNumber": race_number, "startNumber": i, "horseName": name,
-         "isScratched": False, "extraDistance": distance}
+         "isScratched": i in scratched_ids, "extraDistance": distance}
         for i, (name, distance) in enumerate(zip(names, distances), 1)
     ]
     db = sqlite3.connect(":memory:")
@@ -224,16 +226,25 @@ def test_arjang_three_volts_keep_program_number_independent_of_hbi_post_position
 
 
 def test_autostart_program_number_not_inferred_from_post_position():
+    # The real Årjäng R2 program is autostart with 12 entrants, #3 scratched.
+    # The reconstructed /starts *fixture* is not a fresh original API capture.
+    names = ["Whirlwindz", "Zolatin", "Explositj", "Kick the Man",
+             "Bara Joe", "One Big Bang", "Chiani Broline", "Surr",
+             "Jessie", "Fanny S.I.R.", "Eightpack", "Timber Tile"]
     db, roster, verify, clock = _position_fixture(
-        race_id="RIKSTOTO:S1_NR_2026-11-02:2", distances=(0,) * 10)
-    roster[0]["post_position"] = 7  # an existing HBI field is NOT the start number
+        race_id="RIKSTOTO:S1_NR_2026-11-02:2", distances=(0,) * 12,
+        names=names, scratched_ids=(3,))
+    roster[0]["post_position"] = 7  # an HBI field is NOT a source program number
     try:
         result = verify(db, race_id="RIKSTOTO:S1_NR_2026-11-02:2",
                         as_of=clock, roster=roster)
     finally:
         db.close()
+    assert len(result) == 12
     assert result["1"]["start_number"] == 1
-    assert result["1"]["extra_distance_m"] == 0
+    assert result["12"]["start_number"] == 12
+    assert all(row["extra_distance_m"] == 0 for row in result.values())
+    assert roster[2]["scratched"] == 1
     assert roster[0]["post_position"] == 7
 
 
