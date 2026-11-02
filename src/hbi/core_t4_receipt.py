@@ -15,7 +15,12 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from .core_pit_roster_verification import attest_t4_receipt, parse_rikstoto_roster, parse_time
+from .core_pit_roster_verification import (
+    VerifiedCollectorEvidence,
+    attest_t4_receipt,
+    parse_rikstoto_roster,
+    parse_time,
+)
 from .core_shadow_pilot import plan_t4_source_receipts
 from .providers.rikstoto import FetchResult, RikstotoClient
 
@@ -256,9 +261,136 @@ def run_source_capture(
     return index
 
 
+def verify_collector_original(
+    collector_root: Path, provenance_path: Path, receipt: dict,
+) -> VerifiedCollectorEvidence | None:
+    """Replay independently archived original PDF + /starts bytes and SHA.
+
+    The provenance file must be created only by the workflow's authenticated
+    gh Actions download step. Never accept arbitrary provider-side assurance
+    or a final/result-time roster as a substitute for these original bytes.
+    """
+    try:
+        origin = json.loads(provenance_path.read_text(encoding="utf-8"))
+        race_id = str(receipt["race_id"])
+        key = str(receipt["raceday_key"])
+        race_no = int(receipt["race_number"])
+        t4 = parse_time(receipt["t_minus_4_utc"])
+        race_start = parse_time(receipt["canonical_start_utc"])
+        if (
+            t4 is None or race_start is None
+            or origin.get("source_repository") != "Maremoo2/rikstoto-program-collector"
+            or origin.get("event") != "schedule"
+            or origin.get("conclusion") != "success"
+            or origin.get("workflow_name") != "Daily Rikstoto full programs – 07 Oslo"
+            or origin.get("obtained_via_authenticated_gh_cli") is not True
+            or type(origin.get("github_run_id")) is not int
+            or origin["github_run_id"] <= 0
+            or parse_time(origin.get("created_at_utc")) is None
+            or parse_time(origin["created_at_utc"]) >= t4
+        ):
+            return None
+        roots = sorted(collector_root.glob("**/manifest.json"))
+        if len(roots) != 1 or roots[0].is_symlink():
+            return None
+        manifest_path = roots[0]
+        archive_sha256 = digest(manifest_path.read_bytes())
+        manifest = json.loads(manifest_path.read_bytes())
+        if manifest.get("date_oslo") != key[-10:] or manifest.get("status") not in {
+            "COMPLETE", "PARTIAL", "SOURCE_AUDITED", "REVIEW_REQUIRED"
+        }:
+            # Unrecognized status is not itself proof of an original archive.
+            return None
+        meetings = [
+            row for row in manifest.get("meetings", [])
+            if row.get("meeting_id") == key
+            and row.get("is_multi_track_product") is False
+        ]
+        if len(meetings) != 1:
+            return None
+        meeting = meetings[0]
+        audit = meeting.get("startlist_pdf_audit") or {}
+        if (
+            audit.get("status") != "MATCHED_AS_OF_SNAPSHOT"
+            or race_no not in audit.get("verified_race_numbers", [])
+        ):
+            return None
+        # The original 07 Oslo meeting-clock source states the first off-time
+        # only. Later race clocks require independent physical race evidence.
+        if race_no != 1:
+            return None
+        from zoneinfo import ZoneInfo
+
+        local = datetime.fromisoformat(str(meeting["listing_source"]["start_time"]))
+        if local.utcoffset() is None:
+            local = local.replace(tzinfo=ZoneInfo("Europe/Oslo"))
+        independent_start = local.astimezone(UTC)
+        if independent_start != race_start:
+            return None
+        requests = manifest.get("requests")
+        if not isinstance(requests, list):
+            return None
+        expected_urls = {
+            "starts": "https://www.rikstoto.no/api/racedays/" + key + "/starts",
+            "pdf": "https://www.rikstoto.no/api/programdownload/ProgramPdf/Utvidet/" + key,
+        }
+        matched: dict[str, tuple[dict, bytes]] = {}
+        for role, url in expected_urls.items():
+            entries = [r for r in requests if r.get("url") == url]
+            if len(entries) != 1:
+                return None
+            entry = entries[0]
+            when = parse_time(entry.get("at_utc"))
+            if when is None or when >= t4:
+                return None
+            filename = entry.get("raw_path") if role == "starts" else entry.get("path")
+            if not isinstance(filename, str):
+                return None
+            source_path = collector_root / filename
+            if source_path.is_symlink() or not source_path.is_file():
+                return None
+            raw = source_path.read_bytes()
+            if digest(raw) != entry.get("sha256"):
+                return None
+            matched[role] = (entry, raw)
+        original, err = parse_rikstoto_roster(
+            matched["starts"][1].decode("utf-8"), race_no, key
+        )
+        if err or original is None:
+            return None
+        observed = {
+            str(row["start_number"]): {
+                "name": row["horse_name"],
+                "scratched": row["scratched"],
+                "reg": row["registration_number"],
+            }
+            for row in receipt.get("runners", []) if isinstance(row, dict)
+        }
+        if observed != original["all"] or len(observed) != len(receipt.get("runners", [])):
+            return None
+        return VerifiedCollectorEvidence(
+            race_id=race_id,
+            archive_sha256=archive_sha256,
+            github_run_id=origin["github_run_id"],
+            source_repository=origin["source_repository"],
+            observed_at_utc=max(
+                matched["starts"][0]["at_utc"],
+                matched["pdf"][0]["at_utc"],
+            ),
+            original_bytes_sha256_verified=True,
+            full_field_pdf_startlist_reconciled=True,
+            origin_authenticated_independently=True,
+            version_identical_to_t4=True,
+        )
+    except (OSError, ValueError, TypeError, KeyError, AttributeError, UnicodeError):
+        return None
+
+
 def run_attestation(
     receipts: Path, model_reports: Path, out: Path,
     prior_reports: Path | None = None,
+    collector_root: Path | None = None,
+    collector_provenance: Path | None = None,
 ) -> dict[str, Any]:
     """Bind original frozen bytes from this OR previous scheduled runs.
 
@@ -312,9 +444,15 @@ def run_attestation(
             receipt["blockers"] = sorted(
                 set(receipt.get("blockers", [])) | {"AMBIGUOUS_SAME_INSTANT_MODEL_FREEZE"}
             )
+        independent = (
+            verify_collector_original(collector_root, collector_provenance, receipt)
+            if collector_root is not None and collector_provenance is not None
+            and collector_root.is_dir() and collector_provenance.is_file()
+            else None
+        )
         result = attest_t4_receipt(
             receipt, receipt_dir=receipt_path.parent,
-            model_report=model, model_raw=raw, collector_archive=None,
+            model_report=model, model_raw=raw, collector_archive=independent,
             provenance_mode="LIVE",
         )
         result["model_report_artifact_path"] = chosen[3] if chosen else None
@@ -339,12 +477,18 @@ def main() -> None:
     attest.add_argument("--model-reports", type=Path, required=True)
     attest.add_argument("--out", type=Path, required=True)
     attest.add_argument("--prior-model-reports", type=Path)
+    attest.add_argument("--collector-root", type=Path)
+    attest.add_argument("--collector-provenance", type=Path)
     args = parser.parse_args()
     result = (
         run_source_capture(args.db, args.out)
         if args.action == "capture" else
-        run_attestation(args.receipts, args.model_reports, args.out,
-                        prior_reports=args.prior_model_reports)
+        run_attestation(
+            args.receipts, args.model_reports, args.out,
+            prior_reports=args.prior_model_reports,
+            collector_root=args.collector_root,
+            collector_provenance=args.collector_provenance,
+        )
     )
     print(json.dumps({
         "schema": result["schema"], "bet_authority": False,
