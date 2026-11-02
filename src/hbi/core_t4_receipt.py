@@ -371,7 +371,7 @@ def verify_collector_original(
         if len(observed_clocks) != 1:
             return None
         hhmm = observed_clocks[0].split(":")
-        if f"{int(hhmm[0]):02d}:{int(hhmm[1]):02d}" != local.strftime("%H:%M"):
+        if f"{int(hhmm[0]):02d}:{int(hhmm[1]):02d}" != local.astimezone(ZoneInfo("Europe/Oslo")).strftime("%H:%M"):
             return None
         original, err = parse_rikstoto_roster(
             matched["starts"][1].decode("utf-8"), race_no, key
