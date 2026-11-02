@@ -11,7 +11,7 @@ import pytest
 from hbi.core_pit_roster_verification import attest_t4_receipt
 from hbi.core_shadow_pilot import plan_t4_source_receipts
 from hbi.core_t4_receipt import capture_one, digest
-from hbi.providers.rikstoto import FetchResult
+from hbi.providers.rikstoto import OriginalBytesFetchResult
 
 START = datetime(2026, 11, 3, 11, 20, tzinfo=UTC)
 T4 = START - timedelta(minutes=4)
@@ -63,7 +63,7 @@ class FakeClient:
         self.calls.append(role)
         body = json.dumps(self.payloads[role], sort_keys=True).encode()
         supplied = body if self.raw_override is None else self.raw_override
-        return FetchResult(
+        return OriginalBytesFetchResult(
             url="https://www.rikstoto.no/api/" + role,
             payload=self.payloads[role], success=True, status_code=200,
             latency_ms=1, response_completed_at=self.observed,
