@@ -356,9 +356,8 @@ def plan_t4_source_receipts(
             excluded.append({"race_id": race_id, "reason": "AMBIGUOUS_RACE_REFERENCE"})
             continue
         if not any(
-            (lambda stamp: stamp is not None and stamp <= now_utc)(
-                _safe_aware(m.get("discovered_at_utc"))
-            ) for m in matches
+            (stamp := _safe_aware(m.get("discovered_at_utc"))) is not None
+            and stamp <= now_utc for m in matches
         ):
             excluded.append({"race_id": race_id, "reason": "RACE_NOT_DISCOVERED_AS_OF"})
             continue
