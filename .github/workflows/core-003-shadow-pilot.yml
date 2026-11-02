@@ -105,54 +105,108 @@ jobs:
             --max-tasks 4 \
             --market-window-minutes 30
 
-      - name: Freeze a read-only Champion and CORE-004 research report
+      - name: Freeze read-only Champion and CORE-004 reports for fixed cohort
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && success()
         shell: bash
         run: |
-          # Reuse the exact fixed CORE-003 cohort; never discover a different race.
-          # No source/production DB writes, betting, or model/threshold changes.
+          # Assess each member of CORE-003's unchanged original cohort.
+          # No provider calls, outcome selection, threshold changes, or betting.
           python - <<'PY'
           import json
           import sqlite3
           import subprocess
           import sys
-          from datetime import UTC, datetime, timedelta
+          from datetime import UTC, datetime
           from pathlib import Path
 
-          evidence = Path('core003-pilot-report.json')
+          from hbi.bet_mvp_shadow import select_fixed_cohort_races, sha256
+
+          source_path = Path('core003-pilot-report.json')
           db_path = Path('data/core003-pilot.sqlite')
-          if not evidence.is_file() or not db_path.is_file():
+          if not source_path.is_file() or not db_path.is_file():
               raise SystemExit('BET_MVP_MISSING_CORE003_INPUT')
-          cohort = json.loads(evidence.read_text(encoding='utf-8')).get('races_in_fixed_cohort', [])
-          if not isinstance(cohort, list):
-              raise SystemExit('BET_MVP_INVALID_CORE003_COHORT')
-          cutoff = datetime.now(UTC)
-          con = sqlite3.connect(f'file:{db_path.resolve()}?mode=ro', uri=True)
+          source_report = json.loads(source_path.read_text(encoding='utf-8'))
+          if not isinstance(source_report, dict):
+              raise SystemExit('BET_MVP_INVALID_CORE003_REPORT')
+          as_of = datetime.now(UTC)
+          connection = sqlite3.connect(f'file:{db_path.resolve()}?mode=ro&immutable=1', uri=True)
+          connection.row_factory = sqlite3.Row
           try:
-              upcoming = []
-              for race_id in cohort:
-                  if not isinstance(race_id, str):
-                      raise SystemExit('BET_MVP_INVALID_CORE003_RACE_ID')
-                  row = con.execute('SELECT start_time_utc FROM races WHERE race_id=?', (race_id,)).fetchone()
-                  if row is None:
-                      continue
-                  start = datetime.fromisoformat(str(row[0]))
-                  if start.utcoffset() is None:
-                      raise SystemExit('BET_MVP_RACE_START_CLOCK_INVALID')
-                  if cutoff + timedelta(minutes=4) < start:
-                      upcoming.append((start, race_id))
+              selection = select_fixed_cohort_races(connection, source_report, as_of)
           finally:
-              con.close()
-          if not upcoming:
-              print('BET_MVP_NO_UPCOMING_COHORT_RACE_NO_SHADOW_REPORT')
-          else:
-              race_id = min(upcoming, key=lambda x: (x[0], x[1]))[1]
-              subprocess.run([
+              connection.close()
+
+          folder = Path('bet-mvp-shadow')
+          folder.mkdir(exist_ok=False)
+          index = {
+              'schema': 'BET_MVP_002_FIXED_COHORT_INDEX_V1',
+              'authority': 'RESEARCH_ONLY_NO_BET',
+              'run_kind': 'PROSPECTIVE_ATTEMPT',
+              'as_of_utc': as_of.isoformat(),
+              'source_report_sha256': sha256(source_path),
+              'source_database_sha256': sha256(db_path),
+              'original_cohort': selection['original_cohort'],
+              'eligible_prestart': selection['eligible'],
+              'not_processed': selection['not_processed'],
+              'processed': [],
+              'errors': [],
+              'bet_authority': False,
+              'pit_certified': False,
+          }
+          # This runs the unchanged genuine model entrypoints for EVERY
+          # eligible pre-start race, even if its source or market will block.
+          for number, entry in enumerate(selection['eligible'], start=1):
+              race_id = entry['race_id']
+              destination = folder / f'race-{number:03d}'
+              command = [
                   sys.executable, '-m', 'hbi.bet_mvp_shadow',
-                  '--db', str(db_path), '--source-report', str(evidence),
-                  '--race-id', race_id, '--as-of', cutoff.isoformat(),
-                  '--run-kind', 'PROSPECTIVE_ATTEMPT', '--out', 'bet-mvp-shadow',
-              ], check=True)
+                  '--db', str(db_path), '--source-report', str(source_path),
+                  '--race-id', race_id, '--as-of', as_of.isoformat(),
+                  '--run-kind', 'PROSPECTIVE_ATTEMPT', '--out', str(destination),
+              ]
+              run = subprocess.run(command, capture_output=True, text=True, check=False)
+              if run.returncode != 0 or not (destination / 'shadow.json').is_file():
+                  index['errors'].append({
+                      'race_id': race_id,
+                      'reason': 'MODEL_REPORT_EXECUTION_ERROR',
+                      'exit_code': run.returncode,
+                      'stderr': run.stderr[-1500:],
+                  })
+                  continue
+              report = json.loads((destination / 'shadow.json').read_text(encoding='utf-8'))
+              index['processed'].append({
+                  'race_id': race_id,
+                  'directory': str(destination),
+                  'analysis_status': report['analysis_status'],
+                  'model_status': report['model_status'],
+                  'market_status': report['market_status'],
+                  'pit_status': report['pit_status'],
+                  'model_blockers': report['model_blockers'],
+                  'market_blockers': report['market_blockers'],
+                  'active_runners': report['active_runners'],
+                  'champion_p_sum': report['champion_p_sum'],
+                  'core004_p_sum': report['core004_p_sum'],
+                  'model_calculated_at_utc': report['model_calculated_at_utc'],
+                  'report_created_at_utc': report['report_created_at_utc'],
+                  'report_sha256': sha256(destination / 'shadow.json'),
+                  'bet_authority': False,
+              })
+          index['index_written_at_utc'] = datetime.now(UTC).isoformat()
+          (folder / 'cohort-index.json').write_text(
+              json.dumps(index, indent=2, ensure_ascii=False, allow_nan=False) + '\n',
+              encoding='utf-8',
+          )
+          print(json.dumps({
+              'cohort': len(selection['original_cohort']),
+              'prestart_eligible': len(selection['eligible']),
+              'processed': len(index['processed']),
+              'model_ready': sum(r['model_status'] == 'MODEL_READY' for r in index['processed']),
+              'not_processed': len(index['not_processed']),
+              'errors': len(index['errors']),
+              'bet_authority': False,
+          }, ensure_ascii=False))
+          if index['errors']:
+              raise SystemExit('BET_MVP_FIXED_COHORT_INCOMPLETE_REPORTS')
           PY
 
       - name: Upload frozen model research report (not a bet)
