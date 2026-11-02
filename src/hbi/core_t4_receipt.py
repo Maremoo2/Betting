@@ -42,7 +42,7 @@ def _received(fetch: FetchResult, now: datetime, t4: datetime) -> list[str]:
     completed = fetch.response_completed_at
     if not fetch.success or fetch.status_code != 200:
         problems.append("HTTP_SOURCE_UNAVAILABLE")
-    if (fetch.raw_body is None or not isinstance(fetch.raw_body, bytes)
+    if (not isinstance(getattr(fetch, "raw_body", None), bytes)
             or fetch.response_body_sha256 != digest(fetch.raw_body)):
         problems.append("RAW_BODY_HASH_MISMATCH_OR_MISSING")
     if completed is None or completed.utcoffset() is None:
@@ -154,7 +154,7 @@ def capture_one(
             "last_modified": fetch.http_last_modified, "http_status": fetch.status_code,
             "raw_sha256": fetch.response_body_sha256, "raw_path": None,
         }
-        if isinstance(fetch.raw_body, bytes):
+        if isinstance(getattr(fetch, "raw_body", None), bytes):
             fname = role + ".raw.json"
             try:
                 receipt["raw_sha256"] = write_once(out / fname, fetch.raw_body)
