@@ -3,7 +3,7 @@ name: CORE-003 Isolated Source Coverage Pilot
 on:
   # Pilot only: source acquisition in a dedicated SQLite artifact. Never writes hbi-state.
   schedule:
-    - cron: "*/15 7-21 * * *"
+    - cron: "*/5 7-21 * * *"
   # One bootstrap run on MAIN when this pilot workflow itself changes.
   # Unrelated code pushes do not trigger extra provider calls.
   push:
@@ -83,6 +83,14 @@ jobs:
       - name: Initialize isolated research database
         if: steps.gate.outputs.run == 'true'
         run: hbi --db data/core003-pilot.sqlite init-db
+
+      # PIT-003A is a source-only sidecar, never a replacement for CORE-003.
+      # GitHub cron is best-effort. Late jobs explicitly record MISSED_T4.
+      - name: Capture race-relative original T-4 receipts (research only)
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true'
+        run: |
+          python -m hbi.core_t4_receipt capture \
+            --db data/core003-pilot.sqlite --out pit003a-source-receipts
 
       - name: Execute research source capture (no model, no bets)
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true'
@@ -208,6 +216,34 @@ jobs:
           if index['errors']:
               raise SystemExit('BET_MVP_FIXED_COHORT_INCOMPLETE_REPORTS')
           PY
+
+      - name: Independently audit T-4 source receipts against frozen reports
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
+        run: |
+          if [ -f pit003a-source-receipts/index.json ]; then
+            python -m hbi.core_t4_receipt attest \
+              --receipts pit003a-source-receipts \
+              --model-reports bet-mvp-shadow \
+              --out pit003a-attestations
+          fi
+
+      - name: Upload original T-4 source receipts
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit003a-source-receipts-${{ github.run_id }}
+          path: pit003a-source-receipts/
+          if-no-files-found: ignore
+          retention-days: 21
+
+      - name: Upload PIT T-4 research attestations (NO BET)
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit003a-attestations-${{ github.run_id }}
+          path: pit003a-attestations/
+          if-no-files-found: ignore
+          retention-days: 21
 
       - name: Upload frozen model research report (not a bet)
         if: steps.gate.outputs.run == 'true' && always()
