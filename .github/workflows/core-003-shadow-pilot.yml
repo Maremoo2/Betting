@@ -105,6 +105,65 @@ jobs:
             --max-tasks 4 \
             --market-window-minutes 30
 
+      - name: Freeze a read-only Champion and CORE-004 research report
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && success()
+        shell: bash
+        run: |
+          # Reuse the exact fixed CORE-003 cohort; never discover a different race.
+          # No source/production DB writes, betting, or model/threshold changes.
+          python - <<'PY'
+          import json
+          import sqlite3
+          import subprocess
+          import sys
+          from datetime import UTC, datetime, timedelta
+          from pathlib import Path
+
+          evidence = Path('core003-pilot-report.json')
+          db_path = Path('data/core003-pilot.sqlite')
+          if not evidence.is_file() or not db_path.is_file():
+              raise SystemExit('BET_MVP_MISSING_CORE003_INPUT')
+          cohort = json.loads(evidence.read_text(encoding='utf-8')).get('races_in_fixed_cohort', [])
+          if not isinstance(cohort, list):
+              raise SystemExit('BET_MVP_INVALID_CORE003_COHORT')
+          cutoff = datetime.now(UTC)
+          con = sqlite3.connect(f'file:{db_path.resolve()}?mode=ro', uri=True)
+          try:
+              upcoming = []
+              for race_id in cohort:
+                  if not isinstance(race_id, str):
+                      raise SystemExit('BET_MVP_INVALID_CORE003_RACE_ID')
+                  row = con.execute('SELECT start_time_utc FROM races WHERE race_id=?', (race_id,)).fetchone()
+                  if row is None:
+                      continue
+                  start = datetime.fromisoformat(str(row[0]))
+                  if start.utcoffset() is None:
+                      raise SystemExit('BET_MVP_RACE_START_CLOCK_INVALID')
+                  if cutoff + timedelta(minutes=4) < start:
+                      upcoming.append((start, race_id))
+          finally:
+              con.close()
+          if not upcoming:
+              print('BET_MVP_NO_UPCOMING_COHORT_RACE_NO_SHADOW_REPORT')
+          else:
+              race_id = min(upcoming, key=lambda x: (x[0], x[1]))[1]
+              subprocess.run([
+                  sys.executable, '-m', 'hbi.bet_mvp_shadow',
+                  '--db', str(db_path), '--source-report', str(evidence),
+                  '--race-id', race_id, '--as-of', cutoff.isoformat(),
+                  '--run-kind', 'PROSPECTIVE_ATTEMPT', '--out', 'bet-mvp-shadow',
+              ], check=True)
+          PY
+
+      - name: Upload frozen model research report (not a bet)
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bet-mvp-shadow-${{ github.run_id }}
+          path: bet-mvp-shadow/
+          if-no-files-found: ignore
+          retention-days: 21
+
       - name: Persist isolated research state for next pilot
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && success()
         uses: actions/upload-artifact@v4
