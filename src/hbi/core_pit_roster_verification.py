@@ -14,6 +14,7 @@ import json
 import math
 import sqlite3
 from collections import Counter
+from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from urllib.parse import quote
@@ -386,10 +387,25 @@ def audit_race(conn, race_id, *, asof):
             'status':'SOURCE_OBSERVED_UNATTESTED' if raw_ready else 'BLOCKED'}
 
 
+@dataclass(frozen=True)
+class VerifiedCollectorEvidence:
+    """Created only after replaying an authenticated original Collector artifact."""
+
+    race_id: str
+    archive_sha256: str
+    github_run_id: int
+    source_repository: str
+    observed_at_utc: str
+    original_bytes_sha256_verified: bool
+    full_field_pdf_startlist_reconciled: bool
+    origin_authenticated_independently: bool
+    version_identical_to_t4: bool
+
+
 def attest_t4_receipt(
     receipt: dict, *, receipt_dir: Path,
     model_report: dict | None, model_raw: bytes | None,
-    collector_archive: dict | None = None,
+    collector_archive: VerifiedCollectorEvidence | dict | None = None,
     provenance_mode: str = "LIVE",
 ) -> dict:
     """Independent model-free source/time check plus frozen report hash binding.
@@ -400,6 +416,12 @@ def attest_t4_receipt(
     """
     if provenance_mode not in {"LIVE", "TEST_ONLY"}:
         raise ValueError("INVALID_PROVENANCE_MODE")
+    if provenance_mode == "LIVE" and not isinstance(collector_archive, VerifiedCollectorEvidence):
+        collector_origin_wired = False
+    else:
+        collector_origin_wired = isinstance(collector_archive, VerifiedCollectorEvidence)
+    if isinstance(collector_archive, VerifiedCollectorEvidence):
+        collector_archive = asdict(collector_archive)
     blocks: set[str] = set(receipt.get("blockers", []))
     if not isinstance(receipt, dict) or receipt.get("schema") != "PIT_T4_SOURCE_RECEIPT_V1":
         raise ValueError("UNRECOGNIZED_T4_RECEIPT")
@@ -542,7 +564,7 @@ def attest_t4_receipt(
     # dictionary must never be trusted. Require a separate authenticated
     # GitHub artifact verifier entrypoint, which is deliberately not in this
     # first read-only sidecar integration.
-    if provenance_mode == "LIVE":
+    if provenance_mode == "LIVE" and not collector_origin_wired:
         blocks.add("INDEPENDENT_COLLECTOR_ORIGIN_GATE_NOT_WIRED")
     contract_pass = not blocks
     if provenance_mode == "TEST_ONLY" and contract_pass:
