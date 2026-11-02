@@ -217,6 +217,43 @@ jobs:
               raise SystemExit('BET_MVP_FIXED_COHORT_INCOMPLETE_REPORTS')
           PY
 
+      # Prior frozen reports are downloaded by original run ID, never recomputed.
+      # Any missing artifact remains an explicit model-link blocker.
+      - name: Recover prior original prospective models (read only)
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p pit003a-prior-models
+          if ! gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" > "$RUNNER_TEMP/pit003a-artifacts.json"; then
+            echo "PRIOR_FROZEN_ARTIFACT_LIST_UNAVAILABLE"
+          else
+            python - <<'PY' > "$RUNNER_TEMP/pit003a-prior.tsv"
+          import json
+          import os
+          from pathlib import Path
+
+          items = json.loads((Path(os.environ["RUNNER_TEMP"]) / "pit003a-artifacts.json").read_text())
+          filtered = [
+              item for item in items.get("artifacts", [])
+              if str(item.get("name", "")).startswith("bet-mvp-shadow-")
+              and item.get("expired") is False
+              and item.get("workflow_run", {}).get("head_branch") == "main"
+              and item.get("workflow_run", {}).get("id") != int(os.environ["GITHUB_RUN_ID"])
+          ]
+          filtered.sort(key=lambda item: (item.get("created_at", ""), item.get("id", 0)), reverse=True)
+          for item in filtered[:20]:
+              print(str(item["workflow_run"]["id"]) + " " + item["name"])
+          PY
+            while read -r prior_run artifact_name; do
+              test -n "$prior_run" || continue
+              mkdir -p "pit003a-prior-models/$prior_run"
+              gh run download "$prior_run" --repo "$GITHUB_REPOSITORY" \
+                --name "$artifact_name" --dir "pit003a-prior-models/$prior_run" \
+                || echo "PRIOR_FROZEN_REPORT_DOWNLOAD_BLOCKED:$prior_run"
+            done < "$RUNNER_TEMP/pit003a-prior.tsv"
+          fi
+
       - name: Independently audit T-4 source receipts against frozen reports
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
         run: |
@@ -224,8 +261,18 @@ jobs:
             python -m hbi.core_t4_receipt attest \
               --receipts pit003a-source-receipts \
               --model-reports bet-mvp-shadow \
+              --prior-model-reports pit003a-prior-models \
               --out pit003a-attestations
           fi
+
+      - name: Upload restored immutable prior model evidence
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit003a-prior-frozen-models-${{ github.run_id }}
+          path: pit003a-prior-models/
+          if-no-files-found: ignore
+          retention-days: 21
 
       - name: Upload original T-4 source receipts
         if: steps.gate.outputs.run == 'true' && always()
