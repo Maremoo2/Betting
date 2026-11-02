@@ -109,6 +109,14 @@ def _model():
         "report_created_at_utc": (T4 - timedelta(minutes=7)).isoformat(),
         "model_status": "MODEL_READY", "bet_authority": False,
         "run_kind": "PROSPECTIVE_ATTEMPT",
+        "model_calculated_at_utc": (T4 - timedelta(minutes=7, seconds=1)).isoformat(),
+        "source_audit": {
+            "fundamental_observed_at_utc": (T4 - timedelta(minutes=9)).isoformat(),
+        },
+        "collector_source_evidence": {
+            "finished_at_utc": (T4 - timedelta(minutes=9)).isoformat(),
+        },
+        "source_database_sha256": "0" * 64,
         "champion_p_sum": 1.0, "core004_p_sum": 1.0,
         "runners": [
             {"start_number": 1, "horse_name": "Aurora", "scratched": False,
@@ -321,3 +329,45 @@ def test_original_collector_archive_hash_conflict_fails_closed(tmp_path):
     report, _, directory = _capture(tmp_path)
     root, origin = _original_collector_fixture(tmp_path, directory, mismatch=True)
     assert verify_collector_original(root, origin, report) is None
+
+
+def test_missing_source_clock_and_conflicting_scratch_fail_closed(tmp_path):
+    payloads = _payloads()
+    payloads["scratched"]["result"]["1"] = [2]
+    client = FakeClient(payloads)
+    root = tmp_path / "scratch"
+    root.mkdir()
+    report = capture_one(
+        _target(), client=client, out=root, clock=lambda: EARLY,
+        sleeper=lambda _: None,
+    )
+    assert "SCRATCH_REVISION_CONFLICT" in report["blockers"]
+    assert report["pit_status"] == "PIT_NOT_CERTIFIED"
+
+    missing = FakeClient(_payloads(), observed=None)
+    root_missing = tmp_path / "missing"
+    root_missing.mkdir()
+    second = capture_one(
+        _target(), client=missing, out=root_missing, clock=lambda: EARLY,
+        sleeper=lambda _: None,
+    )
+    assert "SOURCE_OBSERVATION_CLOCK_MISSING" in second["blockers"]
+    assert second["status"] == "BLOCKED"
+
+
+def test_future_fundamental_observation_never_pit_certified(tmp_path):
+    receipt, _, directory = _capture(tmp_path)
+    model = _model()
+    model["source_audit"]["fundamental_observed_at_utc"] = (
+        T4 + timedelta(seconds=1)
+    ).isoformat()
+    original, provenance = _original_collector_fixture(tmp_path, directory)
+    evidence = verify_collector_original(original, provenance, receipt)
+    assert isinstance(evidence, VerifiedCollectorEvidence)
+    output = attest_t4_receipt(
+        receipt, receipt_dir=directory,
+        model_report=model, model_raw=json.dumps(model).encode(),
+        collector_archive=evidence, provenance_mode="TEST_ONLY",
+    )
+    assert "FUTURE_OR_MISSING_FUNDAMENTAL_OBSERVATION" in output["blockers"]
+    assert not output["independent_pit_certified"]
