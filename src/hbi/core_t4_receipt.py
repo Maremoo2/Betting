@@ -297,7 +297,7 @@ def verify_collector_original(
         archive_sha256 = digest(manifest_path.read_bytes())
         manifest = json.loads(manifest_path.read_bytes())
         if manifest.get("date_oslo") != key[-10:] or manifest.get("status") not in {
-            "COMPLETE", "PARTIAL", "SOURCE_AUDITED", "REVIEW_REQUIRED"
+            "CAPTURED_UNVERIFIED", "COMPLETE", "PARTIAL", "SOURCE_AUDITED", "REVIEW_REQUIRED"
         }:
             # Unrecognized status is not itself proof of an original archive.
             return None
