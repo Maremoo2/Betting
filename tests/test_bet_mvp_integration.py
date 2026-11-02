@@ -370,3 +370,22 @@ def test_original_arjang_fundamental_excerpt_replays_actual_model_modules():
     assert sum(actual_core.values()) == pytest.approx(1.0)
     assert "NO_WIN_MARKET_AS_OF" in champion["blocks"]
     assert core004["bet_count"] == 0
+
+
+def test_core003_shadow_workflow_preserves_fixed_cohort_and_blocked_races():
+    """Check the existing workflow executes ALL frozen races, not first only."""
+    workflow = (ROOT / ".github" / "workflows" /
+                "core-003-shadow-pilot.yml").read_text(encoding="utf-8")
+    assert "cohort = source.get('races_in_fixed_cohort', [])" in workflow
+    assert "readiness = source.get('race_readiness_after', [])" in workflow
+    assert "set(by_race) != set(cohort)" in workflow
+    assert "for race_id in cohort:" in workflow
+    assert "for _, _, race_id in sorted(selected):" in workflow
+    assert "min(upcoming" not in workflow
+    assert "--run-kind', 'PROSPECTIVE_ATTEMPT'" in workflow
+    assert "'MODEL_INVOCATION_FAILED'" in workflow
+    assert "model_status': shadow['model_status']" in workflow
+    assert "market_status': shadow['market_status']" in workflow
+    assert "pit_status': shadow['pit_status']" in workflow
+    assert "'bet_authority': False" in workflow
+    assert "root / 'index.json'" in workflow
