@@ -172,3 +172,112 @@ def test_two_original_aerjang_freeze_times_and_original_report_bytes_are_preserv
         '97a79b8d8344d56340b886811187cd92dd63e718f209e9acf5f11f7f90cf9428',
         'c685b107639d4cdb2a6d4371e5514c8a92f30b51c19998d856c0e6793dbf74f6',
     ]
+
+
+def _position_fixture(*, race_id="RIKSTOTO:S1_NR_2026-11-02:1",
+                      as_of="2026-11-02T10:21:36+00:00",
+                      source_at="2026-11-02T10:08:37+00:00",
+                      distances=(0, 0, 0, 0, 0, 20, 20, 20, 20, 40)):
+    """Synthetic, source-shaped fixture: identities/offsets from archived Årjäng."""
+    from hbi.bet_mvp_shadow import verified_program_positions, aware
+    names = ["Arevs Madicken", "Solurstjärn", "Mörten", "Hornnes Odd",
+             "Lykkje Trolla", "Balder Töffen S.K.", "Komnes Hera",
+             "Troll Winther", "Vik Tor", "Remjahn"]
+    meeting, race_text = race_id.removeprefix("RIKSTOTO:").rsplit(":", 1)
+    race_number = int(race_text)
+    roster = [
+        {"selection_id": str(i), "horse_name": name, "post_position": i, "scratched": 0}
+        for i, name in enumerate(names, 1)
+    ]
+    starts = [
+        {"raceNumber": race_number, "startNumber": i, "horseName": name,
+         "isScratched": False, "extraDistance": distance}
+        for i, (name, distance) in enumerate(zip(names, distances), 1)
+    ]
+    db = sqlite3.connect(":memory:")
+    db.row_factory = sqlite3.Row
+    db.execute("""CREATE TABLE provider_payloads(
+        provider TEXT, category TEXT, provider_raceday_key TEXT,
+        observed_at_utc TEXT, payload_json TEXT, source_uri TEXT)""")
+    db.execute("INSERT INTO provider_payloads VALUES(?,?,?,?,?,?)", (
+        "rikstoto", "RACEDAY_STARTS", meeting, source_at,
+        json.dumps({"success": True, "result": {str(race_number): starts}}),
+        "https://www.rikstoto.no/api/racedays/" + meeting + "/starts",
+    ))
+    return db, roster, verified_program_positions, aware(as_of)
+
+
+@pytest.mark.parametrize(("selection","additional"), [
+    ("1", 0), ("5", 0), ("6", 20), ("9", 20), ("10", 40),
+])
+def test_arjang_three_volts_keep_program_number_independent_of_hbi_post_position(selection, additional):
+    db, roster, verify, clock = _position_fixture()
+    try:
+        result = verify(db, race_id="RIKSTOTO:S1_NR_2026-11-02:1",
+                        as_of=clock, roster=roster)
+    finally:
+        db.close()
+    assert len(result) == 10
+    assert result[selection]["start_number"] == int(selection)
+    assert result[selection]["extra_distance_m"] == additional
+    assert result[selection]["start_number_observed_at_utc"] == "2026-11-02T10:08:37+00:00"
+
+
+def test_autostart_program_number_not_inferred_from_post_position():
+    db, roster, verify, clock = _position_fixture(
+        race_id="RIKSTOTO:S1_NR_2026-11-02:2", distances=(0,) * 10)
+    roster[0]["post_position"] = 7  # an existing HBI field is NOT the start number
+    try:
+        result = verify(db, race_id="RIKSTOTO:S1_NR_2026-11-02:2",
+                        as_of=clock, roster=roster)
+    finally:
+        db.close()
+    assert result["1"]["start_number"] == 1
+    assert result["1"]["extra_distance_m"] == 0
+    assert roster[0]["post_position"] == 7
+
+
+def test_unattested_future_startlist_never_produces_program_numbers():
+    db, roster, verify, clock = _position_fixture(
+        source_at="2026-11-02T10:21:37+00:00")
+    try:
+        assert verify(db, race_id="RIKSTOTO:S1_NR_2026-11-02:1",
+                      as_of=clock, roster=roster) == {}
+    finally:
+        db.close()
+
+
+def test_mismatched_runner_identity_blocks_entire_startlist():
+    db, roster, verify, clock = _position_fixture()
+    roster[8]["horse_name"] = "Wrong Horse"
+    try:
+        assert verify(db, race_id="RIKSTOTO:S1_NR_2026-11-02:1",
+                      as_of=clock, roster=roster) == {}
+    finally:
+        db.close()
+
+
+@pytest.mark.skipif(not PILOT.is_file() or not SOURCE.is_file(),
+                    reason="Original CORE-003 sources not available in CI")
+def test_real_arjang_start_positions_are_verified_without_volte_inference():
+    from hbi.bet_mvp_shadow import verified_program_positions, aware, markdown_report
+    with connection(PILOT) as conn:
+        result = analyze(conn, race_id="RIKSTOTO:S1_NR_2026-11-02:1",
+                         as_of="2026-11-02T10:21:36+00:00", archive_sha=None)
+        positions = verified_program_positions(
+            conn, race_id="RIKSTOTO:S1_NR_2026-11-02:1",
+            as_of=aware("2026-11-02T10:21:36+00:00"),
+            roster=[dict(x) for x in conn.execute(
+                "SELECT * FROM runners WHERE race_id=?",
+                ("RIKSTOTO:S1_NR_2026-11-02:1",))],
+        )
+    assert len(positions) == 10
+    assert [(str(r["start_number"]), r["extra_distance_m"])
+            for r in result["runners"]] == [
+        (str(i), 0 if i <= 5 else 20 if i <= 9 else 40)
+        for i in range(1, 11)]
+    assert all(r["volte_position"] is None for r in result["runners"])
+    assert all(r["start_number_observed_at_utc"] for r in result["runners"])
+    assert all(r["pit_status"] == "PIT_NOT_CERTIFIED" and not r["bet_authority"]
+               for r in result["runners"])
+    assert "## Startnumre og volteløp" in markdown_report(result)

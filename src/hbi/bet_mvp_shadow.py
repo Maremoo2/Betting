@@ -146,6 +146,93 @@ def _safe_call(label: str, fn, **kwargs: Any) -> dict[str, Any]:
         return {"status":"BLOCKED", "exception_code":f"{label}_EXECUTION_ERROR", "exception_detail":f"{type(e).__name__}: {e}"}
 
 
+
+def verified_program_positions(
+    conn: sqlite3.Connection, *, race_id: str, as_of: datetime,
+    roster: list[dict[str, Any]],
+) -> dict[str, dict[str, Any]]:
+    """Read original Rikstoto /starts snapshot; never infer a local volt lane.
+
+    In this HBI provider, selection_id is populated from startNumber and
+    post_position is also assigned startNumber (NOT a physical volt lane).
+    Validate the independent original response, runner name, scratch flag,
+    whole-field identity and observation clock before exporting either value.
+    """
+    if not race_id.startswith("RIKSTOTO:"):
+        return {}
+    try:
+        meeting, number_text = race_id.removeprefix("RIKSTOTO:").rsplit(":", 1)
+        number = int(number_text)
+        originals = read_rows(conn, """
+            SELECT observed_at_utc,payload_json,source_uri
+            FROM provider_payloads
+            WHERE provider='rikstoto' AND category='RACEDAY_STARTS'
+              AND provider_raceday_key=?
+        """, (meeting,))
+    except (ValueError, sqlite3.Error):
+        return {}
+    eligible = []
+    for entry in originals:
+        try:
+            timestamp = aware(str(entry["observed_at_utc"]))
+        except (ValueError, TypeError):
+            return {}  # Unknown source clock is not time-travel evidence.
+        if timestamp <= as_of:
+            eligible.append((timestamp, entry))
+    if not eligible:
+        return {}
+    latest = max(t for t, _ in eligible)
+    matching = [entry for t, entry in eligible if t == latest]
+    if len({entry["payload_json"] for entry in matching}) != 1:
+        return {}  # Same-instant conflicting source bodies.
+    entry = matching[0]
+    try:
+        payload = json.loads(entry["payload_json"])
+        raw = payload["result"][str(number)]
+        if payload.get("success") is not True or not isinstance(raw, list):
+            return {}
+    except (ValueError, TypeError, KeyError, AttributeError):
+        return {}
+    by_id = {}
+    for item in raw:
+        if not isinstance(item, dict):
+            return {}
+        sid = item.get("startNumber")
+        name = item.get("horseName")
+        scratch = item.get("isScratched")
+        distance = item.get("extraDistance")
+        if (type(sid) is not int or sid <= 0 or sid in by_id
+                or type(item.get("raceNumber")) is not int
+                or item["raceNumber"] != number
+                or not isinstance(name, str) or not name.strip()
+                or type(scratch) is not bool
+                or (distance is not None and (type(distance) is not int or distance < 0))):
+            return {}
+        by_id[sid] = item
+    if not roster or len(by_id) != len(roster):
+        return {}
+    for horse in roster:
+        sid = str(horse.get("selection_id"))
+        if (not sid.isdecimal() or sid.startswith("0")
+                or int(sid) not in by_id):
+            return {}
+        source = by_id[int(sid)]
+        if (str(horse.get("horse_name") or "").strip().casefold()
+                != source["horseName"].strip().casefold()
+                or bool(horse.get("scratched")) != source["isScratched"]):
+            return {}
+    return {
+        str(sid): {
+            "start_number": sid,
+            "extra_distance_m": item.get("extraDistance"),
+            "start_number_source": entry["source_uri"],
+            "start_number_observed_at_utc": latest.isoformat(),
+        }
+        for sid, item in by_id.items()
+    }
+
+
+
 def analyze(conn: sqlite3.Connection, *, race_id: str, as_of: str, archive_sha: str | None,
             run_kind: str = "ARCHIVED_REPLAY",
             source_report: dict[str, Any] | None = None,
@@ -180,6 +267,7 @@ def analyze(conn: sqlite3.Connection, *, race_id: str, as_of: str, archive_sha: 
     champion_rows = {str(r['selection_id']):r for r in champion.get('runner_rows', [])}
     candidate_rows = {str(r['selection_id']):r for r in candidate.get('runners', [])}
     roster = read_rows(conn, "SELECT * FROM runners WHERE race_id=? ORDER BY post_position,selection_id", (race_id,))
+    verified_positions = verified_program_positions(conn, race_id=race_id, as_of=cutoff, roster=roster)
     ids = set(champion_rows) | set(candidate_rows) | {str(r['selection_id']) for r in roster}
     numbers = lambda sid: (0,int(sid)) if sid.isdecimal() else (1,sid)
     source_blocks = set(audit['source_blocks']) | timestamp_blocks
@@ -243,7 +331,24 @@ def analyze(conn: sqlite3.Connection, *, race_id: str, as_of: str, archive_sha: 
         # Preserve CORE-004's no-EV / no-WATCH rule. Any WATCH arises only
         # from the unchanged Champion preliminary price threshold.
         rows.append({
-            'selection_id':sid, 'start_number':r.get('post_position'), 'horse_name':r.get('horse_name') or ch.get('horse_name'),
+            'selection_id':sid,
+            # selection_id is the canonical within-race key; a verified
+            # program number comes from an as-of, full-field /starts body.
+            'start_number':verified_positions.get(sid, {}).get('start_number'),
+            'volte_position':None,
+            'extra_distance_m':verified_positions.get(sid, {}).get('extra_distance_m'),
+            'post_position':r.get('post_position'),
+            'post_position_semantics':(
+                'HBI_START_NUMBER_ALIAS_NOT_LOCAL_VOLTE_POSITION'
+                if sid in verified_positions and r.get('post_position') == int(sid)
+                else 'HBI_POST_POSITION_NOT_INDEPENDENTLY_VERIFIED'),
+            'start_number_source':verified_positions.get(sid, {}).get('start_number_source'),
+            'start_number_observed_at_utc':verified_positions.get(sid, {}).get('start_number_observed_at_utc'),
+            'volte_position_note':(
+                'NOT_APPLICABLE_AUTOSTART'
+                if str(race.get('start_method') or '').casefold().startswith('auto')
+                else 'LOCAL_VOLTE_LANE_NOT_IN_ARCHIVED_CORE003_STARTLIST'),
+            'horse_name':r.get('horse_name') or ch.get('horse_name'),
             'scratched':scratch,'historical_starts':ch.get('history_total_starts'), 'historical_wins':ch.get('history_total_wins'),
             'history_source_uri':audit['source_uri_by_selection'].get(sid),
             'history_source_quality':ch.get('history_source_quality'),
@@ -370,6 +475,20 @@ def markdown_report(report: dict[str,Any]) -> str:
     for x in report['runners']:
         hist=f"{x['historical_starts']}/{x['historical_wins']}" if x['historical_starts'] is not None else '—'
         lines.append(f"| {x['start_number'] if x['start_number'] is not None else x['selection_id']} | {str(x['horse_name'] or '—').replace('|','/')} | {'Ja' if x['scratched'] else 'Nei'} | {hist} | {fmt(x['champion_p_win'],100)} | {fmt(x['core004_p_win'],100)} | {fmt(x['core004_minus_champion_pp'])} | {fmt(x['champion_fair_odds'])} | {fmt(x['win_odds'])} | {fmt(x['normalized_market_p'],100)} | {fmt(x['champion_theoretical_ev_uncalibrated'],100)} | {x['research_status']} |")
+    lines += ['', '## Startnumre og volteløp',
+              'Startnummer er dokumentert mot tidsstemplet Rikstoto /starts, ikke utledet fra HBI post_position.',
+              'post_position er beholdt som originalt HBI-felt og er ikke attestert som lokalt voltespor.',
+              '| Startnummer | Hest | HBI post_position | Lokalt voltespor | Tillegg m | Kildestatus |',
+              '|---:|---|---:|---:|---:|---|']
+    for x in report['runners']:
+        lines.append(
+            f"| {x.get('start_number') if x.get('start_number') is not None else '—'}"
+            f" | {str(x.get('horse_name') or '—').replace('|','/')}"
+            f" | {x.get('post_position') if x.get('post_position') is not None else '—'}"
+            f" | {x.get('volte_position') if x.get('volte_position') is not None else '—'}"
+            f" | {x.get('extra_distance_m') if x.get('extra_distance_m') is not None else '—'}"
+            f" | {x.get('start_number_source') or 'UNVERIFIED'} |"
+        )
     lines+=['','## Kilde- og tidsaudit',f"- Original SQLite SHA-256: `{report['source_database_sha256']}`",
             f"- Fundamental observation: `{report['source_audit']['fundamental_observed_at_utc']}`",
             f"- WIN observation: `{report['source_audit']['market_observed_at_utc']}`",
@@ -398,7 +517,7 @@ def write_frozen(report:dict[str,Any],folder:Path)->dict[str,str]:
         f.write('\n')
     with targets['shadow.md'].open('x',encoding='utf-8') as f:
         f.write(markdown_report(report))
-    fields=['selection_id','start_number','horse_name','scratched','historical_starts','historical_wins','history_source_uri','champion_p_win','core004_p_win','core004_minus_champion_pp','champion_fair_odds','core004_fair_odds_research_only','win_odds','win_odds_observed_at_utc','normalized_market_p','champion_theoretical_ev_uncalibrated','research_status','model_status','market_status','pit_status','blocker_codes']
+    fields=['selection_id','start_number','volte_position','extra_distance_m','post_position','post_position_semantics','start_number_source','start_number_observed_at_utc','volte_position_note','horse_name','scratched','historical_starts','historical_wins','history_source_uri','champion_p_win','core004_p_win','core004_minus_champion_pp','champion_fair_odds','core004_fair_odds_research_only','win_odds','win_odds_observed_at_utc','normalized_market_p','champion_theoretical_ev_uncalibrated','research_status','model_status','market_status','pit_status','blocker_codes']
     with targets['runners.csv'].open('x',encoding='utf-8',newline='') as f:
         wr=csv.DictWriter(f,fieldnames=fields,extrasaction='ignore')
         wr.writeheader()
