@@ -360,12 +360,12 @@ def verify_collector_original(
             import fitz
 
             pdf = fitz.open(stream=matched["pdf"][1], filetype="pdf")
-            original_text = "\\n".join(page.get_text() for page in pdf)
+            original_text = "\n".join(page.get_text() for page in pdf)
             pdf.close()
         except (ImportError, ValueError, RuntimeError, OSError):
             return None
         observed_clocks = re.findall(
-            r"\\b(?:L[oø]p|Lopp)\\s+1\\b.{0,850}?START\\s+KL\\.?\\s*(\\d{1,2}:\\d{2})",
+            r"\b(?:L[oø]p|Lopp)\s+1\b.{0,850}?START\s+KL\.?\s*(\d{1,2}:\d{2})",
             original_text, flags=re.IGNORECASE | re.DOTALL,
         )
         if len(observed_clocks) != 1:
