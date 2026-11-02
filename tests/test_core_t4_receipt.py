@@ -13,7 +13,6 @@ from hbi.core_shadow_pilot import plan_t4_source_receipts
 from hbi.core_t4_receipt import capture_one, digest
 from hbi.providers.rikstoto import FetchResult
 
-
 START = datetime(2026, 11, 3, 11, 20, tzinfo=UTC)
 T4 = START - timedelta(minutes=4)
 EARLY = T4 - timedelta(seconds=35)
