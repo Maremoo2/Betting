@@ -123,36 +123,98 @@ jobs:
           db_path = Path('data/core003-pilot.sqlite')
           if not evidence.is_file() or not db_path.is_file():
               raise SystemExit('BET_MVP_MISSING_CORE003_INPUT')
-          cohort = json.loads(evidence.read_text(encoding='utf-8')).get('races_in_fixed_cohort', [])
-          if not isinstance(cohort, list):
+          source = json.loads(evidence.read_text(encoding='utf-8'))
+          cohort = source.get('races_in_fixed_cohort', [])
+          readiness = source.get('race_readiness_after', [])
+          if (not isinstance(cohort, list) or
+                  any(not isinstance(race_id, str) for race_id in cohort) or
+                  len(cohort) != len(set(cohort)) or
+                  not isinstance(readiness, list) or
+                  any(not isinstance(item, dict) or
+                      not isinstance(item.get('race_id'), str)
+                      for item in readiness)):
               raise SystemExit('BET_MVP_INVALID_CORE003_COHORT')
+          by_race = {row['race_id']: row for row in readiness}
+          if len(by_race) != len(readiness) or set(by_race) != set(cohort):
+              raise SystemExit('BET_MVP_CORE003_FIXED_COHORT_AUDIT_MISMATCH')
           cutoff = datetime.now(UTC)
+          selected = []
+          skipped = []
           con = sqlite3.connect(f'file:{db_path.resolve()}?mode=ro', uri=True)
           try:
-              upcoming = []
               for race_id in cohort:
-                  if not isinstance(race_id, str):
-                      raise SystemExit('BET_MVP_INVALID_CORE003_RACE_ID')
-                  row = con.execute('SELECT start_time_utc FROM races WHERE race_id=?', (race_id,)).fetchone()
+                  row = con.execute('SELECT start_time_utc FROM races WHERE race_id=?',
+                                    (race_id,)).fetchone()
                   if row is None:
-                      continue
+                      raise SystemExit('BET_MVP_CORE003_COHORT_RACE_MISSING')
                   start = datetime.fromisoformat(str(row[0]))
                   if start.utcoffset() is None:
                       raise SystemExit('BET_MVP_RACE_START_CLOCK_INVALID')
+                  start = start.astimezone(UTC)
+                  earliest = by_race[race_id].get('earliest_retained_source_start_utc')
+                  if earliest:
+                      source_start = datetime.fromisoformat(str(earliest))
+                      if source_start.utcoffset() is None:
+                          raise SystemExit('BET_MVP_SOURCE_START_CLOCK_INVALID')
+                      start = min(start, source_start.astimezone(UTC))
                   if cutoff + timedelta(minutes=4) < start:
-                      upcoming.append((start, race_id))
+                      selected.append((
+                          not by_race[race_id].get('history_complete_as_of_t4', False),
+                          start, race_id,
+                      ))
+                  else:
+                      skipped.append({'race_id': race_id, 'status': 'TOO_LATE_FOR_PROSPECTIVE_SHADOW'})
           finally:
               con.close()
-          if not upcoming:
-              print('BET_MVP_NO_UPCOMING_COHORT_RACE_NO_SHADOW_REPORT')
-          else:
-              race_id = min(upcoming, key=lambda x: (x[0], x[1]))[1]
-              subprocess.run([
+
+          # Preserve the ENTIRE pre-existing CORE-003 cohort. Run the unchanged
+          # Champion + CORE-004 CLI for every still-prospective race, including
+          # source-blocked races. Order source-ready races first, not odds leaders.
+          root = Path('bet-mvp-shadow')
+          root.mkdir(parents=True, exist_ok=False)
+          reports = []
+          errors = []
+          for _, _, race_id in sorted(selected):
+              if not race_id.startswith('RIKSTOTO:') or '/' in race_id or '\\' in race_id:
+                  raise SystemExit('BET_MVP_INVALID_FIXED_RACE_ID')
+              target = root / race_id.replace(':', '_')
+              process = subprocess.run([
                   sys.executable, '-m', 'hbi.bet_mvp_shadow',
                   '--db', str(db_path), '--source-report', str(evidence),
                   '--race-id', race_id, '--as-of', cutoff.isoformat(),
-                  '--run-kind', 'PROSPECTIVE_ATTEMPT', '--out', 'bet-mvp-shadow',
-              ], check=True)
+                  '--run-kind', 'PROSPECTIVE_ATTEMPT', '--out', str(target),
+              ], check=False)
+              if process.returncode != 0:
+                  errors.append(race_id)
+                  reports.append({'race_id': race_id, 'status': 'MODEL_INVOCATION_FAILED'})
+                  continue
+              shadow = json.loads((target / 'shadow.json').read_text(encoding='utf-8'))
+              reports.append({
+                  'race_id': race_id,
+                  'status': 'REPORT_FROZEN',
+                  'model_status': shadow['model_status'],
+                  'market_status': shadow['market_status'],
+                  'pit_status': shadow['pit_status'],
+                  'bet_authority': shadow['bet_authority'],
+                  'report_path': str(target / 'shadow.json'),
+              })
+          index = {
+              'schema': 'BET_MVP_FIXED_CORE003_COHORT_INDEX_V1',
+              'source_report': str(evidence),
+              'as_of_utc': cutoff.isoformat(),
+              'cohort_races': cohort,
+              'reports': reports,
+              'skipped': skipped,
+              'bet_authority': False,
+              'pit_certified': False,
+          }
+          (root / 'index.json').write_text(
+              json.dumps(index, indent=2, ensure_ascii=False) + '\\n',
+              encoding='utf-8',
+          )
+          print(json.dumps(index, ensure_ascii=False))
+          if errors:
+              raise SystemExit('BET_MVP_FIXED_COHORT_MODEL_FAILURES: ' + ','.join(errors))
           PY
 
       - name: Upload frozen model research report (not a bet)
