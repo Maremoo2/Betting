@@ -34,7 +34,13 @@ class FetchResult:
     http_date: str | None = None
     http_etag: str | None = None
     http_last_modified: str | None = None
-    raw_body: bytes | None = None  # Opt-in immutable receipt only; never model input.
+
+
+@dataclass(frozen=True)
+class OriginalBytesFetchResult(FetchResult):
+    """Opt-in T-4 source receipt; default FetchResult never exposes raw bodies."""
+
+    raw_body: bytes
 
 
 @dataclass(frozen=True)
@@ -117,7 +123,7 @@ class RikstotoClient:
                 body_bytes = response.read()
                 response_completed = datetime.now(UTC)
                 payload = json.loads(body_bytes.decode("utf-8"))
-                return FetchResult(
+                return (OriginalBytesFetchResult if retain_raw_body else FetchResult)(
                     url=url,
                     payload=payload,
                     success=True,
@@ -128,7 +134,7 @@ class RikstotoClient:
                     http_date=response.headers.get("Date"),
                     http_etag=response.headers.get("ETag"),
                     http_last_modified=response.headers.get("Last-Modified"),
-                    raw_body=body_bytes if retain_raw_body else None,
+                    **({"raw_body": body_bytes} if retain_raw_body else {}),
                 )
         except (
             urllib.error.HTTPError,
