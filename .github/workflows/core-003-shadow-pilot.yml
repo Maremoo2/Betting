@@ -129,7 +129,7 @@ jobs:
           if not isinstance(source_report, dict):
               raise SystemExit('BET_MVP_INVALID_CORE003_REPORT')
           as_of = datetime.now(UTC)
-          connection = sqlite3.connect(f'file:{db_path.resolve()}?mode=ro&immutable=1', uri=True)
+          connection = sqlite3.connect(f'file:{db_path.resolve()}?mode=ro', uri=True)
           connection.row_factory = sqlite3.Row
           try:
               selection = select_fixed_cohort_races(connection, source_report, as_of)
