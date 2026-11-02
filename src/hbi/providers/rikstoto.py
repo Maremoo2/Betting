@@ -170,8 +170,8 @@ class RikstotoClient:
     def settings_urls(self) -> FetchResult:
         return self._fetch("/settings/urls")
 
-    def racedays(self) -> FetchResult:
-        return self._fetch("/racedays/")
+    def racedays(self, *, retain_raw_body: bool = False) -> FetchResult:
+        return self._fetch("/racedays/", retain_raw_body=retain_raw_body)
 
     def result_racedays(self, start: date, end: date) -> FetchResult:
         return self._fetch(f"/results/racedays/{start.isoformat()}/{end.isoformat()}/list")
