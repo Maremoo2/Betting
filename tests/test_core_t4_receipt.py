@@ -259,7 +259,7 @@ def _original_collector_fixture(tmp_path, receipt_dir, *, mismatch=False):
     raw = (receipt_dir / "starts.raw.json").read_bytes()
     pdf_doc = fitz.open()
     page = pdf_doc.new_page()
-    page.insert_text((72, 72), "Lop 1\\nSTART KL. 12:20")
+    page.insert_text((72, 72), "Lop 1\nSTART KL. 12:20")
     pdf = pdf_doc.tobytes()
     pdf_doc.close()
     source = meeting / "starts.raw.json"
