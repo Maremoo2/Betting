@@ -459,13 +459,13 @@ def select_fixed_cohort_races(
     original = source_report.get("races_in_fixed_cohort")
     readiness = source_report.get("race_readiness_after")
     if not isinstance(original, list) or not isinstance(readiness, list):
-        raise ValueError("CORE003_FIXED_COHORT_OR_READINESS_MISSING")
+        raise TypeError("CORE003_FIXED_COHORT_OR_READINESS_MISSING")
     if any(not isinstance(rid, str) or not rid for rid in original) or len(set(original)) != len(original):
         raise ValueError("CORE003_FIXED_COHORT_DUPLICATE_OR_INVALID")
     evidence: dict[str, dict[str, Any]] = {}
     for entry in readiness:
         if not isinstance(entry, dict):
-            raise ValueError("CORE003_READINESS_INVALID")
+            raise TypeError("CORE003_READINESS_INVALID")
         rid = entry.get("race_id")
         if not isinstance(rid, str) or rid in evidence:
             raise ValueError("CORE003_READINESS_DUPLICATE_OR_INVALID")
