@@ -470,11 +470,11 @@ def markdown_report(report: dict[str,Any]) -> str:
            f"Champion: `{report['model_versions']['champion']}` · CORE-004: `{report['model_versions']['core004']}`",'',
            f"Aktive: {report['active_runners']} av {report['field_size']} · Champion-sum: {fmt(report['champion_p_sum'],100)} % · CORE-004-sum: {fmt(report['core004_p_sum'],100)} %",'',
            '## Samlet felt',
-           '| # | Hest | Strøket | Starter/seire | Champion % | CORE-004 % | Δ pp | Fair Champion | WIN-odds | Marked % | EV Champion % | Status |',
+           '| Startnr | Hest | Strøket | Starter/seire | Champion % | CORE-004 % | Δ pp | Fair Champion | WIN-odds | Marked % | EV Champion % | Status |',
            '|---:|---|:---:|---:|---:|---:|---:|---:|---:|---:|---:|---|']
     for x in report['runners']:
         hist=f"{x['historical_starts']}/{x['historical_wins']}" if x['historical_starts'] is not None else '—'
-        lines.append(f"| {x['start_number'] if x['start_number'] is not None else x['selection_id']} | {str(x['horse_name'] or '—').replace('|','/')} | {'Ja' if x['scratched'] else 'Nei'} | {hist} | {fmt(x['champion_p_win'],100)} | {fmt(x['core004_p_win'],100)} | {fmt(x['core004_minus_champion_pp'])} | {fmt(x['champion_fair_odds'])} | {fmt(x['win_odds'])} | {fmt(x['normalized_market_p'],100)} | {fmt(x['champion_theoretical_ev_uncalibrated'],100)} | {x['research_status']} |")
+        lines.append(f"| {x['start_number'] if x['start_number'] is not None else '—'} | {str(x['horse_name'] or '—').replace('|','/')} | {'Ja' if x['scratched'] else 'Nei'} | {hist} | {fmt(x['champion_p_win'],100)} | {fmt(x['core004_p_win'],100)} | {fmt(x['core004_minus_champion_pp'])} | {fmt(x['champion_fair_odds'])} | {fmt(x['win_odds'])} | {fmt(x['normalized_market_p'],100)} | {fmt(x['champion_theoretical_ev_uncalibrated'],100)} | {x['research_status']} |")
     lines += ['', '## Startnumre og volteløp',
               'Startnummer er dokumentert mot tidsstemplet Rikstoto /starts, ikke utledet fra HBI post_position.',
               'post_position er beholdt som originalt HBI-felt og er ikke attestert som lokalt voltespor.',
