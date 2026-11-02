@@ -9,8 +9,14 @@ from pathlib import Path
 import pytest
 
 from hbi.bet_mvp_shadow import (
-    NO_BET_AUTHORITY, PINNED_UPSTREAM, SCHEMA,
-    analyze, aware, select_next_race, sha256, write_frozen,
+    NO_BET_AUTHORITY,
+    PINNED_UPSTREAM,
+    SCHEMA,
+    analyze,
+    aware,
+    select_next_race,
+    sha256,
+    write_frozen,
 )
 from hbi.core_multifactor_research import ExperimentalCoefficients
 from hbi.race_core_review import historical_win_prior
@@ -160,9 +166,8 @@ def test_pilot_discovery_returns_real_upcoming_race():
 
 @pytest.mark.skipif(not PILOT,reason='Set BET_MVP_PILOT_DB to actual CORE-003 pilot SQLite')
 def test_prospective_future_asof_is_rejected_even_if_calendar_is_future():
-    with connection(PILOT) as db:
-        with pytest.raises(ValueError,match='PROSPECTIVE_AS_OF_IN_FUTURE'):
-            analyze(db,race_id='RIKSTOTO:S1_NR_2026-11-02:1',as_of='2026-11-02T11:19:59+00:00',archive_sha=None,run_kind='PROSPECTIVE_ATTEMPT')
+    with connection(PILOT) as db, pytest.raises(ValueError, match='PROSPECTIVE_AS_OF_IN_FUTURE'):
+        analyze(db,race_id='RIKSTOTO:S1_NR_2026-11-02:1',as_of='2026-11-02T11:19:59+00:00',archive_sha=None,run_kind='PROSPECTIVE_ATTEMPT')
 
 
 @pytest.mark.skipif(not REAL,reason='Set BET_MVP_REAL_DB to exact historical SQLite')

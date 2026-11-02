@@ -7,7 +7,7 @@ import os
 import sqlite3
 import subprocess
 import sys
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -112,7 +112,7 @@ def test_real_source_cli_writes_frozen_statuses_and_rejects_second_write(tmp_pat
                '--as-of', '2026-11-02T10:21:36+00:00', '--out', str(target),
                '--run-kind', 'ARCHIVED_REPLAY']
     env = {**os.environ, 'PYTHONPATH': str(ROOT / 'src')}
-    run = subprocess.run(command, cwd=ROOT, env=env, text=True, capture_output=True)
+    run = subprocess.run(command, check=False, cwd=ROOT, env=env, text=True, capture_output=True)
     assert run.returncode == 0, run.stderr
     report = json.loads((target / 'shadow.json').read_text())
     assert report['status_dimensions']['model'] == 'MODEL_READY'
@@ -120,7 +120,7 @@ def test_real_source_cli_writes_frozen_statuses_and_rejects_second_write(tmp_pat
     assert 'MODEL_READY' in (target / 'shadow.md').read_text()
     assert 'MARKET_BLOCKED' in (target / 'shadow.md').read_text()
     assert sha256(target / 'shadow.json') == json.loads(run.stdout)['output_sha256']['shadow.json']
-    again = subprocess.run(command, cwd=ROOT, env=env, text=True, capture_output=True)
+    again = subprocess.run(command, check=False, cwd=ROOT, env=env, text=True, capture_output=True)
     assert again.returncode != 0
     assert 'FROZEN_SHADOW_OUTPUT_DIRECTORY_EXISTS_NO_OVERWRITE' in again.stderr
 
