@@ -10,12 +10,13 @@ import hashlib
 import json
 import sqlite3
 import time
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
-from .core_shadow_pilot import plan_t4_source_receipts
 from .core_pit_roster_verification import attest_t4_receipt, parse_rikstoto_roster, parse_time
+from .core_shadow_pilot import plan_t4_source_receipts
 from .providers.rikstoto import FetchResult, RikstotoClient
 
 SCHEMA = "PIT_T4_SOURCE_RECEIPT_V1"
@@ -232,7 +233,7 @@ def run_source_capture(
     provider = client or RikstotoClient()
     records = []
     for index, target in enumerate(plan["eligible"], 1):
-        folder = out / ("race-%03d" % index)
+        folder = out / f"race-{index:03d}"
         folder.mkdir(exist_ok=False)
         receipt = capture_one(
             target, client=provider, out=folder, clock=clock,
