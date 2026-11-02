@@ -8,9 +8,9 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from hbi.core_pit_roster_verification import attest_t4_receipt
+from hbi.core_pit_roster_verification import VerifiedCollectorEvidence, attest_t4_receipt
 from hbi.core_shadow_pilot import plan_t4_source_receipts
-from hbi.core_t4_receipt import capture_one, digest
+from hbi.core_t4_receipt import capture_one, digest, verify_collector_original
 from hbi.providers.rikstoto import OriginalBytesFetchResult
 
 START = datetime(2026, 11, 3, 11, 20, tzinfo=UTC)
@@ -248,3 +248,71 @@ def test_pending_near_t4_is_not_a_failed_run(tmp_path):
     assert report["status"] == "PENDING"
     assert "T4_NOT_YET_IN_CAPTURE_WINDOW" in report["blockers"]
     assert not client.calls
+
+
+def _original_collector_fixture(tmp_path, receipt_dir, *, mismatch=False):
+    root = tmp_path / "collector"
+    folder = root / "output/daily/2026-11-03/20261103T060000000000Z"
+    meeting = folder / "meetings" / KEY
+    meeting.mkdir(parents=True)
+    raw = (receipt_dir / "starts.raw.json").read_bytes()
+    pdf = b"%PDF-1.4\\nsynthetic offline original\\n"
+    source = meeting / "starts.raw.json"
+    source.write_bytes(raw if not mismatch else b"altered original starts")
+    (meeting / "full_program.pdf").write_bytes(pdf)
+    prefix = "output/daily/2026-11-03/20261103T060000000000Z/meetings/" + KEY
+    observed = (T4 - timedelta(hours=3)).isoformat()
+    manifest = {
+        "date_oslo": "2026-11-03", "status": "CAPTURED_UNVERIFIED",
+        "meetings": [{
+            "meeting_id": KEY, "is_multi_track_product": False,
+            "listing_source": {"start_time": START.isoformat()},
+            "startlist_pdf_audit": {
+                "status": "MATCHED_AS_OF_SNAPSHOT",
+                "verified_race_numbers": [1],
+            },
+        }],
+        "requests": [
+            {"url": "https://www.rikstoto.no/api/racedays/" + KEY + "/starts",
+             "raw_path": prefix + "/starts.raw.json",
+             "sha256": digest(raw), "at_utc": observed},
+            {"url": "https://www.rikstoto.no/api/programdownload/ProgramPdf/Utvidet/" + KEY,
+             "path": prefix + "/full_program.pdf",
+             "sha256": digest(pdf), "at_utc": observed},
+        ],
+    }
+    (folder / "manifest.json").write_text(json.dumps(manifest))
+    origin = root / "provenance.json"
+    origin.write_text(json.dumps({
+        "source_repository": "Maremoo2/rikstoto-program-collector",
+        "event": "schedule", "conclusion": "success",
+        "workflow_name": "Daily Rikstoto full programs – 07 Oslo",
+        "created_at_utc": (T4 - timedelta(hours=4)).isoformat(),
+        "github_run_id": 123,
+        "obtained_via_authenticated_gh_cli": True,
+    }))
+    return root, origin
+
+
+def test_replay_original_collector_archive_supports_only_offline_contract(tmp_path):
+    report, _, directory = _capture(tmp_path)
+    root, origin = _original_collector_fixture(tmp_path, directory)
+    evidence = verify_collector_original(root, origin, report)
+    assert isinstance(evidence, VerifiedCollectorEvidence)
+    assert evidence.version_identical_to_t4
+    assert evidence.original_bytes_sha256_verified
+    model = _model()
+    output = attest_t4_receipt(
+        report, receipt_dir=directory, model_report=model,
+        model_raw=json.dumps(model).encode(),
+        collector_archive=evidence, provenance_mode="TEST_ONLY"
+    )
+    assert output["status"] == "TEST_ONLY_CONTRACT_PASS"
+    assert output["independent_pit_certified"] is False
+    assert output["bet_authority"] is False
+
+
+def test_original_collector_archive_hash_conflict_fails_closed(tmp_path):
+    report, _, directory = _capture(tmp_path)
+    root, origin = _original_collector_fixture(tmp_path, directory, mismatch=True)
+    assert verify_collector_original(root, origin, report) is None
