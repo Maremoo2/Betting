@@ -34,6 +34,7 @@ class FetchResult:
     http_date: str | None = None
     http_etag: str | None = None
     http_last_modified: str | None = None
+    raw_body: bytes | None = None  # Opt-in immutable receipt only; never model input.
 
 
 @dataclass(frozen=True)
@@ -103,7 +104,7 @@ class RikstotoClient:
         self.timeout = timeout
         self.user_agent = user_agent
 
-    def _fetch(self, path: str) -> FetchResult:
+    def _fetch(self, path: str, *, retain_raw_body: bool = False) -> FetchResult:
         url = path if path.startswith("http") else f"{self.API}{path}"
         request = urllib.request.Request(
             url,
@@ -127,6 +128,7 @@ class RikstotoClient:
                     http_date=response.headers.get("Date"),
                     http_etag=response.headers.get("ETag"),
                     http_last_modified=response.headers.get("Last-Modified"),
+                    raw_body=body_bytes if retain_raw_body else None,
                 )
         except (
             urllib.error.HTTPError,
@@ -186,11 +188,11 @@ class RikstotoClient:
     def triple_odds(self, raceday_key: str, race_number: int) -> FetchResult:
         return self._fetch(f"/game/{raceday_key}/odds/t/{race_number}")
 
-    def scratched(self, raceday_key: str) -> FetchResult:
-        return self._fetch(f"/racedays/{raceday_key}/scratched")
+    def scratched(self, raceday_key: str, *, retain_raw_body: bool = False) -> FetchResult:
+        return self._fetch(f"/racedays/{raceday_key}/scratched", retain_raw_body=retain_raw_body)
 
-    def starts(self, raceday_key: str) -> FetchResult:
-        return self._fetch(f"/racedays/{raceday_key}/starts")
+    def starts(self, raceday_key: str, *, retain_raw_body: bool = False) -> FetchResult:
+        return self._fetch(f"/racedays/{raceday_key}/starts", retain_raw_body=retain_raw_body)
 
     def race_info(self, raceday_key: str) -> FetchResult:
         return self._fetch(f"/racedays/{raceday_key}/raceInfo")
