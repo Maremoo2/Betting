@@ -500,6 +500,31 @@ def attest_t4_receipt(
         if (asof is None or freeze is None or t4 is None
                 or not asof <= freeze <= t4):
             blocks.add("MODEL_ASOF_OR_FREEZE_AFTER_T4")
+        calculated = parse_time(model_report.get("model_calculated_at_utc"))
+        if calculated is None or freeze is None or calculated > freeze:
+            blocks.add("MODEL_CALCULATION_CLOCK_INVALID")
+        source_audit = model_report.get("source_audit") or {}
+        historical_clock = parse_time(source_audit.get("fundamental_observed_at_utc"))
+        if historical_clock is None or asof is None or historical_clock > asof:
+            blocks.add("FUTURE_OR_MISSING_FUNDAMENTAL_OBSERVATION")
+        source_capture = model_report.get("collector_source_evidence") or {}
+        capture_finished = parse_time(source_capture.get("finished_at_utc"))
+        if capture_finished is None or asof is None or capture_finished > asof:
+            blocks.add("FUTURE_OR_MISSING_CORE003_CAPTURE")
+        model_database_sha = model_report.get("source_database_sha256")
+        if (
+            not isinstance(model_database_sha, str)
+            or len(model_database_sha) != 64
+            or any(char not in "0123456789abcdef" for char in model_database_sha)
+        ):
+            blocks.add("FROZEN_MODEL_SOURCE_DATABASE_HASH_MISSING")
+        for member in model_report.get("runners", []):
+            position_stamp = member.get("start_number_observed_at_utc")
+            if position_stamp is not None and (
+                parse_time(position_stamp) is None or asof is None
+                or parse_time(position_stamp) > asof
+            ):
+                blocks.add("FUTURE_START_NUMBER_SOURCE")
         if model_report.get("model_status") != "MODEL_READY":
             blocks.add("FROZEN_MODEL_NOT_READY")
         if model_report.get("bet_authority") is not False:
