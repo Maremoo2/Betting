@@ -567,8 +567,10 @@ def attest_t4_receipt(
     if provenance_mode == "LIVE" and not collector_origin_wired:
         blocks.add("INDEPENDENT_COLLECTOR_ORIGIN_GATE_NOT_WIRED")
     contract_pass = not blocks
-    if provenance_mode == "TEST_ONLY" and contract_pass:
+    if contract_pass and provenance_mode == "TEST_ONLY":
         status = "TEST_ONLY_CONTRACT_PASS"
+    elif contract_pass and collector_origin_wired and provenance_mode == "LIVE":
+        status = "INDEPENDENT_PIT_CERTIFIED"
     else:
         status = "PIT_NOT_CERTIFIED"
     return {
@@ -583,7 +585,7 @@ def attest_t4_receipt(
                 )
             )
         ),
-        "independent_pit_certified": False,
+        "independent_pit_certified": status == "INDEPENDENT_PIT_CERTIFIED",
         "blockers": sorted(blocks), "sources": evidence,
         "model_report_sha256": model_digest,
         "model_report_frozen_at_utc": (
