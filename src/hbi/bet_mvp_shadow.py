@@ -444,6 +444,76 @@ def git_head() -> str | None:
         return None
 
 
+
+def select_fixed_cohort_races(
+    conn: sqlite3.Connection, source_report: dict[str, Any], as_of: datetime,
+) -> dict[str, Any]:
+    """Evaluate EVERY original CORE-003 cohort member, never just the earliest.
+
+    This selects by immutable race identity and conservative pre-T-4 clocks,
+    not by odds, known results, model output, or possible profitability. All
+    eligible members MUST subsequently run the original analyze() models.
+    """
+    if as_of.utcoffset() is None:
+        raise ValueError("AS_OF_MUST_HAVE_UTC_OFFSET")
+    original = source_report.get("races_in_fixed_cohort")
+    readiness = source_report.get("race_readiness_after")
+    if not isinstance(original, list) or not isinstance(readiness, list):
+        raise TypeError("CORE003_FIXED_COHORT_OR_READINESS_MISSING")
+    if any(not isinstance(rid, str) or not rid for rid in original) or len(set(original)) != len(original):
+        raise ValueError("CORE003_FIXED_COHORT_DUPLICATE_OR_INVALID")
+    evidence: dict[str, dict[str, Any]] = {}
+    for entry in readiness:
+        if not isinstance(entry, dict):
+            raise TypeError("CORE003_READINESS_INVALID")
+        rid = entry.get("race_id")
+        if not isinstance(rid, str) or rid in evidence:
+            raise ValueError("CORE003_READINESS_DUPLICATE_OR_INVALID")
+        evidence[rid] = entry
+
+    eligible: list[dict[str, Any]] = []
+    not_processed: list[dict[str, Any]] = []
+    for rid in original:
+        rows = read_rows(conn, "SELECT race_id,start_time_utc FROM races WHERE race_id=?", (rid,))
+        if len(rows) != 1:
+            not_processed.append({"race_id": rid, "reason": "MISSING_OR_DUPLICATE_CANONICAL_RACE"})
+            continue
+        row = rows[0]
+        item = evidence.get(rid)
+        if item is None:
+            not_processed.append({"race_id": rid, "reason": "MISSING_CORE003_RACE_READINESS"})
+            continue
+        try:
+            start = aware(str(row["start_time_utc"]))
+            documented_start = aware(str(item["canonical_start_utc"]))
+            source_clock = (aware(str(item["earliest_retained_source_start_utc"]))
+                            if item.get("earliest_retained_source_start_utc") else start)
+        except (ValueError, TypeError, KeyError):
+            not_processed.append({"race_id": rid, "reason": "INVALID_OR_MISSING_RACE_START_CLOCK"})
+            continue
+        if documented_start != start:
+            not_processed.append({"race_id": rid, "reason": "CORE003_CANONICAL_RACE_START_MISMATCH"})
+            continue
+        conservative_start = min(start, source_clock)
+        row_evidence = {
+            "race_id": rid,
+            "start_time_utc": start.isoformat(),
+            "earliest_source_start_utc": conservative_start.isoformat(),
+        }
+        if as_of + timedelta(minutes=4) >= conservative_start:
+            not_processed.append({
+                **row_evidence, "reason": "NOT_BEFORE_CONSERVATIVE_T4",
+            })
+        else:
+            eligible.append(row_evidence)
+    eligible.sort(key=lambda row: (row["earliest_source_start_utc"], row["race_id"]))
+    return {
+        "original_cohort": original,
+        "eligible": eligible,
+        "not_processed": not_processed,
+    }
+
+
 def select_next_race(conn: sqlite3.Connection, as_of: datetime, horizon_minutes: int = 1440) -> dict[str, Any] | None:
     races = read_rows(conn, "SELECT race_id,track,race_no,start_time_utc,discipline FROM races WHERE lower(discipline)='trot' ORDER BY start_time_utc,race_id")
     eligible=[]

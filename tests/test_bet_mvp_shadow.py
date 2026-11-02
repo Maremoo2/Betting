@@ -201,3 +201,79 @@ def test_rejected_atg_source_in_isolated_copy_vetoes_research(tmp_path):
     assert report['analysis_status']=='SOURCE_BLOCKED'
     assert 'ATG_FULL_FIELD_SOURCE_EXPLICITLY_REJECTED' in report['source_blocks']
     assert all(r['bet_authority'] is False for r in report['runners'])
+
+
+def _fixed_cohort_fixture():
+    """Clock-only fixture. Model readiness is intentionally NOT a selection gate."""
+    c = sqlite3.connect(":memory:")
+    c.row_factory = sqlite3.Row
+    c.execute("CREATE TABLE races(race_id TEXT PRIMARY KEY,start_time_utc TEXT)")
+    races = [
+        ("R:3", "2026-11-02T14:24:00+00:00"),
+        ("R:4", "2026-11-02T14:57:00+00:00"),
+        ("R:5", "2026-11-02T15:32:00+00:00"),
+    ]
+    c.executemany("INSERT INTO races VALUES(?,?)", races)
+    source = {
+        "races_in_fixed_cohort": ["R:3", "R:4", "R:5"],
+        "race_readiness_after": [
+            {"race_id": "R:3", "canonical_start_utc": races[0][1],
+             "earliest_retained_source_start_utc": "2026-11-02T14:22:00+00:00"},
+            {"race_id": "R:4", "canonical_start_utc": races[1][1],
+             "earliest_retained_source_start_utc": races[1][1]},
+            {"race_id": "R:5", "canonical_start_utc": races[2][1],
+             "earliest_retained_source_start_utc": races[2][1],
+             "history_complete_as_of_t4": True, "win_market_complete_as_of_t4": False},
+        ],
+    }
+    return c, source
+
+
+def test_fixed_cohort_reports_all_prestart_races_not_only_first():
+    from hbi.bet_mvp_shadow import select_fixed_cohort_races
+
+    db, source = _fixed_cohort_fixture()
+    try:
+        result = select_fixed_cohort_races(
+            db, source, datetime(2026, 11, 2, 14, 10, 25, tzinfo=UTC))
+    finally:
+        db.close()
+    assert result["original_cohort"] == ["R:3", "R:4", "R:5"]
+    assert [r["race_id"] for r in result["eligible"]] == ["R:3", "R:4", "R:5"]
+    assert result["not_processed"] == []
+    # Missing WIN must not suppress the race whose model features are complete.
+    assert "R:5" in [r["race_id"] for r in result["eligible"]]
+
+
+def test_fixed_cohort_conservative_source_clock_and_exclusion_receipts():
+    from hbi.bet_mvp_shadow import select_fixed_cohort_races
+
+    db, source = _fixed_cohort_fixture()
+    try:
+        result = select_fixed_cohort_races(
+            db, source, datetime(2026, 11, 2, 14, 19, tzinfo=UTC))
+    finally:
+        db.close()
+    assert [r["race_id"] for r in result["eligible"]] == ["R:4", "R:5"]
+    assert result["not_processed"] == [
+        {"race_id": "R:3", "start_time_utc": "2026-11-02T14:24:00+00:00",
+         "earliest_source_start_utc": "2026-11-02T14:22:00+00:00",
+         "reason": "NOT_BEFORE_CONSERVATIVE_T4"},
+    ]
+
+
+def test_fixed_cohort_fail_closed_on_missing_conflicting_or_duplicate_evidence():
+    from hbi.bet_mvp_shadow import select_fixed_cohort_races
+
+    db, source = _fixed_cohort_fixture()
+    try:
+        source["race_readiness_after"] = source["race_readiness_after"][:2]
+        result = select_fixed_cohort_races(db, source, datetime(2026, 11, 2, 14, tzinfo=UTC))
+        assert result["not_processed"] == [
+            {"race_id": "R:5", "reason": "MISSING_CORE003_RACE_READINESS"}
+        ]
+        source["races_in_fixed_cohort"] = ["R:3", "R:3"]
+        with pytest.raises(ValueError, match="DUPLICATE_OR_INVALID"):
+            select_fixed_cohort_races(db, source, datetime(2026, 11, 2, 14, tzinfo=UTC))
+    finally:
+        db.close()
