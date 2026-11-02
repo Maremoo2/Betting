@@ -292,3 +292,81 @@ def test_real_arjang_start_positions_are_verified_without_volte_inference():
     assert all(r["pit_status"] == "PIT_NOT_CERTIFIED" and not r["bet_authority"]
                for r in result["runners"])
     assert "## Startnumre og volteløp" in markdown_report(result)
+
+
+def test_original_arjang_fundamental_excerpt_replays_actual_model_modules():
+    """Use the ten archived ATG numeric rows from ORIGINAL pilot SHA
+
+    9c9a7021d15648db355fb320c51def268e5ffd34dc78ebef1cd95a6f5b7794ef.
+    This excerpt tests the untouched original Python model entrypoints in CI.
+    It is NOT a replacement for the original receipts or a PIT attestation.
+    """
+    from hbi.core_multifactor_research import analyze_multifactor
+    from hbi.race_core_review import analyze_race
+
+    field = [
+        ("Arevs Madicken", 65, 2, 4, 4, 23889600, 0),
+        ("Solurstjärn", 62, 1, 3, 4, 25502400, 0),
+        ("Mörten", 59, 1, 2, 1, 18465000, 0),
+        ("Hornnes Odd", 32, 6, 6, 1, 25546300, 0),
+        ("Lykkje Trolla", 22, 3, 4, 2, 23125200, 0),
+        ("Balder Töffen S.K.", 107, 5, 6, 6, 36639600, 20),
+        ("Komnes Hera", 64, 5, 7, 3, 31439400, 20),
+        ("Troll Winther", 39, 5, 6, 5, 29288500, 20),
+        ("Vik Tor", 39, 6, 5, 5, 29144700, 20),
+        ("Remjahn", 13, 10, 0, 1, 47690300, 40),
+    ]
+    race = "RIKSTOTO:S1_NR_2026-11-02:1"
+    seen = "2026-11-02T10:08:39.259317+00:00"
+    cutoff = "2026-11-02T10:21:36+00:00"
+    atg_url = "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-11-02_31_1"
+    with sqlite3.connect(":memory:") as db:
+        db.row_factory = sqlite3.Row
+        db.executescript((ROOT / "db" / "schema.sql").read_text(encoding="utf-8"))
+        db.execute("""INSERT INTO races(
+            race_id,race_date,country,track,race_no,start_time_utc,
+            discipline,start_method,created_at_utc) VALUES(?,?,?,?,?,?,?,?,?)""",
+                   (race, "2026-11-02", "SE", "Årjäng", 1,
+                    "2026-11-02T11:20:00+00:00", "trot", "Volt",
+                    "2026-10-30T11:41:04.234358+00:00"))
+        for number, (name, starts, wins, seconds, thirds, earnings, extra) in enumerate(field, 1):
+            db.execute("""INSERT INTO runners(
+                race_id,selection_id,horse_name,post_position,scratched)
+                VALUES(?,?,?,?,?)""", (race, str(number), name, number, 0))
+            db.execute("""INSERT INTO runner_fundamental_snapshots(
+                snapshot_id,race_id,selection_id,observed_at_utc,
+                feature_as_of_utc,source_uri,horse_name,post_position,extra_distance_m,
+                history_total_starts,history_total_wins,history_total_seconds,
+                history_total_thirds,history_total_earnings,scratched,data_quality,
+                full_field_history_complete)
+                VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                       ("EXCERPT-ORIGINAL-" + str(number), race, str(number), seen,
+                        seen, atg_url, name, number, extra, starts, wins,
+                        seconds, thirds, float(earnings), 0, "FULL_FIELD_HISTORY_ATG", 1))
+        champion = analyze_race(db, race_id=race, decision_at=cutoff)
+        core004 = analyze_multifactor(db, race_id=race, as_of=cutoff)
+    actual_champion = {r["selection_id"]: r["p_win"]
+                       for r in champion["runner_rows"]}
+    actual_core = {r["selection_id"]: r["p_candidate"]
+                   for r in core004["runners"]}
+    # Archived frozen report: percentages rounded to FOUR decimal places.
+    frozen_champion = [
+        2.7215, 1.7486, 1.8293, 12.9077, 9.5551,
+        3.6830, 5.9454, 9.2484, 10.8999, 41.4612,
+    ]
+    frozen_core = [
+        1.6996, 1.0769, 1.0091, 11.0648, 8.2069,
+        2.3805, 4.2257, 8.0567, 9.4886, 52.7912,
+    ]
+    assert core004["status"] == "CANDIDATE_READY_UNCALIBRATED"
+    assert len(actual_champion) == len(actual_core) == 10
+    for number in range(1, 11):
+        sid = str(number)
+        assert actual_champion[sid] == pytest.approx(
+            frozen_champion[number - 1] / 100, abs=5e-7)
+        assert actual_core[sid] == pytest.approx(
+            frozen_core[number - 1] / 100, abs=5e-7)
+    assert sum(actual_champion.values()) == pytest.approx(1.0)
+    assert sum(actual_core.values()) == pytest.approx(1.0)
+    assert "NO_WIN_MARKET_AS_OF" in champion["blocks"]
+    assert core004["bet_count"] == 0
