@@ -6,6 +6,7 @@ import json
 import sqlite3
 from datetime import UTC, datetime, timedelta
 
+import fitz
 import pytest
 
 from hbi.core_pit_roster_verification import VerifiedCollectorEvidence, attest_t4_receipt
@@ -256,7 +257,11 @@ def _original_collector_fixture(tmp_path, receipt_dir, *, mismatch=False):
     meeting = folder / "meetings" / KEY
     meeting.mkdir(parents=True)
     raw = (receipt_dir / "starts.raw.json").read_bytes()
-    pdf = b"%PDF-1.4\\nsynthetic offline original\\n"
+    pdf_doc = fitz.open()
+    page = pdf_doc.new_page()
+    page.insert_text((72, 72), "Lop 1\\nSTART KL. 12:20")
+    pdf = pdf_doc.tobytes()
+    pdf_doc.close()
     source = meeting / "starts.raw.json"
     source.write_bytes(raw if not mismatch else b"altered original starts")
     (meeting / "full_program.pdf").write_bytes(pdf)
