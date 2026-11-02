@@ -26,7 +26,7 @@ from .core_shadow_pilot import plan_t4_source_receipts
 from .providers.rikstoto import FetchResult, RikstotoClient
 
 SCHEMA = "PIT_T4_SOURCE_RECEIPT_V1"
-MAX_WAIT_SECONDS = 360
+MAX_WAIT_SECONDS = 240  # One five-minute tick, without indefinite job occupancy.
 TARGET_BEFORE_T4_SECONDS = 60
 
 
