@@ -256,20 +256,38 @@ def run_source_capture(
     return index
 
 
-def run_attestation(receipts: Path, model_reports: Path, out: Path) -> dict[str, Any]:
-    """Link frozen model hashes without modifying any previously frozen model."""
+def run_attestation(
+    receipts: Path, model_reports: Path, out: Path,
+    prior_reports: Path | None = None,
+) -> dict[str, Any]:
+    """Bind original frozen bytes from this OR previous scheduled runs.
+
+    Never recalculate p(win), backdate a model, or replace an older report.
+    """
     out.mkdir(parents=True, exist_ok=False)
     index = json.loads((receipts / "index.json").read_text())
-    models = {}
-    if model_reports.is_dir():
-        for report_path in model_reports.glob("race-*/shadow.json"):
-            raw = report_path.read_bytes()
-            value = json.loads(raw)
-            race_id = value.get("race", {}).get("race_id")
-            if race_id in models:
-                models[race_id] = (None, None)
-            else:
-                models[race_id] = (value, raw)
+    models: dict[str, list[tuple[datetime, dict, bytes, str]]] = {}
+    roots = [model_reports]
+    if prior_reports is not None:
+        roots.append(prior_reports)
+    for root in roots:
+        if not root.is_dir():
+            continue
+        for report_path in sorted(root.rglob("shadow.json")):
+            try:
+                raw = report_path.read_bytes()
+                value = json.loads(raw)
+                race_id = value.get("race", {}).get("race_id")
+                freeze = parse_time(value.get("report_created_at_utc"))
+            except (ValueError, OSError, TypeError, AttributeError):
+                continue
+            if (
+                isinstance(race_id, str) and freeze is not None
+                and value.get("run_kind") == "PROSPECTIVE_ATTEMPT"
+            ):
+                models.setdefault(race_id, []).append((
+                    freeze, value, raw, str(report_path)
+                ))
     results = []
     for row in index["records"]:
         receipt_path = receipts / row["receipt_path"]
@@ -277,12 +295,29 @@ def run_attestation(receipts: Path, model_reports: Path, out: Path) -> dict[str,
         if digest(original) != row["receipt_sha256"]:
             raise ValueError("RECEIPT_INDEX_HASH_MISMATCH")
         receipt = json.loads(original)
-        model, raw = models.get(receipt["race_id"], (None, None))
+        cutoff = parse_time(receipt.get("t_minus_4_utc"))
+        eligible = [
+            item for item in models.get(receipt["race_id"], [])
+            if cutoff is not None and item[0] <= cutoff
+        ]
+        eligible.sort(key=lambda item: (item[0], digest(item[2])), reverse=True)
+        ambiguous = bool(
+            len(eligible) > 1 and eligible[0][0] == eligible[1][0]
+            and digest(eligible[0][2]) != digest(eligible[1][2])
+        )
+        chosen = eligible[0] if eligible and not ambiguous else None
+        model = chosen[1] if chosen else None
+        raw = chosen[2] if chosen else None
+        if ambiguous:
+            receipt["blockers"] = sorted(
+                set(receipt.get("blockers", [])) | {"AMBIGUOUS_SAME_INSTANT_MODEL_FREEZE"}
+            )
         result = attest_t4_receipt(
             receipt, receipt_dir=receipt_path.parent,
             model_report=model, model_raw=raw, collector_archive=None,
             provenance_mode="LIVE",
         )
+        result["model_report_artifact_path"] = chosen[3] if chosen else None
         results.append(result)
     output = {
         "schema": "PIT_T4_ATTESTATION_INDEX_V1", "results": results,
@@ -303,11 +338,13 @@ def main() -> None:
     attest.add_argument("--receipts", type=Path, required=True)
     attest.add_argument("--model-reports", type=Path, required=True)
     attest.add_argument("--out", type=Path, required=True)
+    attest.add_argument("--prior-model-reports", type=Path)
     args = parser.parse_args()
     result = (
         run_source_capture(args.db, args.out)
         if args.action == "capture" else
-        run_attestation(args.receipts, args.model_reports, args.out)
+        run_attestation(args.receipts, args.model_reports, args.out,
+                        prior_reports=args.prior_model_reports)
     )
     print(json.dumps({
         "schema": result["schema"], "bet_authority": False,
