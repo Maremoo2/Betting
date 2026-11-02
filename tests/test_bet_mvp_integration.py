@@ -179,7 +179,7 @@ def _position_fixture(*, race_id="RIKSTOTO:S1_NR_2026-11-02:1",
                       source_at="2026-11-02T10:08:37+00:00",
                       distances=(0, 0, 0, 0, 0, 20, 20, 20, 20, 40)):
     """Synthetic, source-shaped fixture: identities/offsets from archived Årjäng."""
-    from hbi.bet_mvp_shadow import verified_program_positions, aware
+    from hbi.bet_mvp_shadow import aware, verified_program_positions
     names = ["Arevs Madicken", "Solurstjärn", "Mörten", "Hornnes Odd",
              "Lykkje Trolla", "Balder Töffen S.K.", "Komnes Hera",
              "Troll Winther", "Vik Tor", "Remjahn"]
@@ -260,7 +260,7 @@ def test_mismatched_runner_identity_blocks_entire_startlist():
 @pytest.mark.skipif(not PILOT.is_file() or not SOURCE.is_file(),
                     reason="Original CORE-003 sources not available in CI")
 def test_real_arjang_start_positions_are_verified_without_volte_inference():
-    from hbi.bet_mvp_shadow import verified_program_positions, aware, markdown_report
+    from hbi.bet_mvp_shadow import aware, markdown_report, verified_program_positions
     with connection(PILOT) as conn:
         result = analyze(conn, race_id="RIKSTOTO:S1_NR_2026-11-02:1",
                          as_of="2026-11-02T10:21:36+00:00", archive_sha=None)
