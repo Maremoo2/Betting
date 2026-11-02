@@ -209,7 +209,7 @@ jobs:
               'pit_certified': False,
           }
           (root / 'index.json').write_text(
-              json.dumps(index, indent=2, ensure_ascii=False) + '\\n',
+              json.dumps(index, indent=2, ensure_ascii=False) + '\n',
               encoding='utf-8',
           )
           print(json.dumps(index, ensure_ascii=False))
