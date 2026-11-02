@@ -254,6 +254,82 @@ jobs:
             done < "$RUNNER_TEMP/pit003a-prior.tsv"
           fi
 
+      # Authenticate the separate Collector run, then replay its original
+      # PDF and raw starts bytes. Failure is a PIT blocker, never a pass.
+      - name: Recover authenticated Collector originals (read only)
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ ! -f pit003a-source-receipts/index.json ]; then
+            echo "T4_RECEIPTS_NOT_AVAILABLE"; exit 0
+          fi
+          mkdir -p pit003a-collector-archive
+          if ! gh run list --repo Maremoo2/rikstoto-program-collector \
+              --workflow rikstoto-morning.yml --limit 15 \
+              --json databaseId,createdAt,event,conclusion,workflowName \
+              > "$RUNNER_TEMP/pit003a-collector-runs.json"; then
+            echo "COLLECTOR_RUN_LIST_UNAVAILABLE"; exit 0
+          fi
+          python - <<'PY' > "$RUNNER_TEMP/pit003a-collector-selected.txt"
+          import json
+          import os
+          from datetime import datetime
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+
+          index = json.loads(Path("pit003a-source-receipts/index.json").read_text())
+          dates = {
+              entry["race_id"].split(":")[1][-10:]
+              for entry in index["records"] if entry["race_id"].startswith("RIKSTOTO:")
+          }
+          runs = json.loads((Path(os.environ["RUNNER_TEMP"]) /
+                             "pit003a-collector-runs.json").read_text())
+          matches = [
+              run for run in runs
+              if run.get("event") == "schedule"
+              and run.get("conclusion") == "success"
+              and run.get("workflowName") == "Daily Rikstoto full programs – 07 Oslo"
+              and datetime.fromisoformat(run["createdAt"].replace("Z", "+00:00"))
+                  .astimezone(ZoneInfo("Europe/Oslo")).date().isoformat() in dates
+          ]
+          matches.sort(key=lambda run: run["createdAt"], reverse=True)
+          if len(matches) == 1:
+              print(matches[0]["databaseId"])
+          PY
+          selected="$(cat "$RUNNER_TEMP/pit003a-collector-selected.txt")"
+          if [ -z "$selected" ]; then echo "COLLECTOR_ORIGINAL_NOT_UNAMBIGUOUS"; exit 0; fi
+          if ! gh run download "$selected" --repo Maremoo2/rikstoto-program-collector \
+               --name rikstoto-morning-programs --dir pit003a-collector-archive; then
+            echo "COLLECTOR_ARCHIVE_DOWNLOAD_UNAVAILABLE"; exit 0
+          fi
+          if ! gh run view "$selected" --repo Maremoo2/rikstoto-program-collector \
+              --json databaseId,createdAt,event,conclusion,workflowName,headSha \
+              > "$RUNNER_TEMP/pit003a-collector-run.json"; then
+            echo "COLLECTOR_GITHUB_PROVENANCE_UNAVAILABLE"; exit 0
+          fi
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          info = json.loads((Path(os.environ["RUNNER_TEMP"]) /
+                            "pit003a-collector-run.json").read_text())
+          document = {
+              "source_repository": "Maremoo2/rikstoto-program-collector",
+              "github_run_id": info["databaseId"],
+              "created_at_utc": info["createdAt"],
+              "event": info["event"],
+              "conclusion": info["conclusion"],
+              "workflow_name": info["workflowName"],
+              "head_sha": info["headSha"],
+              "obtained_via_authenticated_gh_cli": True,
+          }
+          Path("pit003a-collector-archive/provenance.json").write_text(
+              json.dumps(document, sort_keys=True, indent=2) + "\n"
+          )
+          PY
+
       - name: Independently audit T-4 source receipts against frozen reports
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
         run: |
@@ -262,6 +338,8 @@ jobs:
               --receipts pit003a-source-receipts \
               --model-reports bet-mvp-shadow \
               --prior-model-reports pit003a-prior-models \
+              --collector-root pit003a-collector-archive \
+              --collector-provenance pit003a-collector-archive/provenance.json \
               --out pit003a-attestations
           fi
 
@@ -271,6 +349,15 @@ jobs:
         with:
           name: pit003a-prior-frozen-models-${{ github.run_id }}
           path: pit003a-prior-models/
+          if-no-files-found: ignore
+          retention-days: 21
+
+      - name: Upload Collector original provenance used for PIT verification
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit003a-collector-evidence-${{ github.run_id }}
+          path: pit003a-collector-archive/
           if-no-files-found: ignore
           retention-days: 21
 
