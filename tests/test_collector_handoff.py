@@ -374,3 +374,21 @@ def test_incorrect_atg_registration_is_not_a_safe_cross_provider_join(tmp_path):
         )
         assert "COLLECTOR_ATG_REGISTRATION_MISMATCH" in result["blockers"]
         assert not result["model_input_approved"]
+
+
+def test_pool_card_pdf_header_resolves_physical_race_number(tmp_path):
+    from hbi.collector_handoff import pdf_field
+
+    pdf = fitz.open()
+    page = pdf.new_page()
+    page.insert_text((50, 50), "V64-6\nLop 9\nSTART KL. 21:15")
+    page.insert_text((50, 90), "1 APRIL, Test")
+    page.insert_text((50, 110), "2 BETA, Test")
+    body = pdf.tobytes()
+    pdf.close()
+    runners = {"1": {"name": "April"}, "2": {"name": "Beta"}}
+    assert pdf_field(body, 9, runners, "2026-11-02") == (
+        datetime(2026, 11, 2, 20, 15, tzinfo=UTC).isoformat()
+    )
+    with pytest.raises(ValueError, match="PHYSICAL_RACE_AMBIGUOUS"):
+        pdf_field(body, 10, runners, "2026-11-02")
