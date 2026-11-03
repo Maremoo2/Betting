@@ -118,6 +118,11 @@ def test_valid_synthetic_original_pair_no_pit_no_bet(tmp_path):
     assert result["status"] == "EVALUABLE_RESEARCH_ONLY"
     assert result["bet_authority"] is False and result["no_model_promotion"] is True
     assert result["calibration"]["bins"] is None
+    assert result["metrics"]["market_paired_races"] == 1
+    assert result["metrics_by_cohort"]["PROSPECTIVE_NOT_PIT_CERTIFIED"]["metrics"]["market_paired_races"] == 1
+    assert result["metrics"]["core004_minus_market_log_loss"] == pytest.approx(
+        result["metrics"]["core004_log_loss"] - result["metrics"]["market_log_loss"]
+    )
     rec = result["records"][0]
     assert rec["cohort"] == "PROSPECTIVE_NOT_PIT_CERTIFIED"
     assert rec["winner_selection_id"] == "1"
