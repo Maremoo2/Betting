@@ -26,6 +26,20 @@ jobs:
       - name: Pytest
         run: pytest -q
 
+      - name: Replay DEV-012 against original 3 Nov Vincennes PDF and starts
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/dev012-original"
+          gh run download 41663427015 --repo "$GITHUB_REPOSITORY" \
+            --name pit003a-collector-evidence-41663427015 \
+            --dir "$RUNNER_TEMP/dev012-original"
+          HBI_DEV012_AUTHENTIC_ARCHIVE="$RUNNER_TEMP/dev012-original" \
+            pytest -q tests/test_dev012_pdf_continuation.py
+
       - name: Replay authenticated Collector originals through isolated SQLite model gate
         if: github.event_name == 'pull_request'
         env:
