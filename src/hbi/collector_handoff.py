@@ -118,6 +118,13 @@ def pdf_field(pdf_bytes: bytes, number: int, runners: dict, date: str) -> str:
                 )
                 if label is not None:
                     labels.append(int(label.group(1)))
+        # Continuation pages can contain isolated numeric form fields in
+        # their first lines. A new physical race page must also carry its
+        # own START KL clock; otherwise it cannot delimit a race.
+        if not re.search(
+            r"\\bSTART\\s+KL\\.?\\s*\\d{1,2}:\\d{2}\\b", text, re.IGNORECASE
+        ):
+            labels = []
         labels_by_page.append(labels)
     matches = [
         i for i, labels in enumerate(labels_by_page)
