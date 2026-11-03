@@ -188,10 +188,12 @@ jobs:
             | sha256sum --check -
           DEV011_AUTHENTIC_MODEL_ROOT="$RUNNER_TEMP/dev011/models" \
           DEV011_AUTHENTIC_RESULTS_ROOT="$RUNNER_TEMP/dev011/results" \
+          DEV011_CI_MANIFEST_DIR="$RUNNER_TEMP/dev011/coverage" \
             pytest -q tests/test_dev011_coverage.py
           python -m hbi.prospective_outcome_scorecard \
             --models-root "$RUNNER_TEMP/dev011/models" \
             --prior-results-root "$RUNNER_TEMP/dev011/results" \
+            --coverage-manifest "$RUNNER_TEMP/dev011/coverage/manifest.json" \
             --output-dir "$RUNNER_TEMP/dev011/scorecard"
           python - <<'PY'
           import json
@@ -202,6 +204,8 @@ jobs:
           result = json.loads((root / "index.json").read_bytes())
           assert result["counts"]["paired_champion_core004"] == 1
           assert result["counts"]["pit_certified_paired"] == 0
+          assert result["cumulative_completeness"] == "COMPLETE_AVAILABLE_ORIGINAL_INVENTORY"
+          assert result["cumulative_original_inventory"]["recovered_artifacts"] == 22
           assert result["bet_authority"] is False
           record = next(r for r in result["records"]
                         if r["race_id"] == "RIKSTOTO:S1_NR_2026-11-03:8")
@@ -219,7 +223,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dev011-authentic-cumulative-scorecard-${{ github.run_id }}
-          path: ${{ runner.temp }}/dev011/scorecard/
+          path: |
+            ${{ runner.temp }}/dev011/scorecard/
+            ${{ runner.temp }}/dev011/coverage/
           if-no-files-found: warn
           retention-days: 30
 
