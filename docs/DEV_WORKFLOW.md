@@ -8,7 +8,7 @@
 | `READ_ONLY` | GitHub source/log reads; source audit; local reports; authorized local tests | remote code/Sheets/production changes |
 | `LOCAL_DEV` | isolated branch/worktree on disk, code/fixture/test changes **locally** | `git push`, remote branch, PR, Actions trigger |
 | `PR_AUTHORIZED` | specifically approved GitHub branch/files, commits, push and PR; only within named scope | merge, schedule modification, release, production |
-| `PRODUCTION_APPROVED` | **only** exactly named, independently HQ-authorized operation | blanket access to other systems, strategy or wagering |
+| `PRODUCTION_APPROVED` | **only** exactly named, explicitly project-owner-authorized operation | blanket access to other systems, strategy or wagering |
 
 Betting decisions (`BET`, staking, execution) are a **separate** domain authorization, never a consequence of software delivery approval. Real-money automation remains out of scope.
 
@@ -33,11 +33,12 @@ Do not request new HQ direction for ordinary debug cycles within authorized scop
 - `changes`: file list, risk, rollback; `negative_cases` including identity, time/PIT, field completeness and unavailable source.
 - `remaining_blockers`, `manual_handoffs`, `terminal_status`; no success claim without actual outputs.
 
-## GitHub HQ-only approval gate
-- **Agents have zero merge and ruleset-bypass authority.** PR creation is allowed only if explicitly scoped. No direct push to `main`.
-- A global required branch ruleset on `main` must demand PR, green exact check contexts, at least one valid independent approving review from a designated HQ GitHub identity, stale-approval dismissal after new commits, and no agent/App bypass. Existing `strategy-change-approved` is a separate *additional* protected-strategy check, not blanket merge approval.
-- HQ records `APPROVED_FOR_MERGE: <repository> PR #<n> HEAD <full-SHA>` after review and tests. **Do not merge as part of DEV task.** After a new PR commit, the approval is invalid until reissued. If no separate authorized HQ GitHub reviewer is available, report `BLOCKED_FOR_MERGE`, do not simulate approval using a label.
-- Rulesets must be independently authorized/installed; AGENTS.md and a passing, non-required CI status alone cannot enforce this. Administrators retain administrative change powers, so limit access and audit rule edits.
+## GitHub technical and one-owner merge contract (MVP-005, 2026-11-03)
+- **Agents have zero merge and branch-ruleset-bypass authority.** PR creation is allowed only when explicitly scoped. No direct push to `main`. A DEV task stops before merge.
+- Verify the **exact current PR HEAD** and re-run relevant automated technical checks after any new commit: `test` (Ruff, pytest, authenticated original Collector → SQLite → research-model regression), `v1-integrity` and `protected-strategy`. Record failures, skipped tests, source hashes, real artifacts and limitations rather than treating job success alone as operational proof.
+- **Only the project owner** may expressly authorize a subsequent merge after reviewing the technical evidence on that exact HEAD. The task mandate to update code or a PR never implies permission to merge, dispatch production workflows, change scheduling, certify PIT or authorize betting.
+- Independent human GitHub reviewers, `HQ_REVIEWER_LOGINS`, `APPROVED_FOR_MERGE` comments, and mandatory branch protection/rulesets were retired as **administrative merge conditions** by the owner. They are optional, not merge blockers. This does not waive source originality, independent PIT evidence, temporal gates, strategy protection or BET safeguards. Treat unrelated provider coverage diagnostics separately without misreporting them as PASS.
+- Any later production adoption requires its own explicit owner approval and runtime/PIT evidence. Preserve auditability; do not invent or backdate approvals, identities, observation timestamps or evidence.
 
 ## Metrics and milestones
 - `terminal_report_rate` = tasks with evidence-backed `READY_FOR_REVIEW`, `REVISE` or `BLOCKED` / tasks started.
