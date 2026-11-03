@@ -9,13 +9,17 @@ import json
 import os
 import shutil
 import sqlite3
+import subprocess
+import sys
 from datetime import datetime
 from pathlib import Path
 
 import pytest
 
 from hbi.bet_mvp_shadow import select_fixed_cohort_races
-from hbi.collector_handoff import OriginalArchive, sha, verify_import
+from hbi.collector_handoff import (
+    OriginalArchive, sha, verify_import, write_research_model_report,
+)
 
 COLLECTOR_ZIP_SHA_NOT_USED = (
     "The workflow downloads original artifact CONTENTS, not the archival ZIP."
@@ -78,7 +82,11 @@ def test_authenticated_original_three_races_to_sqlite_and_frozen_model_gate(tmp_
             assert len(result["runners"]) == count
             assert sum(r["identity_grade"] == "TMP_OR_UNKNOWN" for r in result["runners"]) == tmp_count
             assert result["model_input_approved"] is False
+            assert result["independent_identity_attested"] is False
             assert "IDENTITY_CROSS_PROVIDER_NOT_ATTESTED" in result["blockers"]
+            assert result["research_model_eligible"] is (race_id == CASES[-1][0])
+            if result["research_model_eligible"]:
+                assert result["research_identity_match"] == "UNIQUE_NAME_AND_PROGRAM_NUMBER"
             assert result["bet_authority"] is False and result["pit_certified"] is False
             if tmp_count:
                 assert "COLLECTOR_TMP_IDENTITY_NOT_ADMITTED" in result["blockers"]
@@ -121,9 +129,85 @@ def test_authenticated_original_three_races_to_sqlite_and_frozen_model_gate(tmp_
             if next((r["model_input_approved"] for r in results
                      if r["race_id"] == row["race_id"]), False)
         ]
-        # The frozen historical model remains untouched. This is a BLOCKED
-        # integration, not a retrospective recalculation or live certification.
+        # The frozen historical model remains untouched, even while we run
+        # the UNCHANGED model entrypoint against the new isolated import DB.
         assert sha(frozen_model.read_bytes()) == FROZEN_MODEL_SHA
+        conn.commit()
+        model_dir = tmp_path / "new-historical-research-model"
+        historical_asof = model_report["as_of_utc"]
+        process = subprocess.run(
+            [
+                sys.executable, "-m", "hbi.bet_mvp_shadow",
+                "--db", str(db),
+                "--source-report", str(frozen_source),
+                "--race-id", CASES[-1][0],
+                "--as-of", historical_asof,
+                "--run-kind", "ARCHIVED_REPLAY",
+                "--out", str(model_dir),
+            ], check=False, capture_output=True, text=True,
+        )
+        assert process.returncode == 0, process.stderr
+        new_shadow = model_dir / "shadow.json"
+        new_output = json.loads(new_shadow.read_bytes())
+        assert new_output["run_kind"] == "ARCHIVED_REPLAY"
+        assert new_output["race"]["race_id"] == CASES[-1][0]
+        assert new_output["analysis_status"] == "RESEARCH_READY"
+        assert new_output["model_status"] == "MODEL_READY"
+        assert new_output["active_runners"] == 8
+        assert abs(new_output["champion_p_sum"] - 1.0) < 1e-6
+        assert abs(new_output["core004_p_sum"] - 1.0) < 1e-6
+        assert new_output["bet_authority"] is False
+        assert new_output["pit_status"] == "PIT_NOT_CERTIFIED"
+        assert sha(new_shadow.read_bytes()) != FROZEN_MODEL_SHA
+        receipt = next(r for r in results if r["race_id"] == CASES[-1][0])
+        new_research = write_research_model_report(
+            conn, handoff=receipt, shadow_path=new_shadow, source_db=db,
+            source_report=frozen_source,
+            destination=model_dir / "collector-research-report.json",
+        )
+        assert new_research["run_kind"] == "HISTORICAL_REPLAY"
+        assert new_research["research_model_eligible"] is True
+        assert new_research["research_identity_match"] == "UNIQUE_NAME_AND_PROGRAM_NUMBER"
+        assert new_research["independent_identity_attested"] is False
+        assert new_research["model_input_approved"] is False
+        assert new_research["pit_certified"] is False
+        assert new_research["bet_authority"] is False
+        assert new_research["model"]["original_shadow_json_sha256"] == sha(new_shadow.read_bytes())
+        assert new_research["collector_original_sources"]["collector_starts_sha256"] == CASES[-1][4]
+        assert new_research["collector_original_sources"]["collector_program_pdf_sha256"] == CASES[-1][5]
+        assert new_research["sqlite_import_receipt"]["import_payload_id"] == receipt["import_payload_id"]
+        assert abs(new_research["model"]["champion_p_sum"] - 1.0) < 1e-6
+        assert abs(new_research["model"]["core004_p_sum"] - 1.0) < 1e-6
+        assert len(new_research["model"]["runners"]) == 8
+
+        # Persist the genuine research replay artifacts outside the repository.
+        published = os.environ.get("MVP004_EVIDENCE_DIR")
+        if published:
+            folder = Path(published)
+            folder.mkdir(parents=True, exist_ok=False)
+            shutil.copyfile(new_shadow, folder / "shadow.json")
+            shutil.copyfile(
+                model_dir / "collector-research-report.json",
+                folder / "collector-research-report.json",
+            )
+            (folder / "collector-handoff.json").write_text(json.dumps(
+                {"schema": "COLLECTOR_TO_BETTING_ORIGINAL_V1", "records": results,
+                 "bet_authority": False, "pit_certified": False},
+                indent=2, sort_keys=True, ensure_ascii=False) + "\n")
+            (folder / "integrity-summary.json").write_text(json.dumps(
+                {"schema": "MVP_INTEGRATION_004_HISTORICAL_REPLAY_V1",
+                 "model_report_sha256": sha(new_shadow.read_bytes()),
+                 "research_report_sha256": sha(
+                     (model_dir / "collector-research-report.json").read_bytes()),
+                 "frozen_reference_model_sha256": FROZEN_MODEL_SHA,
+                 "collector_import_id": receipt["import_payload_id"],
+                 "race_id": CASES[-1][0],
+                 "research_model_eligible": True,
+                 "independent_identity_attested": False,
+                 "champion_p_sum": new_output["champion_p_sum"],
+                 "core004_p_sum": new_output["core004_p_sum"],
+                 "pit_certified": False, "bet_authority": False},
+                indent=2, sort_keys=True) + "\n")
 
     print(json.dumps({
         "schema": "MVP_INTEGRATION_003_REAL_ORIGINAL_E2E_V1",
@@ -140,7 +224,11 @@ def test_authenticated_original_three_races_to_sqlite_and_frozen_model_gate(tmp_
             for result in results
         ],
         "stored_collector_records": 3,
-        "model_invocations_after_import": 0,
+        "model_invocations_after_import": 1,
+        "historical_replay_model_status": "MODEL_READY",
+        "historical_replay_champion_p_sum": new_output["champion_p_sum"],
+        "historical_replay_core004_p_sum": new_output["core004_p_sum"],
+        "new_research_model_sha256": sha(new_shadow.read_bytes()),
         "pit_certified": False,
         "bet_authority": False,
     }, sort_keys=True))
