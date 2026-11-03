@@ -103,10 +103,22 @@ def pdf_field(pdf_bytes: bytes, number: int, runners: dict, date: str) -> str:
         matches = []
         for page in document:
             text = page.get_text()
-            first_line = text.splitlines()[0].strip() if text.splitlines() else ""
-            if first_line == str(number) or re.fullmatch(
-                rf"(?:L[oø]p|Lopp)\s+{number}", first_line, re.IGNORECASE
-            ):
+            # Original Rikstoto PDFs sometimes print a physical number as
+            # the first line; pool-card pages instead print "Løp N" below
+            # a V64/V75 heading. Inspect header lines only, never history.
+            header = text.splitlines()[:14]
+            labels = []
+            for line in header:
+                line = line.strip()
+                if line.isascii() and line.isdecimal():
+                    labels.append(int(line))
+                else:
+                    label = re.fullmatch(
+                        r"(?:L[oø]p|Lopp)\s+(\d+)", line, re.IGNORECASE
+                    )
+                    if label is not None:
+                        labels.append(int(label.group(1)))
+            if labels and set(labels) == {number}:
                 matches.append(text)
     if len(matches) != 1:
         raise ValueError("COLLECTOR_PDF_PHYSICAL_RACE_AMBIGUOUS")
