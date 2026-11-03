@@ -1,5 +1,20 @@
 # Betting HQ – master-roadmap og gjennomføringsstatus
 
+## MVP-008 – leveranseorientert status 3. november 2026
+
+**Dette er gjeldende fremdriftsstatus; eldre MVP-007/MVP-005-tekst nedenfor er historisk.** Dokumentasjon endrer ikke frosne strategier eller PIT/BET-hardgates.
+
+| Chunk | Teknisk leveranse | Bevis | Eksakt gjenværende sperre |
+| --- | --- | --- | --- |
+| **008A / strykekontrakt – BLOCKED_SOURCE** | Original Eskilstuna T−4-/scratched og begge eksisterende parsere revidert; source-limitation fastslått | [CORE-003 run 41626023709](https://github.com/Maremoo2/Betting/actions/runs/41626023709), pit003a-source-receipts, original scratched.raw.json SHA-256: 1273a06752f5424480f729d256279ea649860d94ac096dcc6d4c3c42a001587a | Rikstoto svarte success=true med kun løp 2,3,4 som nøkler; løp 1 mangler. /starts rapporterer alle 12 med isScratched=false, men offisiell kontrakt for manglende løpsnøkkel kontra null/ukjent/ikke publisert ble ikke funnet. Streng _scratch_set() må fortsette å returnere unknown; eldre research _scratched_for_race() sin tom-mengde-antakelse er ikke PIT-bevis. |
+| **008B / svensk identitet – BLOCKED_SOURCE_IDENTITY** | Eksakt fysisk kandidat identifisert: Jägersro 4. november kl. 20:30, RIKSTOTO:S3_NR_2026-11-04:5; offentlig forhåndsliste viser 9 hester | Offentlig V86-startliste, men ingen komplett tidsattestert original-ID-kjede bevart | 0/9 av de foreløpig oppførte er prospektivt attestert; 9 er **ikke** verifisert aktivt originalfelt. Original Sportinfo/Svensk Travsport startnummer→stabil ID, ATG horse.id og Rikstoto-kryss, rå SHA og as-of mangler. Alternativ kandidat: Halmstad 7. november (reverifiser først). |
+| **008C / modell til beslutningsdiagnostikk – IMPLEMENTERT, PR OPEN** | [PR #123](https://github.com/Maremoo2/Betting/pull/123) gir read-only diagnostikk for alle aktive hester, Champion p(win), teoretisk fair odds, CORE-004 research, WIN, normalisert marked, ukalibrert teori-EV og per-hest manglende V3.3-kontrakter. Eksklusiv output, ingen BET. | PR HEAD e2aceafd5853fcda55553ea879b239791bcfc432; [CI 41637151141](https://github.com/Maremoo2/Betting/actions/runs/41637151141) Ruff PASS, 1454 PASS / 73 SKIP, autentisk Collector-arkivreplay PASS. Separat lokal kontroll mot Eskilstuna-originalmodell SHA-256 4853ed6bc8c7c7063a5898f4b815e552989d29d9b3121372fd338eb0e63f9916 viser **12/12 aktive og 12/12 WIN**, alle BLOCKED; 17 lokaltester PASS, én valgfri originalartifakt-test SKIP i vanlig CI. | Original kildeidentitet og strykestatus, PIT, kalibrerte p_low/p_mid/p_high, FFQ-1, minstepriser og preregistrert V3.3 batch er ikke tilgjengelige. V3.3-evaluering ikke kalt; PR ikke merget; bet_authority=false. |
+
+**Eskilstuna T−4-fasit:** [run 41626023709](https://github.com/Maremoo2/Betting/actions/runs/41626023709) fanget 3/3 originalresponser før T−4, modell og WIN 12/12. Én faktisk fangst, én vurdert attestasjon, **null sertifiserte**. De eksakte sperrene fra PIT-index er STABLE_CROSS_PROVIDER_ID_NOT_ATTESTED og UNVERIFIED_SCRATCH_SOURCE. Grønn CI er ikke lik PIT PASS.
+
+**Neste operative P0 handling før MVP-frist 13. november 2026 18:00 Oslo:** Sikre en offisiell, original og tidsriktig fullfelts startnummer→registrering/Sportinfo→ATG horse.id→Rikstoto-kjede og separat dokumentert scratch-kontrakt (inkludert null/ukjent/ikke publisert). Prøv Jägersro 4. nov; hvis den eksterne originalen ikke er tilgjengelig, velg Halmstad 7. nov. Tilfør ingen kode eller PASS som omgår kildesperrer. Første INDEPENDENT_PIT_CERTIFIED krever alle samtidige kilde- og modellavstemminger; verken kodeleveranse eller observasjon alene gir BET-autoritet. Eneste nye DEV-PR er #123 for diagnostikk; eieren bestemmer eventuell merge.
+
+
 
 ## MVP-007 – operativ status 3. november 2026 (oppdatert etter PR #122)
 
