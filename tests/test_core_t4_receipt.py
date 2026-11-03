@@ -371,3 +371,55 @@ def test_future_fundamental_observation_never_pit_certified(tmp_path):
     )
     assert "FUTURE_OR_MISSING_FUNDAMENTAL_OBSERVATION" in output["blockers"]
     assert not output["independent_pit_certified"]
+
+
+@pytest.mark.parametrize(
+    ("action", "statuses", "certified"),
+    [
+        ("capture", ["BLOCKED"], 0),
+        ("capture", [], 0),
+        ("attest", ["PIT_NOT_CERTIFIED"], 0),
+        ("attest", [], 0),
+        ("attest", ["INDEPENDENT_PIT_CERTIFIED", "PIT_NOT_CERTIFIED",
+                    "TEST_ONLY_CONTRACT_PASS"], 1),
+        ("attest", ["TEST_ONLY_CONTRACT_PASS", "PIT_NOT_CERTIFIED"], 0),
+    ],
+)
+def test_cli_counts_capture_records_or_assessed_attestations(
+    monkeypatch, capsys, tmp_path, action, statuses, certified,
+):
+    """CLI counts assessments without promoting a contract pass to PIT/BET."""
+    from hbi import core_t4_receipt as cli
+
+    if action == "capture":
+        result = {
+            "schema": "PIT_T4_CAPTURE_INDEX_V1",
+            "records": [{"status": status} for status in statuses],
+            "bet_authority": False,
+        }
+        monkeypatch.setattr(cli, "run_source_capture", lambda db, out: result)
+        argv = ["pit-t4", "capture", "--db", str(tmp_path / "db.sqlite"),
+                "--out", str(tmp_path / "capture")]
+    else:
+        result = {
+            "schema": "PIT_T4_ATTESTATION_INDEX_V1",
+            "results": [{"pit_status": status} for status in statuses],
+            "pit_certified_count": certified,
+            "bet_authority": False,
+        }
+        monkeypatch.setattr(cli, "run_attestation", lambda *args, **kwargs: result)
+        argv = [
+            "pit-t4", "attest", "--receipts", str(tmp_path / "receipts"),
+            "--model-reports", str(tmp_path / "models"),
+            "--out", str(tmp_path / "attestation"),
+        ]
+    monkeypatch.setattr("sys.argv", argv)
+
+    cli.main()
+
+    assert json.loads(capsys.readouterr().out) == {
+        "schema": result["schema"],
+        "bet_authority": False,
+        "captures": len(statuses),
+        "certified": certified,
+    }
