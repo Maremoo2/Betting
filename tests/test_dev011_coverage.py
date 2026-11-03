@@ -7,10 +7,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+from test_prospective_outcome_scorecard import FakeOfficial, archive
 
 from hbi.dev011_coverage import finalize, pinned_official, plan
 from hbi.prospective_outcome_scorecard import evaluate_archive
-from test_prospective_outcome_scorecard import FakeOfficial, archive
 
 RACE = "RIKSTOTO:S1_NR_2026-11-03:8"
 
