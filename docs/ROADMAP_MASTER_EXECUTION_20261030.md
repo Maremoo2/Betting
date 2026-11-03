@@ -1,5 +1,24 @@
 # Betting HQ – master-roadmap og gjennomføringsstatus
 
+
+## MVP-014 – BULK EXECUTION snapshot, 3 November 2026 (append-only, unmerged review)
+
+**Proposed research-only roadmap update from [MVP-014 source audit](MVP014_BULK_EXECUTION_SOURCE_AUDIT_20261103.md).** Main baseline `4047fdee0984b4289b1ef86797f894b8d0227da0`. Source: original GitHub CORE-003 and Collector archives. This section is a new time-scoped snapshot; legacy audits and decisions below remain immutable. Frist **13.11.2026 18:00 Europe/Oslo**.
+
+| Workstream | Status | Verifiable acceptance boundary |
+| --- | --- | --- |
+| DEV-009 | **DONE technical / PARTIAL evidence** | Original scorecard has 10 distinct official-result-scored Champion/CORE-004 pairs, no independent PIT; the current main WIN benchmark still has zero complete triples |
+| DEV-010 / MVP-011 PIT | **BLOCKED_SOURCE** | Independently certified races **0**; existing once-only Jägersro Nov 4 22:15 audit remains enabled, cannot act before real T−4 |
+| DEV-011 / PR #126 | **DONE code / PARTIAL cumulative coverage** | Latest nonempty scheduled run 41716853961: 2692 GitHub artifact entries/27 pages, 151 recovered, 10 pinned original outcomes, five unavailable model artifacts and one conflicting official result |
+| DEV-012 / PR #127 | **DONE code / CI_PASS / PARTIAL operations** | Six original PDF continuation races verify with merged fixed parser. No subsequent ordinary completed model cohort demonstrates new admission from these cases |
+| DEV-013 / PR #128 | **CI_PASS / BLOCKED_IMPLEMENTATION pending owner decision** | Draft HEAD `19f9eff2ea814ecce5b8013065e3728e52357dbd`; 1504 passed, 78 skipped, authentic Eskilstuna triple replay, expected 10 original pairs/8 triple in controlled offline sample; NOT verified operationally on main |
+| MVP-012 / MVP-013 | **PARTIAL** | Operational 59 cumulative race IDs, 10 model/result pairs; sample 41 original 3 Nov run indexes shows 16 unique race IDs/2 model-frozen/14 source-rejected; no PIT |
+| DEV-014 / MVP-014 V4X | **PARTIAL / BLOCKED_SOURCE for system EV** | Verified original composite pool key `X1_NR_2026-11-03#V4#4`, physical S2#8, BJ#7, S2#9, BJ#8. Missing prospectively verifiable collective joint combination prices, ticket/dividend/pool rules and two model freezes; no EV |
+| P0 V1 replay and Skive #82 | **BLOCKED_SOURCE / INTEGRITY OPEN** | Five older replay mismatches, unsettled original Skive evidence, five unavailable model archives, one conflicting S2#8 official outcome; no audit waiver |
+| Betting activation | **OFF** | `bet_authority=false`; no real-money or autobet authority; Champion/CORE-004/V3.3.12/hardgates unchanged |
+
+**Three next decisions:** (1) owner review #128 and if approved prove next ordinary main triple coverage; (2) preserve Jägersro PIT audit; (3) after P0, obtain original V4X source economics before any joint EV. No model fitting or historical backfill. This roadmap change is itself a draft PR pending review, not an accepted `main` status until owner merge.
+
 ## MVP-010 – operativ kilde- og PIT-attestasjon, 3. november 2026
 
 **Aktiv nyeste status; tidligere MVP-009/-008-seksjoner beholdes som historiske snapshots.** Eksakt kode-HEAD ved oppstart og verifikasjon: `de527509a28ce62d49ef466ecc540bf927230039` (merget PR #124). Denne dokumentasjonsendringen alene gir ikke PIT/BET-autoritet. Frist 13.11.2026 18:00 Europe/Oslo.
