@@ -42,10 +42,11 @@ def original(path: Path) -> bytes:
     return path.read_bytes()
 
 
-def read_archived_models(root: Path) -> tuple[list[dict], list[dict]]:
+def read_archived_models(root: Path) -> tuple[list[dict], list[dict], list[str]]:
     """Only frozen original archive members; never choose a model by its result."""
     candidates: list[dict] = []
     errors: list[dict] = []
+    expected_races: set[str] = set()
     indexes = sorted(root.glob("*/cohort-index.json")) if root.is_dir() else []
     if (root / "cohort-index.json").is_file():
         indexes.insert(0, root / "cohort-index.json")
@@ -57,7 +58,19 @@ def read_archived_models(root: Path) -> tuple[list[dict], list[dict]]:
                     or data.get("bet_authority") is not False
                     or not isinstance(data.get("processed"), list)):
                 raise ValueError("FROZEN_COHORT_CONTRACT_INVALID")
+            declared = data.get("original_cohort")
+            if declared is None:
+                declared = [e.get("race_id") for e in data["processed"] if isinstance(e, dict)]
+                declared += [e.get("race_id") for e in data.get("not_processed", [])
+                             if isinstance(e, dict)]
+            if (not isinstance(declared, list) or not declared
+                    or any(not isinstance(x, str) or not x for x in declared)
+                    or len(declared) != len(set(declared))):
+                raise ValueError("DECLARED_PHYSICAL_COHORT_INVALID")
+            # Denominator is frozen BEFORE any source files are scored.
+            expected_races.update(declared)
             used: set[str] = set()
+            local_candidates: list[dict] = []
             for entry in data["processed"]:
                 race_id = entry.get("race_id") if isinstance(entry, dict) else None
                 directory = entry.get("directory") if isinstance(entry, dict) else None
@@ -75,12 +88,13 @@ def read_archived_models(root: Path) -> tuple[list[dict], list[dict]]:
                 if (not isinstance(report, dict) or report.get("schema") != MODEL
                         or (report.get("race") or {}).get("race_id") != race_id):
                     raise ValueError("FROZEN_MODEL_RACE_ID_MISMATCH")
-                candidates.append({
+                local_candidates.append({
                     "race_id": race_id, "model": report,
                     "model_sha256": digest(report_raw),
                     "cohort_index_sha256": digest(raw_index),
                     "original_model_path": str(path),
                 })
+            candidates.extend(local_candidates)
         except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
             errors.append({"source": str(index), "reason": str(exc)})
     by_race: dict[str, dict] = {}
@@ -94,7 +108,7 @@ def read_archived_models(root: Path) -> tuple[list[dict], list[dict]]:
             by_race[race_id]["original_model_path"],
         ):
             by_race[race_id] = item
-    return [by_race[k] for k in sorted(by_race)], errors
+    return [by_race[k] for k in sorted(by_race)], errors, sorted(expected_races)
 
 
 def _probs(rows: list[dict], field: str) -> dict[str, float] | None:
@@ -251,7 +265,7 @@ def evaluate_archive(
 ) -> dict:
     """Return all observed races, including blocked ones. No synthetic winners."""
     output_dir.mkdir(parents=True, exist_ok=False)
-    models, archive_errors = read_archived_models(models_root)
+    models, archive_errors, expected_races = read_archived_models(models_root)
     pit: dict[str, list[dict]] = {}
     if attestation_index is not None:
         try:
@@ -355,10 +369,42 @@ def evaluate_archive(
         record["reasons"] = sorted(set(record["reasons"]))
         output["records"].append(record)
 
+    present = {row["race_id"] for row in output["records"]}
+    for rid in expected_races:
+        if rid not in present:
+            output["records"].append({
+                "race_id": rid, "cohort": "PROSPECTIVE_NOT_PIT_CERTIFIED",
+                "status": "NOT_EVALUABLE", "reasons": ["NO_VERIFIED_FROZEN_MODEL"],
+                "source_model_original_sha256": None,
+                "complete_active_field": False, "active_runners": 0,
+                "winner_selection_id": None, "score": None,
+                "market_baseline_available": False, "original_result_receipts": [],
+                "bet_authority": False,
+            })
+    output["records"].sort(key=lambda row: row["race_id"])
     paired = [row for row in output["records"] if row["score"] is not None]
     metric_keys = ("champion_log_loss", "champion_multiclass_brier",
                    "core004_log_loss", "core004_multiclass_brier")
-    if paired:
+    output["metrics_by_cohort"] = {}
+    for cohort_name in ("UPSTREAM_PIT_CERTIFIED", "PROSPECTIVE_NOT_PIT_CERTIFIED"):
+        group = [r for r in paired if r["cohort"] == cohort_name]
+        if group:
+            values = {key: math.fsum(r["score"][key] for r in group) / len(group)
+                      for key in metric_keys}
+            values["core004_minus_champion_log_loss"] = (
+                values["core004_log_loss"] - values["champion_log_loss"]
+            )
+            values["core004_minus_champion_brier"] = (
+                values["core004_multiclass_brier"] - values["champion_multiclass_brier"]
+            )
+            output["metrics_by_cohort"][cohort_name] = {
+                "physical_races": len(group), "metrics": values,
+            }
+        else:
+            output["metrics_by_cohort"][cohort_name] = {
+                "physical_races": 0, "metrics": None,
+            }
+    if paired and len({r["cohort"] for r in paired}) == 1:
         metric = {key: math.fsum(r["score"][key] for r in paired) / len(paired)
                   for key in metric_keys}
         metric["core004_minus_champion_log_loss"] = (
@@ -391,7 +437,7 @@ def evaluate_archive(
     # Descriptive only; no calibration claim with an inadequate physical-race n.
     output["calibration"] = {"status": "INSUFFICIENT_DISTINCT_RACES",
                              "min_distinct_races": 30, "bins": None}
-    if len(paired) >= 30:
+    if len(paired) >= 30 and len({r["cohort"] for r in paired}) == 1:
         # Never compute calibration from per-runner data for the wrong snapshot.
         by_sha = {item["model_sha256"]: item["model"] for item in models}
         values = []
