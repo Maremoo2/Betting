@@ -1,4 +1,5 @@
 """DEV-009 negative regressions; synthetic official result fixtures never grant PIT/BET."""
+
 import hashlib
 import json
 from datetime import UTC, datetime
