@@ -451,14 +451,14 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
                         or row["source_uri"] != identity["source_uri"]
                     ):
                         blocks.add("RESEARCH_ATG_HISTORY_CLOCK_OR_SOURCE_CONFLICT")
-                    if str(row["selection_id"]) in original["active"]:
-                        if (
-                            "identity_match_method" not in row.keys()
-                            or row["identity_match_method"] != "UNIQUE_NAME_AND_PROGRAM_NUMBER"
-                            or "identity_match_confidence" not in row.keys()
-                            or row["identity_match_confidence"] != 1.0
-                        ):
-                            blocks.add("RESEARCH_ATG_HISTORY_IDENTITY_METHOD_UNVERIFIED")
+                    keys = set(row.keys())  # sqlite3.Row membership tests values, not keys.
+                    if str(row["selection_id"]) in original["active"] and (
+                        "identity_match_method" not in keys
+                        or row["identity_match_method"] != "UNIQUE_NAME_AND_PROGRAM_NUMBER"
+                        or "identity_match_confidence" not in keys
+                        or row["identity_match_confidence"] != 1.0
+                    ):
+                        blocks.add("RESEARCH_ATG_HISTORY_IDENTITY_METHOD_UNVERIFIED")
                 except (KeyError, ValueError, TypeError):
                     blocks.add("RESEARCH_ATG_HISTORY_CLOCK_OR_SOURCE_CONFLICT")
             if not any(code.startswith("RESEARCH_ATG_") for code in blocks):
