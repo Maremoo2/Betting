@@ -411,6 +411,16 @@ jobs:
               --out pit003a-attestations
           fi
 
+      # Emit separate, immutable read-only V3.3 gate diagnostics AFTER attestation.
+      # Missing originals and unmatched receipts are recorded as BLOCKED, never PASS.
+      - name: Generate MVP-009 read-only decision diagnostics
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
+        run: |
+          python -m hbi.mvp009_auto_decision_audit \
+            --cohort-index bet-mvp-shadow/cohort-index.json \
+            --attestation-index pit003a-attestations/index.json \
+            --output-dir mvp009-decision-audits
+
       - name: Upload Collector-to-Betting import and model admission evidence
         if: steps.gate.outputs.run == 'true' && always()
         uses: actions/upload-artifact@v4
@@ -454,6 +464,15 @@ jobs:
           name: pit003a-attestations-${{ github.run_id }}
           path: pit003a-attestations/
           if-no-files-found: ignore
+          retention-days: 21
+
+      - name: Upload MVP-009 decision diagnostics (RESEARCH ONLY, NO BET)
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp009-decision-audits-${{ github.run_id }}
+          path: mvp009-decision-audits/
+          if-no-files-found: warn
           retention-days: 21
 
       - name: Upload frozen model research report (not a bet)
