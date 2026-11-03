@@ -27,7 +27,7 @@ def _db(path: Path, *, scratched: bool = False, future_history: bool = False) ->
     db = sqlite3.connect(path)
     db.executescript("""
         CREATE TABLE races(race_id TEXT PRIMARY KEY, race_no INTEGER,
-            start_time_utc TEXT, race_date TEXT);
+            start_time_utc TEXT, race_date TEXT, country TEXT, discipline TEXT);
         CREATE TABLE provider_race_refs(race_id TEXT, provider TEXT,
             provider_raceday_key TEXT, race_number INTEGER);
         CREATE TABLE runners(race_id TEXT, selection_id TEXT, horse_name TEXT,
@@ -38,10 +38,11 @@ def _db(path: Path, *, scratched: bool = False, future_history: bool = False) ->
         CREATE TABLE runner_fundamental_snapshots(snapshot_id TEXT, race_id TEXT,
             selection_id TEXT, observed_at_utc TEXT, feature_as_of_utc TEXT,
             full_field_history_complete INTEGER, source_uri TEXT, scratched INTEGER,
-            history_total_starts INTEGER, history_total_wins INTEGER);
+            history_total_starts INTEGER, history_total_wins INTEGER,
+            identity_match_method TEXT, identity_match_confidence REAL);
     """)
-    db.execute("INSERT INTO races VALUES (?,?,?,?)", (
-        RID, 10, START.isoformat(), "2026-11-02"
+    db.execute("INSERT INTO races VALUES (?,?,?,?,?,?)", (
+        RID, 10, START.isoformat(), "2026-11-02", "SE", "trot"
     ))
     db.execute("INSERT INTO provider_race_refs VALUES (?,?,?,?)", (
         RID, "rikstoto", KEY, 10
@@ -51,16 +52,23 @@ def _db(path: Path, *, scratched: bool = False, future_history: bool = False) ->
         db.execute("INSERT INTO runners VALUES (?,?,?,?,?)", (
             RID, str(i), name, i, int(scratched and i == 8)
         ))
-        moment = NOW + timedelta(minutes=2) if future_history else NOW - timedelta(seconds=30)
-        db.execute("INSERT INTO runner_fundamental_snapshots VALUES (?,?,?,?,?,?,?,?,?,?)", (
+        moment = NOW + timedelta(minutes=2) if future_history else NOW - timedelta(minutes=1)
+        db.execute("INSERT INTO runner_fundamental_snapshots VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", (
             str(i), RID, str(i), moment.isoformat(), moment.isoformat(), 1,
             "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-11-02_18_10",
-            int(scratched and i == 8), 9 + i, 1
+            int(scratched and i == 8), 9 + i, 1,
+            "UNIQUE_NAME_AND_PROGRAM_NUMBER", 1.0
         ))
     for name, provider, key, body in [
         ("starts", "rikstoto", KEY, {"success": True, "result": {"10": raw_rows}}),
         ("atg", "atg", RID, {
             "passed": True, "probe_only": False, "active_runners": 7 if scratched else 8,
+            "provider": "atg", "country": "SE", "discipline": "trot",
+            "provider_race_id": "2026-11-02_18_10",
+            "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-11-02_18_10",
+            "observed_at_utc": (NOW - timedelta(minutes=1)).isoformat(),
+            "collection_started_at_utc": (NOW - timedelta(minutes=2)).isoformat(),
+            "race_start_utc": START.isoformat(), "timestamp_basis": "FETCH_COMPLETED",
             "matched_complete_runners": 7 if scratched else 8,
             "active_selections": [str(i) for i in range(1, 8 if scratched else 9)],
             "runners": [
@@ -77,7 +85,7 @@ def _db(path: Path, *, scratched: bool = False, future_history: bool = False) ->
             name, provider, "RACEDAY_STARTS" if name == "starts" else "FULL_FIELD_ONLY_V1",
             key, 10, None, (NOW - timedelta(minutes=1)).isoformat(),
             "https://www.rikstoto.no/api/racedays/" + KEY + "/starts"
-            if name == "starts" else "https://www.atg.se", json.dumps(body)
+            if name == "starts" else body["source_uri"], json.dumps(body)
         ))
     db.commit()
     db.close()
@@ -207,6 +215,9 @@ def test_copied_registration_cannot_approve_atg_identity_and_pdf_never_replaces_
             "SELECT history_total_starts FROM runner_fundamental_snapshots ORDER BY selection_id")]
         assert output["source_imported_to_sqlite"] is True, output["blockers"]
         assert output["model_input_approved"] is False
+        assert output["research_model_eligible"] is True
+        assert output["research_identity_match"] == "UNIQUE_NAME_AND_PROGRAM_NUMBER"
+        assert output["independent_identity_attested"] is False
         assert "IDENTITY_CROSS_PROVIDER_NOT_ATTESTED" in output["blockers"]
         assert before == after
         assert output["identity_evidence"][0]["atg"]["derived_match_method"] == (
