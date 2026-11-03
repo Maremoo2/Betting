@@ -500,3 +500,92 @@ def test_claimed_exact_method_with_registration_echo_cannot_authorize_models(tmp
         assert "IDENTITY_CROSS_PROVIDER_NOT_ATTESTED" in result["blockers"]
         assert result["model_input_approved"] is False
 
+
+
+@pytest.mark.parametrize(("tamper", "expected"), [
+    ("wrong_atg_race", "RESEARCH_ATG_RACE_OR_CLOCK_NOT_VERIFIED"),
+    ("wrong_atg_start", "RESEARCH_ATG_RACE_OR_CLOCK_NOT_VERIFIED"),
+    ("ambiguous_atg_name", "COLLECTOR_ATG_ATG_HORSE_NAME_MISMATCH"),
+    ("missing_history", "COLLECTOR_ATG_FUNDAMENTAL_COHORT_NOT_COMPLETE"),
+    ("atg_source_conflict", "RESEARCH_ATG_HISTORY_CLOCK_OR_SOURCE_CONFLICT"),
+    ("wrong_race_number", "COLLECTOR_RACE_REFERENCE_CONFLICT"),
+    ("retained_roster_revision", "COLLECTOR_LIVE_ROSTER_REVISION_CONFLICT"),
+])
+def test_research_only_gate_rejects_incomplete_or_conflicting_evidence(
+    tmp_path, tamper, expected,
+):
+    root = _archive_unicode(tmp_path / "collector", tmp=False)
+    db = tmp_path / "hbi.sqlite"
+    _db(db)
+    with _connection(db) as conn:
+        if tamper == "wrong_race_number":
+            conn.execute(
+                "UPDATE provider_race_refs SET race_number=9 WHERE race_id=?", (RID,)
+            )
+        elif tamper == "missing_history":
+            conn.execute(
+                "DELETE FROM runner_fundamental_snapshots "
+                "WHERE race_id=? AND selection_id='8'", (RID,)
+            )
+        elif tamper == "retained_roster_revision":
+            row = conn.execute(
+                "SELECT payload_json FROM provider_payloads WHERE provider='rikstoto'"
+            ).fetchone()
+            changed = json.loads(row[0])
+            changed["result"]["10"][0]["horseName"] = "A DIFFERENT HORSE"
+            conn.execute("INSERT INTO provider_payloads VALUES (?,?,?,?,?,?,?,?,?)", (
+                "altered-newer-roster", "rikstoto", "RACEDAY_STARTS",
+                KEY, 10, None, (NOW - timedelta(seconds=3)).isoformat(),
+                "https://www.rikstoto.no/api/racedays/" + KEY + "/starts",
+                json.dumps(changed),
+            ))
+        else:
+            source = json.loads(conn.execute(
+                "SELECT payload_json FROM provider_payloads WHERE provider='atg'"
+            ).fetchone()[0])
+            if tamper == "wrong_atg_race":
+                source["provider_race_id"] = "WRONG-RACE"
+            elif tamper == "wrong_atg_start":
+                source["race_start_utc"] = (START + timedelta(minutes=5)).isoformat()
+            elif tamper == "ambiguous_atg_name":
+                source["runners"][1]["horse_name"] = source["runners"][0]["horse_name"]
+            elif tamper == "atg_source_conflict":
+                source["source_uri"] = "https://www.atg.se/WRONG-SOURCE"
+            conn.execute(
+                "UPDATE provider_payloads SET payload_json=? WHERE provider='atg'",
+                (json.dumps(source),),
+            )
+        result = verify_import(
+            conn, OriginalArchive(root), RID, asof=NOW, authenticated=True,
+        )
+        assert result["research_model_eligible"] is False, result
+        assert result["model_input_approved"] is False
+        assert expected in result["blockers"], result
+
+
+def test_research_only_tmp_may_score_but_never_be_exact_identity(tmp_path):
+    root = _archive_unicode(tmp_path / "collector", tmp=True)
+    db = tmp_path / "hbi.sqlite"
+    _db(db)
+    # Preserve the authentic provenance pattern: the original & independent
+    # Rikstoto /starts retain the same TMP registrations.
+    with _connection(db) as conn:
+        raw = json.loads(conn.execute(
+            "SELECT payload_json FROM provider_payloads WHERE provider='rikstoto'"
+        ).fetchone()[0])
+        raw["result"]["10"] = _rows(tmp=True)
+        conn.execute(
+            "UPDATE provider_payloads SET payload_json=? WHERE provider='rikstoto'",
+            (json.dumps(raw),),
+        )
+        result = verify_import(
+            conn, OriginalArchive(root), RID, asof=NOW, authenticated=True,
+        )
+        assert result["research_model_eligible"] is True, result
+        assert result["research_identity_match"] == "UNIQUE_NAME_AND_PROGRAM_NUMBER"
+        assert "COLLECTOR_TMP_IDENTITY_NOT_ADMITTED" in result["blockers"]
+        assert "IDENTITY_CROSS_PROVIDER_NOT_ATTESTED" in result["blockers"]
+        assert result["independent_identity_attested"] is False
+        assert result["model_input_approved"] is False
+        assert result["pit_certified"] is False
+        assert result["bet_authority"] is False
