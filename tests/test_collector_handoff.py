@@ -1,7 +1,6 @@
 """Collector -> HBI original-byte handoff tests (synthetic except opt-in real archive)."""
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import sqlite3
@@ -292,8 +291,8 @@ def test_optional_real_halmstad_original_archive(tmp_path):
     key = KEY
     starts, start_raw = archive.request(key, "starts", RID, NOW)
     pdf, pdf_raw = archive.request(key, "pdf", RID, NOW)
-    from hbi.core_pit_roster_verification import parse_rikstoto_roster
     from hbi.collector_handoff import pdf_field
+    from hbi.core_pit_roster_verification import parse_rikstoto_roster
     roster, err = parse_rikstoto_roster(start_raw.decode(), 10, key)
     assert err is None
     assert len(roster["all"]) == 8
