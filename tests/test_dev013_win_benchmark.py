@@ -184,8 +184,19 @@ def test_identical_verified_official_result_reusable_with_different_model_sha(tm
     )
     assert first["counts"]["paired_champion_core004"] == 1
     assert later.is_dir()
+    # Identical original official receipts may legitimately have been
+    # separately scored against a DIFFERENT frozen model SHA.
+    shutil.copytree(results / "10", results / "11")
+    idx = results / "11/index.json"
+    prior = json.loads(idx.read_text())
+    current_sha = hashlib.sha256(
+        (later / "race-001/shadow.json").read_bytes()
+    ).hexdigest()
+    prior["records"][0]["source_model_original_sha256"] = current_sha
+    idx.write_text(json.dumps(prior))
     pinned, errors = pinned_official(results)
     assert RID in pinned and not errors
+    assert len(pinned[RID]["previously_scored_model_shas"]) == 2
     second = _evaluate(root, tmp_path / "after", results=results)
     assert second["counts"]["triple_evaluable"] == 1
     row = second["records"][0]
@@ -215,6 +226,21 @@ def test_changed_official_original_still_conflicts_even_with_multiple_model_shas
     data = _evaluate(root, tmp_path / "out", results=results)
     assert data["counts"]["paired_champion_core004"] == 0
     assert "CONFLICTING_OFFICIAL_RESULT_RECEIPTS" in data["records"][0]["reasons"]
+
+
+def test_timestamp_tie_selects_by_sha_not_win_completeness(tmp_path):
+    root, _, _ = _versions(
+        tmp_path, early_market=True, later_market=False,
+        later_created="2026-11-03T12:55:00+00:00",
+        later_asof="2026-11-03T12:54:00+00:00",
+    )
+    models, errors, _ = read_archived_models(root)
+    assert not errors
+    selected = models[0]
+    history = selected["original_freeze_history"]
+    assert len(history) == 2
+    assert selected["model_sha256"] == max(x["model_sha256"] for x in history)
+    assert sum(x["selected_benchmark_reference"] for x in history) == 1
 
 
 def test_authentic_eskilstuna_original_frozen_versions_and_official_receipts(tmp_path):
