@@ -113,6 +113,97 @@ jobs:
             --max-tasks 4 \
             --market-window-minutes 30
 
+      # Authenticate the separate Collector run, then replay its original
+      # PDF and raw starts bytes. Failure is a PIT blocker, never a pass.
+      - name: Recover authenticated Collector originals (read only)
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ ! -f core003-pilot-report.json ]; then
+            echo "CORE003_SOURCE_REPORT_NOT_AVAILABLE"; exit 0
+          fi
+          mkdir -p pit003a-collector-archive
+          if ! gh run list --repo Maremoo2/rikstoto-program-collector \
+              --workflow rikstoto-morning.yml --limit 15 \
+              --json databaseId,createdAt,event,conclusion,workflowName \
+              > "$RUNNER_TEMP/pit003a-collector-runs.json"; then
+            echo "COLLECTOR_RUN_LIST_UNAVAILABLE"; exit 0
+          fi
+          python - <<'PY' > "$RUNNER_TEMP/pit003a-collector-selected.txt"
+          import json
+          import os
+          from datetime import datetime
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+
+          source = json.loads(Path("core003-pilot-report.json").read_text())
+          dates = {
+              rid.split(":")[1][-10:]
+              for rid in source.get("races_in_fixed_cohort", [])
+              if isinstance(rid, str) and rid.startswith("RIKSTOTO:")
+          }
+          runs = json.loads((Path(os.environ["RUNNER_TEMP"]) /
+                             "pit003a-collector-runs.json").read_text())
+          matches = [
+              run for run in runs
+              if run.get("event") == "schedule"
+              and run.get("conclusion") == "success"
+              and run.get("workflowName") == "Daily Rikstoto full programs – 07 Oslo"
+              and datetime.fromisoformat(run["createdAt"].replace("Z", "+00:00"))
+                  .astimezone(ZoneInfo("Europe/Oslo")).date().isoformat() in dates
+          ]
+          matches.sort(key=lambda run: run["createdAt"], reverse=True)
+          if len(matches) == 1:
+              print(matches[0]["databaseId"])
+          PY
+          selected="$(cat "$RUNNER_TEMP/pit003a-collector-selected.txt")"
+          if [ -z "$selected" ]; then echo "COLLECTOR_ORIGINAL_NOT_UNAMBIGUOUS"; exit 0; fi
+          if ! gh run download "$selected" --repo Maremoo2/rikstoto-program-collector \
+               --name rikstoto-morning-programs --dir pit003a-collector-archive; then
+            echo "COLLECTOR_ARCHIVE_DOWNLOAD_UNAVAILABLE"; exit 0
+          fi
+          if ! gh run view "$selected" --repo Maremoo2/rikstoto-program-collector \
+              --json databaseId,createdAt,event,conclusion,workflowName,headSha \
+              > "$RUNNER_TEMP/pit003a-collector-run.json"; then
+            echo "COLLECTOR_GITHUB_PROVENANCE_UNAVAILABLE"; exit 0
+          fi
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          info = json.loads((Path(os.environ["RUNNER_TEMP"]) /
+                            "pit003a-collector-run.json").read_text())
+          document = {
+              "source_repository": "Maremoo2/rikstoto-program-collector",
+              "github_run_id": info["databaseId"],
+              "created_at_utc": info["createdAt"],
+              "event": info["event"],
+              "conclusion": info["conclusion"],
+              "workflow_name": info["workflowName"],
+              "head_sha": info["headSha"],
+              "obtained_via_authenticated_gh_cli": True,
+          }
+          Path("pit003a-collector-archive/provenance.json").write_text(
+              json.dumps(document, sort_keys=True, indent=2) + "\n"
+          )
+          PY
+
+
+      # Import verified immutable Collector program as the canonical roster
+      # provenance BEFORE model scoring. TMP, stale or conflicting identities
+      # stay blocked even when CORE-003's own ATG research data are complete.
+      - name: Validate and import Collector originals into isolated model inputs
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true'
+        run: |
+          python -m hbi.collector_handoff \
+            --db data/core003-pilot.sqlite \
+            --collector-root pit003a-collector-archive \
+            --collector-provenance pit003a-collector-archive/provenance.json \
+            --source-report core003-pilot-report.json \
+            --out collector-handoff.json
+
       - name: Freeze read-only Champion and CORE-004 reports for fixed cohort
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && success()
         shell: bash
@@ -128,6 +219,7 @@ jobs:
           from pathlib import Path
 
           from hbi.bet_mvp_shadow import select_fixed_cohort_races, sha256
+          from hbi.collector_handoff import write_research_model_report
 
           source_path = Path('core003-pilot-report.json')
           db_path = Path('data/core003-pilot.sqlite')
@@ -144,6 +236,27 @@ jobs:
           finally:
               connection.close()
 
+          # Fail closed: no model invocation without source-verified Collector
+          # roster imported into the original isolated SQLite database.
+          handoff_path = Path('collector-handoff.json')
+          handoff = json.loads(handoff_path.read_text(encoding='utf-8')) if handoff_path.is_file() else {}
+          handoff_rows = handoff.get('records', [])
+          if not isinstance(handoff_rows, list):
+              handoff_rows = []
+          handoff_by_id = {r['race_id']: r for r in handoff_rows if isinstance(r, dict) and isinstance(r.get('race_id'), str)}
+          collector_eligible = []
+          for entry in selection['eligible']:
+              original = handoff_by_id.get(entry['race_id'])
+              if not original or original.get('research_model_eligible') is not True:
+                  selection['not_processed'].append({
+                      'race_id': entry['race_id'], 'reason': 'COLLECTOR_RESEARCH_MODEL_GATE_NOT_VERIFIED',
+                      'collector_blockers': original.get('blockers', []) if original else ['NO_COLLECTOR_IMPORT_RECEIPT'],
+                  })
+              else:
+                  collector_eligible.append(entry)
+          selection['eligible'] = collector_eligible
+          collector_handoff_sha256 = sha256(handoff_path) if handoff_path.is_file() else None
+
           folder = Path('bet-mvp-shadow')
           folder.mkdir(exist_ok=False)
           index = {
@@ -153,6 +266,8 @@ jobs:
               'as_of_utc': as_of.isoformat(),
               'source_report_sha256': sha256(source_path),
               'source_database_sha256': sha256(db_path),
+              'collector_handoff_sha256': collector_handoff_sha256,
+              'collector_handoff': handoff_rows,
               'original_cohort': selection['original_cohort'],
               'eligible_prestart': selection['eligible'],
               'not_processed': selection['not_processed'],
@@ -182,6 +297,29 @@ jobs:
                   })
                   continue
               report = json.loads((destination / 'shadow.json').read_text(encoding='utf-8'))
+              original = handoff_by_id[race_id]
+              link_path = destination / 'collector-research-report.json'
+              research_link_sha = None
+              if (report.get('model_status') == 'MODEL_READY'
+                      and report.get('analysis_status') == 'RESEARCH_READY'):
+                  connection = sqlite3.connect(f'file:{db_path.resolve()}?mode=ro', uri=True)
+                  connection.row_factory = sqlite3.Row
+                  try:
+                      write_research_model_report(
+                          connection, handoff=original,
+                          shadow_path=destination / 'shadow.json',
+                          source_db=db_path, source_report=source_path,
+                          destination=link_path,
+                      )
+                  except (ValueError, KeyError, TypeError, OSError, sqlite3.Error) as exc:
+                      index['errors'].append({
+                          'race_id': race_id, 'reason': 'RESEARCH_SOURCE_MODEL_LINK_FAILED',
+                          'error_type': type(exc).__name__, 'error': str(exc),
+                      })
+                      continue
+                  finally:
+                      connection.close()
+                  research_link_sha = sha256(link_path)
               index['processed'].append({
                   'race_id': race_id,
                   'directory': str(destination),
@@ -197,6 +335,12 @@ jobs:
                   'model_calculated_at_utc': report['model_calculated_at_utc'],
                   'report_created_at_utc': report['report_created_at_utc'],
                   'report_sha256': sha256(destination / 'shadow.json'),
+                  'research_only_model_eligible': original['research_model_eligible'],
+                  'research_identity_match': original['research_identity_match'],
+                  'independent_identity_attested': False,
+                  'model_input_approved': False,
+                  'source_original_import_id': original['import_payload_id'],
+                  'collector_research_report_sha256': research_link_sha,
                   'bet_authority': False,
               })
           index['index_written_at_utc'] = datetime.now(UTC).isoformat()
@@ -254,82 +398,6 @@ jobs:
             done < "$RUNNER_TEMP/pit003a-prior.tsv"
           fi
 
-      # Authenticate the separate Collector run, then replay its original
-      # PDF and raw starts bytes. Failure is a PIT blocker, never a pass.
-      - name: Recover authenticated Collector originals (read only)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if [ ! -f pit003a-source-receipts/index.json ]; then
-            echo "T4_RECEIPTS_NOT_AVAILABLE"; exit 0
-          fi
-          mkdir -p pit003a-collector-archive
-          if ! gh run list --repo Maremoo2/rikstoto-program-collector \
-              --workflow rikstoto-morning.yml --limit 15 \
-              --json databaseId,createdAt,event,conclusion,workflowName \
-              > "$RUNNER_TEMP/pit003a-collector-runs.json"; then
-            echo "COLLECTOR_RUN_LIST_UNAVAILABLE"; exit 0
-          fi
-          python - <<'PY' > "$RUNNER_TEMP/pit003a-collector-selected.txt"
-          import json
-          import os
-          from datetime import datetime
-          from pathlib import Path
-          from zoneinfo import ZoneInfo
-
-          index = json.loads(Path("pit003a-source-receipts/index.json").read_text())
-          dates = {
-              entry["race_id"].split(":")[1][-10:]
-              for entry in index["records"] if entry["race_id"].startswith("RIKSTOTO:")
-          }
-          runs = json.loads((Path(os.environ["RUNNER_TEMP"]) /
-                             "pit003a-collector-runs.json").read_text())
-          matches = [
-              run for run in runs
-              if run.get("event") == "schedule"
-              and run.get("conclusion") == "success"
-              and run.get("workflowName") == "Daily Rikstoto full programs – 07 Oslo"
-              and datetime.fromisoformat(run["createdAt"].replace("Z", "+00:00"))
-                  .astimezone(ZoneInfo("Europe/Oslo")).date().isoformat() in dates
-          ]
-          matches.sort(key=lambda run: run["createdAt"], reverse=True)
-          if len(matches) == 1:
-              print(matches[0]["databaseId"])
-          PY
-          selected="$(cat "$RUNNER_TEMP/pit003a-collector-selected.txt")"
-          if [ -z "$selected" ]; then echo "COLLECTOR_ORIGINAL_NOT_UNAMBIGUOUS"; exit 0; fi
-          if ! gh run download "$selected" --repo Maremoo2/rikstoto-program-collector \
-               --name rikstoto-morning-programs --dir pit003a-collector-archive; then
-            echo "COLLECTOR_ARCHIVE_DOWNLOAD_UNAVAILABLE"; exit 0
-          fi
-          if ! gh run view "$selected" --repo Maremoo2/rikstoto-program-collector \
-              --json databaseId,createdAt,event,conclusion,workflowName,headSha \
-              > "$RUNNER_TEMP/pit003a-collector-run.json"; then
-            echo "COLLECTOR_GITHUB_PROVENANCE_UNAVAILABLE"; exit 0
-          fi
-          python - <<'PY'
-          import json
-          import os
-          from pathlib import Path
-
-          info = json.loads((Path(os.environ["RUNNER_TEMP"]) /
-                            "pit003a-collector-run.json").read_text())
-          document = {
-              "source_repository": "Maremoo2/rikstoto-program-collector",
-              "github_run_id": info["databaseId"],
-              "created_at_utc": info["createdAt"],
-              "event": info["event"],
-              "conclusion": info["conclusion"],
-              "workflow_name": info["workflowName"],
-              "head_sha": info["headSha"],
-              "obtained_via_authenticated_gh_cli": True,
-          }
-          Path("pit003a-collector-archive/provenance.json").write_text(
-              json.dumps(document, sort_keys=True, indent=2) + "\n"
-          )
-          PY
-
       - name: Independently audit T-4 source receipts against frozen reports
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
         run: |
@@ -342,6 +410,15 @@ jobs:
               --collector-provenance pit003a-collector-archive/provenance.json \
               --out pit003a-attestations
           fi
+
+      - name: Upload Collector-to-Betting import and model admission evidence
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: collector-handoff-${{ github.run_id }}
+          path: collector-handoff.json
+          if-no-files-found: warn
+          retention-days: 21
 
       - name: Upload restored immutable prior model evidence
         if: steps.gate.outputs.run == 'true' && always()

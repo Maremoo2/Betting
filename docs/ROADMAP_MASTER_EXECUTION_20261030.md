@@ -1,5 +1,39 @@
 # Betting HQ – master-roadmap og gjennomføringsstatus
 
+## MVP-005 – gjeldende styring og MVP-kritisk sti (3. november 2026)
+
+**Dette er den gjeldende beslutningen for neste steg og erstatter tidligere administrative reviewkrav i eldre, daterte avsnitt nedenfor.** Prosjekteieren er eneste autoriserte mergebeslutter. Ekstern godkjenner, `HQ_REVIEWER_LOGINS`, `APPROVED_FOR_MERGE`-kommentar og obligatorisk branch protection er **ikke** lenger krav. Ingen merge uten uttrykkelig tillatelse fra eieren. Full teknisk kildeintegritet, originale hash-bevis og alle PIT/BET-hardgates beholdes.
+
+### Oppnådd mot MVP
+
+- **MVP-INTEGRATION-003:** Autentisert Collector-original → kildehash-verifisert SQLite med unike per-løp-poster, readback og idempotens; `TMP` og manglende uavhengig identitet gir fortsatt streng modell-/PIT/BET-blokkering.
+- **MVP-INTEGRATION-004:** Ekte, historisk Halmstad løp 10 (2. november) har importert original PDF og `/starts`, vurdert 8/8 entydige ATG-navn/startnummer og kjørt uendrede Champion/CORE-004 på nytt fra isolert SQLite. Begge p(win)-summer er `1.0`, `MODEL_READY`, `HISTORICAL_REPLAY`, `research_model_eligible=true` og `independent_identity_attested=false`. `pit_certified=false`, `bet_authority=false`. Bevis: https://github.com/Maremoo2/Betting/actions/runs/41605276615 og immutable `mvp004-historical-research-41605276615`-artefakt.
+- Teknisk CI på den historisk beståtte PR-HEAD `0a629a8d794af5c1a1d68e68ede14aa68990e59e`: Ruff PASS, 1 431 tester PASS / 72 SKIP; `v1-integrity` PASS; `protected-strategy` PASS. **Dette må bekreftes på ny HEAD etter administrative dokument-/workflowendringer.**
+- Uavhengig GitHub-review var en **administrativ** rød gate. Den er ikke lenger et gjeldende akseptkrav etter eiers beslutning. Dansk `NO_FULL_FIELD_LIVE_PASS:DK` forblir rød, og danske løp var ikke faktisk forsøkt i sammenlignede live-smoke-kjøringer; ingen dansk datadekning er påvist. Denne separate diagnostikken er ikke automatisk Collector-mergeblokker uten et uttrykkelig DK-dekningskrav.
+
+### Datoer, eierskap og aksept
+
+| Frist (Europe/Oslo) | Leveranse | Status / aksept |
+| --- | --- | --- |
+| **4. november 2026** | PR #121: fjern administrativ HQ-gate, oppdater roadmap, verifiser **ny eksakt HEAD**, CI, kildeintegritet og uendret PIT/BET-kontrakt | DEV leverer bevis; eieren avgjør merge |
+| **6. november 2026** | Betinget merge til `main` | **Kun ved uttrykkelig eiersamtykke**, PASS på relevante automatiske tekniske kontroller, ingen sikkerhetsregresjon; ellers `BLOCKED` |
+| **10. november 2026** | Første egnete prospektive norske/svenske løp med autentisert Collector-original og fullt ATG-felt | Etter eventuell merge: verifiser fysisk løp, hester, strykninger, kildeversjon og originaler før modell `as-of`; kjør uendrede modeller; attester T−4 uavhengig; rapporter `PASS`, `BLOCKED` eller `NOT_OBSERVED` |
+| **13. november 2026 kl. 18:00** | Teknisk MVP-beslutning | Fungerende prospektiv kjede og faktisk PIT-evidens, eller konkret dokumentert `BLOCKED` med første feil/observasjonsmangel. **Ingen BET-autoritet automatisk.** |
+
+### Roller og beslutningsregler
+
+- **Roadmap/HQ:** undersøk nøyaktig PR-head og alle statuskontroller; klassifiser tekniske feil kontra separat leverandørdekning; hold kritisk sti og datert bevis oversikt. Ikke opprett nye prosesser eller sideprosjekter.
+- **Betting DEV:** bare nødvendige feilrettinger når konkrete tekniske blokkeringer er bevist. Ingen ny modell, ny arkitektur, endring i Champion/CORE-004/V3.3.12, innsatsregler eller hardgates.
+- **Prosjekteier:** autoriser merge etter faktisk teknisk aksept. Branch protection/ruleset er frivillig. Det kreves ingen andre menneskelige reviewers.
+- **Prospektiv PIT:** Collector-morgenprogram (planlagt kl. 07:00) er ikke alene T−4-bevis. GitHub cron kan være forsinket; observer faktiske kildeklokker. Ingen historisk replay eller syntetisk attest gir prospektiv sertifisering.
+- **Risiko:** Høy for 13. november: prospektiv T−4-innsamling, ekte versjons- og publiseringsbevis og ATG-dekning er ikke bevist som ferdig. Hvis observert men utilstrekkelig, bruk `BLOCKED`; hvis ikke observert, bruk `NOT_OBSERVED`. Ikke erstatt med teoretisk grønn status.
+
+**PR under arbeid:** https://github.com/Maremoo2/Betting/pull/121. **Denne roadmap-oppdateringen autoriserer ikke merge, autospill, workflow-dispatch eller bet.**
+
+---
+
+### Historisk roadmap (30. oktober; eldre administrative reviewkrav er foreldet)
+
 **Rapportdato:** 30.10.2026 · **Modus:** GITHUB_REVIEW_AND_SOURCE_EVIDENCE_ONLY · **Betting:** OFF/ikke autorisert.
 
 Dette er én samlet oversikt over oppnådd **kodeleveranse** versus faktisk **funksjonell akseptanse**. En merget PR, grønn GitHub Actions-kjøring eller simulatorresultat gir aldri i seg selv produsert PIT-bevis, kalibrert modelledge, gyldig oppgjør eller BET-mandat.

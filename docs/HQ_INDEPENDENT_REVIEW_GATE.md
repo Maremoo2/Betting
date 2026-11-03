@@ -1,31 +1,36 @@
-# P0 – Independent HQ GitHub approval gate
+# Betting MVP – én-prosjekteier og merge-styring
 
-The technical gate is a read-only evidence verifier; **only an authorized HQ administrator can make it enforceable** by installing required branch protection or an organization/repository ruleset. A workflow file is not a ruleset and does not prevent manual or bypass merges by itself.
+**Gjeldende fra 3. november 2026 (MVP-005).** Dette dokumentet erstatter tidligere administrative krav om uavhengig menneskelig HQ-review. Prosjekteieren (Maremoo2) har uttrykkelig besluttet å styre godkjenning selv. Dette er en *administrativ endring*, ikke en endring av kildekontroller, PIT/BET-krav eller modellmetodikk.
 
-## Administrator setup required (not performed by DEV)
+## Merge-kontrakt: teknisk kontroll + eksplisitt eiersamtykke
 
-1. Restrict who can administer the protected repositories and designate named, independent HQ GitHub **human** reviewers. Record the resulting approved reviewer login list via repository variable \`HQ_REVIEWER_LOGINS\` (comma-separated real logins, not bots or PR authors). The verifier fails closed while the list is absent.
-2. Create required branch protection/ruleset on \`main\` in **both** \`Maremoo2/Betting\` and \`Maremoo2/rikstoto-program-collector\`. It must enforce a pull request, at least one independent approval, stale approval dismissal after new pushes, and all required checks on exact PR HEAD. Explicitly add the \`independent-hq-review-evidence\` job as a required status context where this workflow is installed. Install the same read-only gate separately in the Collector; the Betting workflow has no authority over the other repo.
-3. Enforce no routine agent/App bypass and verify administrator/bypass behavior with a disposable non-production PR. Independently record the branch-ruleset API configuration and **actual attempted merge rejection** without approval. \`GET /rulesets == []\` does not prove absence of unrelated branch protection; the API returned 403 for prior branch-protection inspection.
-4. HQ must approve a particular exact HEAD via GitHub **APPROVED** review **and then** comment this exact single line as the same registered reviewer:
+1. Identifiser **eksakt siste PR-HEAD-SHA**, og kontroller hva som er endret siden forrige tekniske evaluering. Ved nye commits må relevante tekniske kontroller testes på den nye HEAD-en.
+2. Krev beståtte, relevante automatiske tekniske kontroller: `test` (Ruff, pytest og den autentiserte historiske Collector → SQLite → forskningsmodellregresjonen), `v1-integrity` og `protected-strategy`. Bevar originale SHA-256, source lineage og negative integritetstester. Dokumenter andre feilede kontroller og vurder faktisk teknisk relevans; ikke marker feil som PASS.
+3. Forskningsstatus `research_model_eligible` er **ikke** `model_input_approved`, `INDEPENDENT_PIT_CERTIFIED` eller `BET_ELIGIBLE`. Ingen kode-merge gir PIT-sertifisering, modellkalibrering, real-money-autoritet, autospill eller endringer i V3.3.12/BET-hardgates.
+4. **Kun prosjekteieren** gir uttrykkelig tillatelse til merge når den dokumenterte tekniske kontrollen er fullført. En oppdragsbeskrivelse eller tillatelse til å oppdatere en PR er **ikke** merge-autorisasjon. DEV og Roadmap stopper ved oppdatert PR uten særskilt mergegodkjenning.
 
-\`\`\`
-APPROVED_FOR_MERGE: Maremoo2/Betting PR #<number> HEAD <full-40-character-lowercase-commit-sha>
-\`\`\`
+## Ikke lenger obligatorisk
 
-5. If the PR head changes, both the review and note must be renewed. \`CHANGES_REQUESTED\` or \`DISMISSED\` after an approval fails the check. Reviewer must match allowlist and must be an actual human GitHub user different from PR author. An \`APPROVED_FOR_MERGE\` note alone is never sufficient. For a new review without a note, the gate stays red.
-6. After the real branch rule is configured, test a PR with missing approval and another with a stale commit. Record one successful independent approval transition on a non-production branch and inspect its audit trail. Do not merge a business PR as the test. If the required check is absent from GitHub main protection, the whole governance P0 remains **BLOCKED**.
+- Ekstern eller uavhengig menneskelig reviewer, ekstra GitHub-konto og godkjennende PR-review.
+- Repository-variable `HQ_REVIEWER_LOGINS`, eksakt `APPROVED_FOR_MERGE`-kommentar og tidligere `independent-hq-review-evidence`-workflow.
+- GitHub branch protection eller ruleset som mergeforutsetning. Slike innstillinger er valgfrie og skal ikke forsinke MVP. De kan ikke slå av tekniske kilde-/PIT-/BET-sperrer i programmet.
 
-## Implementation
+Den gamle, ikke-aktive evaluatoren `scripts/hq_exact_head_review_gate.py` og tilhørende offline-tester beholdes **kun som historisk kode** ved denne minimale PR-endringen. De er ikke en aktiv statuskontroll eller obligatorisk prosess; ingen skal konstruere eller kreve en uavhengig godkjenning.
 
-\`scripts/hq_exact_head_review_gate.py\` evaluates paginated official GitHub JSON evidence and does not authenticate the GitHub identity itself. \`.github/workflows/hq-independent-review-gate.yml\` fetches PR/reviews/comments with **read-only** GitHub permissions. Its success means only \`HQ_REVIEW_EVIDENCE_PRESENT_RULESET_ENFORCEMENT_UNVERIFIED\`. It never means branch protection is installed, software is production-ready, or a person authorized betting. The script contains explicit \`merge_authority=false\` and \`model_or_bet_authority=false\`.
+## Teknisk kontroll og tilstand
 
-The verifier never inserts approval comments, manipulates review states, merges a PR, updates an active model, or modifies betting data. A GitHub Action status alone is **not** protection until made required by HQ. In particular, already merged PRs #33, #34–#37 (Collector), #101–#102, #105–#108 (Betting) must not acquire fictitious retroactive reviews.
+- `test`, `v1-integrity`, `protected-strategy` forblir de sentrale automatiserte kode-/integritetskontrollene. `live-smoke` for SE, DK, NO og FR beholdes synlig som egen datadekningsdiagnostikk. Dansk `NO_FULL_FIELD_LIVE_PASS:DK` er ikke dokumentert som regresjon i Collector-integrasjonen. Ingen dansk dekning skal påstås før det finnes et faktisk bestått dansk fullfeltsbevis; dersom landdekning er et eksplisitt akseptkrav for en endring, må den kontrolleres separat.
+- Allprospektiv PIT T−4-attestasjon krever reelle originaler, dokumenterte klokker, matchende revisionskjede og uavhengig attestasjon. Historiske `HISTORICAL_REPLAY`-resultater kan ikke brukes som prospektivt PIT-bevis.
+- Hvis teknisk CI feiler på HEAD, er PR teknisk blokkert. Hvis eneste røde check er en klart separat datadekningsdiagnostikk, skal den forbli RED i rapporteringen, men klassifiseres etter sitt faktiske omfang i stedet for å behandles som automatisk Collector-kodefeil.
+- Ingen manuell `workflow_dispatch`, merge, aktiv produksjonsendring eller endring av bettingterskler/innsats uten egen, uttrykkelig beslutning fra prosjekteieren.
 
-## Reproducible offline negative tests
+## PR #121 og MVP-frister (per 3. november 2026)
 
-\`\`\`bash
-python -m pytest -q tests/test_hq_exact_head_review_gate.py
-\`\`\`
+- PR: https://github.com/Maremoo2/Betting/pull/121
+- Verifisert funksjonell start-HEAD før denne administrative oppdateringen: `0a629a8d794af5c1a1d68e68ede14aa68990e59e`.
+- 4. november: dokumenter ny HEAD, tekniske tester og konkret mergeplan.
+- 6. november: betinget merge **bare etter eksplisitt eiersamtykke** og godkjente tekniske krav.
+- 10. november: forsøk et reelt prospektivt norsk/svensk T−4-løp *etter* eventuell merge, uten å konstruere data eller etterdatere klokker.
+- 13. november kl. 18:00 Europe/Oslo: teknisk MVP-aksept eller eksakt dokumentert `BLOCKED`/`NOT_OBSERVED`; ingen automatisk BET-autorisasjon.
 
-The tests explicitly cover stale approvals, unauthorized reviewer, bot/self-review, later change request/dismissal, missing/forged comment, wrong repository/PR/head, comment before review, and missing configured allowlist. These are *synthetic governance fixtures* and do not prove current GitHub administrators have enforced rules.
+Se `docs/ROADMAP_MASTER_EXECUTION_20261030.md` for oppdatert kritisk sti. Eldre omtale av uavhengige reviews i arkivhistorikken nedenfor er historisk og **ikke gjeldende prosedyre**.

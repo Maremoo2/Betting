@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   test:
@@ -24,3 +25,44 @@ jobs:
         run: ruff check .
       - name: Pytest
         run: pytest -q
+
+      - name: Replay authenticated Collector originals through isolated SQLite model gate
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/mvp003/collector" "$RUNNER_TEMP/mvp003/sqlite" \
+            "$RUNNER_TEMP/mvp003/model" "$RUNNER_TEMP/mvp003/source"
+          # These are immutable, prior-run ORIGINAL artifacts, not new provider
+          # requests and not a retrospective PIT attempt.
+          gh run download 41399902762 --repo Maremoo2/rikstoto-program-collector \
+            --name rikstoto-morning-programs --dir "$RUNNER_TEMP/mvp003/collector"
+          gh run download 41518035718 --repo "$GITHUB_REPOSITORY" \
+            --name core003-pilot-state --dir "$RUNNER_TEMP/mvp003/sqlite"
+          gh run download 41518035718 --repo "$GITHUB_REPOSITORY" \
+            --name bet-mvp-shadow-41518035718 --dir "$RUNNER_TEMP/mvp003/model"
+          gh run download 41518035718 --repo "$GITHUB_REPOSITORY" \
+            --name core003-pilot-report-41518035718 --dir "$RUNNER_TEMP/mvp003/source"
+          printf '%s  %s\n' \
+            60dbb4d350c252fd1f6dd7d8ba2c19e841153bd0e260318938e1b888bda913b0 \
+            "$RUNNER_TEMP/mvp003/sqlite/core003-pilot.sqlite" | sha256sum --check -
+          printf '%s  %s\n' \
+            dea4abdf8fed71c137274100153bfaec2323d608faec4072a569b4728cc789fe \
+            "$RUNNER_TEMP/mvp003/model/race-002/shadow.json" | sha256sum --check -
+          MVP003_COLLECTOR_ROOT="$RUNNER_TEMP/mvp003/collector" \
+          MVP003_ORIGINAL_SQLITE="$RUNNER_TEMP/mvp003/sqlite/core003-pilot.sqlite" \
+          MVP003_ORIGINAL_SHADOW="$RUNNER_TEMP/mvp003/model/race-002/shadow.json" \
+          MVP003_ORIGINAL_SOURCE_REPORT="$RUNNER_TEMP/mvp003/source/core003-pilot-report.json" \
+          MVP004_EVIDENCE_DIR="$RUNNER_TEMP/mvp004-historical-report" \
+            pytest -q -s tests/test_collector_handoff_real_archive.py
+
+      - name: Upload immutable historical research model and Collector source provenance
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp004-historical-research-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp004-historical-report
+          if-no-files-found: warn
+          retention-days: 30
