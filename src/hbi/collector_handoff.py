@@ -180,11 +180,17 @@ def _persist_original_roster(
     Existing different versions are a hard conflict; they are never
     overwritten, OR IGNORE'd, or treated as successful imports.
     """
+    # Store only immutable Collector provenance in the original row.
+    # ATG diagnostics belong in the per-run handoff report and may evolve.
+    original_source = {
+        key: value for key, value in source_checksums.items()
+        if key.startswith("collector_")
+    }
     payload = {
         "schema": SCHEMA,
         "race_id": race_id,
         "original_field": original_field,
-        "source_checksums": source_checksums,
+        "source_checksums": original_source,
         "identity_provenance": "RIKSTOTO_ORIGINAL_STARTS_ONLY",
         "source_publication_attested": False,
         "pit_certified": False,
