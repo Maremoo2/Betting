@@ -232,6 +232,50 @@ jobs:
                      for r in record["original_result_receipts"])
           PY
 
+      # DEV-013: compare two GENUINE distinct pre-T4 originals for one physical
+      # race. Official result receipt is reused only after raw SHA verification;
+      # this never updates a historical freeze or grants PIT/BET authority.
+      - name: Replay DEV-013 multi-freeze Eskilstuna WIN benchmark (NO BET)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/dev013/models/41635474321" \
+            "$RUNNER_TEMP/dev013/models/41646155051" \
+            "$RUNNER_TEMP/dev013/results/41662283155"
+          gh run download 41635474321 --repo "$GITHUB_REPOSITORY" \
+            --name bet-mvp-shadow-41635474321 \
+            --dir "$RUNNER_TEMP/dev013/models/41635474321"
+          gh run download 41646155051 --repo "$GITHUB_REPOSITORY" \
+            --name bet-mvp-shadow-41646155051 \
+            --dir "$RUNNER_TEMP/dev013/models/41646155051"
+          gh run download 41662283155 --repo "$GITHUB_REPOSITORY" \
+            --name dev009-authentic-original-scorecard-41662283155 \
+            --dir "$RUNNER_TEMP/dev013/results/41662283155"
+          printf '%s  %s\n' \
+            d3036bc47fab25a5e1ca5b621fba6b0d340537b03f953449ab84400298a3b1d4 \
+            "$RUNNER_TEMP/dev013/models/41635474321/race-004/shadow.json" \
+            | sha256sum --check -
+          printf '%s  %s\n' \
+            f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d \
+            "$RUNNER_TEMP/dev013/models/41646155051/race-001/shadow.json" \
+            | sha256sum --check -
+          DEV013_AUTHENTIC_MODEL_ROOT="$RUNNER_TEMP/dev013/models" \
+          DEV013_AUTHENTIC_RESULTS_ROOT="$RUNNER_TEMP/dev013/results" \
+          DEV013_CI_OUTPUT_DIR="$RUNNER_TEMP/dev013/evidence" \
+            pytest -q tests/test_dev013_win_benchmark.py::test_authentic_eskilstuna_original_frozen_versions_and_official_receipts
+
+      - name: Upload DEV-013 genuine originals WIN comparison (NO BET)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev013-authentic-win-benchmark-${{ github.run_id }}
+          path: ${{ runner.temp }}/dev013/evidence/
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Upload DEV-011 real original cumulative scorecard (NO BET)
         if: github.event_name == 'pull_request' && always()
         uses: actions/upload-artifact@v4
