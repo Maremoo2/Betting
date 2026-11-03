@@ -9,7 +9,6 @@ import pytest
 from hbi.prospective_outcome_scorecard import evaluate_archive
 from hbi.providers.rikstoto import OriginalBytesFetchResult
 
-
 RID = "RIKSTOTO:S1_NR_2026-11-03:8"
 START = "2026-11-03T13:00:00+00:00"
 
