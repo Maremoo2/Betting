@@ -65,7 +65,7 @@ def test_next_physical_race_is_never_used_to_complete_previous_field():
 def test_duplicate_race_heading_remains_ambiguous():
     body = _pdf(
         ["6", "START KL. 16:50", "1 FIRST HORSE, Driver"],
-        ["Løp 6", "START KL. 16:50", "2 SECOND HORSE, Driver"],
+        ["Lopp 6", "START KL. 16:50", "2 SECOND HORSE, Driver"],
     )
     with pytest.raises(ValueError, match="COLLECTOR_PDF_PHYSICAL_RACE_AMBIGUOUS"):
         pdf_field(body, 6, _runners("First Horse", "Second Horse"), "2026-11-03")
