@@ -50,7 +50,7 @@ def generate(*, cohort_index: Path, attestation_index: Path, output_dir: Path) -
             raise ValueError("FROZEN_COHORT_UNEXPECTED_BET_AUTHORITY")
         processed = model_index.get("processed")
         if not isinstance(processed, list):
-            raise ValueError("FROZEN_COHORT_PROCESSED_NOT_LIST")
+            raise TypeError("FROZEN_COHORT_PROCESSED_NOT_LIST")
         outcome["model_reports_expected"] = len(processed)
     except (OSError, ValueError, TypeError) as exc:
         outcome["errors"].append({"reason": "COHORT_INDEX_UNAVAILABLE_OR_INVALID",
