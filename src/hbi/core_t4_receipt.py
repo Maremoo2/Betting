@@ -501,7 +501,7 @@ def main() -> None:
     )
     print(json.dumps({
         "schema": result["schema"], "bet_authority": False,
-        "captures": len(result.get("records", [])),
+        "captures": len(result["records"] if args.action == "capture" else result["results"]),
         "certified": result.get("pit_certified_count", 0),
     }))
 
