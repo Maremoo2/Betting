@@ -254,13 +254,38 @@ def test_authentic_eskilstuna_model_and_official_receipts_after_empty_runs(tmp_p
     original_path = root / "41646155051/race-001/shadow.json"
     before = hashlib.sha256(original_path.read_bytes()).hexdigest()
     assert before == "f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d"
-    for i in range(21):
-        _empty(root, 41646155100 + i)
+    synthetic = [41646155100 + i for i in range(21)]
+    for run_id in synthetic:
+        _empty(root, run_id)
+    # Two originals are real: model GitHub artifact 13235845295 and official
+    # research receipt 13243490434. The 21 later empty indexes and their
+    # artifact metadata below are explicitly TEST_ONLY.
+    artifact_rows = [_artifact(
+        41646155051, 13235845295, "bet-mvp-shadow-41646155051"
+    )] + [_artifact(run_id, 9900000 + i, f"bet-mvp-shadow-{run_id}")
+         for i, run_id in enumerate(synthetic)]
+    pages = [{"total_count": len(artifact_rows), "artifacts": artifact_rows}]
+    inventory = plan(
+        pages, current_run_id=77777777,
+        inventory_sha=hashlib.sha256(json.dumps(pages).encode()).hexdigest(),
+    )
+    coverage = finalize(inventory, models_root=root, results_root=Path(results))
+    assert coverage["coverage_complete"] is True
+    assert coverage["recovered_artifacts"] == 22
+    coverage["evidence_mode"] = "TEST_ONLY_SYNTHETIC_GITHUB_PAGES_WITH_REAL_SOURCE_BYTES"
+    coverage["test_only_synthetic_empty_runs"] = 21
+    coverage["original_model_artifact_id"] = 13235845295
+    coverage["original_result_artifact_id"] = 13243490434
+    evidence_dir = Path(os.environ.get("DEV011_CI_MANIFEST_DIR", tmp_path / "coverage"))
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    manifest = evidence_dir / "manifest.json"
+    manifest.write_text(json.dumps(coverage, indent=2, sort_keys=True) + "\n")
     report = evaluate_archive(
         models_root=root, output_dir=tmp_path / "authentic-scorecard",
-        prior_results_root=Path(results), fetch_official=False,
-        now=datetime(2026, 11, 3, 18, tzinfo=UTC),
+        prior_results_root=Path(results), coverage_manifest=manifest,
+        fetch_official=False, now=datetime(2026, 11, 3, 18, tzinfo=UTC),
     )
+    assert report["cumulative_completeness"] == "COMPLETE_AVAILABLE_ORIGINAL_INVENTORY"
     row = next(r for r in report["records"] if r["race_id"] == RACE)
     assert row["source_model_original_sha256"] == before
     assert row["winner_selection_id"] == "5"
