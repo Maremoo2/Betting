@@ -308,7 +308,7 @@ def evaluate_archive(
         elif not fetch_official:
             record["reasons"].append("OFFICIAL_RESULTS_NOT_FETCHED")
         elif active and not reasons:
-            match = re.fullmatch(r"RIKSTOTO:([A-Z0-9_]+):([0-9]+)", rid)
+            match = re.fullmatch(r"RIKSTOTO:([A-Z0-9_-]+):([0-9]+)", rid)
             if match is None or int(match.group(2)) != race.get("race_no"):
                 record["reasons"].append("PHYSICAL_RACE_ID_INVALID")
             else:
