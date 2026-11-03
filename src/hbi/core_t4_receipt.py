@@ -316,18 +316,16 @@ def verify_collector_original(
             or race_no not in audit.get("verified_race_numbers", [])
         ):
             return None
-        # The original 07 Oslo meeting-clock source states the first off-time
-        # only. Later race clocks require independent physical race evidence.
-        if race_no != 1:
-            return None
-        from zoneinfo import ZoneInfo
+        # Meeting listing identifies the FIRST race only. Every physical race
+        # clock is independently read from its own original PDF page below.
+        if race_no == 1:
+            from zoneinfo import ZoneInfo
 
-        local = datetime.fromisoformat(str(meeting["listing_source"]["start_time"]))
-        if local.utcoffset() is None:
-            local = local.replace(tzinfo=ZoneInfo("Europe/Oslo"))
-        independent_start = local.astimezone(UTC)
-        if independent_start != race_start:
-            return None
+            local = datetime.fromisoformat(str(meeting["listing_source"]["start_time"]))
+            if local.utcoffset() is None:
+                local = local.replace(tzinfo=ZoneInfo("Europe/Oslo"))
+            if local.astimezone(UTC) != race_start:
+                return None
         requests = manifest.get("requests")
         if not isinstance(requests, list):
             return None
@@ -354,29 +352,21 @@ def verify_collector_original(
             if digest(raw) != entry.get("sha256"):
                 return None
             matched[role] = (entry, raw)
-        # Replay the actual independent original PDF off-time; the separate
-        # Collector calendar alone is NOT independent physical clock proof.
-        try:
-            import fitz
-
-            pdf = fitz.open(stream=matched["pdf"][1], filetype="pdf")
-            original_text = "\n".join(page.get_text() for page in pdf)
-            pdf.close()
-        except (ImportError, ValueError, RuntimeError, OSError):
-            return None
-        observed_clocks = re.findall(
-            r"\b(?:L[oø]p|Lopp)\s+1\b.{0,850}?START\s+KL\.?\s*(\d{1,2}:\d{2})",
-            original_text, flags=re.IGNORECASE | re.DOTALL,
-        )
-        if len(observed_clocks) != 1:
-            return None
-        hhmm = observed_clocks[0].split(":")
-        if f"{int(hhmm[0]):02d}:{int(hhmm[1]):02d}" != local.astimezone(ZoneInfo("Europe/Oslo")).strftime("%H:%M"):
-            return None
         original, err = parse_rikstoto_roster(
             matched["starts"][1].decode("utf-8"), race_no, key
         )
         if err or original is None:
+            return None
+        # Match exact physical race page, all original entrants and PDF clock.
+        # Unlike the earlier implementation, this works for races 2..N.
+        from .collector_handoff import pdf_field
+        try:
+            pdf_clock = pdf_field(
+                matched["pdf"][1], race_no, original["all"], key[-10:]
+            )
+        except (ValueError, ImportError, RuntimeError):
+            return None
+        if parse_time(pdf_clock) != race_start:
             return None
         observed = {
             str(row["start_number"]): {
