@@ -429,8 +429,15 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
                 identity.get("provider") != "atg"
                 or identity.get("country") != race["country"]
                 or identity.get("discipline") != race["discipline"]
-                or not identity.get("provider_race_id")
-                or not identity.get("source_uri")
+                or not isinstance(identity.get("provider_race_id"), str)
+                or re.fullmatch(
+                    rf"{re.escape(str(race['race_date']))}_[0-9]+_{number}",
+                    identity.get("provider_race_id") or "",
+                ) is None
+                or identity.get("source_uri") != (
+                    "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_"
+                    + str(identity.get("provider_race_id"))
+                )
                 or identity.get("timestamp_basis") != "FETCH_COMPLETED"
                 or parse_time(identity.get("race_start_utc")) != scheduled
                 or atg_time is None or atg_time != retained_latest
