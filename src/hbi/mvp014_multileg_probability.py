@@ -13,7 +13,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 MODEL_SCHEMA = "BET_MVP_001_FROZEN_SHADOW_V1"
-SHA256 = re.compile(r"[0-9a-f]{64}\\Z")
+SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 
 
 def _utc(value: Any) -> datetime:
