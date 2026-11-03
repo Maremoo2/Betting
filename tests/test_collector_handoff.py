@@ -66,6 +66,7 @@ def _db(path: Path, *, scratched: bool = False, future_history: bool = False) ->
             "runners": [
                 {"selection_id": str(i), "horse_name": NAMES[i-1],
                  "provider_horse_id": str(10000+i), "schema_ok": True,
+                 "rikstoto_registration": str(10000+i),
                  "match_method": "EXACT_REGISTRATION", "reason": None}
                 for i in range(1, 8 if scratched else 9)
             ],
@@ -350,3 +351,26 @@ def test_pit_original_verifier_replays_physical_race_ten_without_live_promotion(
     assert verify_collector_original(
         other, different_provenance, _pit_receipt_for_physical_tenth()
     ) is None
+
+
+def test_incorrect_atg_registration_is_not_a_safe_cross_provider_join(tmp_path):
+    root = _archive_unicode(tmp_path / "collector", tmp=False)
+    db = tmp_path / "hbi.sqlite"
+    _db(db)
+    with _connection(db) as conn:
+        row = conn.execute(
+            "SELECT payload_json FROM provider_payloads WHERE provider='atg'"
+        ).fetchone()
+        content = json.loads(row[0])
+        # A supposedly exact registration match pointing at another horse
+        # must be rejected even though all names/start numbers still match.
+        content["runners"][0]["rikstoto_registration"] = "DIFFERENT-HORSE-ID"
+        conn.execute(
+            "UPDATE provider_payloads SET payload_json=? WHERE provider='atg'",
+            (json.dumps(content),),
+        )
+        result = verify_import(
+            conn, OriginalArchive(root), RID, asof=NOW, authenticated=True
+        )
+        assert "COLLECTOR_ATG_REGISTRATION_MISMATCH" in result["blockers"]
+        assert not result["model_input_approved"]
