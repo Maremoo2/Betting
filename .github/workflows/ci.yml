@@ -58,6 +58,61 @@ jobs:
           MVP004_EVIDENCE_DIR="$RUNNER_TEMP/mvp004-historical-report" \
             pytest -q -s tests/test_collector_handoff_real_archive.py
 
+      - name: Replay frozen Eskilstuna originals through automatic MVP-009 diagnostics
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/mvp009/bet-mvp-shadow" \
+            "$RUNNER_TEMP/mvp009/pit003a-attestations"
+          gh run download 41626023709 --repo "$GITHUB_REPOSITORY" \
+            --name bet-mvp-shadow-41626023709 \
+            --dir "$RUNNER_TEMP/mvp009/bet-mvp-shadow"
+          gh run download 41626023709 --repo "$GITHUB_REPOSITORY" \
+            --name pit003a-attestations-41626023709 \
+            --dir "$RUNNER_TEMP/mvp009/pit003a-attestations"
+          printf '%s  %s\n' \
+            4853ed6bc8c7c7063a5898f4b815e552989d29d9b3121372fd338eb0e63f9916 \
+            "$RUNNER_TEMP/mvp009/bet-mvp-shadow/race-001/shadow.json" | sha256sum --check -
+          MVP009_ESKILSTUNA_ARCHIVE_ROOT="$RUNNER_TEMP/mvp009" \
+            pytest -q tests/test_mvp009_auto_decision_audit.py
+          python -m hbi.mvp009_auto_decision_audit \
+            --cohort-index "$RUNNER_TEMP/mvp009/bet-mvp-shadow/cohort-index.json" \
+            --attestation-index "$RUNNER_TEMP/mvp009/pit003a-attestations/index.json" \
+            --output-dir "$RUNNER_TEMP/mvp009/mvp009-decision-audits"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          root = Path(os.environ["RUNNER_TEMP"]) / "mvp009/mvp009-decision-audits"
+          index = json.loads((root / "index.json").read_text())
+          assert index["status"] == "DIAGNOSTIC_COMPLETE_RESEARCH_ONLY"
+          assert index["model_reports_expected"] == index["model_reports_diagnosed"] == 2
+          assert index["errors"] == [] and index["bet_authority"] is False
+          rows = {row["race_id"]: row for row in index["records"]}
+          r1 = rows["RIKSTOTO:S1_NR_2026-11-03:1"]
+          assert r1["active"] == r1["runners"] == 12 and r1["attestation_matched"] is True
+          assert r1["market_full_field"] is True
+          for entry in index["records"]:
+              report = json.loads((root / entry["diagnostic_path"]).read_text())
+              assert report["v33_evaluator_called"] is False
+              assert report["bet_authority"] is False
+              assert all(horse["stake_nok"] is None for horse in report["runners"])
+              assert all(horse["decision"] in {"BLOCKED", "PASS_NOT_ACTIVE"}
+                         for horse in report["runners"])
+          PY
+
+      - name: Upload real-original MVP-009 decision diagnostics (NO BET)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp009-original-decision-diagnostics-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp009/mvp009-decision-audits
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Upload immutable historical research model and Collector source provenance
         if: github.event_name == 'pull_request' && always()
         uses: actions/upload-artifact@v4
