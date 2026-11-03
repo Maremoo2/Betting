@@ -421,6 +421,56 @@ jobs:
             --attestation-index pit003a-attestations/index.json \
             --output-dir mvp009-decision-audits
 
+      # DEV-011 is strictly separate from PIT-003A's original prior-model recovery.
+      # Paginate EVERY existing GitHub artifact page. No latest-N truncation and
+      # no model/market/outcome-quality filter. All unavailable originals are
+      # explicit blocking entries in an immutable cumulative coverage manifest.
+      - name: Recover cumulative DEV-011 originals for scorecard only (NO BET)
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p dev011-scorecard-models dev011-scorecard-results dev011-coverage
+          if gh api --paginate --slurp \
+              "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" \
+              > "$RUNNER_TEMP/dev011-artifact-pages.json" && \
+             python -m hbi.dev011_coverage plan \
+               --pages "$RUNNER_TEMP/dev011-artifact-pages.json" \
+               --current-run-id "$GITHUB_RUN_ID" \
+               --manifest dev011-coverage/manifest.json \
+               --downloads-tsv "$RUNNER_TEMP/dev011-downloads.tsv"; then
+            while IFS="$(printf '\t')" read -r prior_run artifact_name kind; do
+              test -n "$prior_run" || continue
+              if [ "$kind" = model ]; then
+                dest="dev011-scorecard-models/$prior_run"
+              else
+                dest="dev011-scorecard-results/$prior_run"
+              fi
+              mkdir -p "$dest"
+              if ! gh run download "$prior_run" --repo "$GITHUB_REPOSITORY" \
+                  --name "$artifact_name" --dir "$dest"; then
+                echo "DEV011_ORIGINAL_ARCHIVE_DOWNLOAD_BLOCKED:$artifact_name"
+              fi
+            done < "$RUNNER_TEMP/dev011-downloads.tsv"
+            python -m hbi.dev011_coverage finalize \
+              --manifest dev011-coverage/manifest.json \
+              --models-root dev011-scorecard-models \
+              --results-root dev011-scorecard-results
+          else
+            echo DEV011_PAGINATED_GITHUB_INVENTORY_UNAVAILABLE
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          Path("dev011-coverage/manifest.json").write_text(json.dumps({
+              "schema": "DEV011_CUMULATIVE_COVERAGE_MANIFEST_V1",
+              "authority": "READ_ONLY_RESEARCH", "bet_authority": False,
+              "coverage_complete": False, "status": "INCOMPLETE_ORIGINAL_COVERAGE",
+              "missing_originals": [{"reason": "PAGINATED_GITHUB_INVENTORY_UNAVAILABLE"}],
+              "selected_artifacts": [],
+          }, indent=2) + "\n")
+          PY
+          fi
+
       # Only historical frozen archives already recovered above. Post-race
       # public GETs are kept in this separate research-only artifact; never
       # feed them into CORE-004, T-4 attestations or betting decisions.
@@ -428,9 +478,11 @@ jobs:
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
         run: |
           python -m hbi.prospective_outcome_scorecard \
-            --models-root pit003a-prior-models \
+            --models-root dev011-scorecard-models \
             --attestation-index pit003a-attestations/index.json \
             --output-dir dev009-outcome-scorecards \
+            --prior-results-root dev011-scorecard-results \
+            --coverage-manifest dev011-coverage/manifest.json \
             --fetch-official
 
       - name: Upload Collector-to-Betting import and model admission evidence
@@ -493,6 +545,15 @@ jobs:
         with:
           name: dev009-outcome-scorecards-${{ github.run_id }}
           path: dev009-outcome-scorecards/
+          if-no-files-found: warn
+          retention-days: 21
+
+      - name: Upload DEV-011 cumulative original coverage manifest (NO BET)
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev011-coverage-manifest-${{ github.run_id }}
+          path: dev011-coverage/
           if-no-files-found: warn
           retention-days: 21
 

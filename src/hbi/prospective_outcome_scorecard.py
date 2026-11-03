@@ -262,6 +262,8 @@ def evaluate_archive(
     *, models_root: Path, output_dir: Path, fetch_official: bool = False,
     client: RikstotoClient | None = None, now: datetime | None = None,
     attestation_index: Path | None = None,
+    prior_results_root: Path | None = None,
+    coverage_manifest: Path | None = None,
 ) -> dict:
     """Return all observed races, including blocked ones. No synthetic winners."""
     output_dir.mkdir(parents=True, exist_ok=False)
@@ -278,6 +280,23 @@ def evaluate_archive(
                     pit.setdefault(str(row.get("race_id")), []).append(row)
         except (OSError, ValueError, TypeError, AttributeError) as exc:
             archive_errors.append({"source": str(attestation_index), "reason": str(exc)})
+    from .dev011_coverage import pinned_official
+
+    pinned, pinned_errors = (
+        pinned_official(prior_results_root) if prior_results_root is not None else ({}, {})
+    )
+    coverage = None
+    if coverage_manifest is not None:
+        try:
+            coverage = json.loads(original(coverage_manifest))
+            if (coverage.get("schema") != "DEV011_CUMULATIVE_COVERAGE_MANIFEST_V1"
+                    or coverage.get("bet_authority") is not False):
+                raise ValueError("DEV011_COVERAGE_MANIFEST_CONTRACT_INVALID")
+        except (ValueError, OSError, TypeError, AttributeError) as exc:
+            archive_errors.append({"source": str(coverage_manifest), "reason": str(exc)})
+            coverage = {"coverage_complete": False, "missing_originals": [
+                {"reason": "DEV011_COVERAGE_MANIFEST_UNVERIFIABLE"}
+            ]}
     api = client or RikstotoClient()
     current = now or datetime.now(UTC)
     output = {
@@ -287,6 +306,7 @@ def evaluate_archive(
         "archive_errors": archive_errors, "records": [], "metrics": None,
         "no_model_promotion": True, "pit_certification_performed": False,
         "v33_evaluator_called": False, "bet_authority": False, "stake_nok": None,
+        "cumulative_original_inventory": coverage,
     }
     for item in models:
         model = item["model"]
@@ -319,7 +339,9 @@ def evaluate_archive(
         }
         if start is None or current <= start:
             record["reasons"].append("RACE_NOT_YET_STARTED")
-        elif not fetch_official:
+        elif rid in pinned_errors:
+            record["reasons"].extend(pinned_errors[rid])
+        elif not fetch_official and rid not in pinned:
             record["reasons"].append("OFFICIAL_RESULTS_NOT_FETCHED")
         elif active and not reasons:
             match = re.fullmatch(r"RIKSTOTO:([A-Z0-9_-]+):([0-9]+)", rid)
@@ -329,13 +351,38 @@ def evaluate_archive(
                 key, number = match.group(1), int(match.group(2))
                 path = output_dir / ("official-" + digest(rid.encode())[:16])
                 path.mkdir()
-                complete, r1 = _capture(
-                    api, f"/results/raceDays/{key}/{number}/completeresults",
-                    path, "complete",
-                )
-                raceday, r2 = _capture(
-                    api, f"/results/racedays/{key}/raceresults", path, "raceday",
-                )
+                previous = pinned.get(rid)
+                if previous is not None:
+                    complete = previous["payloads"]["complete"]["result"]
+                    raceday = previous["payloads"]["raceday"]["result"]
+                    saved = []
+                    if previous["source_model_sha256"] != item["model_sha256"]:
+                        record["reasons"].append("PINNED_RESULT_MODEL_SHA_MISMATCH")
+                    for role in ("complete", "raceday"):
+                        rec = dict(previous["receipts"][role])
+                        expected_uri = (
+                            f"/results/raceDays/{key}/{number}/completeresults"
+                            if role == "complete" else f"/results/racedays/{key}/raceresults"
+                        )
+                        if not rec["source_uri"].endswith(expected_uri):
+                            record["reasons"].append("PINNED_RESULT_RACE_URI_CONFLICT")
+                        raw_path = path / f"{role}.raw.json"
+                        with raw_path.open("xb") as out:
+                            out.write(previous["payloads"][role]["body"])
+                        rec["raw_path"] = str(raw_path)
+                        rec["archived_original_from_run"] = previous["source_run_id"]
+                        saved.append(rec)
+                    r1, r2 = saved
+                    record["outcome_source_mode"] = "PINNED_ARCHIVED_ORIGINAL"
+                else:
+                    complete, r1 = _capture(
+                        api, f"/results/raceDays/{key}/{number}/completeresults",
+                        path, "complete",
+                    )
+                    raceday, r2 = _capture(
+                        api, f"/results/racedays/{key}/raceresults", path, "raceday",
+                    )
+                    record["outcome_source_mode"] = "NEW_OFFICIAL_CAPTURE"
                 record["original_result_receipts"] = [r1, r2]
                 for receipt in (r1, r2):
                     when = clock(receipt["observed_at_utc"])
@@ -480,6 +527,13 @@ def evaluate_archive(
             "min_distinct_races": 30, "bins": bins,
         }
     output["status"] = "EVALUABLE_RESEARCH_ONLY" if paired else "NOT_EVALUABLE"
+    if coverage is not None and coverage.get("coverage_complete") is not True:
+        output["status"] = "INCOMPLETE_ORIGINAL_COVERAGE"
+    output["cumulative_completeness"] = (
+        "BLOCKED_MISSING_OR_EXPIRED_ORIGINALS"
+        if coverage is not None and coverage.get("coverage_complete") is not True
+        else "COMPLETE_AVAILABLE_ORIGINAL_INVENTORY"
+    )
     with (output_dir / "index.json").open("x", encoding="utf-8") as out:
         json.dump(output, out, indent=2, sort_keys=True, ensure_ascii=False,
                   allow_nan=False)
@@ -493,10 +547,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--output-dir", type=Path, required=True)
     p.add_argument("--attestation-index", type=Path)
     p.add_argument("--fetch-official", action="store_true")
+    p.add_argument("--prior-results-root", type=Path)
+    p.add_argument("--coverage-manifest", type=Path)
     a = p.parse_args(argv)
     report = evaluate_archive(
         models_root=a.models_root, output_dir=a.output_dir,
         attestation_index=a.attestation_index, fetch_official=a.fetch_official,
+        prior_results_root=a.prior_results_root, coverage_manifest=a.coverage_manifest,
     )
     print(json.dumps({"schema": report["schema"], "status": report["status"],
                       "counts": report["counts"], "bet_authority": False}))
