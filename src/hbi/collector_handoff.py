@@ -264,6 +264,18 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
         ok, reason = parse_atg_identity(identity, original["active"], original["all"])
         if not ok:
             blocks.add("COLLECTOR_ATG_" + str(reason))
+        else:
+            # Stable IDs alone are not a cross-provider join. Admission needs
+            # the independently recorded exact registration match for each
+            # active starter, not only a plausible shared horse name/number.
+            for atg_row in identity["runners"]:
+                sid = str(atg_row["selection_id"])
+                if atg_row.get("match_method") != "EXACT_REGISTRATION":
+                    blocks.add("COLLECTOR_ATG_IDENTITY_NOT_EXACT_REGISTRATION")
+                elif str(atg_row.get("rikstoto_registration") or "") != str(
+                    original["all"][sid]["reg"]
+                ):
+                    blocks.add("COLLECTOR_ATG_REGISTRATION_MISMATCH")
         fundamentals, cohort_time = latest_cohort(
             conn, "runner_fundamental_snapshots", race_id, asof
         )
