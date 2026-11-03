@@ -115,7 +115,24 @@ def finalize(manifest: dict, *, models_root: Path, results_root: Path) -> dict:
             entry["status"] = "ORIGINAL_INDEX_AVAILABLE"
             entry["original_index_sha256"] = sha(raw)
             if entry["kind"] == "model":
-                entry["frozen_reports_declared"] = len(doc.get("processed") or [])
+                processed = doc.get("processed")
+                if not isinstance(processed, list):
+                    raise ValueError("FROZEN_INDEX_PROCESSED_INVALID")
+                for report in processed:
+                    if not isinstance(report, dict):
+                        raise ValueError("FROZEN_REPORT_ENTRY_INVALID")
+                    directory = report.get("directory")
+                    expected = report.get("report_sha256")
+                    if (not isinstance(directory, str)
+                            or re.fullmatch(r"bet-mvp-shadow/race-[0-9]{3,}", directory) is None
+                            or not SHA256.fullmatch(str(expected))):
+                        raise ValueError("FROZEN_MODEL_INDEX_CONTRACT_INVALID")
+                    member = path.parent / directory.split("/")[-1] / "shadow.json"
+                    if not member.is_file() or member.is_symlink() or sha(
+                        member.read_bytes()
+                    ) != expected:
+                        raise ValueError("FROZEN_MODEL_ORIGINAL_SHA256_MISMATCH")
+                entry["frozen_reports_declared"] = len(processed)
             else:
                 entry["prior_scored_races_declared"] = sum(
                     r.get("status") == "EVALUABLE_RESEARCH_ONLY"
@@ -127,6 +144,14 @@ def finalize(manifest: dict, *, models_root: Path, results_root: Path) -> dict:
                 "artifact_id": entry["artifact_id"], "source_run_id": entry["source_run_id"],
                 "kind": entry["kind"], "reason": entry["status"],
             })
+    _, result_errors = pinned_official(results_root)
+    for race_id, reasons in sorted(result_errors.items()):
+        missing.append({
+            "race_id": race_id,
+            "kind": "result",
+            "reason": ",".join(reasons),
+        })
+    manifest["pinned_result_races_checked"] = len(pinned_official(results_root)[0])
     manifest["missing_originals"] = missing
     manifest["recovered_artifacts"] = sum(
         r["status"] == "ORIGINAL_INDEX_AVAILABLE" for r in manifest["selected_artifacts"]
