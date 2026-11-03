@@ -50,6 +50,7 @@ def _seed(tmp_path):
 
 def test_full_pagination_retains_original_older_than_20_empty_runs(tmp_path):
     models, official, _ = _seed(tmp_path)
+    (models / '00000000001').rename(models / '1')
     for number in range(11, 33):
         _empty(models, number)
     newest = [
