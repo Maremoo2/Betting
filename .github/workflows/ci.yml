@@ -55,4 +55,14 @@ jobs:
           MVP003_ORIGINAL_SQLITE="$RUNNER_TEMP/mvp003/sqlite/core003-pilot.sqlite" \
           MVP003_ORIGINAL_SHADOW="$RUNNER_TEMP/mvp003/model/race-002/shadow.json" \
           MVP003_ORIGINAL_SOURCE_REPORT="$RUNNER_TEMP/mvp003/source/core003-pilot-report.json" \
+          MVP004_EVIDENCE_DIR="$RUNNER_TEMP/mvp004-historical-report" \
             pytest -q -s tests/test_collector_handoff_real_archive.py
+
+      - name: Upload immutable historical research model and Collector source provenance
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp004-historical-research-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp004-historical-report
+          if-no-files-found: warn
+          retention-days: 30
