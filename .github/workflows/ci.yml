@@ -113,6 +113,58 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+      - name: Replay DEV-009 outcome scorecard on original frozen Eskilstuna archive
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/dev009/models/41646155051"
+          gh run download 41646155051 --repo "$GITHUB_REPOSITORY" \
+            --name bet-mvp-shadow-41646155051 \
+            --dir "$RUNNER_TEMP/dev009/models/41646155051"
+          printf '%s  %s\n' \
+            f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d \
+            "$RUNNER_TEMP/dev009/models/41646155051/race-001/shadow.json" \
+            | sha256sum --check -
+          DEV009_AUTHENTIC_ARCHIVE_ROOT="$RUNNER_TEMP/dev009/models" \
+            pytest -q tests/test_prospective_outcome_scorecard.py
+          python -m hbi.prospective_outcome_scorecard \
+            --models-root "$RUNNER_TEMP/dev009/models" \
+            --output-dir "$RUNNER_TEMP/dev009/scorecard" \
+            --fetch-official
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          data = json.loads((Path(os.environ["RUNNER_TEMP"]) /
+                             "dev009/scorecard/index.json").read_text())
+          assert data["bet_authority"] is False
+          assert data["v33_evaluator_called"] is False
+          assert data["counts"]["physical_races"] == 1
+          record = data["records"][0]
+          assert record["race_id"] == "RIKSTOTO:S1_NR_2026-11-03:8"
+          assert record["source_model_original_sha256"] == (
+              "f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d"
+          )
+          assert record["active_runners"] == 12
+          assert record["cohort"] == "PROSPECTIVE_NOT_PIT_CERTIFIED"
+          assert record["status"] in ("EVALUABLE_RESEARCH_ONLY", "NOT_EVALUABLE")
+          if record["status"] == "EVALUABLE_RESEARCH_ONLY":
+              assert len(record["original_result_receipts"]) == 2
+              assert all(r["raw_sha256"] for r in record["original_result_receipts"])
+          PY
+
+      - name: Upload DEV-009 original archive scorecard (NO BET)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev009-authentic-original-scorecard-${{ github.run_id }}
+          path: ${{ runner.temp }}/dev009/scorecard/
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Upload immutable historical research model and Collector source provenance
         if: github.event_name == 'pull_request' && always()
         uses: actions/upload-artifact@v4
