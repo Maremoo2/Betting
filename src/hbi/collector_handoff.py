@@ -506,6 +506,153 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
     return response
 
 
+
+def write_research_model_report(
+    conn: sqlite3.Connection, *, handoff: dict, shadow_path: Path,
+    source_db: Path, source_report: Path, destination: Path,
+) -> dict:
+    """Bind unchanged Champion/CORE-004 frozen output to verified Collector input.
+
+    Only research_model_eligible allows this report. Does not authorize,
+    modify, or emulate either existing PIT or betting hard gate.
+    """
+    if (
+        handoff.get("research_model_eligible") is not True
+        or handoff.get("model_input_approved") is not False
+        or handoff.get("independent_identity_attested") is not False
+        or handoff.get("bet_authority") is not False
+        or handoff.get("pit_certified") is not False
+        or handoff.get("research_identity_match") != "UNIQUE_NAME_AND_PROGRAM_NUMBER"
+        or handoff.get("source_imported_to_sqlite") is not True
+        or handoff.get("import_record_verified") is not True
+    ):
+        raise ValueError("RESEARCH_REPORT_IMPORT_GATE_NOT_VERIFIED")
+    frozen_bytes = shadow_path.read_bytes()
+    model = json.loads(frozen_bytes)
+    race_id = handoff["race_id"]
+    if (
+        model.get("race", {}).get("race_id") != race_id
+        or model.get("run_kind") not in {"ARCHIVED_REPLAY", "PROSPECTIVE_ATTEMPT"}
+        or model.get("bet_authority") is not False
+        or model.get("pit_status") != "PIT_NOT_CERTIFIED"
+        or model.get("model_status") != "MODEL_READY"
+        or model.get("analysis_status") != "RESEARCH_READY"
+        or model.get("source_database_sha256") != sha(source_db.read_bytes())
+        or model.get("collector_source_evidence", {}).get("sha256") != sha(source_report.read_bytes())
+    ):
+        raise ValueError("RESEARCH_REPORT_MODEL_OR_SOURCE_MISMATCH")
+    asof = parse_time(model.get("as_of_utc"))
+    if asof is None or asof >= parse_time(model["race"]["start_time_utc"]):
+        raise ValueError("RESEARCH_REPORT_INVALID_ANALYSIS_CLOCK")
+    source = handoff["model_input_sources"]
+    if (
+        any(parse_time(source.get(k)) is None or parse_time(source[k]) > asof
+            for k in ("collector_starts_observed_at_utc",
+                      "collector_pdf_observed_at_utc",
+                      "atg_evidence_observed_at_utc",
+                      "atg_fundamental_observed_at_utc"))
+    ):
+        raise ValueError("RESEARCH_REPORT_SOURCE_AFTER_AS_OF")
+    original = {str(r["start_number"]): r for r in handoff["runners"]}
+    outputs = model.get("runners")
+    if (
+        not isinstance(outputs, list) or len(outputs) != len(original)
+        or {str(r.get("selection_id")) for r in outputs} != set(original)
+    ):
+        raise ValueError("RESEARCH_REPORT_FIELD_NOT_COMPLETE")
+    for row in outputs:
+        identity = original[str(row["selection_id"])]
+        if (
+            name_key(row.get("horse_name")) != name_key(identity["horse_name"])
+            or row.get("scratched") is not identity["scratched"]
+        ):
+            raise ValueError("RESEARCH_REPORT_FIELD_IDENTITY_CONFLICT")
+    active = [r for r in outputs if not r["scratched"]]
+    if not active:
+        raise ValueError("RESEARCH_REPORT_EMPTY_ACTIVE_FIELD")
+    for name, key in (("champion", "champion_p_win"), ("core004", "core004_p_win")):
+        probs = [r.get(key) for r in active]
+        if (
+            any(type(p) not in (int, float) or not math.isfinite(p)
+                or p < 0 or p > 1 for p in probs)
+            or abs(sum(probs) - 1) > 1e-6
+            or abs(float(model.get(name + "_p_sum", -1)) - 1) > 1e-6
+        ):
+            raise ValueError("RESEARCH_REPORT_MODEL_PROBABILITIES_INVALID")
+    rows = conn.execute(
+        "SELECT * FROM provider_payloads "
+        "WHERE payload_id=? AND provider='collector' "
+        "AND category='ORIGINAL_PROGRAM_ROSTER_V1'",
+        (handoff["import_payload_id"],),
+    ).fetchall()
+    if len(rows) != 1:
+        raise ValueError("RESEARCH_REPORT_IMPORT_RECEIPT_MISSING")
+    imported = json.loads(rows[0]["payload_json"])
+    if (
+        imported["race_id"] != race_id
+        or imported["source_checksums"]["collector_starts_sha256"] != source["collector_starts_sha256"]
+        or imported["source_checksums"]["collector_program_pdf_sha256"] != source["collector_program_pdf_sha256"]
+    ):
+        raise ValueError("RESEARCH_REPORT_IMPORT_RECEIPT_CONFLICT")
+    report = {
+        "schema": "COLLECTOR_RESEARCH_ONLY_MODEL_REPORT_V1",
+        "run_kind": ("HISTORICAL_REPLAY" if model["run_kind"] == "ARCHIVED_REPLAY"
+                     else "RESEARCH_ONLY_PROSPECTIVE_ATTEMPT"),
+        "race_id": race_id,
+        "model_as_of_utc": model["as_of_utc"],
+        "original_field": handoff["runners"],
+        "research_identity_match": handoff["research_identity_match"],
+        "research_identity_evidence": handoff["identity_evidence"],
+        "independent_identity_attested": False,
+        "model_input_approved": False,
+        "research_model_eligible": True,
+        "collector_original_sources": {
+            k: v for k, v in source.items() if k.startswith("collector_")
+        },
+        "atg_research_sources": {
+            k: v for k, v in source.items() if k.startswith("atg_")
+        },
+        "sqlite_import_receipt": {
+            "import_payload_id": handoff["import_payload_id"],
+            "source_imported_to_sqlite": True,
+            "import_record_verified": True,
+            "source_database_sha256": model["source_database_sha256"],
+        },
+        "model_source_report_sha256": sha(source_report.read_bytes()),
+        "model": {
+            "original_shadow_json_sha256": sha(frozen_bytes),
+            "model_versions": model["model_versions"],
+            "analysis_status": model["analysis_status"],
+            "model_status": model["model_status"],
+            "field_size": model["field_size"],
+            "active_runners": model["active_runners"],
+            "champion_p_sum": model["champion_p_sum"],
+            "core004_p_sum": model["core004_p_sum"],
+            "runners": [
+                {"selection_id": r["selection_id"],
+                 "horse_name": r["horse_name"], "scratched": r["scratched"],
+                 "champion_p_win": r["champion_p_win"],
+                 "core004_p_win": r["core004_p_win"]}
+                for r in outputs
+            ],
+        },
+        "pit_certified": False,
+        "pit_status": "PIT_NOT_CERTIFIED",
+        "bet_authority": False,
+        "bet_eligible": False,
+        "allowed_use": "RESEARCH_ONLY_NOT_VALIDATED_FOR_BETTING",
+    }
+    if destination.exists():
+        raise ValueError("RESEARCH_REPORT_DESTINATION_ALREADY_EXISTS")
+    destination.write_text(
+        json.dumps(report, indent=2, ensure_ascii=False, sort_keys=True,
+                   allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
+    return report
+
+
+
 def run_import(db: Path, root: Path, provenance: Path, source_report: Path,
                out: Path, *, asof: datetime | None = None) -> dict:
     """Write only to the existing isolated CORE-003 SQLite, never hbi-state."""
