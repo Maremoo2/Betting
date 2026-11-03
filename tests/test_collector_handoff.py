@@ -76,7 +76,8 @@ def _db(path: Path, *, scratched: bool = False, future_history: bool = False) ->
                  "provider_horse_id": str(10000+i), "schema_ok": True,
                  # Echoed from Rikstoto - never independent ATG identity.
                  "rikstoto_registration": str(10000+i),
-                 "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER", "reason": None}
+                 "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER",
+                 "match_confidence": 1.0, "reason": None}
                 for i in range(1, 8 if scratched else 9)
             ],
         }),
