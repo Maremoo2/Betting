@@ -18,7 +18,10 @@ import pytest
 
 from hbi.bet_mvp_shadow import select_fixed_cohort_races
 from hbi.collector_handoff import (
-    OriginalArchive, sha, verify_import, write_research_model_report,
+    OriginalArchive,
+    sha,
+    verify_import,
+    write_research_model_report,
 )
 
 COLLECTOR_ZIP_SHA_NOT_USED = (
