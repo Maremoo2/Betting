@@ -76,7 +76,8 @@ def test_unverifiable_physical_clock_remains_blocked():
         ["6", "1 FIRST HORSE, Driver"],
         ["2 SECOND HORSE, Driver"],
     )
-    with pytest.raises(ValueError, match="COLLECTOR_PDF_RACE_CLOCK_UNVERIFIED"):
+    # A heading without its own clock is never admitted as a race boundary.
+    with pytest.raises(ValueError, match="COLLECTOR_PDF_PHYSICAL_RACE_AMBIGUOUS"):
         pdf_field(body, 6, _runners("First Horse", "Second Horse"), "2026-11-03")
 
 
