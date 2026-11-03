@@ -219,6 +219,7 @@ jobs:
           from pathlib import Path
 
           from hbi.bet_mvp_shadow import select_fixed_cohort_races, sha256
+          from hbi.collector_handoff import write_research_model_report
 
           source_path = Path('core003-pilot-report.json')
           db_path = Path('data/core003-pilot.sqlite')
@@ -246,9 +247,9 @@ jobs:
           collector_eligible = []
           for entry in selection['eligible']:
               original = handoff_by_id.get(entry['race_id'])
-              if not original or original.get('model_input_approved') is not True:
+              if not original or original.get('research_model_eligible') is not True:
                   selection['not_processed'].append({
-                      'race_id': entry['race_id'], 'reason': 'COLLECTOR_ORIGINAL_INPUT_NOT_VERIFIED',
+                      'race_id': entry['race_id'], 'reason': 'COLLECTOR_RESEARCH_MODEL_GATE_NOT_VERIFIED',
                       'collector_blockers': original.get('blockers', []) if original else ['NO_COLLECTOR_IMPORT_RECEIPT'],
                   })
               else:
@@ -296,6 +297,29 @@ jobs:
                   })
                   continue
               report = json.loads((destination / 'shadow.json').read_text(encoding='utf-8'))
+              original = handoff_by_id[race_id]
+              link_path = destination / 'collector-research-report.json'
+              research_link_sha = None
+              if (report.get('model_status') == 'MODEL_READY'
+                      and report.get('analysis_status') == 'RESEARCH_READY'):
+                  connection = sqlite3.connect(f'file:{db_path.resolve()}?mode=ro', uri=True)
+                  connection.row_factory = sqlite3.Row
+                  try:
+                      write_research_model_report(
+                          connection, handoff=original,
+                          shadow_path=destination / 'shadow.json',
+                          source_db=db_path, source_report=source_path,
+                          destination=link_path,
+                      )
+                  except (ValueError, KeyError, TypeError, OSError, sqlite3.Error) as exc:
+                      index['errors'].append({
+                          'race_id': race_id, 'reason': 'RESEARCH_SOURCE_MODEL_LINK_FAILED',
+                          'error_type': type(exc).__name__, 'error': str(exc),
+                      })
+                      continue
+                  finally:
+                      connection.close()
+                  research_link_sha = sha256(link_path)
               index['processed'].append({
                   'race_id': race_id,
                   'directory': str(destination),
@@ -311,6 +335,12 @@ jobs:
                   'model_calculated_at_utc': report['model_calculated_at_utc'],
                   'report_created_at_utc': report['report_created_at_utc'],
                   'report_sha256': sha256(destination / 'shadow.json'),
+                  'research_only_model_eligible': original['research_model_eligible'],
+                  'research_identity_match': original['research_identity_match'],
+                  'independent_identity_attested': False,
+                  'model_input_approved': False,
+                  'source_original_import_id': original['import_payload_id'],
+                  'collector_research_report_sha256': research_link_sha,
                   'bet_authority': False,
               })
           index['index_written_at_utc'] = datetime.now(UTC).isoformat()
