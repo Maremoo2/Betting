@@ -27,7 +27,7 @@ def _json_original(path: Path) -> dict:
         raise ValueError("ORIGINAL_NOT_AVAILABLE")
     doc = json.loads(path.read_bytes())
     if not isinstance(doc, dict):
-        raise ValueError("ORIGINAL_NOT_OBJECT")
+        raise TypeError("ORIGINAL_NOT_OBJECT")
     return doc
 
 
@@ -43,7 +43,7 @@ def plan(pages: list[dict], *, current_run_id: int, inventory_sha: str) -> dict:
     observed = 0
     for page in pages:
         if not isinstance(page, dict) or not isinstance(page.get("artifacts"), list):
-            raise ValueError("ARTIFACT_PAGE_INVALID")
+            raise TypeError("ARTIFACT_PAGE_INVALID")
         if page.get("total_count") != expected:
             raise ValueError("ARTIFACT_PAGINATION_CONCURRENT_CHANGE")
         observed += len(page["artifacts"])
@@ -118,7 +118,7 @@ def finalize(manifest: dict, *, models_root: Path, results_root: Path) -> dict:
                     raise ValueError("FROZEN_INDEX_PROCESSED_INVALID")
                 for report in processed:
                     if not isinstance(report, dict):
-                        raise ValueError("FROZEN_REPORT_ENTRY_INVALID")
+                        raise TypeError("FROZEN_REPORT_ENTRY_INVALID")
                     directory = report.get("directory")
                     expected = report.get("report_sha256")
                     if (not isinstance(directory, str)
