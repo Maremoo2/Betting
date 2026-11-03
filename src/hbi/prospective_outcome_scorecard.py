@@ -97,18 +97,58 @@ def read_archived_models(root: Path) -> tuple[list[dict], list[dict], list[str]]
             candidates.extend(local_candidates)
         except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
             errors.append({"source": str(index), "reason": str(exc)})
-    by_race: dict[str, dict] = {}
+    by_race: dict[str, list[dict]] = {}
     for item in candidates:
-        race_id = item["race_id"]
-        # Deterministic before-results first frozen model, not the best score.
-        key = (str(item["model"].get("report_created_at_utc") or ""),
-               item["original_model_path"])
-        if race_id not in by_race or key < (
-            str(by_race[race_id]["model"].get("report_created_at_utc") or ""),
-            by_race[race_id]["original_model_path"],
-        ):
-            by_race[race_id] = item
-    return [by_race[k] for k in sorted(by_race)], errors, sorted(expected_races)
+        by_race.setdefault(item["race_id"], []).append(item)
+    selected = []
+    for rid in sorted(by_race):
+        versions = []
+        for item in by_race[rid]:
+            model = item["model"]
+            active, blockers = _field(model)
+            created = clock(model.get("report_created_at_utc"))
+            versions.append((item, created, active, blockers))
+        # Freeze choice is independent of WIN availability, winner and results:
+        # latest completely valid model field no later than its own T-4 cutoff.
+        # Use the immutable SHA as an order-independent tie-breaker.
+        def order(v: tuple) -> tuple:
+            return (
+                v[1] if v[1] is not None else datetime.min.replace(tzinfo=UTC),
+                v[0]["model_sha256"],
+                v[0]["original_model_path"],
+            )
+        eligible = [v for v in versions if not v[3]]
+        chosen = max(eligible, key=order) if eligible else min(versions, key=order)
+        item = chosen[0]
+        item["freeze_selection_rule"] = (
+            "LATEST_ELIGIBLE_PRE_T4_MODEL_INDEPENDENT_OF_WIN_AND_OUTCOME"
+            if eligible else "NO_ELIGIBLE_FREEZE_DIAGNOSTIC_ONLY"
+        )
+        history = []
+        for version, _, active, blockers in sorted(versions, key=order):
+            market_time = {
+                row.get("win_odds_observed_at_utc") for row in (active or [])
+            }
+            history.append({
+                "model_sha256": version["model_sha256"],
+                "cohort_index_sha256": version["cohort_index_sha256"],
+                "source_model_path": version["original_model_path"],
+                "model_created_at_utc": version["model"].get("report_created_at_utc"),
+                "model_as_of_utc": version["model"].get("as_of_utc"),
+                "eligible_pre_t4": not bool(blockers),
+                "pre_t4_model_blockers": sorted(set(blockers)),
+                "active_runners": len(active or []),
+                "win_market_complete_on_same_freeze": bool(
+                    active and _market(active, clock(version["model"].get("as_of_utc")))
+                ),
+                "win_observed_at_utc": (
+                    next(iter(market_time)) if len(market_time) == 1 else None
+                ),
+                "selected_benchmark_reference": version is item,
+            })
+        item["original_freeze_history"] = history
+        selected.append(item)
+    return selected, errors, sorted(expected_races)
 
 
 def _probs(rows: list[dict], field: str) -> dict[str, float] | None:
@@ -336,6 +376,22 @@ def evaluate_archive(
             "status": "NOT_EVALUABLE", "reasons": sorted(set(reasons)),
             "score": None, "market_baseline_available": bool(pmarket),
             "bet_authority": False,
+            "benchmark_freeze_selection_rule": item["freeze_selection_rule"],
+            "original_freeze_history": item["original_freeze_history"],
+            "benchmark_t4_cutoff_utc": (
+                (start - timedelta(minutes=4)).isoformat() if start else None
+            ),
+            "win_original_raw_sha256": None,
+            "win_benchmark_blocker": (
+                None if pmarket is not None
+                else "BLOCKED_MISSING_WIN_ORIGINAL"
+                if active and all(row.get("win_odds") is None for row in active)
+                else "BLOCKED_WIN_TIMESTAMP_OR_FIELD"
+            ),
+            "win_provenance": (
+                "EMBEDDED_IN_VERIFIED_FROZEN_MODEL_SHA256"
+                if pmarket is not None else "NO_VALID_WIN_ON_SELECTED_FROZEN_MODEL"
+            ),
         }
         if start is None or current <= start:
             record["reasons"].append("RACE_NOT_YET_STARTED")
@@ -357,7 +413,11 @@ def evaluate_archive(
                     raceday = previous["payloads"]["raceday"]["result"]
                     saved = []
                     if previous["source_model_sha256"] != item["model_sha256"]:
-                        record["reasons"].append("PINNED_RESULT_MODEL_SHA_MISMATCH")
+                        # Official outcome bytes are race evidence, not a model
+                        # version. Revalidate the entire official field below.
+                        record["pinned_result_original_model_sha256"] = (
+                            previous["source_model_sha256"]
+                        )
                     for role in ("complete", "raceday"):
                         rec = dict(previous["receipts"][role])
                         expected_uri = (
@@ -414,6 +474,12 @@ def evaluate_archive(
                         # Start number is source-confirmed, not a stable cross-provider ID.
                         record["winner_identity_scope"] = "OFFICIAL_IN_RACE_START_NUMBER_NOT_STABLE_CROSS_PROVIDER_ID"
         record["reasons"] = sorted(set(record["reasons"]))
+        record["benchmark_status"] = (
+            "TRIPLE_EVALUABLE" if record["score"] is not None
+            and "market_log_loss" in record["score"]
+            else "MODEL_PAIR_ONLY" if record["score"] is not None
+            else "NOT_EVALUABLE"
+        )
         output["records"].append(record)
 
     present = {row["race_id"] for row in output["records"]}
@@ -497,6 +563,12 @@ def evaluate_archive(
         "complete_prediction_fields": sum(r["complete_active_field"] for r in output["records"]),
         "official_results_verified": len(paired),
         "paired_champion_core004": len(paired),
+        "triple_evaluable": sum(
+            r["benchmark_status"] == "TRIPLE_EVALUABLE" for r in paired
+        ),
+        "model_pair_only": sum(
+            r["benchmark_status"] == "MODEL_PAIR_ONLY" for r in paired
+        ),
         "pit_certified_paired": sum(
             r["cohort"] == "UPSTREAM_PIT_CERTIFIED" for r in paired
         ),

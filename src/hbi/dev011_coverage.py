@@ -230,12 +230,17 @@ def pinned_official(root: Path) -> tuple[dict[str, dict], dict[str, list[str]]]:
     by_race = {}
     for rid, items in verified.items():
         items.sort(key=lambda v: int(v[0]))
-        if (len({x[1]["source_model_sha256"] for x in items}) != 1
-                or any(len({x[1]["receipts"][role]["raw_sha256"] for x in items}) != 1
-                       for role in ("complete", "raceday"))):
+        # The same immutable result may originally have been scored against
+        # different legitimate pre-start freezes. Only conflicting ORIGINAL
+        # official bytes block reuse; a model SHA is not an outcome revision.
+        if any(len({x[1]["receipts"][role]["raw_sha256"] for x in items}) != 1
+               for role in ("complete", "raceday")):
             blocked[rid].append("CONFLICTING_OFFICIAL_RESULT_RECEIPTS")
         elif rid not in blocked:
             by_race[rid] = items[0][1]
+            by_race[rid]["previously_scored_model_shas"] = sorted({
+                x[1]["source_model_sha256"] for x in items
+            })
     return by_race, {rid: sorted(set(reasons)) for rid, reasons in blocked.items()}
 
 
