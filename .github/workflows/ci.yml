@@ -145,8 +145,8 @@ jobs:
           assert data["counts"]["physical_races"] == 3
           assert data["counts"]["complete_prediction_fields"] == 1
           assert data["counts"]["not_evaluable"] >= 2
-          record = data["records"][0]
-          assert record["race_id"] == "RIKSTOTO:S1_NR_2026-11-03:8"
+          record = next(r for r in data["records"]
+                        if r["race_id"] == "RIKSTOTO:S1_NR_2026-11-03:8")
           assert record["source_model_original_sha256"] == (
               "f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d"
           )
