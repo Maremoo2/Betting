@@ -302,3 +302,51 @@ def test_optional_real_halmstad_original_archive(tmp_path):
     assert pdf_field(pdf_raw, 10, roster["all"], "2026-11-02") == START.isoformat()
     assert all(str(x["reg"]).startswith("TMP-") for x in roster["all"].values())
     assert starts["at_utc"] < pdf["at_utc"]
+
+
+def _pit_receipt_for_physical_tenth():
+    return {
+        "schema": "PIT_T4_SOURCE_RECEIPT_V1",
+        "race_id": RID, "raceday_key": KEY, "race_number": 10,
+        "canonical_start_utc": START.isoformat(),
+        "t_minus_4_utc": (START - timedelta(minutes=4)).isoformat(),
+        "runners": [
+            {"start_number": row["startNumber"], "horse_name": row["horseName"],
+             "scratched": row["isScratched"],
+             "registration_number": row["horseRegistrationNumber"]}
+            for row in _rows(tmp=False)
+        ],
+    }
+
+
+def test_pit_original_verifier_replays_physical_race_ten_without_live_promotion(tmp_path):
+    """Test the removed race_no==1 restriction on genuine-shaped original bytes."""
+    from hbi.core_pit_roster_verification import VerifiedCollectorEvidence
+    from hbi.core_t4_receipt import verify_collector_original
+
+    root = _archive_unicode(tmp_path / "collector", tmp=False)
+    provenance = root / "provenance.json"
+    provenance.write_text(json.dumps({
+        "source_repository": "Maremoo2/rikstoto-program-collector",
+        "event": "schedule", "conclusion": "success",
+        "workflow_name": "Daily Rikstoto full programs – 07 Oslo",
+        "created_at_utc": (EARLY - timedelta(hours=1)).isoformat(),
+        "github_run_id": 12345,
+        "obtained_via_authenticated_gh_cli": True,
+    }))
+    evidence = verify_collector_original(
+        root, provenance, _pit_receipt_for_physical_tenth()
+    )
+    assert isinstance(evidence, VerifiedCollectorEvidence)
+    assert evidence.race_id == RID
+    assert evidence.full_field_pdf_startlist_reconciled is True
+    assert evidence.original_bytes_sha256_verified is True
+
+    # An original PDF with a different physical off-time must never certify.
+    other = _archive_unicode(tmp_path / "different-clock", tmp=False,
+                             physical_clock="21:34")
+    different_provenance = other / "provenance.json"
+    different_provenance.write_bytes(provenance.read_bytes())
+    assert verify_collector_original(
+        other, different_provenance, _pit_receipt_for_physical_tenth()
+    ) is None
