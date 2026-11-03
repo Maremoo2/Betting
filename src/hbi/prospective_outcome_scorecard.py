@@ -115,11 +115,15 @@ def read_archived_models(root: Path) -> tuple[list[dict], list[dict], list[str]]
             return (
                 v[1] if v[1] is not None else datetime.min.replace(tzinfo=UTC),
                 v[0]["model_sha256"],
+                v[0]["original_model_path"],
             )
         eligible = [v for v in versions if not v[3]]
         chosen = max(eligible, key=order) if eligible else min(versions, key=order)
         item = chosen[0]
-        item["freeze_selection_rule"] = "LATEST_ELIGIBLE_PRE_T4_MODEL_INDEPENDENT_OF_WIN_AND_OUTCOME"
+        item["freeze_selection_rule"] = (
+            "LATEST_ELIGIBLE_PRE_T4_MODEL_INDEPENDENT_OF_WIN_AND_OUTCOME"
+            if eligible else "NO_ELIGIBLE_FREEZE_DIAGNOSTIC_ONLY"
+        )
         history = []
         for version, _, active, blockers in sorted(versions, key=order):
             market_time = {
@@ -378,6 +382,12 @@ def evaluate_archive(
                 (start - timedelta(minutes=4)).isoformat() if start else None
             ),
             "win_original_raw_sha256": None,
+            "win_benchmark_blocker": (
+                None if pmarket is not None
+                else "BLOCKED_MISSING_WIN_ORIGINAL"
+                if active and all(row.get("win_odds") is None for row in active)
+                else "BLOCKED_WIN_TIMESTAMP_OR_FIELD"
+            ),
             "win_provenance": (
                 "EMBEDDED_IN_VERIFIED_FROZEN_MODEL_SHA256"
                 if pmarket is not None else "NO_VALID_WIN_ON_SELECTED_FROZEN_MODEL"
