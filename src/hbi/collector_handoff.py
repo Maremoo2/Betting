@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import re
 import sqlite3
 import unicodedata
@@ -259,6 +260,10 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
     response = {
         "race_id": race_id, "status": "BLOCKED", "blockers": [],
         "source_imported_to_sqlite": False, "model_input_approved": False,
+        "research_model_eligible": False,
+        "research_identity_match": "NOT_VERIFIED",
+        "independent_identity_attested": False,
+        "research_model_scope": "RESEARCH_ONLY_NO_BET_OR_PIT",
         "bet_authority": False, "pit_certified": False,
         "runners": [], "model_input_sources": {},
     }
@@ -402,6 +407,62 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
         if not good_fundamentals(fundamentals, original["active"], original["all"]):
             blocks.add("COLLECTOR_ATG_FUNDAMENTAL_COHORT_NOT_COMPLETE")
         response["model_input_sources"]["atg_fundamental_observed_at_utc"] = cohort_time
+        # Lower-trust research admission: every source and all snapshot clocks
+        # must be verified, while exact cross-provider identity stays BLOCKED.
+        if ok:
+            atg_names = [name_key(r.get("horse_name")) for r in identity["runners"]]
+            original_names = [name_key(row["name"]) for row in original["all"].values()]
+            if (len(set(original_names)) != len(original_names)
+                    or len(set(atg_names)) != len(atg_names)):
+                blocks.add("RESEARCH_ATG_NAME_NOT_UNIQUE")
+            if any(
+                row.get("match_method") != "UNIQUE_NAME_AND_PROGRAM_NUMBER"
+                or row.get("match_confidence") != 1.0
+                for row in identity["runners"]
+            ):
+                blocks.add("RESEARCH_ATG_MATCH_METHOD_NOT_VERIFIED")
+            atg_time = parse_time(identity.get("observed_at_utc"))
+            retained_latest = max(t for t, _ in _latest_source(
+                conn, "atg", "FULL_FIELD_ONLY_V1", race_id, number, asof
+            )[1])
+            if (
+                identity.get("provider") != "atg"
+                or identity.get("country") != race["country"]
+                or identity.get("discipline") != race["discipline"]
+                or not identity.get("provider_race_id")
+                or not identity.get("source_uri")
+                or identity.get("timestamp_basis") != "FETCH_COMPLETED"
+                or parse_time(identity.get("race_start_utc")) != scheduled
+                or atg_time is None or atg_time != retained_latest
+                or atg_time > asof
+                or not isinstance(identity.get("collection_started_at_utc"), str)
+            ):
+                blocks.add("RESEARCH_ATG_RACE_OR_CLOCK_NOT_VERIFIED")
+            if cohort_time != (atg_time.isoformat() if atg_time else None):
+                blocks.add("RESEARCH_ATG_HISTORY_COHORT_NOT_MATCHED")
+            for row in fundamentals:
+                try:
+                    observed = parse_time(row["observed_at_utc"])
+                    feature_time = parse_time(row["feature_as_of_utc"])
+                    if (
+                        observed is None or feature_time is None
+                        or observed != atg_time
+                        or feature_time > asof
+                        or row["source_uri"] != identity["source_uri"]
+                    ):
+                        blocks.add("RESEARCH_ATG_HISTORY_CLOCK_OR_SOURCE_CONFLICT")
+                    if str(row["selection_id"]) in original["active"]:
+                        if (
+                            "identity_match_method" not in row.keys()
+                            or row["identity_match_method"] != "UNIQUE_NAME_AND_PROGRAM_NUMBER"
+                            or "identity_match_confidence" not in row.keys()
+                            or row["identity_match_confidence"] != 1.0
+                        ):
+                            blocks.add("RESEARCH_ATG_HISTORY_IDENTITY_METHOD_UNVERIFIED")
+                except (KeyError, ValueError, TypeError):
+                    blocks.add("RESEARCH_ATG_HISTORY_CLOCK_OR_SOURCE_CONFLICT")
+            if not any(code.startswith("RESEARCH_ATG_") for code in blocks):
+                response["research_identity_match"] = "UNIQUE_NAME_AND_PROGRAM_NUMBER"
         if not all(_registered(v["reg"]) for v in original["all"].values()):
             blocks.add("COLLECTOR_TMP_IDENTITY_NOT_ADMITTED")
         reg = [v["reg"] for v in original["all"].values()]
@@ -418,6 +479,14 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
         response["source_imported_to_sqlite"] = imported
         response["import_payload_id"] = import_id
         response["import_record_verified"] = imported
+        strict_only = {"IDENTITY_CROSS_PROVIDER_NOT_ATTESTED", "COLLECTOR_TMP_IDENTITY_NOT_ADMITTED"}
+        if (
+            imported and ok
+            and response["research_identity_match"] == "UNIQUE_NAME_AND_PROGRAM_NUMBER"
+            and not (blocks - strict_only)
+        ):
+            response["research_model_eligible"] = True
+            response["status"] = "RESEARCH_ONLY_MODEL_ELIGIBLE"
         if not blocks:
             # Reassert canonical roster from the verified original, rather than
             # silently treating independent CORE-003 GETs as the Collector input.
@@ -471,6 +540,8 @@ def run_import(db: Path, root: Path, provenance: Path, source_report: Path,
                     "race_id": race_id, "status": "BLOCKED",
                     "blockers": ["COLLECTOR_AUTHENTICATED_ARCHIVE_UNAVAILABLE"],
                     "source_imported_to_sqlite": False, "model_input_approved": False,
+                    "research_model_eligible": False, "research_identity_match": "NOT_VERIFIED",
+                    "independent_identity_attested": False,
                     "bet_authority": False, "pit_certified": False,
                 })
                 continue
@@ -510,6 +581,7 @@ def main() -> None:
         "total": len(result["records"]),
         "originals_imported": sum(r["source_imported_to_sqlite"] for r in result["records"]),
         "model_input_approved": sum(r["model_input_approved"] for r in result["records"]),
+        "research_model_eligible": sum(r["research_model_eligible"] for r in result["records"]),
         "bet_authority": False,
     }))
 
