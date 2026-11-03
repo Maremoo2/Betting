@@ -111,16 +111,17 @@ def read_archived_models(root: Path) -> tuple[list[dict], list[dict], list[str]]
         # Freeze choice is independent of WIN availability, winner and results:
         # latest completely valid model field no later than its own T-4 cutoff.
         # Use the immutable SHA as an order-independent tie-breaker.
-        order = lambda v: (
-            v[1] if v[1] is not None else datetime.min.replace(tzinfo=UTC),
-            v[0]["model_sha256"],
-        )
+        def order(v: tuple) -> tuple:
+            return (
+                v[1] if v[1] is not None else datetime.min.replace(tzinfo=UTC),
+                v[0]["model_sha256"],
+            )
         eligible = [v for v in versions if not v[3]]
         chosen = max(eligible, key=order) if eligible else min(versions, key=order)
         item = chosen[0]
         item["freeze_selection_rule"] = "LATEST_ELIGIBLE_PRE_T4_MODEL_INDEPENDENT_OF_WIN_AND_OUTCOME"
         history = []
-        for version, created, active, blockers in sorted(versions, key=order):
+        for version, _, active, blockers in sorted(versions, key=order):
             market_time = {
                 row.get("win_odds_observed_at_utc") for row in (active or [])
             }
