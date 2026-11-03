@@ -183,6 +183,37 @@ def test_authenticated_original_three_races_to_sqlite_and_frozen_model_gate(tmp_
         assert abs(new_research["model"]["core004_p_sum"] - 1.0) < 1e-6
         assert len(new_research["model"]["runners"]) == 8
 
+        # Negative: a missing or incorrect Collector import receipt is never
+        # accepted as proof of the model's real inputs.
+        from copy import deepcopy
+
+        invalid_receipt = deepcopy(receipt)
+        invalid_receipt["import_payload_id"] = "0" * 64
+        with pytest.raises(ValueError, match="RESEARCH_REPORT_IMPORT_RECEIPT_MISSING"):
+            write_research_model_report(
+                conn, handoff=invalid_receipt, shadow_path=new_shadow,
+                source_db=db, source_report=frozen_source,
+                destination=model_dir / "forged-import.json",
+            )
+        assert not (model_dir / "forged-import.json").exists()
+
+        # A historical probability vector can NEVER promote PIT/BET.
+        for invalid_field, forged_value in (
+            ("pit_status", "INDEPENDENT_PIT_CERTIFIED"),
+            ("bet_authority", True),
+        ):
+            tampered_model = deepcopy(new_output)
+            tampered_model[invalid_field] = forged_value
+            tampered_path = tmp_path / f"tampered-{invalid_field}.json"
+            tampered_path.write_text(json.dumps(tampered_model))
+            with pytest.raises(ValueError, match="RESEARCH_REPORT_MODEL_OR_SOURCE_MISMATCH"):
+                write_research_model_report(
+                    conn, handoff=receipt, shadow_path=tampered_path,
+                    source_db=db, source_report=frozen_source,
+                    destination=model_dir / f"forged-{invalid_field}.json",
+                )
+        assert all(not r["cross_provider_attested"] for r in receipt["identity_evidence"])
+
         # Persist the genuine research replay artifacts outside the repository.
         published = os.environ.get("MVP004_EVIDENCE_DIR")
         if published:
