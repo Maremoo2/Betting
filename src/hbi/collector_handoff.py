@@ -101,29 +101,38 @@ def pdf_field(pdf_bytes: bytes, number: int, runners: dict, date: str) -> str:
     import fitz
 
     with fitz.open(stream=pdf_bytes, filetype="pdf") as document:
-        matches = []
-        for page in document:
-            text = page.get_text()
-            # Original Rikstoto PDFs sometimes print a physical number as
-            # the first line; pool-card pages instead print "Løp N" below
-            # a V64/V75 heading. Inspect header lines only, never history.
-            header = text.splitlines()[:14]
-            labels = []
-            for line in header:
-                line = line.strip()
-                if line.isascii() and line.isdecimal():
-                    labels.append(int(line))
-                else:
-                    label = re.fullmatch(
-                        r"(?:L[oø]p|Lopp)\s+(\d+)", line, re.IGNORECASE
-                    )
-                    if label is not None:
-                        labels.append(int(label.group(1)))
-            if labels and set(labels) == {number}:
-                matches.append(text)
+        pages = [page.get_text() for page in document]
+    labels_by_page = []
+    for text in pages:
+        # Only the first 14 lines may identify a physical race. Never
+        # interpret historic race numbers deeper in a horse's form as headers.
+        header = text.splitlines()[:14]
+        labels = []
+        for line in header:
+            line = line.strip()
+            if line.isascii() and line.isdecimal():
+                labels.append(int(line))
+            else:
+                label = re.fullmatch(
+                    r"(?:L[oø]p|Lopp)\s+(\d+)", line, re.IGNORECASE
+                )
+                if label is not None:
+                    labels.append(int(label.group(1)))
+        labels_by_page.append(labels)
+    matches = [
+        i for i, labels in enumerate(labels_by_page)
+        if labels and set(labels) == {number}
+    ]
     if len(matches) != 1:
         raise ValueError("COLLECTOR_PDF_PHYSICAL_RACE_AMBIGUOUS")
-    text = matches[0]
+    first = matches[0]
+    last = first + 1
+    # An original physical race can continue on subsequent unheaded pages.
+    # Never read through the next physical race header, even if it happens
+    # to contain the sought runner's name or program number.
+    while last < len(pages) and not labels_by_page[last]:
+        last += 1
+    text = "\n".join(pages[first:last])
     starts = re.findall(r"\bSTART\s+KL\.?\s*(\d{1,2}:\d{2})\b", text, re.IGNORECASE)
     if len(starts) != 1:
         raise ValueError("COLLECTOR_PDF_RACE_CLOCK_UNVERIFIED")
