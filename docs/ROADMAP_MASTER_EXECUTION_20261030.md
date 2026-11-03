@@ -1,5 +1,16 @@
 # Betting HQ – master-roadmap og gjennomføringsstatus
 
+
+## MVP-007 – operativ status 3. november 2026 (oppdatert etter PR #122)
+
+**Dette er nyeste status; eldre daterte MVP-005-/30. oktober-punkter nedenfor er historiske.** Ingen PIT-/BET-gate er endret.
+
+- **DEV-007A: DONE / MERGED.** [PR #122](https://github.com/Maremoo2/Betting/pull/122) ble merget 2026-11-03T11:59:53Z, merge-commit `741d927e664b25e183256613c2b7c7f83d69f27d`. Eneste programvareendring er korrekt CLI-telling av `results` ved `attest` (fortsatt `records` ved `capture`), pluss seks regresjonstilfeller. [PR-CI](https://github.com/Maremoo2/Betting/actions/runs/41631306721): Ruff PASS, 1437 passed / 72 skipped, original-Collector replay PASS.
+- **Eskilstuna løp 1 (2026-11-03):** [CORE-003/T−4-run 41626023709](https://github.com/Maremoo2/Betting/actions/runs/41626023709) dokumenterer 3/3 originale kilder før T−4, WIN 12/12 og begge forskningsmodeller `MODEL_READY`; én faktisk fangst og én vurdert attestasjon, **0 PIT-sertifiserte**. Kildeblokker: `STABLE_CROSS_PROVIDER_ID_NOT_ATTESTED` og `UNVERIFIED_SCRATCH_SOURCE`. Rikstoto `/scratched` manglet eksplisitt løp 1; ikke tolk dette som verifisert tom liste.
+- **Neste P0-kandidat:** Jägersro 4. november 2026 løp 5 kl. 20:30 Oslo (`RIKSTOTO:S3_NR_2026-11-04:5`). Offentlige tredjepartsoversikter viser foreløpig ni hester, **ikke en attestert original fullfeltnevner**. Svensk Travsport-startliste med originale profilreferanser, rå Sportinfo/ATG/Rikstoto-identiteter, endringer/strykninger og før-as-of SHA-/klokkebevis er ennå ikke dokumentert.
+- **Prioritert handling:** Fullfør originalbasert, tidsriktig identitet for samtlige aktive hester; dokumenter offisiell semantikk for manglende løpsnøkkel i `/scratched`; kjør eksisterende strenge PIT-attestasjon uten backdating eller endrede hardgates. Hvis bevis mangler: `BLOCKED_SOURCE_IDENTITY` / `PIT_NOT_CERTIFIED`, aldri falsk `PASS`.
+- **Teknisk MVP-beslutning:** 13. november 2026 kl. 18:00 Oslo. Prospektiv forskningskjede demonstrert, men uavhengig identitet, strykestatus og PIT fortsatt ikke godkjent; `bet_authority=false`. Ingen ny kodeoppgave uten en konkret kildebevist implementerbar feil.
+
 ## MVP-005 – gjeldende styring og MVP-kritisk sti (3. november 2026)
 
 **Dette er den gjeldende beslutningen for neste steg og erstatter tidligere administrative reviewkrav i eldre, daterte avsnitt nedenfor.** Prosjekteieren er eneste autoriserte mergebeslutter. Ekstern godkjenner, `HQ_REVIEWER_LOGINS`, `APPROVED_FOR_MERGE`-kommentar og obligatorisk branch protection er **ikke** lenger krav. Ingen merge uten uttrykkelig tillatelse fra eieren. Full teknisk kildeintegritet, originale hash-bevis og alle PIT/BET-hardgates beholdes.
