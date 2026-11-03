@@ -397,6 +397,21 @@ def evaluate_archive(
             values["core004_minus_champion_brier"] = (
                 values["core004_multiclass_brier"] - values["champion_multiclass_brier"]
             )
+            common_market = [r for r in group if "market_log_loss" in r["score"]]
+            values["market_paired_races"] = len(common_market)
+            for score_name in ("log_loss", "multiclass_brier"):
+                values[f"market_{score_name}"] = (
+                    math.fsum(r["score"][f"market_{score_name}"] for r in common_market)
+                    / len(common_market) if common_market else None
+                )
+                for model_name in ("champion", "core004"):
+                    values[f"{model_name}_minus_market_{score_name}"] = (
+                        math.fsum(
+                            r["score"][f"{model_name}_{score_name}"]
+                            - r["score"][f"market_{score_name}"]
+                            for r in common_market
+                        ) / len(common_market) if common_market else None
+                    )
             output["metrics_by_cohort"][cohort_name] = {
                 "physical_races": len(group), "metrics": values,
             }
@@ -420,6 +435,15 @@ def evaluate_archive(
                 math.fsum(r["score"][key] for r in with_market) / len(with_market)
                 if with_market else None
             )
+        for score_name in ("log_loss", "multiclass_brier"):
+            for model_name in ("champion", "core004"):
+                metric[f"{model_name}_minus_market_{score_name}"] = (
+                    math.fsum(
+                        r["score"][f"{model_name}_{score_name}"]
+                        - r["score"][f"market_{score_name}"]
+                        for r in with_market
+                    ) / len(with_market) if with_market else None
+                )
         output["metrics"] = metric
     output["counts"] = {
         "physical_races": len(output["records"]),
