@@ -168,6 +168,81 @@ def _registered(val):
             and not val.upper().startswith(("TMP", "TEMP", "UNKNOWN")))
 
 
+
+def _persist_original_roster(
+    conn: sqlite3.Connection, *, race_id: str, raceday_key: str,
+    race_number: int, observed_at: str, source_uri: str,
+    original_field: list[dict], source_checksums: dict,
+) -> tuple[bool, str]:
+    """One immutable Collector source row per *physical* race, not per raceday.
+
+    The raceday-wide raw starts SHA remains unmodified in source_checksums.
+    Existing different versions are a hard conflict; they are never
+    overwritten, OR IGNORE'd, or treated as successful imports.
+    """
+    payload = {
+        "schema": SCHEMA,
+        "race_id": race_id,
+        "original_field": original_field,
+        "source_checksums": source_checksums,
+        "identity_provenance": "RIKSTOTO_ORIGINAL_STARTS_ONLY",
+        "source_publication_attested": False,
+        "pit_certified": False,
+    }
+    canonical = json.dumps(payload, sort_keys=True, ensure_ascii=False)
+    payload_id = sha(json.dumps(
+        ["COLLECTOR_ORIGINAL_PROGRAM_ROSTER_V1", race_id,
+         source_checksums["collector_starts_sha256"],
+         source_checksums["collector_program_pdf_sha256"],
+         source_checksums["collector_manifest_sha256"]],
+        separators=(",", ":"), ensure_ascii=False,
+    ).encode("utf-8"))
+    existing = conn.execute(
+        "SELECT payload_id, observed_at_utc, source_uri, payload_json "
+        "FROM provider_payloads "
+        "WHERE provider='collector' AND category='ORIGINAL_PROGRAM_ROSTER_V1' "
+        "AND provider_raceday_key=? AND race_number=?",
+        (raceday_key, race_number),
+    ).fetchall()
+    if existing:
+        identical = (
+            len(existing) == 1
+            and existing[0]["payload_id"] == payload_id
+            and existing[0]["observed_at_utc"] == observed_at
+            and existing[0]["source_uri"] == source_uri
+            and existing[0]["payload_json"] == canonical
+        )
+        if not identical:
+            raise ValueError("COLLECTOR_IMPORT_REVISION_CONFLICT")
+        return True, payload_id
+
+    try:
+        cur = conn.execute(
+            "INSERT INTO provider_payloads "
+            "(payload_id,provider,category,provider_raceday_key,race_number,product,"
+            "observed_at_utc,source_uri,payload_json) VALUES(?,?,?,?,?,?,?,?,?)",
+            (payload_id, "collector", "ORIGINAL_PROGRAM_ROSTER_V1",
+             raceday_key, race_number, None, observed_at, source_uri, canonical),
+        )
+    except sqlite3.IntegrityError as exc:
+        # A same-instant uniqueness collision or PK conflict is not success.
+        raise ValueError("COLLECTOR_IMPORT_KEY_OR_REVISION_CONFLICT") from exc
+    if cur.rowcount != 1:
+        raise ValueError("COLLECTOR_IMPORT_INSERT_NOT_CONFIRMED")
+    reread = conn.execute(
+        "SELECT observed_at_utc,source_uri,payload_json FROM provider_payloads "
+        "WHERE payload_id=? AND provider='collector' "
+        "AND category='ORIGINAL_PROGRAM_ROSTER_V1' "
+        "AND provider_raceday_key=? AND race_number=?",
+        (payload_id, raceday_key, race_number),
+    ).fetchone()
+    if (reread is None or reread["observed_at_utc"] != observed_at
+            or reread["source_uri"] != source_uri or reread["payload_json"] != canonical):
+        raise ValueError("COLLECTOR_IMPORT_READBACK_MISMATCH")
+    return True, payload_id
+
+
+
 def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: str,
                   *, asof: datetime, authenticated: bool) -> dict:
     """Read original source, match all current SQL inputs, then admit or block.
@@ -276,18 +351,45 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
         ok, reason = parse_atg_identity(identity, original["active"], original["all"])
         if not ok:
             blocks.add("COLLECTOR_ATG_" + str(reason))
-        else:
-            # Stable IDs alone are not a cross-provider join. Admission needs
-            # the independently recorded exact registration match for each
-            # active starter, not only a plausible shared horse name/number.
-            for atg_row in identity["runners"]:
-                sid = str(atg_row["selection_id"])
-                if atg_row.get("match_method") != "EXACT_REGISTRATION":
-                    blocks.add("COLLECTOR_ATG_IDENTITY_NOT_EXACT_REGISTRATION")
-                elif str(atg_row.get("rikstoto_registration") or "") != str(
-                    original["all"][sid]["reg"]
-                ):
-                    blocks.add("COLLECTOR_ATG_REGISTRATION_MISMATCH")
+        # The ATG source currently supplies horse.id in a different namespace.
+        # resolve_field() only compares unique name and program number, and
+        # echoes Rikstoto's registration into its derived ATG evidence row.
+        # Neither that echo nor a claimed EXACT_REGISTRATION string is an
+        # independently observed ATG-issued registration cross-reference.
+        # Preserve both identifiers and timestamps, but NEVER promote the join.
+        atg_by_number = {
+            str(row.get("selection_id")): row
+            for row in identity.get("runners", []) if isinstance(row, dict)
+        } if isinstance(identity, dict) and isinstance(identity.get("runners"), list) else {}
+        response["identity_evidence"] = [
+            {
+                "start_number": int(number),
+                "rikstoto": {
+                    "registration_number": original["all"][number]["reg"],
+                    "source_uri": start_receipt["url"],
+                    "observed_at_utc": start_receipt["at_utc"],
+                    "raw_sha256": sha(start_raw),
+                },
+                "atg": {
+                    "horse_id": atg_by_number.get(number, {}).get("provider_horse_id"),
+                    "source_uri": identity.get("source_uri") if isinstance(identity, dict) else None,
+                    "observed_at_utc": identity.get("observed_at_utc") if isinstance(identity, dict) else None,
+                    "provider_race_id": identity.get("provider_race_id") if isinstance(identity, dict) else None,
+                    "derived_match_method": atg_by_number.get(number, {}).get("match_method"),
+                    "canonical_registration_echo_untrusted": atg_by_number.get(number, {}).get("rikstoto_registration"),
+                },
+                "independent_cross_provider_identifier": None,
+                "cross_provider_attested": False,
+            }
+            for number in sorted(original["all"], key=int)
+        ]
+        response["model_input_sources"]["atg_evidence_source_uri"] = (
+            identity.get("source_uri") if isinstance(identity, dict) else None
+        )
+        response["model_input_sources"]["atg_evidence_observed_at_utc"] = (
+            identity.get("observed_at_utc") if isinstance(identity, dict) else None
+        )
+        blocks.add("IDENTITY_CROSS_PROVIDER_NOT_ATTESTED")
         fundamentals, cohort_time = latest_cohort(
             conn, "runner_fundamental_snapshots", race_id, asof
         )
@@ -299,26 +401,17 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
         reg = [v["reg"] for v in original["all"].values()]
         if len(reg) != len(set(reg)):
             blocks.add("COLLECTOR_REGISTRATION_COLLISION")
-        # Source ingestion is independent of model admission. All exact original
-        # file hashes are retained in an existing provider_payloads row.
-        payload = {
-            "schema": SCHEMA,
-            "race_id": race_id,
-            "original_field": response["runners"],
-            "source_checksums": response["model_input_sources"],
-            "identity_conflicts": sorted(blocks),
-            "source_publication_attested": False,
-            "pit_certified": False,
-        }
-        conn.execute(
-            "INSERT OR IGNORE INTO provider_payloads "
-            "(payload_id,provider,category,provider_raceday_key,race_number,product,"
-            "observed_at_utc,source_uri,payload_json) VALUES(?,?,?,?,?,?,?,?,?)",
-            (sha(start_raw), "collector", "ORIGINAL_PROGRAM_ROSTER_V1",
-             key, number, None, start_receipt["at_utc"], start_receipt["url"],
-             json.dumps(payload, sort_keys=True)),
+        # Immutable evidence is importable even when the independent ATG
+        # identity join is blocked. No prior row can be silently ignored.
+        imported, import_id = _persist_original_roster(
+            conn, race_id=race_id, raceday_key=key, race_number=number,
+            observed_at=start_receipt["at_utc"], source_uri=start_receipt["url"],
+            original_field=response["runners"],
+            source_checksums=response["model_input_sources"],
         )
-        response["source_imported_to_sqlite"] = True
+        response["source_imported_to_sqlite"] = imported
+        response["import_payload_id"] = import_id
+        response["import_record_verified"] = imported
         if not blocks:
             # Reassert canonical roster from the verified original, rather than
             # silently treating independent CORE-003 GETs as the Collector input.
