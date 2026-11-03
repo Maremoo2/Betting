@@ -595,10 +595,17 @@ def write_research_model_report(
     if len(rows) != 1:
         raise ValueError("RESEARCH_REPORT_IMPORT_RECEIPT_MISSING")
     imported = json.loads(rows[0]["payload_json"])
+    expected_collector_source = {
+        k: v for k, v in source.items() if k.startswith("collector_")
+    }
     if (
-        imported["race_id"] != race_id
-        or imported["source_checksums"]["collector_starts_sha256"] != source["collector_starts_sha256"]
-        or imported["source_checksums"]["collector_program_pdf_sha256"] != source["collector_program_pdf_sha256"]
+        imported.get("race_id") != race_id
+        or imported.get("original_field") != handoff["runners"]
+        or imported.get("source_checksums") != expected_collector_source
+        or rows[0]["provider_raceday_key"] != race_id.split(":")[1]
+        or int(rows[0]["race_number"]) != int(race_id.rsplit(":", 1)[1])
+        or rows[0]["observed_at_utc"] != source["collector_starts_observed_at_utc"]
+        or rows[0]["source_uri"] != source["collector_starts_uri"]
     ):
         raise ValueError("RESEARCH_REPORT_IMPORT_RECEIPT_CONFLICT")
     report = {
