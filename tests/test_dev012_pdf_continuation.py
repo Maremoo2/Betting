@@ -35,7 +35,7 @@ def _runners(*names: str) -> dict:
 def test_multpage_original_race_matches_only_its_continuation():
     body = _pdf(
         ["6", "START KL. 16:50", "1 FIRST HORSE, Driver", "2 SECOND HORSE, Driver"],
-        ["3 THIRD HORSE, Driver", "4 FOURTH HORSE, Driver"],
+        ["3 THIRD HORSE, Driver", "13", "4 FOURTH HORSE, Driver"],
         ["7", "START KL. 17:25", "1 DIFFERENT HORSE, Driver"],
     )
     assert pdf_field(
