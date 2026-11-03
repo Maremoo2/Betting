@@ -189,7 +189,8 @@ def test_wrong_model_original_sha(tmp_path):
     index_path.write_text(json.dumps(ix))
     report = evaluate_archive(models_root=root, output_dir=tmp_path / "out",
                               fetch_official=False)
-    assert report["counts"]["physical_races"] == 0
+    assert report["counts"]["physical_races"] == 1
+    assert report["records"][0]["status"] == "NOT_EVALUABLE"
     assert report["archive_errors"][0]["reason"] == "FROZEN_MODEL_SHA256_MISMATCH"
     assert report["bet_authority"] is False
 
@@ -276,3 +277,27 @@ def test_real_eskilstuna_frozen_original_if_supplied(tmp_path):
     assert matching[0]["source_model_original_sha256"] == (
         "f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d"
     )
+
+
+def test_declared_cohort_denominator_includes_unmodeled_race(tmp_path):
+    root, _ = archive(tmp_path)
+    ix = root / "00000000001/cohort-index.json"
+    data = json.loads(ix.read_text())
+    missing_id = "RIKSTOTO:F1_NR_2026-11-03:2"
+    data["original_cohort"] = [RID, missing_id]
+    data["not_processed"] = [
+        {"race_id": missing_id, "reason": "COLLECTOR_RESEARCH_MODEL_GATE_NOT_VERIFIED"}
+    ]
+    ix.write_text(json.dumps(data))
+    report = evaluate_archive(
+        models_root=root, output_dir=tmp_path / "scorecard",
+        fetch_official=True, client=FakeOfficial(),
+        now=datetime(2026, 11, 3, 14, tzinfo=UTC),
+    )
+    assert report["counts"]["physical_races"] == 2
+    assert report["counts"]["complete_prediction_fields"] == 1
+    assert report["counts"]["not_evaluable"] == 1
+    assert report["metrics_by_cohort"]["PROSPECTIVE_NOT_PIT_CERTIFIED"]["physical_races"] == 1
+    blocked = [row for row in report["records"] if row["race_id"] == missing_id]
+    assert len(blocked) == 1 and blocked[0]["reasons"] == ["NO_VERIFIED_FROZEN_MODEL"]
+    assert report["bet_authority"] is False
