@@ -66,8 +66,9 @@ def _db(path: Path, *, scratched: bool = False, future_history: bool = False) ->
             "runners": [
                 {"selection_id": str(i), "horse_name": NAMES[i-1],
                  "provider_horse_id": str(10000+i), "schema_ok": True,
+                 # Echoed from Rikstoto - never independent ATG identity.
                  "rikstoto_registration": str(10000+i),
-                 "match_method": "EXACT_REGISTRATION", "reason": None}
+                 "match_method": "UNIQUE_NAME_AND_PROGRAM_NUMBER", "reason": None}
                 for i in range(1, 8 if scratched else 9)
             ],
         }),
@@ -194,7 +195,7 @@ def test_original_halmstad_shape_and_eight_horses_with_tmp_block(tmp_path):
         assert json.loads(rows[0][0])["original_field"][0]["horse_name"] == NAMES[0]
 
 
-def test_positive_verified_input_is_existing_sqlite_roster_not_pdf_history(tmp_path):
+def test_copied_registration_cannot_approve_atg_identity_and_pdf_never_replaces_atg(tmp_path):
     root = _archive_unicode(tmp_path / "collector", tmp=False)
     db = tmp_path / "hbi.sqlite"
     _db(db)
@@ -204,9 +205,15 @@ def test_positive_verified_input_is_existing_sqlite_roster_not_pdf_history(tmp_p
         output = verify_import(conn, OriginalArchive(root), RID, asof=NOW, authenticated=True)
         after = [r[0] for r in conn.execute(
             "SELECT history_total_starts FROM runner_fundamental_snapshots ORDER BY selection_id")]
-        assert output["model_input_approved"] is True, output["blockers"]
-        assert output["status"] == "MODEL_INPUT_VERIFIED_RESEARCH_ONLY"
+        assert output["source_imported_to_sqlite"] is True, output["blockers"]
+        assert output["model_input_approved"] is False
+        assert "IDENTITY_CROSS_PROVIDER_NOT_ATTESTED" in output["blockers"]
         assert before == after
+        assert output["identity_evidence"][0]["atg"]["derived_match_method"] == (
+            "UNIQUE_NAME_AND_PROGRAM_NUMBER"
+        )
+        assert output["identity_evidence"][0]["atg"]["canonical_registration_echo_untrusted"] == "10001"
+        assert all(not x["cross_provider_attested"] for x in output["identity_evidence"])
         assert output["bet_authority"] is False and output["pit_certified"] is False
 
 
@@ -372,7 +379,7 @@ def test_incorrect_atg_registration_is_not_a_safe_cross_provider_join(tmp_path):
         result = verify_import(
             conn, OriginalArchive(root), RID, asof=NOW, authenticated=True
         )
-        assert "COLLECTOR_ATG_REGISTRATION_MISMATCH" in result["blockers"]
+        assert "IDENTITY_CROSS_PROVIDER_NOT_ATTESTED" in result["blockers"]
         assert not result["model_input_approved"]
 
 
@@ -392,3 +399,93 @@ def test_pool_card_pdf_header_resolves_physical_race_number(tmp_path):
     )
     with pytest.raises(ValueError, match="PHYSICAL_RACE_AMBIGUOUS"):
         pdf_field(body, 10, runners, "2026-11-02")
+
+
+def test_two_physical_races_share_original_sha_but_have_separate_idempotent_sqlite_rows():
+    from hbi.collector_handoff import _persist_original_roster
+
+    conn = sqlite3.connect(":memory:")
+    conn.row_factory = sqlite3.Row
+    conn.executescript("""
+        CREATE TABLE provider_payloads(
+          payload_id TEXT PRIMARY KEY,
+          provider TEXT NOT NULL, category TEXT NOT NULL,
+          provider_raceday_key TEXT NOT NULL, race_number INTEGER,
+          product TEXT, observed_at_utc TEXT NOT NULL,
+          source_uri TEXT NOT NULL, payload_json TEXT NOT NULL,
+          UNIQUE(provider,category,provider_raceday_key,race_number,product,observed_at_utc)
+        );
+    """)
+    key = "OR_NR_2026-11-02"
+    shared = "df29a5a3837fcbefe736620cdeec095bd2d2473c58179808bb7bd2b880ffd1c9"
+    source = {
+        "collector_starts_sha256": shared,
+        "collector_program_pdf_sha256": "a" * 64,
+        "collector_manifest_sha256": "b" * 64,
+        "collector_starts_observed_at_utc": EARLY.isoformat(),
+        "collector_pdf_observed_at_utc": EARLY.isoformat(),
+        "collector_starts_uri": "https://www.rikstoto.no/api/racedays/" + key + "/starts",
+        "collector_pdf_uri": "https://www.rikstoto.no/api/programdownload/ProgramPdf/Utvidet/" + key,
+        "atg_fundamental_observed_at_utc": NOW.isoformat(),
+    }
+    ids = []
+    for race_no in (1, 2):
+        allowed, key_id = _persist_original_roster(
+            conn, race_id=f"RIKSTOTO:{key}:{race_no}", raceday_key=key,
+            race_number=race_no, observed_at=EARLY.isoformat(),
+            source_uri=source["collector_starts_uri"],
+            original_field=[{"start_number": race_no, "horse_name": f"Starter {race_no}"}],
+            source_checksums=source,
+        )
+        assert allowed
+        ids.append(key_id)
+    assert len(set(ids)) == 2
+    rows = conn.execute(
+        "SELECT payload_id,race_number,payload_json FROM provider_payloads "
+        "WHERE provider='collector' ORDER BY race_number"
+    ).fetchall()
+    assert len(rows) == 2
+    assert [r["race_number"] for r in rows] == [1, 2]
+    assert all(json.loads(r["payload_json"])["source_checksums"]["collector_starts_sha256"] == shared for r in rows)
+
+    # Reimport after ATG data changes must not create a new original or a conflict.
+    changing_diagnostic = {**source, "atg_fundamental_observed_at_utc": (NOW + timedelta(minutes=1)).isoformat()}
+    allowed, same_id = _persist_original_roster(
+        conn, race_id=f"RIKSTOTO:{key}:1", raceday_key=key, race_number=1,
+        observed_at=EARLY.isoformat(), source_uri=source["collector_starts_uri"],
+        original_field=[{"start_number": 1, "horse_name": "Starter 1"}],
+        source_checksums=changing_diagnostic,
+    )
+    assert allowed and same_id == ids[0]
+    assert conn.execute("SELECT COUNT(*) FROM provider_payloads").fetchone()[0] == 2
+
+    # A different original is NOT silently OR-IGNORED or written over the old.
+    with pytest.raises(ValueError, match="COLLECTOR_IMPORT_REVISION_CONFLICT"):
+        _persist_original_roster(
+            conn, race_id=f"RIKSTOTO:{key}:1", raceday_key=key, race_number=1,
+            observed_at=EARLY.isoformat(), source_uri=source["collector_starts_uri"],
+            original_field=[{"start_number": 1, "horse_name": "Altered"}],
+            source_checksums=source,
+        )
+    assert conn.execute("SELECT COUNT(*) FROM provider_payloads").fetchone()[0] == 2
+
+
+def test_claimed_exact_method_with_registration_echo_cannot_authorize_models(tmp_path):
+    root = _archive_unicode(tmp_path / "collector", tmp=False)
+    db = tmp_path / "hbi.sqlite"
+    _db(db)
+    with _connection(db) as conn:
+        payload = json.loads(conn.execute(
+            "SELECT payload_json FROM provider_payloads WHERE provider='atg'"
+        ).fetchone()[0])
+        for row in payload["runners"]:
+            row["match_method"] = "EXACT_REGISTRATION"
+            row["rikstoto_registration"] = str(10000 + int(row["selection_id"]))
+        conn.execute("UPDATE provider_payloads SET payload_json=? WHERE provider='atg'",
+                     (json.dumps(payload),))
+        result = verify_import(
+            conn, OriginalArchive(root), RID, asof=NOW, authenticated=True,
+        )
+        assert "IDENTITY_CROSS_PROVIDER_NOT_ATTESTED" in result["blockers"]
+        assert result["model_input_approved"] is False
+
