@@ -18,9 +18,9 @@ SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 
 def _utc(value: Any) -> datetime:
     if not isinstance(value, str):
-        raise ValueError("MISSING_FROZEN_CLOCK")
+        raise TypeError("MISSING_FROZEN_CLOCK")
     try:
-        time = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        time = datetime.fromisoformat(value)
     except ValueError as exc:
         raise ValueError("INVALID_FROZEN_CLOCK") from exc
     if time.utcoffset() is None:
@@ -110,7 +110,7 @@ def independent_system_coverage(
     hashes = []
     for item in frozen_legs:
         if not isinstance(item, dict):
-            raise ValueError("LEG_FORMAT_INVALID")
+            raise TypeError("LEG_FORMAT_INVALID")
         sha = item.get("original_model_sha256")
         race_id, vectors = _validated_original(item.get("original_model_bytes"), sha)
         if race_id in seen:
