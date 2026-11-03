@@ -421,6 +421,18 @@ jobs:
             --attestation-index pit003a-attestations/index.json \
             --output-dir mvp009-decision-audits
 
+      # Only historical frozen archives already recovered above. Post-race
+      # public GETs are kept in this separate research-only artifact; never
+      # feed them into CORE-004, T-4 attestations or betting decisions.
+      - name: Generate DEV-009 prospective official outcome scorecard (NO BET)
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
+        run: |
+          python -m hbi.prospective_outcome_scorecard \
+            --models-root pit003a-prior-models \
+            --attestation-index pit003a-attestations/index.json \
+            --output-dir dev009-outcome-scorecards \
+            --fetch-official
+
       - name: Upload Collector-to-Betting import and model admission evidence
         if: steps.gate.outputs.run == 'true' && always()
         uses: actions/upload-artifact@v4
@@ -472,6 +484,15 @@ jobs:
         with:
           name: mvp009-decision-audits-${{ github.run_id }}
           path: mvp009-decision-audits/
+          if-no-files-found: warn
+          retention-days: 21
+
+      - name: Upload DEV-009 prospective outcome scorecard (RESEARCH NO BET)
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev009-outcome-scorecards-${{ github.run_id }}
+          path: dev009-outcome-scorecards/
           if-no-files-found: warn
           retention-days: 21
 
