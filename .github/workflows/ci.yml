@@ -142,7 +142,9 @@ jobs:
                              "dev009/scorecard/index.json").read_text())
           assert data["bet_authority"] is False
           assert data["v33_evaluator_called"] is False
-          assert data["counts"]["physical_races"] == 1
+          assert data["counts"]["physical_races"] == 3
+          assert data["counts"]["complete_prediction_fields"] == 1
+          assert data["counts"]["not_evaluable"] >= 2
           record = data["records"][0]
           assert record["race_id"] == "RIKSTOTO:S1_NR_2026-11-03:8"
           assert record["source_model_original_sha256"] == (
