@@ -55,3 +55,20 @@ A generic prospective funnel needs separate source-by-stage original observation
 **Real software fixes already merged:** DEV-012/#131 PDF processing and MVP-016 #132/#134/#133 cumulative research intake and reporting. **New prospective model-eligibility fixes proven in this audit: 0.** The remaining ID, ATG, roster and T−4 categories require **new independent original source/clock evidence**, not a score change or invented registration mapping. The code in this research PR is diagnostic only; the original 65-race baseline and newer 66-race main observation are preserved separately.
 
 No additional GitHub scheduled automation; no new model coefficient, champion/core weights, betting hardgate, PIT-003A rule, historical report or `bet_authority=false` changed.
+
+
+## Independent full-field and outcome cross-check (ordinary 67-race original; 4 Nov 12:48 UTC)
+
+This second baseline is [run 41832416078](https://github.com/Maremoo2/Betting/actions/runs/41832416078), original scorecard artifact **13324990108**, raw `index.json` SHA256 **a4a667bd596bde42b9e3dbed6d96247731067fe76f82b33ea816194fa68b5ff7**. It contains 67 distinct race IDs, 24 complete original frozen full fields, 16 scored independent official-result pairs, 14 WIN triples, 0 archive errors and 0 PIT. This update does NOT reclassify the original 27-race historical sample above: later two F1 source-blocked races produce 29 NO_VERIFIED_FROZEN_MODEL entries in the 67-race denominator.
+
+| Original blocked group | Specific physical race IDs | Independently observed source status |
+| --- | --- | --- |
+| 6 `CHAMPION_FULL_FIELD_INVALID` | F2 3 Nov #1/#2/#3, F4 2 Nov #4/#7, OR 2 Nov #1 | All six original prestart `shadow.json` documents are `MODEL_BLOCKED` with `champion_p_sum=null`, `core004_p_sum=null`, source ATG full-field/fundamental rejection. F2 #1/#2/#3 and OR #1 also flag provider race or active-field identity conflict; F4 #4/#7 flag provider race identity/time |
+| 8 `FROZEN_FIELD_MISSING` | OR 2 Nov #2–#8 (seven); S2 2 Nov #7 (one) | All eight original `MODEL_BLOCKED` documents contain `active_runners=0`, empty `runners=[]`, and explicit `NO_CANONICAL_ROSTER` / `NO_FUNDAMENTAL_COHORT_AS_OF`. A blocked frozen-file existence is not a valid full-field probability distribution |
+| 4 `OFFICIAL_ACTIVE_FIELD_MISMATCH` | S2 2 Nov #1/#2/#4; S2 3 Nov #9 | Independently verified pre-T4 frozen scratch flags and post-race explicit `place=0, kmTime=Str` official rows. Existing code falsely compares only active p(win) members to all published rows. Dedicated draft [PR #138](https://github.com/Maremoo2/Betting/pull/138) original-replays exactly four and preserves stable frozen number, name, prestart scratch and outcome checks. Expected 16→20 scored / 14→18 WIN triples after approved merge, **not** yet measured on main |
+| 3 `OFFICIAL_FINISH_NOT_COMPLETE` | F4 2 Nov #5/#6/#8 | Original `/completeresults` has explicit `isComplete=false`; 9/11, 15/16 and 12/15 result rows vs prestart active fullfields. A provisional place=1 row does not override the official completeness gate |
+| 1 `CONFLICTING_OFFICIAL_RESULT_RECEIPTS` | S2 3 Nov #8 | Independent original source receipts disagree; no source-based resolution or retrospective model promotion |
+
+**Diagnosis:** For the six blocked models, eight missing active rosters and three incomplete results, the code is correctly fail-closed on source evidence available here. No responsible numerical uplift is justified. The four pre-frozen scratch mismatches are a genuine isolated implementation defect with a candidate source-grounded repair in PR #138. The distinct official receipt conflict stays open. Later model/result data never change an earlier source gate or T−4 freeze.
+
+**PIT/BET remain OFF.** None of the 67-race original audit rows establishes independent PIT, and no model coefficient, stake, price, V3.3.12 score or hardgate changes are proposed here.
