@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+from pathlib import Path
 
 import pytest
 
@@ -126,11 +128,8 @@ def test_existing_paginated_inventory_outage_stays_blocked(tmp_path):
     assert report["source_reason"] == "PAGINATED_GITHUB_INVENTORY_UNAVAILABLE"
 
 
-def test_real_41898656060_manifest_contract_if_downloaded(tmp_path, monkeypatch):
+def test_real_41898656060_manifest_contract_if_downloaded(tmp_path):
     """Pin a genuine previous 403 source manifest; optional standalone replay."""
-    import os
-    from pathlib import Path
-
     root = os.environ.get("MVP021_ORIGINAL_COVERAGE_ROOT")
     if not root:
         pytest.skip("Set MVP021_ORIGINAL_COVERAGE_ROOT to downloaded original artifacts")
