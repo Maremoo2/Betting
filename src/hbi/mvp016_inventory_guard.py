@@ -34,6 +34,9 @@ def inventory_status(doc: dict) -> tuple[bool, str]:
         return False, OUTAGE_REASON
     if doc.get("github_artifact_inventory_sha256") is None:
         return False, "DEV011_INVENTORY_SHA256_MISSING"
+    integrity = doc.get("original_integrity_failures", [])
+    if not isinstance(integrity, list) or integrity:
+        return False, "DOWNLOADED_ORIGINAL_INTEGRITY_FAILED"
     return True, "CUMULATIVE_INVENTORY_AVAILABLE_RESEARCH_ONLY"
 
 
