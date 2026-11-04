@@ -28,7 +28,7 @@ def _load(path: Path) -> tuple[dict, str]:
     except (TypeError, ValueError) as exc:
         raise ValueError("RESEARCH_INPUT_NOT_JSON") from exc
     if not isinstance(parsed, dict):
-        raise ValueError("RESEARCH_INPUT_NOT_OBJECT")
+        raise TypeError("RESEARCH_INPUT_NOT_OBJECT")
     return parsed, hashlib.sha256(raw).hexdigest()
 
 
