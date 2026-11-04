@@ -75,7 +75,7 @@ def test_official_may_omit_an_originally_scratched_row():
     ("extra_runner", "OFFICIAL_ACTIVE_FIELD_MISMATCH"),
     ("missing_active", "OFFICIAL_ACTIVE_FIELD_MISMATCH"),
     ("duplicate", "OFFICIAL_DUPLICATE_RUNNER"),
-    ("scratched_now_active", "OFFICIAL_ACTIVE_FIELD_MISMATCH"),
+    ("scratched_now_active", "OFFICIAL_LATE_SCRATCH_NOT_FROZEN"),
 ])
 def test_official_scratch_source_conflicts_remain_blocked(mutation, expected):
     roster, complete, raceday = _case()
