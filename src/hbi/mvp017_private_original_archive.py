@@ -21,8 +21,9 @@ SCHEMA = "MVP017_PRIVATE_ORIGINAL_ARCHIVE_RECEIPT_V1"
 HEX_SHA = re.compile(r"[0-9a-f]{64}\Z")
 IDENTIFIER = re.compile(r"[A-Za-z0-9_.:-]{1,160}\Z")
 REDACTION_GUARD = re.compile(
-    r"\bBearer\s+[A-Za-z0-9._~+/-]{12,}|\b(access_token|refresh_token|"
-    r"client_secret|private_key|authorization)\b\s*[:=]\s*['\"]?\S+",
+    r"Bearer\s+[A-Za-z0-9._~+/-]{12,}|[\"']?"
+    r"(?:access_token|refresh_token|client_secret|private_key|authorization)"
+    r"[\"']?\s*[:=]",
     flags=re.IGNORECASE,
 )
 MAX_ORIGINAL_BYTES = 100 * 1024 * 1024
