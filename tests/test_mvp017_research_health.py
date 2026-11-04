@@ -56,7 +56,7 @@ def _good(tmp_path: Path, run: int = 10) -> dict:
         }],
     })
     return {
-        "run_id": run, "github_head_sha": "d" * 64,
+        "run_id": run, "github_head_sha": "d" * 40,
         "scorecard_path": str(scorecard), "scorecard_sha256": score_sha,
         "coverage_manifest_path": str(manifest),
         "coverage_manifest_sha256": source_sha,
@@ -78,7 +78,7 @@ def _outage(tmp_path: Path, run: int = 11, *, false_zero: bool = False) -> dict:
     else:
         ss = "f" * 64
     return {
-        "run_id": run, "github_head_sha": "d" * 64,
+        "run_id": run, "github_head_sha": "d" * 40,
         "scorecard_path": str(scorecard), "scorecard_sha256": ss,
         "coverage_manifest_path": str(manifest), "coverage_manifest_sha256": ms,
     }
@@ -161,7 +161,7 @@ def test_genuine_git_healthy_outage_recent_and_v1_originals():
         assert hashlib.sha256((path / "index.json").read_bytes()).hexdigest() == score_sha
         assert hashlib.sha256((path / "manifest.json").read_bytes()).hexdigest() == manifest_sha
         snapshots.append({
-            "run_id": run, "github_head_sha": "d" * 64,
+            "run_id": run, "github_head_sha": "d" * 40,
             "scorecard_path": str(path / "index.json"),
             "scorecard_sha256": score_sha,
             "coverage_manifest_path": str(path / "manifest.json"),
