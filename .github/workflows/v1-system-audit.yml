@@ -69,12 +69,19 @@ jobs:
           import hashlib
           import json
           import os
+          from datetime import UTC, datetime
           from pathlib import Path
 
           path = Path("v1-state-restore-receipt.json")
           receipt = json.loads(path.read_text(encoding="utf-8"))
           assert receipt["schema"] == "HBI_STATE_RESTORE_RECEIPT_V1"
           assert receipt["repository"] == os.environ["GITHUB_REPOSITORY"]
+          assert receipt["audit_workflow_run_id"] == int(os.environ["GITHUB_RUN_ID"])
+          assert receipt["audit_code_sha"] == os.environ["GITHUB_SHA"]
+          restored = datetime.fromisoformat(receipt["restored_at_utc"])
+          assert restored.tzinfo is not None
+          assert restored <= datetime.now(UTC)
+          assert (datetime.now(UTC) - restored).total_seconds() < 1800
           assert receipt["artifact_name"] == "hbi-state"
           assert receipt["source_head_branch"] == os.environ["GITHUB_REF_NAME"]
           assert type(receipt["artifact_id"]) is int
@@ -93,7 +100,10 @@ jobs:
           print(
               "V1_RESTORED_ARTIFACT_PIN=ID:",
               receipt["artifact_id"],
-              "RUN:", receipt["source_workflow_run_id"],
+              "SOURCE_RUN:", receipt["source_workflow_run_id"],
+              "AUDIT_RUN:", receipt["audit_workflow_run_id"],
+              "AUDIT_SHA:", receipt["audit_code_sha"],
+              "RESTORED_AT:", receipt["restored_at_utc"],
               "DB_SHA256:", sha.hexdigest(),
           )
           PY
