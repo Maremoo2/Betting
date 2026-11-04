@@ -272,6 +272,54 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+      # Original-joined physical race funnel, never a freeze or betting authority.
+      - name: Replay MVP-018 67-race physical coverage funnel (NO BET)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/mvp018-funnel"
+          mkdir -p "$root"/{scorecard,source,cohort,manifest}
+          gh run download 41832416078 --repo "$GITHUB_REPOSITORY" \
+            --name dev009-outcome-scorecards-41832416078 --dir "$root/scorecard"
+          gh run download 41832416078 --repo "$GITHUB_REPOSITORY" \
+            --name core003-pilot-report-41832416078 --dir "$root/source"
+          gh run download 41832416078 --repo "$GITHUB_REPOSITORY" \
+            --name bet-mvp-shadow-41832416078 --dir "$root/cohort"
+          gh run download 41832416078 --repo "$GITHUB_REPOSITORY" \
+            --name dev011-coverage-manifest-41832416078 --dir "$root/manifest"
+          printf '%s  %s\n' \
+            a4a667bd596bde42b9e3dbed6d96247731067fe76f82b33ea816194fa68b5ff7 \
+            "$root/scorecard/index.json" | sha256sum --check -
+          printf '%s  %s\n' \
+            b75eb90a215ef1fe251da9d0d8df630cece2c7c003e2659a69a259390e67cb58 \
+            "$root/source/core003-pilot-report.json" | sha256sum --check -
+          printf '%s  %s\n' \
+            5a39954a79ca2e4d765092bfef64386eb8d77d5c9fb6685645306911c008de04 \
+            "$root/cohort/cohort-index.json" | sha256sum --check -
+          printf '%s  %s\n' \
+            67a2ca0296c5fd571fa58c4b3a90f13d5155cb03228866bd8e0062a737951f33 \
+            "$root/manifest/manifest.json" | sha256sum --check -
+          MVP018_FUNNEL_ORIGINAL_ROOT="$root" \
+            pytest -q tests/test_mvp018_coverage_funnel.py
+          python -m hbi.mvp018_coverage_funnel \
+            --scorecard-index "$root/scorecard/index.json" \
+            --source-report "$root/source/core003-pilot-report.json" \
+            --model-cohort-index "$root/cohort/cohort-index.json" \
+            --coverage-manifest "$root/manifest/manifest.json" \
+            --output-dir "$root/report"
+
+      - name: Upload MVP-018 original physical coverage funnel (NO BET)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp018-original-coverage-funnel-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp018-funnel/report/index.json
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Replay DEV-012 against original 3 Nov Vincennes PDF and starts
         if: github.event_name == 'pull_request'
         env:
