@@ -24,9 +24,9 @@ RESEARCH_SCHEMA = "MVP018_MISSING_MODEL_FREEZE_SOURCE_TRACE_V1"
 
 def _clock(value: Any) -> datetime:
     if not isinstance(value, str):
-        raise ValueError("ORIGINAL_CLOCK_MISSING")
+        raise TypeError("ORIGINAL_CLOCK_MISSING")
     try:
-        instant = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        instant = datetime.fromisoformat(value)
     except ValueError as exc:
         raise ValueError("ORIGINAL_CLOCK_INVALID") from exc
     if instant.utcoffset() is None:
@@ -61,12 +61,12 @@ def _members(index: dict) -> tuple[list[str], dict[str, dict], dict[str, dict]]:
         raise ValueError("ORIGINAL_PHYSICAL_COHORT_INVALID")
     processed, rejected = index.get("processed"), index.get("not_processed")
     if not isinstance(processed, list) or not isinstance(rejected, list):
-        raise ValueError("ORIGINAL_COHORT_MEMBERS_MISSING")
+        raise TypeError("ORIGINAL_COHORT_MEMBERS_MISSING")
     def lookup(rows: list[dict]) -> dict[str, dict]:
         values: dict[str, dict] = {}
         for item in rows:
             if not isinstance(item, dict):
-                raise ValueError("ORIGINAL_COHORT_MEMBER_INVALID")
+                raise TypeError("ORIGINAL_COHORT_MEMBER_INVALID")
             rid = item.get("race_id")
             if not isinstance(rid, str) or not RACE.fullmatch(rid) or rid in values:
                 raise ValueError("ORIGINAL_COHORT_MEMBER_DUPLICATED")
@@ -154,11 +154,11 @@ def explain(scorecard: dict, supplied: list[dict]) -> dict:
         members, processed, rejected = _members(index)
         handoffs = index.get("collector_handoff")
         if not isinstance(handoffs, list):
-            raise ValueError("ORIGINAL_COLLECTOR_HANDOFF_INVALID")
+            raise TypeError("ORIGINAL_COLLECTOR_HANDOFF_INVALID")
         handoff: dict[str, dict] = {}
         for item in handoffs:
             if not isinstance(item, dict) or not isinstance(item.get("race_id"), str):
-                raise ValueError("ORIGINAL_HANDOFF_ENTRY_INVALID")
+                raise TypeError("ORIGINAL_HANDOFF_ENTRY_INVALID")
             rid = item["race_id"]
             if rid in handoff or rid not in members:
                 raise ValueError("ORIGINAL_HANDOFF_RACE_CONFLICT")
