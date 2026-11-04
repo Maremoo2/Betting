@@ -246,7 +246,8 @@ def _capture(client: RikstotoClient, path: str, folder: Path, role: str) -> tupl
 
 
 def _official_winner(
-    complete: dict, raceday: dict, *, active: list[dict], race_no: int,
+    complete: dict, raceday: dict, *, active: list[dict],
+    frozen_roster: list[dict], race_no: int,
 ) -> tuple[str | None, str | None]:
     if complete.get("isComplete") is not True:
         return None, "OFFICIAL_FINISH_NOT_COMPLETE"
@@ -264,17 +265,47 @@ def _official_winner(
             return None, "OFFICIAL_DUPLICATE_RUNNER"
         observed[key] = row
     expected = {str(r["start_number"]): r for r in active}
-    if set(observed) != set(expected):
+    if (not isinstance(frozen_roster, list)
+            or any(not isinstance(r, dict) or type(r.get("scratched")) is not bool
+                   for r in frozen_roster)):
+        return None, "OFFICIAL_FROZEN_FULL_ROSTER_INVALID"
+    scratched = {
+        str(r["start_number"]): r for r in frozen_roster if r["scratched"]
+    }
+    frozen_ids = [str(r.get("start_number")) for r in frozen_roster]
+    if (len(frozen_ids) != len(set(frozen_ids))
+            or set(frozen_ids) != set(expected) | set(scratched)
+            or set(expected) & set(scratched)):
+        return None, "OFFICIAL_FROZEN_FULL_ROSTER_INVALID"
+    # A COMPLETE official result may also list PRE-FROZEN scratches as
+    # place=0, kmTime="Str". Those horses were already excluded from p(win).
+    # Verify their frozen number AND name; do not infer new/late scratches
+    # from the post-race record, or change the frozen model's active field.
+    if not set(expected).issubset(observed):
         return None, "OFFICIAL_ACTIVE_FIELD_MISMATCH"
     for no, row in observed.items():
-        # If the official source publishes a name, it must not contradict the
-        # frozen pre-start identity. Names by themselves never prove PIT.
+        frozen = expected.get(no)
+        if frozen is None:
+            frozen = scratched.get(no)
+            if frozen is None:
+                return None, "OFFICIAL_ACTIVE_FIELD_MISMATCH"
+            if row["place"] != 0 or row.get("kmTime") != "Str":
+                return None, "OFFICIAL_FROZEN_SCRATCH_RESULT_CONFLICT"
+            if (not isinstance(row.get("horseName"), str)
+                    or not row["horseName"].strip()):
+                return None, "OFFICIAL_FROZEN_SCRATCH_NAME_MISSING"
+        elif row["place"] == 0 and row.get("kmTime") == "Str":
+            # The model considered this horse active at T-4. Never turn a
+            # later scratch into a hindsight-adjusted probability cohort.
+            return None, "OFFICIAL_LATE_SCRATCH_NOT_FROZEN"
         name = row.get("horseName")
+        # A published official name cannot contradict its frozen identity.
         if isinstance(name, str) and name.strip() and (
-            name.strip().casefold() != str(expected[no].get("horse_name", "")).strip().casefold()
+            name.strip().casefold() != str(frozen.get("horse_name", "")).strip().casefold()
         ):
             return None, "OFFICIAL_FROZEN_RUNNER_NAME_DISAGREES"
-    winners = [number for number, row in observed.items() if row["place"] == 1]
+    winners = [number for number, row in observed.items()
+               if number in expected and row["place"] == 1]
     if len(winners) != 1:
         return None, "OFFICIAL_WINNER_NOT_UNIQUE"
     winner_number = winners[0]
@@ -462,7 +493,8 @@ def evaluate_archive(
                         )
                 if complete is not None and raceday is not None and not record["reasons"]:
                     winner, why = _official_winner(
-                        complete, raceday, active=active, race_no=number
+                        complete, raceday, active=active,
+                        frozen_roster=model["runners"], race_no=number
                     )
                     if why is not None:
                         record["reasons"].append(why)
