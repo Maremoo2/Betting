@@ -428,3 +428,123 @@ Diagnostiske hovedblokker (kan opptre samtidig): `NO_PRE_CUTOFF_RIKSTOTO_STARTS=
 - [ ] P0 original resultatkode `place=0`/`kmTime=0,0` for Skive #8 må tolkes av offisiell kontrakt før selv et **papir**-tap kan bokføres.
 - [ ] CORE-004 market-free kildefaktorgrunnlag og forhåndsregistrering, deretter **nye** kronologiske OOS-dager. Fremtidig ytelse/profit kan ikke konstrueres fra fortid.
 
+## MVP-021 FINAL – closure snapshot 4 November 2026
+
+Historical snapshots above are preserved. This chapter supersedes their current-status claims,
+not their historical evidence. Review base: `3955320482306b1d2fb475c6826502d15b3c03de`.
+No merge, production write, model promotion, settlement write or new scheduled job was performed.
+
+### Completed engineering and original-byte acceptance
+
+- PR #143 is operationally verified. First ordinary V1 audit **41902815512**, code
+  `0615b44e52593b61bcc621791673a94be7265a4b`, restored state run **41902185800**,
+  artifact **13359900337**. Actual ZIP SHA256
+  `e1a6ebad97780700abfc09abb34491f6c371169b476aa588bc0ac6206eaf9cb7`;
+  actual SQLite SHA256 `01e0432d06c04667723f528510944b16d54e1badf103cf51c07e7db0c96e5471`,
+  **701018112 bytes**. Audit **41902850675** on current base restored the same exact bytes.
+  Receipt existence alone was not accepted as evidence.
+- PR #145 is operationally verified for successful download and transport failure.
+  First new-main CORE **41902850826** produced **89 physical / 39 full fields /
+  30 model pairs / 29 WIN triples / 0 PIT**. Ordinary CORE **41906175529** then
+  failed one original download and emitted only `source-unavailable.json`, unknown
+  counts and `prior_verified_scorecard_invalidated=false`. A successful workflow
+  with that diagnostic is a correctly blocked benchmark, not successful scoring.
+- **PR #146** repairs a real audit defect: all five historical decisions have their exact
+  original provider-market cohort in that restored SQLite. Earlier audit used later
+  provenance prices. Exact-state local replay changes **361 checked / 554 skipped /
+  5 mismatches** to **361 / 554 / 0**, retaining all five provenance differences.
+  Negative read-overlay replay with one original cohort unavailable remains FAIL.
+  No historical decision, source or provenance row is rewritten; no model changes.
+- **PR #147** closes the remaining DEV011 integrity hole: a successful download command
+  cannot validate absent, truncated or changed declared original members. Existing
+  producer source blocks, true empty cohorts and genuine legacy unindexed originals
+  remain distinct. Incomplete legacy archives can therefore block a new benchmark;
+  preserve the prior original reference instead of reducing its denominator.
+- **PR #148** repairs the demonstrated prospective capture gap. Jägersro R5 receipt
+  **13356060955** arrived at **19:20:32.413975Z**, requiring **267.586025 s** to reach
+  T4-minus-60; the old maximum was 240 s. Next plan **13355553911** was at
+  **19:28:12.538879Z**, after **19:26Z** cutoff. Bounded waiting becomes 360 s,
+  retaining clock rechecks and zero calls after cutoff. No schedule is changed and
+  GitHub scheduling is still best effort. This does not certify that past race.
+
+Separate draft PR code heads: #146 `0151242aa138c25ac51312c1fab729939d631a6f`,
+#147 `bc725a58c1ed0280bfe73cfaff56593eb0df01f8`,
+#148 `208c07fb9e36b43ab4f212e169797c09ef78b0a8`.
+Exact-head CI runs **41908317289 / 41908322445 / 41908325713** passed, including
+Ruff, full pytest and existing authenticated-original replay steps. This roadmap
+addition is a subsequent documentation commit on #146; check its final HEAD CI
+separately. Windows baseline and replay candidate have identical 27 failures;
+they are not new regressions and are not relabelled PASS.
+
+### First-30 research milestone
+
+Ordinary CORE **41907500933**, artifact **13361697131**, yields **89 / 39 / 32 /
+31 / 0**. Protocol was recorded at **20:26:10.590491Z**, before this result;
+first 30 IDs were frozen at **20:44:32.329393Z**, before local scoring. Sort by
+original selected model-freeze timestamp then race-ID; never by outcome or score.
+Thirty original model ZIPs, their cohort/member hashes and both official-result
+response members for every selected race were independently checked.
+
+| Same 30 races, 299 runners | Multiclass log loss | Multiclass Brier |
+| --- | ---: | ---: |
+| Champion V1.1 | 2.1290872503 | 0.8614155898 |
+| CORE-004 | 2.0876948876 | 0.8480727641 |
+| Normalized WIN | 1.9491062640 | 0.8235196459 |
+
+Market has lower mean loss in this small cohort. Six meeting-days across three dates,
+27 SE / 3 DK races, 21 Auto / 9 Volt; availability-selected research evidence,
+not robust calibration, profit or independent generalization. WIN is retained inside
+hashed original frozen models, not independently verified raw WIN HTTP bytes.
+Local protocol timing is not an externally attested preregistration. **Zero PIT**.
+The historical 88/38/28/27 reference remains preserved; its `9a0fee8f...` hash is
+the original **index.json**, not the ZIP hash.
+
+### Unresolved P0 and source dependencies
+
+- Skive issue #82, selected #8: original result says place=0, kmTime="0,0".
+  Eskilstuna issue #144, selected #3: place=0, kmTime="19,1". Official winners and
+  dividends are verified, but effective participation/refund code semantics are not.
+  Both remain **BLOCKED_CONTRACT_SEMANTICS**, no loss/refund inferred or booked.
+- Exact restored state contains a third overdue ticket, Bjerke 3 November R4 #6.
+  Current official result has place=3 and a verified winner dividend; existing code
+  is structurally ready. It awaits ordinary authorized settlement; no local write.
+- V1 ordinary audit is still **FAIL**. Local corrected replay PASS does not clear
+  settlement, source provenance or future operational verification requirements.
+- PIT source receipt and independent Collector origin checks are wired. TMP IDs,
+  scratch/publication evidence and full frozen identity remain hard source gates.
+  Next observed future candidate: Bollnäs **S1_NR_2026-11-05:1**, start **11:20Z**,
+  conservative T4 **11:16Z**; source suitability still requires verification.
+- Permanent external archive needs owner-approved account, EU destination, budget,
+  retention/access policy and actual restore drill. No storage was deployed/uploaded.
+- Existing issue #104 independent PDF gold qualification remains source-dependent.
+  Issue #103's former independent-review/branch-rules demand is superseded by current
+  one-owner governance; it is not silently reintroduced as a merge prerequisite.
+
+### Acceptance and MVP-022 handover
+
+**Research MVP:** limited existing shadow research is operationally evidenced;
+unconditional closure acceptance is **REVISE** pending exact-head owner acceptance
+of #146/#147/#148 and ordinary post-merge evidence. No PR acceptance grants live BET.
+**Production Betting: BLOCKED** on PIT, settlement integrity, verified executable
+price timing, calibration/EV, risk/security and separate owner authorization.
+
+**MVP-022 – Predictive Edge Research** may be prepared, not trained in this sprint.
+Use the frozen first30 only as exploratory development evidence. Primary hypotheses:
+market predictive superiority; incremental market-free history/form/distance/driver
+signal; and genuinely out-of-sample calibration. Freeze comparator/configuration
+hashes, keep fundamental and market signal separate, use chronological training and
+validation, then a new untouched holdout. Proposed prospective comparator window:
+**5 November–4 December 2026 UTC**, all independently predeclared NO/SE trot races,
+with missing/blocked races retained in coverage. Owner registration must precede
+the window; otherwise choose and register a new future window, never backdate.
+No claim of edge from 30 races, no tuning-and-retesting on that cohort, no change to
+Champion/CORE-004/V3.3.12 or betting hardgates without a separate mandate.
+
+| Milestone | Observable exit | Deadline / dependency |
+| --- | --- | --- |
+| Original-state closure and three small fixes | Original hashes, local replay and exact-head CI | Done locally 4 Nov; drafts need owner review |
+| Post-merge operational acceptance | Ordinary V1 restore/replay and fail-closed CORE receipts at accepted SHA | Only after explicit owner merge approval |
+| Prospective capture and holdout registration | Original source clocks, stable IDs, scratch proof; externally recorded protocol | Before applicable future cutoff/window |
+| Permanent-archive decision | Owner chooses EU account, budget, retention and access | By 10 Nov target; no deployment implied |
+| Final HQ handover | Limited Research acceptance or precise remaining blockers; Production remains blocked | 13 Nov 18:00 Europe/Oslo |
+
