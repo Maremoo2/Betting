@@ -431,6 +431,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p dev011-scorecard-models dev011-scorecard-results dev011-coverage
+          # A fully paginated index may still have rate-limited original downloads.
+          : > dev011-coverage/download-failures.tsv
           # GitHub artifact total_count may change while paginating. Retry
           # the ENTIRE source inventory from page one. Never accept mixed pages
           # or weaken DEV-011's strict count/duplicate validation.
@@ -463,6 +465,11 @@ jobs:
               if ! gh run download "$prior_run" --repo "$GITHUB_REPOSITORY" \
                   --name "$artifact_name" --dir "$dest"; then
                 echo "DEV011_ORIGINAL_ARCHIVE_DOWNLOAD_BLOCKED:$artifact_name"
+                printf '%s\t%s\t%s\n' "$prior_run" "$artifact_name" "$kind" \
+                  >> dev011-coverage/download-failures.tsv
+                # One missing original is already a hard blocker. Stop further
+                # per-artifact GETs instead of amplifying an installation 403.
+                break
               fi
             done < "$RUNNER_TEMP/dev011-downloads.tsv"
             python -m hbi.dev011_coverage finalize \
@@ -495,6 +502,7 @@ jobs:
           # diagnostic. Keep the independent CORE-003/PIT state untouched.
           if python -m hbi.mvp016_inventory_guard \
               --manifest dev011-coverage/manifest.json \
+              --failed-downloads-tsv dev011-coverage/download-failures.tsv \
               --output-dir dev009-outcome-scorecards; then
             python -m hbi.prospective_outcome_scorecard \
               --models-root dev011-scorecard-models \
