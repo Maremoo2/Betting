@@ -467,6 +467,9 @@ jobs:
                 echo "DEV011_ORIGINAL_ARCHIVE_DOWNLOAD_BLOCKED:$artifact_name"
                 printf '%s\t%s\t%s\n' "$prior_run" "$artifact_name" "$kind" \
                   >> dev011-coverage/download-failures.tsv
+                # One missing original is already a hard blocker. Stop further
+                # per-artifact GETs instead of amplifying an installation 403.
+                break
               fi
             done < "$RUNNER_TEMP/dev011-downloads.tsv"
             python -m hbi.dev011_coverage finalize \
