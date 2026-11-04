@@ -2,6 +2,25 @@
 
 **Safety:** Research-only, no betting/settlement/state write, no PIT admission, no model refit, no changed Champion/CORE-004/V3.3.12/odds/stakes/decisions, no automation. All external official GETs must be timestamped; observed after T−4 must never be represented as pre-T−4.
 
+## Last completed ordinary original snapshot as of 19:11:46 UTC (20:11:46 Oslo)
+
+[CORE-003 41894514024](https://github.com/Maremoo2/Betting/actions/runs/41894514024), completed successfully on main `4fe98264522e8453589a83bda6d9e59c53b22147`. Original DEV009 artifact **13356205369** SHA256 `0168abb3ecc7143706321383099dc5ef76c1a9ad5820c6f7f4fca7029919b5bf`; readiness artifact **13356550052** SHA256 `eaf40b72317ff40b78f21a2879b7e8284db7c5a96dd62a4d8a493e00036f59d4`.
+
+**87 physical / 37 frozen complete model full fields / 27 originally result-scored pairs / 26 WIN triples / 0 PIT**. Another verified benchmark pair+triple appeared after the 87/37/26/25 observation, with no physical or full-field double count. New source-only **`RIKSTOTO:S3_NR_2026-11-04:8`** remains outside cumulative scorecard and may not be credited as result-scored. Source cohort 7: five `BLOCKED_IDENTITY`, two `BLOCKED_ATG_FULL_FIELD`, zero strict Collector approvals, zero PIT. Jägersro S3 race 5 still has 9/9 ATG + original WIN complete but independent identity/timed official scratch original unverified at 19:11:46 UTC.
+
+**Same 26 physical-race triple denominator, no hindsight selection:** independent row-wise aggregation of original `records[*].score` only for `benchmark_status=TRIPLE_EVALUABLE`:
+
+| Predictive metric, lower is better | Champion | CORE-004 | Normalized same-freeze WIN |
+| --- | ---: | ---: | ---: |
+| Mean log loss (n=26 each) | 2.134770 | 2.094102 | **1.973956** |
+| Mean multiclass Brier (n=26 each) | 0.866808 | 0.855951 | **0.827464** |
+
+This is an **uncalibrated, small retrospective research sample**, no PIT certificate, no economic EV/CLV assessment and no evidence of a profitable betting edge. Calibration remains `INSUFFICIENT_DISTINCT_RACES`; crossing 30 would be a *volume milestone only*.
+
+**Nearest actual prospective sources as-of 19:11 UTC (not a prediction of later readiness):** S3 race5 (T−4 19:26 UTC, ATG9/9 WIN full); S2 race8 (19:59, ATG11/11 WIN incomplete); S3 race7 (20:11, ATG11/11 WIN incomplete); S2 race9 (20:22, ATG12/12 WIN incomplete); S3 race8 (20:36, ATG10/10 WIN incomplete). All require independent registered identities, source-qualified official scratches and strict approval. Source clock/pool snapshot time is not an independent official publication timestamp. Earlier S2 race6 T−4 19:09 UTC has **already expired** at this observation; never retry as prospective freeze.
+
+**New Eskilstuna follow-up:** owner decision for numeric `kmTime` settlement semantics tracked separately in [issue #144](https://github.com/Maremoo2/Betting/issues/144). Skive #82 remains source-blocked. No ticket writes.
+
 ## Newer completed ordinary checkpoint – 4 Nov 2026 19:02:49 UTC
 
 [CORE-003 41892671529](https://github.com/Maremoo2/Betting/actions/runs/41892671529), on unchanged `main` SHA `4fe98264522e8453589a83bda6d9e59c53b22147`, finished successfully and provides the next independently SHA-checked originals:
