@@ -207,13 +207,16 @@ jobs:
           from hbi.dev011_coverage import finalize, plan
           root = Path(os.environ["RUNNER_TEMP"]) / "mvp014-legacy"
           runs = (41456642411, 41459303701, 41461113601, 41462919513, 41463276002)
-          artifacts = [{"id": 13147076977 + i, "name": f"bet-mvp-shadow-{run}",
+          original_artifact_ids = (
+              13147076977, 13147433634, 13149181358, 13150157261, 13150442459,
+          )
+          artifacts = [{"id": aid, "name": f"bet-mvp-shadow-{run}",
                         "expired": False, "workflow_run": {"id": run, "head_branch": "main"}}
-                       for i, run in enumerate(runs)]
+                       for run, aid in zip(runs, original_artifact_ids, strict=True)]
           inventory = plan([{"total_count": 5, "artifacts": artifacts}],
                            current_run_id=99999999, inventory_sha="f" * 64)
           report = finalize(inventory, models_root=root, results_root=root / "results")
-          report["evidence_mode"] = "GENUINE_ORIGINAL_BYTES_SYNTHETIC_TEST_ONLY_ARTIFACT_IDS"
+          report["evidence_mode"] = "GENUINE_GITHUB_ORIGINAL_BYTES_REAL_ARTIFACT_IDS"
           report["original_model_shas"] = {
               str(run): [hashlib.sha256(f.read_bytes()).hexdigest()
                          for f in sorted((root / str(run)).rglob("shadow.json"))]
