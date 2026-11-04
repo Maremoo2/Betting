@@ -1,6 +1,23 @@
 # Betting HQ – master-roadmap og gjennomføringsstatus
 
 
+## MVP-018 – Operational original checkpoint | 4 November 2026, 13:15 UTC
+
+**Newest dated append-only checkpoint.** `main` initially `d0bb18d30b27d0ca62f2c74331f52b42ca90a2a1`; main later advanced to `f105f96b769e5544dfd7ab6a5b3ebf7657fccd77` after owner-side merge of MVP-017 health PR #136. #132/#134/#133 remain merged. PR #135 (local archive), #137 (27 original freezes), #138 (pre-frozen scratches), #139 (prospective funnel) are open; no merge by DEV in this sprint.
+
+**Latest validated ordinary main source:** [CORE-003 41832416078](https://github.com/Maremoo2/Betting/actions/runs/41832416078), original DEV-013 scorecard artifact **13324990108**, raw JSON SHA256 `a4a667bd596bde42b9e3dbed6d96247731067fe76f82b33ea816194fa68b5ff7`. **67 unique physical races, 24 complete eligible frozen full-field models, 16 official result-scored Champion/CORE-004 pairs, 14 eligible same-freeze WIN triples, 2 pair-only, 0 archive errors, 0 independently PIT-certified**. Operative 67 / 16 / 14 is **not** the prospective uplift from #138, which remains `CI_PASS / NOT_MERGED`.
+
+Original first reason distribution at 67: **29** no verified frozen model, **8** frozen field missing, **6** invalid Champion full field, **4** official active-field mismatch, **3** official result incomplete, **1** conflicting official result. The original 27 no-freeze root audit is separately time-scoped to 65 physical races and must not be reclassified as 29 historically missing without new source evidence.
+
+**Code and evidence, not policy promotion:**
+- #137 original diagnostics: 27 missing model freezes traced across SHA-pinned original fixed cohorts, with 9 historical PDF parser rejects now covered by previously merged DEV-012 and no historical backfill.
+- #138 original-results fix: four already pre-T-4 frozen scratches are present in official results as `place=0, kmTime=Str`. Expected research-only scoring uplift +4 pairs / +4 WIN triples **after explicit owner merge** and ordinary original re-evaluation. No change to active model p(win), outcome-selection rules, PIT or V3.3.12. Other six blocked, eight missing and three incomplete are documented with exact source classes in the #137 audit.
+- #139 new four-original-provenance funnel: latest three fixed F1 races had three Collector source SHA receipts, **zero independently approved model inputs and zero current model processing**. The cumulative 67→24→16→14 funnel is a separate denominator; intermediate source-capture rates for all historical 67 remain **UNKNOWN**. [CI 41836112539](https://github.com/Maremoo2/Betting/actions/runs/41836112539) **PASS**, 1,561 tests passed, 90 skipped and authentic 4-original replay; metadata only. Not merged.
+- #135 local original archive code remains `CODE_COMPLETE/CI_PASS`, permanent remote retention `BLOCKED_INFRASTRUCTURE`. #136 research health now on main; raw GitHub metadata and cumulative original SHA still gate validity.
+
+**P0 remaining:** 30 triple research target currently only **14/30**, V1 audit **FAIL** (5 runtime replay, 1 Skive #82 unsettled, 14 provider WARN), Jägersro #5 4 Nov independent PIT **0**; preserve scheduled 20:26 T−4 / 22:15 audit without early certification. No new automations, real-money operation, source gate relaxations, model refit, retrospective frozen admission, multi-leg economic EV or changed `bet_authority=false`.
+
+
 ## MVP-018 – Model Freeze Coverage Recovery | 4. november 2026 | P0 (append-only)
 
 **Påbegynt mot:** `main=d0bb18d30b27d0ca62f2c74331f52b42ca90a2a1`. Ingen historiske snapshots nedenfor er omskrevet. Frist **13.11.2026 kl. 18:00 Europe/Oslo**. [Mandat](MVP018_27_MISSING_FREEZE_ORIGINAL_AUDIT_20261104.md) og original SHA-verifisert GitHub Actions-kjøring [41826525357](https://github.com/Maremoo2/Betting/actions/runs/41826525357).
