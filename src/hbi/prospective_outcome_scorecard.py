@@ -63,10 +63,19 @@ def read_archived_models(root: Path) -> tuple[list[dict], list[dict], list[str]]
                 declared = [e.get("race_id") for e in data["processed"] if isinstance(e, dict)]
                 declared += [e.get("race_id") for e in data.get("not_processed", [])
                              if isinstance(e, dict)]
-            if (not isinstance(declared, list) or not declared
+            if (not isinstance(declared, list)
                     or any(not isinstance(x, str) or not x for x in declared)
                     or len(declared) != len(set(declared))):
                 raise ValueError("DECLARED_PHYSICAL_COHORT_INVALID")
+            # An authenticated scheduled NOOP genuinely declares an empty physical
+            # cohort. Do not report it as a broken original or add phantom races.
+            # A claimed empty cohort with ANY processed/rejected member stays
+            # fail-closed: an absent denominator must never conceal a race.
+            if not declared:
+                if (data["processed"] or data.get("not_processed") != []
+                        or data.get("original_cohort") != []):
+                    raise ValueError("DECLARED_PHYSICAL_COHORT_INVALID")
+                continue
             # Denominator is frozen BEFORE any source files are scored.
             expected_races.update(declared)
             used: set[str] = set()
