@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import argparse
 import json
-from itertools import pairwise
 from collections import Counter
+from itertools import pairwise
 from pathlib import Path
 
 from .mvp016_research_status import summarize
