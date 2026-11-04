@@ -154,7 +154,10 @@ def summarize(
         health = latest["status"]
     v1 = {"status": "NOT_EVALUATED", "original_sha256": None,
           "temporal_integrity": None, "runtime_replay_parity": None,
-          "settlement_integrity": None, "provider_integrity": None}
+          "settlement_integrity": None, "provider_integrity": None,
+          "runtime_replay_mismatch_count": None,
+          "settlement_failure_count": None,
+          "provider_fetch_failure_count": None}
     if v1_audit_path is not None:
         if v1_audit_sha256 is None:
             raise ValueError("V1_ORIGINAL_SHA_REQUIRED")
@@ -165,6 +168,12 @@ def summarize(
                     "settlement_integrity", "provider_integrity",
                 ))):
             raise ValueError("V1_ORIGINAL_CONTRACT_INVALID")
+        mismatches = original["runtime_replay_parity"].get("mismatches")
+        failures = original["settlement_integrity"].get("failures")
+        provider_failures = original["provider_integrity"].get("provider_fetch_failures")
+        if (not isinstance(mismatches, list) or not isinstance(failures, list)
+                or type(provider_failures) is not int or provider_failures < 0):
+            raise ValueError("V1_ORIGINAL_INTEGRITY_COUNTS_MISSING")
         v1 = {
             "status": "ORIGINAL_SYSTEM_AUDIT_LOADED_NOT_P0_CLEARED",
             "original_sha256": v1_audit_sha256,
@@ -172,6 +181,9 @@ def summarize(
                 "temporal_integrity", "runtime_replay_parity",
                 "settlement_integrity", "provider_integrity",
             )},
+            "runtime_replay_mismatch_count": len(mismatches),
+            "settlement_failure_count": len(failures),
+            "provider_fetch_failure_count": provider_failures,
         }
     return {
         "schema": SCHEMA,
