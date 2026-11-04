@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from hbi.prospective_outcome_scorecard import _market, _official_winner, clock
-from hbi.scoring import log_loss
+from hbi.evaluation import log_loss
 
 BASELINE_SCORECARD_SHA = "a7cc16d026ea08e0042dc4d6c5c2d75d3212bfd5fb00203dbbbbc36455f11d2b"
 MODEL_ARTIFACTS = {
