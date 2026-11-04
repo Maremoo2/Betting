@@ -95,6 +95,119 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+      # Exact observed 4 Nov 2026 no-op index. A valid empty cohort must
+      # contribute zero races without creating a false archive error.
+      - name: Replay MVP-016 original empty CORE-003 cohort (NO BET)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/mvp016-empty"
+          gh run download 41796128435 --repo "$GITHUB_REPOSITORY" \
+            --name bet-mvp-shadow-41796128435 \
+            --dir "$RUNNER_TEMP/mvp016-empty"
+          printf '%s  %s\n' \
+            ebeb64f1fc27328c0ff5f063ede33ec1d08615e482d4a017680ea0d5813b9aa0 \
+            "$RUNNER_TEMP/mvp016-empty/cohort-index.json" | sha256sum --check -
+          MVP016_EMPTY_COHORT_ORIGINAL_ROOT="$RUNNER_TEMP/mvp016-empty" \
+            pytest -q tests/test_mvp016_empty_cohort.py
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          from hbi.prospective_outcome_scorecard import read_archived_models
+          root = Path(os.environ["RUNNER_TEMP"]) / "mvp016-empty"
+          raw = (root / "cohort-index.json").read_bytes()
+          models, errors, physical_races = read_archived_models(root)
+          assert models == errors == physical_races == []
+          report = {
+              "schema": "MVP016_ORIGINAL_NOOP_COHORT_REPLAY_V1",
+              "original_source_run": 41796128435,
+              "original_sha256": hashlib.sha256(raw).hexdigest(),
+              "model_reports_admitted": len(models),
+              "physical_races_added": len(physical_races),
+              "archive_errors": errors,
+              "pit_certified": False,
+              "bet_authority": False,
+          }
+          (root / "mvp016-empty-original-replay.json").write_text(
+              json.dumps(report, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+
+      - name: Upload MVP-016 original empty cohort replay (NO BET)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp016-empty-cohort-original-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp016-empty/mvp016-empty-original-replay.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      # Real scheduled 4 Nov source inventory changed during pagination.
+      # Protect cumulative benchmark from a falsely zero-count published scorecard.
+      - name: Replay MVP-016 genuine GitHub inventory outage (NO BET)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/mvp016-inventory"
+          mkdir -p "$root"/{outage,healthy,false_zero}
+          gh run download 41817026855 --repo "$GITHUB_REPOSITORY" \
+            --name dev011-coverage-manifest-41817026855 --dir "$root/outage"
+          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
+            --name dev011-coverage-manifest-41814068321 --dir "$root/healthy"
+          gh run download 41817026855 --repo "$GITHUB_REPOSITORY" \
+            --name dev009-outcome-scorecards-41817026855 --dir "$root/false_zero"
+          printf '%s  %s\n' \
+            b14c61c979c656e49da382d574f3416293303e582b3b864b646df592282c4ac7 \
+            "$root/outage/manifest.json" | sha256sum --check -
+          printf '%s  %s\n' \
+            ecb4477a0ec5fc9c954862943ab8b39876d7b13c6adf701bf4e777eaa9f9df33 \
+            "$root/healthy/manifest.json" | sha256sum --check -
+          printf '%s  %s\n' \
+            be7604e5b9604aa5439769e716038ad863854588fb6340b8333b4f77392e4481 \
+            "$root/false_zero/index.json" | sha256sum --check -
+          MVP016_INVENTORY_OUTAGE_ORIGINAL_ROOT="$root" \
+            pytest -q tests/test_mvp016_inventory_outage.py
+          # A blocked original must *not* produce the current cumulative
+          # report's misleading zero-race index.
+          set +e
+          python -m hbi.mvp016_inventory_guard \
+            --manifest "$root/outage/manifest.json" \
+            --output-dir "$root/research-status"
+          code=$?
+          set -e
+          test "$code" -eq 3
+          test -f "$root/research-status/source-unavailable.json"
+          test ! -e "$root/research-status/index.json"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          root = Path(os.environ["RUNNER_TEMP"]) / "mvp016-inventory"
+          row = json.loads((root / "research-status/source-unavailable.json").read_text())
+          assert row["schema"] == "MVP016_CUMULATIVE_SCORECARD_SOURCE_UNAVAILABLE_V1"
+          assert row["source_reason"] == "PAGINATED_GITHUB_INVENTORY_UNAVAILABLE"
+          assert row["cumulative_physical_races"] is None
+          assert row["scorecard_generated"] is False
+          assert row["bet_authority"] is False
+          PY
+
+      - name: Upload MVP-016 original inventory outage replay evidence
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp016-original-inventory-outage-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp016-inventory/research-status/source-unavailable.json
+          if-no-files-found: warn
+          retention-days: 30
+
       # Genuine 4 November four-original scorecard join: never a PIT certificate.
       - name: Replay MVP-016 original research status (NO BET)
         if: github.event_name == 'pull_request'
