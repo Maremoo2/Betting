@@ -627,6 +627,56 @@ jobs:
           path: ${{ runner.temp }}/mvp018-funnel/readiness/index.json
           if-no-files-found: warn
           retention-days: 30
+      # One current fixed-cohort race can be absent from the cumulative archive.
+      # Validate the four real source files independently: never invent a
+      # benchmark row, PIT certificate or model freeze to join the cohorts.
+      - name: Replay MVP-019B disjoint source/current cohort originals (NO BET)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/mvp019b-original"
+          mkdir -p "$root"/{scorecard,source,cohort,manifest}
+          gh run download 41879063497 --repo "$GITHUB_REPOSITORY" \
+            --name dev009-outcome-scorecards-41879063497 --dir "$root/scorecard"
+          gh run download 41879063497 --repo "$GITHUB_REPOSITORY" \
+            --name core003-pilot-report-41879063497 --dir "$root/source"
+          gh run download 41879063497 --repo "$GITHUB_REPOSITORY" \
+            --name bet-mvp-shadow-41879063497 --dir "$root/cohort"
+          gh run download 41879063497 --repo "$GITHUB_REPOSITORY" \
+            --name dev011-coverage-manifest-41879063497 --dir "$root/manifest"
+          printf '%s  %s\n' \
+            6ec0392fd9620b41be90610b5348a019e0a9e43a975562960f8f04d2cbd61a9a \
+            "$root/scorecard/index.json" | sha256sum --check -
+          printf '%s  %s\n' \
+            ab5a773ef530b061659d2ff2ee78f16806fd97637be6c57f29768d9c51cad560 \
+            "$root/source/core003-pilot-report.json" | sha256sum --check -
+          printf '%s  %s\n' \
+            f3af0f08f203044b0cede78ca41b395828144aad794ec21ace3ef4520541dec7 \
+            "$root/cohort/cohort-index.json" | sha256sum --check -
+          printf '%s  %s\n' \
+            a9b5c7efa0a35191f4693658df58161d553556f3dcc4e1ecc638a2c8b0c4a01e \
+            "$root/manifest/manifest.json" | sha256sum --check -
+          MVP019_OPERATIONAL_ORIGINAL_ROOT="$root" \
+            pytest -q tests/test_mvp019_operational_readiness.py
+          python -m hbi.mvp019_source_readiness \
+            --scorecard-index "$root/scorecard/index.json" \
+            --source-report "$root/source/core003-pilot-report.json" \
+            --model-cohort-index "$root/cohort/cohort-index.json" \
+            --coverage-manifest "$root/manifest/manifest.json" \
+            --github-run-id 41879063497 \
+            --output-dir "$root/report"
+
+      - name: Upload MVP-019B disjoint source readiness evidence (NO BET)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp019b-original-disjoint-readiness-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp019b-original/report/index.json
+          if-no-files-found: warn
+          retention-days: 30
       - name: Replay DEV-012 against original 3 Nov Vincennes PDF and starts
         if: github.event_name == 'pull_request'
         env:
