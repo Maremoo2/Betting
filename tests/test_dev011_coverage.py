@@ -120,6 +120,85 @@ def test_original_not_downloaded_is_not_reconstructed(tmp_path):
     assert out["missing_originals"][0]["reason"] == "MISSING_OR_UNVERIFIABLE_ORIGINAL"
 
 
+
+@pytest.mark.parametrize("layout", ["flat", "per_race"])
+def test_existing_unindexed_legacy_model_stays_unscored_but_is_not_called_missing(
+    tmp_path, layout,
+):
+    root = tmp_path / "models"
+    folder = root / "17"
+    folder.mkdir(parents=True)
+    if layout == "flat":
+        (folder / "shadow.json").write_text('{"run_kind":"PROSPECTIVE_ATTEMPT"}')
+    else:
+        (folder / "RIKSTOTO_TEST_RACE_1").mkdir()
+        (folder / "RIKSTOTO_TEST_RACE_1/shadow.json").write_text(
+            '{"run_kind":"PROSPECTIVE_ATTEMPT"}'
+        )
+    inventory = plan([{"total_count": 1, "artifacts": [
+        _artifact(17, 3017, "bet-mvp-shadow-17")
+    ]}], current_run_id=99, inventory_sha="b" * 64)
+    out = finalize(inventory, models_root=root, results_root=tmp_path / "empty")
+    assert out["coverage_complete"] is False
+    assert out["recovered_artifacts"] == 0
+    assert out["missing_originals"] == [{
+        "artifact_id": 3017, "source_run_id": 17, "kind": "model",
+        "reason": "UNINDEXED_LEGACY_MODEL_ORIGINAL",
+    }]
+    assert out["selected_artifacts"][0]["status"] == "UNINDEXED_LEGACY_MODEL_ORIGINAL"
+    from hbi.prospective_outcome_scorecard import read_archived_models
+    assert read_archived_models(root)[0] == []
+
+
+def test_unindexed_legacy_original_symlink_is_never_attested(tmp_path):
+    root = tmp_path / "models"
+    folder = root / "17"
+    folder.mkdir(parents=True)
+    external = tmp_path / "outside.json"
+    external.write_text('{"run_kind":"PROSPECTIVE_ATTEMPT"}')
+    (folder / "shadow.json").symlink_to(external)
+    inventory = plan([{"total_count": 1, "artifacts": [
+        _artifact(17, 3017, "bet-mvp-shadow-17")
+    ]}], current_run_id=99, inventory_sha="b" * 64)
+    out = finalize(inventory, models_root=root, results_root=tmp_path / "results")
+    assert out["missing_originals"][0]["reason"] == "MISSING_OR_UNVERIFIABLE_ORIGINAL"
+    assert out["coverage_complete"] is False
+
+
+def test_authentic_nov2_five_legacy_originals_exist_without_cohort_indexes(tmp_path):
+    root_text = os.environ.get("MVP014_LEGACY_ORIGINALS_ROOT")
+    if not root_text:
+        pytest.skip("Requires five actual GitHub Actions original artifacts")
+    models = Path(root_text)
+    sha_by_run = {
+        41456642411: "9c4e0d2862ef1988a8babad2529a5f13ce3c896c10a857038d910a9cc187127b",
+        41459303701: "3f01e5563c1d12c7ae3549e6e6e2c9753524d1d063b741b639e97cf9d2aa460f",
+        41461113601: "380db85cbf812f52446a53492f41e88e9a6a8a823de4e2912f27e02e5f7b713b",
+        41462919513: "c6317248eb9346b454ff0af99be607190e07e2b67aeb794a1aa4cf1887a78a13",
+        41463276002: "acaa528c62854bb1514dc164f16bca0efff99f2c92f26bc191d012ccb5a41d62",
+    }
+    synthetic_inventory = [_artifact(
+        run, 13147076977 + i, f"bet-mvp-shadow-{run}"
+    ) for i, run in enumerate(sha_by_run)]
+    inventory = plan([{
+        "total_count": len(synthetic_inventory), "artifacts": synthetic_inventory,
+    }], current_run_id=9999999, inventory_sha="b" * 64)
+    for run, expected_sha in sha_by_run.items():
+        folder = models / str(run)
+        assert folder.is_dir()
+        assert not (folder / "cohort-index.json").exists()
+        members = sorted(folder.rglob("shadow.json"))
+        assert members
+        assert hashlib.sha256(members[0].read_bytes()).hexdigest() == expected_sha
+    out = finalize(inventory, models_root=models, results_root=tmp_path / "empty")
+    assert len(out["missing_originals"]) == 5
+    assert all(x["reason"] == "UNINDEXED_LEGACY_MODEL_ORIGINAL"
+               for x in out["missing_originals"])
+    assert out["recovered_artifacts"] == 0 and out["coverage_complete"] is False
+    from hbi.prospective_outcome_scorecard import read_archived_models
+    assert read_archived_models(models)[0] == []
+
+
 def test_missing_page_and_concurrent_change_rejected():
     pages = [{"total_count": 101, "artifacts": [_artifact(
         i, i + 1000, f"bet-mvp-shadow-{i}"
