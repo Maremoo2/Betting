@@ -95,6 +95,58 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+      # Exact observed 4 Nov 2026 no-op index. A valid empty cohort must
+      # contribute zero races without creating a false archive error.
+      - name: Replay MVP-016 original empty CORE-003 cohort (NO BET)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/mvp016-empty"
+          gh run download 41796128435 --repo "$GITHUB_REPOSITORY" \
+            --name bet-mvp-shadow-41796128435 \
+            --dir "$RUNNER_TEMP/mvp016-empty"
+          printf '%s  %s\n' \
+            ebeb64f1fc27328c0ff5f063ede33ec1d08615e482d4a017680ea0d5813b9aa0 \
+            "$RUNNER_TEMP/mvp016-empty/cohort-index.json" | sha256sum --check -
+          MVP016_EMPTY_COHORT_ORIGINAL_ROOT="$RUNNER_TEMP/mvp016-empty" \
+            pytest -q tests/test_mvp016_empty_cohort.py
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          from hbi.prospective_outcome_scorecard import read_archived_models
+          root = Path(os.environ["RUNNER_TEMP"]) / "mvp016-empty"
+          raw = (root / "cohort-index.json").read_bytes()
+          models, errors, physical_races = read_archived_models(root)
+          assert models == errors == physical_races == []
+          report = {
+              "schema": "MVP016_ORIGINAL_NOOP_COHORT_REPLAY_V1",
+              "original_source_run": 41796128435,
+              "original_sha256": hashlib.sha256(raw).hexdigest(),
+              "model_reports_admitted": len(models),
+              "physical_races_added": len(physical_races),
+              "archive_errors": errors,
+              "pit_certified": False,
+              "bet_authority": False,
+          }
+          (root / "mvp016-empty-original-replay.json").write_text(
+              json.dumps(report, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+
+      - name: Upload MVP-016 original empty cohort replay (NO BET)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp016-empty-cohort-original-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp016-empty/mvp016-empty-original-replay.json
+          if-no-files-found: warn
+          retention-days: 30
+
       # Real scheduled 4 Nov source inventory changed during pagination.
       # Protect cumulative benchmark from a falsely zero-count published scorecard.
       - name: Replay MVP-016 genuine GitHub inventory outage (NO BET)
