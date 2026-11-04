@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import io
 import hashlib
+import io
 import json
 import os
-import shutil
 import urllib.error
 import urllib.request
 import zipfile
