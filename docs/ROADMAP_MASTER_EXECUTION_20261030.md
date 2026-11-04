@@ -1,6 +1,56 @@
 # Betting HQ – master-roadmap og gjennomføringsstatus
 
 
+## MVP-017 – Operational hardening and evidence expansion | 4 November 2026
+
+
+**Nyere originalbasert dekningsdelta:** [CORE-003 run 41822832612](https://github.com/Maremoo2/Betting/actions/runs/41822832612), publisert etter 64-løpssnapshotet nedenfor, viser **65 unike fysiske løp / 16 resultatverifiserte modellpar / 14 gyldige treveis WIN-par / 2 modellpar uten WIN / 0 PIT** og **0 archive_errors**. Den eneste nye fysiske ID-en er `RIKSTOTO:F1_NR_2026-11-04:2`; den har `NO_VERIFIED_FROZEN_MODEL`, ingen kvalifisert WIN og ingen ny modellscore. Av de **49** ikke-evaluerbare fysiske løpene har **27** `NO_VERIFIED_FROZEN_MODEL` som første blokkering, **8** `FROZEN_FIELD_MISSING`, **6** `CHAMPION_FULL_FIELD_INVALID`, **4** `OFFICIAL_ACTIVE_FIELD_MISMATCH`, **3** `OFFICIAL_FINISH_NOT_COMPLETE` og **1** `CONFLICTING_OFFICIAL_RESULT_RECEIPTS`. Dette er avvisningsklassene i originalscorecardet, ikke automatiske diagnoser av programfeil. Hvert løp teller én gang. Tidligere 64-løpsmåling under beholdes uendret som historisk kohort.
+
+
+**Newest append-only status, not a rewrite of the prior MVP-014/MVP-016 snapshots below.** Original source: [CORE-003 41820503559](https://github.com/Maremoo2/Betting/actions/runs/41820503559), exact [main V1 systemaudit 41820373324](https://github.com/Maremoo2/Betting/actions/runs/41820373324), and the PR original CI replays. Start-main `2937150ee0ce5bb7a0f6bb2ebe9ede7b894d01d3`, owner review required before any merge. Deadline **13.11.2026 18:00 Europe/Oslo**.
+
+### Integration – three distinct source conditions and shared CI
+
+- **[PR #132](https://github.com/Maremoo2/Betting/pull/132)** `MERGED / OPERATIONALLY_VERIFIED`: truly empty authenticated original cohort is now **zero new races and zero archive errors**, not corrupt input. Original main run 41820503559 has **0** `archive_errors` versus **12** on the previous working scorecard; still 64 physical races / 16 original-result model pairs / 14 same-freeze WIN triples / 0 PIT.
+- **[PR #134](https://github.com/Maremoo2/Betting/pull/134)** `CODE_COMPLETE / source-replay CI previously PASS / OPEN`: bounded **three full GitHub artifact-inventory retries from page one**; persistent source failure returns `BLOCKED_SOURCE`, null benchmark counts, and no valid cumulative `index.json`. Genuine scheduled [41817026855](https://github.com/Maremoo2/Betting/actions/runs/41817026855) was green but **incorrectly** emitted 0/0/0 after `ARTIFACT_PAGINATION_CONCURRENT_CHANGE`. The owner-visible last-known-valid scorecard must not be invalidated. Updated development branch includes merged #132 replay, no production merge by DEV.
+- **[PR #133](https://github.com/Maremoo2/Betting/pull/133)** `CODE_COMPLETE / original join replay previously PASS / OPEN`: operational source report/physical-cohort/DEV011-manifest/DEV013-scorecard joined by original SHA, with per-race coverage, alternative original model freezes, per-track/date distributions, and paired log loss/Brier (n=14; no inferential confidence intervals). **Integration commit stacks #133 on #134** and brings all three regression suites and workflow steps together on an unmerged development branch. Combined CI must pass on its **final** HEAD before owner approval.
+- **[PR #135](https://github.com/Maremoo2/Betting/pull/135)** `CODE_COMPLETE / CI_PASS / NOT_DEPLOYED`: **1,547 passed, 87 skipped**, authentic original archive scratch replay, no exposed raw payload; implements local content-addressed immutable SHA receipts with explicit approval requirement and tamper checks. Long-lived **external** object storage, WORM retention/ACL/deployment is `BLOCKED_INFRASTRUCTURE` and not claimed complete.
+- **[PR #136](https://github.com/Maremoo2/Betting/pull/136)** `CODE_COMPLETE / OPEN`: separate offline status contract `CURRENT_VALID`, `LAST_KNOWN_VALID`, `SOURCE_UNAVAILABLE`, `INCONSISTENT`, `NOT_EVALUATED`, with authentic 63/16/14 older run, false-zero outage and latest 64/16/14. Last verified metric stays pinned to prior run ID/SHA/time; no old value passed off as current. Final CI on exact HEAD must be independently checked.
+
+### P0 gates, evidence and milestone M1–M6
+
+| Milestone | Source-grounded current measurement | Status |
+| --- | --- | --- |
+| **M1 – Operational benchmark** | [41820503559](https://github.com/Maremoo2/Betting/actions/runs/41820503559): **64 unique physical races**, 24 complete frozen prediction fields; **16** original-result Champion/CORE-004 pairs; **14** same-race normalized WIN triples and **2** without qualifying WIN. 30 triple target **not yet reached**. | **OPERATIONALLY_VERIFIED** benchmark; limited sample, not a calibrated edge |
+| **M2 – PIT attestation** | **0** independently PIT-certified physical races. 4 Nov Jägersro `RIKSTOTO:S3_NR_2026-11-04:5` 20:26 T−4 (if unchanged), existing 22:15 after-audit. Morning 9 active and 9 TMP identities. No later result can repair missing prestart identity or scratch original. | **BLOCKED_SOURCE**, no retrospective certification |
+| **M3 – Cumulative coverage** | Authenticated DEV011 sources still incomplete; five older model artifacts are present but unindexed, one original `S2_NR_2026-11-03:8` result conflict; expiry may destroy source bytes. `#134` targets transient paging outages, `#133` improves observability. | **PARTIAL / BLOCKED_SOURCE**, long-term storage **BLOCKED_INFRASTRUCTURE** |
+| **M4 – V1 system integrity** | Main audit [41820373324](https://github.com/Maremoo2/Betting/actions/runs/41820373324): temporal PASS; **five** runtime replay mismatches `combined_probability_mismatch` and `conflict_score_mismatch`; **one** overdue unsettled Skive shadow ticket issue [#82](https://github.com/Maremoo2/Betting/issues/82); provider WARN **14/15015** failures (12 letrot, 2 Rikstoto). Original source replay suggests legacy late-attached provenance, but never rewrites old decisions or converts FAIL to PASS. | **FAIL / BLOCKED_SOURCE**, no fake settlement |
+| **M5 – Multi-leg** | Existing #129 probability-only independent combination/system hit probability and original Bjerke/Axevalla 3 Nov composite `X1_NR_2026-11-03#V4#4`. No fully time-qualified pool joint combination price, takeout, payout/dividend rules and four eligible freeze reports. | **PARTIAL / EV_BLOCKED_SOURCE** |
+| **M6 – 13 Nov MVP acceptance** | Full new benchmark and archive observability are progressing, but independent PIT = 0, V1 audit FAIL and source coverage incomplete. `bet_authority=false` throughout. | **NOT_ACCEPTED** as real-money/economic EV system |
+
+**Priority / next three:** (1) owner review sequential #134 → #133; check combined original CI and then health/archive #135/#136, **never merge without explicit user consent**; (2) preserve 4 Nov scheduled Jägersro T−4/PIT audit; (3) close V1 Skive/result-code and original identity gaps through externally verifiable sources, not by policy or source-contract relaxation. No new Champion, CORE004, V3.3.12, BET/WATCH/PASS, pricing, stake, historical decision, T−4 or PIT-003A rule changes. Local storage is not production retention.
+
+
+## MVP-016 | Prospektiv forskningsplattform – 4. november 2026 (nyeste snapshot, PR-review)
+
+**Kilde:** [Originalbasert MVP-016 revisjon](MVP016_RESEARCH_PLATFORM_ORIGINAL_EVIDENCE_20261104.md), ordinær CORE-003-kjøring [41814068321](https://github.com/Maremoo2/Betting/actions/runs/41814068321), **fire** eksakte originaler og SHA-256. Start-main `054dd26c5cfdaaf03219222ead25364b7a0ad915`. Status under denne teksten er historiske snapshots, ikke omskrevet. Frist **13.11.2026 18:00 Europe/Oslo**. Ingen automatisk merge.
+
+| Leveranse | Kodestatus | Kildemåling / faktisk aksept |
+| --- | --- | --- |
+| DEV-013 originalbasert WIN-evaluering | **OPERATIONALLY_VERIFIED** på main | 4.11 ordinær kjøring: **63 unike fysiske løp** (fra 59), **16** originalutfall-scorede Champion/CORE-004-par, **14** samtidige WIN-triples, **2** uten WIN, **0** PIT; 24 komplette modellfullfelt, men ikke 24 verifiserte resultater |
+| MVP-016 / PR #132 no-op-arkivindeks | **CODE_COMPLETE / CI_PASS / PR DRAFT** | Ekte 4.11 no-op-original med SHA `ebeb64f1…`: null nye løp, null feilaktige arkivfeil. **12** falske no-op-indeksavvisninger i dagens main-scorecard blir riktig skilt fra korrupte originaler etter fremtidig owner-godkjent merge |
+| MVP-016 / PR #133 research coverage V2 | **CODE_COMPLETE / PR DRAFT – CI/operativ sidecar må bekreftes på eksakt HEAD** | En egen original-joinet, maskinlesbar matrise per fysisk løp, avvisningsårsaker, per bane/dag, alternative SHA-frys og parvise feil med eksplisitt få-observasjoner-status. Ingen ny modell og ingen ekstra PIT/BET |
+| Faste prospektive datakrav | **BLOCKED_SOURCE** | Dagens CORE-003 F2 #3/#4: **2** løp, 9+11 morgenaktive, 0 komplett uavhengig ATG-fundamentalfelt og 0 kvalifisert WIN; TMP-identiteter. Ikke tell disse som 2 nye scorede løp |
+| DEV-011 arkivretensjon | **PARTIAL / BLOCKED_INFRASTRUCTURE for ny langtidslagring** | 30 GitHub inventarsider/2950 entries, 181 gjenvunnet, 5 ekte legacy modeller er **UNINDEXED**, 1 konfliktende offisiell resultatkvittering, `coverage_complete=false`. Ny append-only privat lagringsdestinasjon/tilgang/retensjon **ikke autorisert eller verifisert**, derfor ikke implementert |
+| V1 replay / Skive #82 | **BLOCKED_SOURCE / INTEGRITY FAIL** | Main audit [41796687537](https://github.com/Maremoo2/Betting/actions/runs/41796687537): temporal PASS, runtime replay FAIL (5 eldre), settlement FAIL (1), provider WARN. Ingen historisk omskriving, falsk settlement eller audit-waiver |
+| Jägersro MVP-011 | **BLOCKED_SOURCE, PIT=0** | Planlagt T−4 20:26 og eksisterende 22:15-etterkontroll 4.11 Oslo. Morgen 9/9 felt, 9/9 `TMP`-ID, ingen uavhengig krysskildesertifisering. Ingen duplikatautomasjon |
+| V4X / V75 / V85 | **PARTIAL forskningskode / BLOCKED_SOURCE EV** | Fysisk V4X-originalidentitet funnet og generisk kombinasjonssannsynlighet merget i #129. Mangler SHA-/tidsgyldige felles kombinasjonspriser, system-/jackpot-/takeout- og offisielle oppgjørsregler, samt fire fullstendige modellfrys. Ingen V4X-EV eller spill |
+
+**Prioriterte tre neste handlinger:** (1) Godkjen og test PR #132/#133 separat, deretter mål på ordinær main etter en eventuell merge; (2) bevar originalt Jägersro T−4 og allerede planlagt uavhengig PIT etterkontroll; (3) jobb fra originalene med V1-replay/Skive-integritet og ny prospektiv kildeidentitet fremfor å bruke senere odds eller konstruert fleravdelings-EV.
+
+**Absolutt:** Champion V1.1, CORE-004-vekter, V3.3.12, T−4/PIT-003A, BET/WATCH/PASS, innsats, historiske beslutninger og `bet_authority=false` er uendret. Modellfordel eller kalibrering ved 14 triples kan ikke erklæres.
+
+
 ## MVP-014 – 4. november: post-merge originals and legacy coverage diagnosis
 
 **Append-only read-only status**, not a retrospective change to earlier audits. [Full SHA-verified evidence](MVP014_20261104_LEGACY_ORIGINAL_INDEX_ROOT_CAUSE.md). Main at this control: `254ae4b5ec6c5e97622a1881b581e9c7d9c86f9b`. Owner has already merged PR #128 (DEV-013) and #129 (V4/V75/V85 probability-only research). No new merge authority.
