@@ -103,6 +103,19 @@ def finalize(manifest: dict, *, models_root: Path, results_root: Path) -> dict:
         try:
             raw = path.read_bytes() if path.is_file() and not path.is_symlink() else b""
             if not raw:
+                # Older genuine GitHub artifacts predate the per-run cohort
+                # index. Distinguish their present-but-unattested original
+                # bytes from a genuinely absent artifact. Never admit or
+                # reconstruct a model without its immutable cohort index.
+                if entry["kind"] == "model" and path.parent.is_dir():
+                    flat = path.parent / "shadow.json"
+                    nested = path.parent.glob("*/shadow.json")
+                    unindexed = (
+                        flat.is_file() and not flat.is_symlink()
+                        or any(p.is_file() and not p.is_symlink() for p in nested)
+                    )
+                    if unindexed:
+                        raise ValueError("UNINDEXED_LEGACY_MODEL_ORIGINAL")
                 raise ValueError("ORIGINAL_ARTIFACT_NOT_DOWNLOADED")
             doc = json.loads(raw)
             schema = ("BET_MVP_002_FIXED_COHORT_INDEX_V1" if entry["kind"] == "model"
@@ -136,8 +149,12 @@ def finalize(manifest: dict, *, models_root: Path, results_root: Path) -> dict:
                     r.get("status") == "EVALUABLE_RESEARCH_ONLY"
                     for r in doc.get("records", []) if isinstance(r, dict)
                 )
-        except (OSError, ValueError, TypeError):
-            entry["status"] = "MISSING_OR_UNVERIFIABLE_ORIGINAL"
+        except (OSError, ValueError, TypeError) as exc:
+            entry["status"] = (
+                "UNINDEXED_LEGACY_MODEL_ORIGINAL"
+                if str(exc) == "UNINDEXED_LEGACY_MODEL_ORIGINAL"
+                else "MISSING_OR_UNVERIFIABLE_ORIGINAL"
+            )
             missing.append({
                 "artifact_id": entry["artifact_id"], "source_run_id": entry["source_run_id"],
                 "kind": entry["kind"], "reason": entry["status"],
