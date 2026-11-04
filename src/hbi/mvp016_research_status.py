@@ -14,7 +14,6 @@ import re
 import statistics
 from collections import Counter
 from pathlib import Path
-from typing import Any
 
 SCHEMA = "MVP016_CUMULATIVE_RESEARCH_STATUS_V1"
 RACE_ID = re.compile(r"RIKSTOTO:([^:]+)_NR_(\d{4}-\d{2}-\d{2}):(\d+)\Z")
