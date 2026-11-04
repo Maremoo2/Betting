@@ -4,9 +4,11 @@ import hashlib
 import io
 import json
 import os
+import re
 import urllib.error
 import urllib.request
 import zipfile
+from datetime import UTC, datetime
 from pathlib import Path
 
 API = "https://api.github.com"
@@ -32,12 +34,21 @@ def restore_latest_state(
     artifact_name: str = "hbi-state",
     branch: str | None = None,
     receipt_path: str | Path | None = None,
+    audit_workflow_run_id: int | None = None,
+    audit_code_sha: str | None = None,
 ) -> bool:
     """Restore the newest non-expired HBI SQLite database artifact.
 
     GitHub-hosted runners are ephemeral. This makes the previous successful state
     available to the next scheduled run without committing binary databases to git.
     """
+    if receipt_path is not None and (
+        type(audit_workflow_run_id) is not int
+        or audit_workflow_run_id <= 0
+        or not isinstance(audit_code_sha, str)
+        or re.fullmatch(r"[0-9a-fA-F]{40}", audit_code_sha) is None
+    ):
+        raise ValueError("V1_AUDIT_RUN_AND_CODE_SHA_NOT_ATTESTED")
     url = f"{API}/repos/{repository}/actions/artifacts?name={artifact_name}&per_page=100"
     with urllib.request.urlopen(_request(url, token), timeout=30) as response:
         payload = json.loads(response.read().decode("utf-8"))
@@ -63,6 +74,8 @@ def restore_latest_state(
             or not isinstance(source_run, dict)
             or type(source_run.get("id")) is not int
             or (branch is not None and source_run.get("head_branch") != branch)
+            or not isinstance(source_run.get("head_sha"), str)
+            or re.fullmatch(r"[0-9a-fA-F]{40}", source_run["head_sha"]) is None
         ):
             raise ValueError("STATE_RESTORE_ORIGINAL_ARTIFACT_METADATA_NOT_ATTESTED")
     archive_request = _request(latest["archive_download_url"], token)
@@ -114,6 +127,9 @@ def restore_latest_state(
         source_run = latest["workflow_run"]
         receipt = {
             "schema": "HBI_STATE_RESTORE_RECEIPT_V1",
+            "restored_at_utc": datetime.now(UTC).isoformat(),
+            "audit_workflow_run_id": audit_workflow_run_id,
+            "audit_code_sha": audit_code_sha,
             "read_only_provenance": True,
             "repository": repository,
             "artifact_name": artifact_name,
@@ -154,6 +170,12 @@ def main() -> None:
         target_path=target,
         branch=branch,
         receipt_path=receipt_path,
+        audit_workflow_run_id=(
+            int(os.environ["GITHUB_RUN_ID"]) if receipt_path is not None else None
+        ),
+        audit_code_sha=(
+            os.environ.get("GITHUB_SHA") if receipt_path is not None else None
+        ),
     )
     print("STATE_RESTORE=RESTORED" if restored else "STATE_RESTORE=EMPTY")
 
