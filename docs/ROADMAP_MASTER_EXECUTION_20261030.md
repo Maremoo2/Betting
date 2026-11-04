@@ -1,6 +1,26 @@
 # Betting HQ – master-roadmap og gjennomføringsstatus
 
 
+## MVP-016 | Prospektiv forskningsplattform – 4. november 2026 (nyeste snapshot, PR-review)
+
+**Kilde:** [Originalbasert MVP-016 revisjon](MVP016_RESEARCH_PLATFORM_ORIGINAL_EVIDENCE_20261104.md), ordinær CORE-003-kjøring [41814068321](https://github.com/Maremoo2/Betting/actions/runs/41814068321), **fire** eksakte originaler og SHA-256. Start-main `054dd26c5cfdaaf03219222ead25364b7a0ad915`. Status under denne teksten er historiske snapshots, ikke omskrevet. Frist **13.11.2026 18:00 Europe/Oslo**. Ingen automatisk merge.
+
+| Leveranse | Kodestatus | Kildemåling / faktisk aksept |
+| --- | --- | --- |
+| DEV-013 originalbasert WIN-evaluering | **OPERATIONALLY_VERIFIED** på main | 4.11 ordinær kjøring: **63 unike fysiske løp** (fra 59), **16** originalutfall-scorede Champion/CORE-004-par, **14** samtidige WIN-triples, **2** uten WIN, **0** PIT; 24 komplette modellfullfelt, men ikke 24 verifiserte resultater |
+| MVP-016 / PR #132 no-op-arkivindeks | **CODE_COMPLETE / CI_PASS / PR DRAFT** | Ekte 4.11 no-op-original med SHA `ebeb64f1…`: null nye løp, null feilaktige arkivfeil. **12** falske no-op-indeksavvisninger i dagens main-scorecard blir riktig skilt fra korrupte originaler etter fremtidig owner-godkjent merge |
+| MVP-016 / PR #133 research coverage V2 | **CODE_COMPLETE / PR DRAFT – CI/operativ sidecar må bekreftes på eksakt HEAD** | En egen original-joinet, maskinlesbar matrise per fysisk løp, avvisningsårsaker, per bane/dag, alternative SHA-frys og parvise feil med eksplisitt få-observasjoner-status. Ingen ny modell og ingen ekstra PIT/BET |
+| Faste prospektive datakrav | **BLOCKED_SOURCE** | Dagens CORE-003 F2 #3/#4: **2** løp, 9+11 morgenaktive, 0 komplett uavhengig ATG-fundamentalfelt og 0 kvalifisert WIN; TMP-identiteter. Ikke tell disse som 2 nye scorede løp |
+| DEV-011 arkivretensjon | **PARTIAL / BLOCKED_INFRASTRUCTURE for ny langtidslagring** | 30 GitHub inventarsider/2950 entries, 181 gjenvunnet, 5 ekte legacy modeller er **UNINDEXED**, 1 konfliktende offisiell resultatkvittering, `coverage_complete=false`. Ny append-only privat lagringsdestinasjon/tilgang/retensjon **ikke autorisert eller verifisert**, derfor ikke implementert |
+| V1 replay / Skive #82 | **BLOCKED_SOURCE / INTEGRITY FAIL** | Main audit [41796687537](https://github.com/Maremoo2/Betting/actions/runs/41796687537): temporal PASS, runtime replay FAIL (5 eldre), settlement FAIL (1), provider WARN. Ingen historisk omskriving, falsk settlement eller audit-waiver |
+| Jägersro MVP-011 | **BLOCKED_SOURCE, PIT=0** | Planlagt T−4 20:26 og eksisterende 22:15-etterkontroll 4.11 Oslo. Morgen 9/9 felt, 9/9 `TMP`-ID, ingen uavhengig krysskildesertifisering. Ingen duplikatautomasjon |
+| V4X / V75 / V85 | **PARTIAL forskningskode / BLOCKED_SOURCE EV** | Fysisk V4X-originalidentitet funnet og generisk kombinasjonssannsynlighet merget i #129. Mangler SHA-/tidsgyldige felles kombinasjonspriser, system-/jackpot-/takeout- og offisielle oppgjørsregler, samt fire fullstendige modellfrys. Ingen V4X-EV eller spill |
+
+**Prioriterte tre neste handlinger:** (1) Godkjen og test PR #132/#133 separat, deretter mål på ordinær main etter en eventuell merge; (2) bevar originalt Jägersro T−4 og allerede planlagt uavhengig PIT etterkontroll; (3) jobb fra originalene med V1-replay/Skive-integritet og ny prospektiv kildeidentitet fremfor å bruke senere odds eller konstruert fleravdelings-EV.
+
+**Absolutt:** Champion V1.1, CORE-004-vekter, V3.3.12, T−4/PIT-003A, BET/WATCH/PASS, innsats, historiske beslutninger og `bet_authority=false` er uendret. Modellfordel eller kalibrering ved 14 triples kan ikke erklæres.
+
+
 ## MVP-014 – 4. november: post-merge originals and legacy coverage diagnosis
 
 **Append-only read-only status**, not a retrospective change to earlier audits. [Full SHA-verified evidence](MVP014_20261104_LEGACY_ORIGINAL_INDEX_ROOT_CAUSE.md). Main at this control: `254ae4b5ec6c5e97622a1881b581e9c7d9c86f9b`. Owner has already merged PR #128 (DEV-013) and #129 (V4/V75/V85 probability-only research). No new merge authority.
