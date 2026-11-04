@@ -178,6 +178,21 @@ def test_genuine_git_healthy_outage_recent_and_v1_originals():
     assert current["last_verified_counts"]["pit_certified_paired"] == 0
     assert current["v1_system_audit"]["runtime_replay_parity"] == "FAIL"
     assert current["v1_system_audit"]["settlement_integrity"] == "FAIL"
+    assert current["v1_system_audit"]["runtime_replay_mismatch_count"] == 5
+    assert current["v1_system_audit"]["settlement_failure_count"] == 1
+    assert current["v1_system_audit"]["provider_fetch_failure_count"] == 14
+    v1_original = json.loads(v1.read_bytes())
+    mismatch_races = {r["race_id"] for r in v1_original["runtime_replay_parity"]["mismatches"]}
+    assert mismatch_races == {
+        "RIKSTOTO:S2_NR_2026-10-09:5",
+        "RIKSTOTO:MO_NR_2026-10-17:10",
+        "RIKSTOTO:S4_NR_2026-10-21:9",
+        "RIKSTOTO:S2_NR_2026-10-22:5",
+        "RIKSTOTO:S3_NR_2026-10-25:11",
+    }
+    assert all(set(row["reasons"]) == {
+        "combined_probability_mismatch", "conflict_score_mismatch"
+    } for row in v1_original["runtime_replay_parity"]["mismatches"])
     fallback = summarize(snapshots[:2])
     assert fallback["status"] == "LAST_KNOWN_VALID"
     assert fallback["last_verified_run_id"] == 41814068321
