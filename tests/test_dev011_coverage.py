@@ -177,11 +177,14 @@ def test_authentic_nov2_five_legacy_originals_exist_without_cohort_indexes(tmp_p
         41462919513: "c6317248eb9346b454ff0af99be607190e07e2b67aeb794a1aa4cf1887a78a13",
         41463276002: "acaa528c62854bb1514dc164f16bca0efff99f2c92f26bc191d012ccb5a41d62",
     }
-    synthetic_inventory = [_artifact(
-        run, 13147076977 + i, f"bet-mvp-shadow-{run}"
-    ) for i, run in enumerate(sha_by_run)]
+    original_artifact_ids = (
+        13147076977, 13147433634, 13149181358, 13150157261, 13150442459,
+    )
+    inventory_rows = [_artifact(
+        run, artifact_id, f"bet-mvp-shadow-{run}"
+    ) for run, artifact_id in zip(sha_by_run, original_artifact_ids, strict=True)]
     inventory = plan([{
-        "total_count": len(synthetic_inventory), "artifacts": synthetic_inventory,
+        "total_count": len(inventory_rows), "artifacts": inventory_rows,
     }], current_run_id=9999999, inventory_sha="b" * 64)
     for run, expected_sha in sha_by_run.items():
         folder = models / str(run)
