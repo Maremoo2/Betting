@@ -485,6 +485,40 @@ jobs:
             --coverage-manifest dev011-coverage/manifest.json \
             --fetch-official
 
+      # Join existing original source/model/coverage/scorecard artifacts. This
+      # research sidecar can fail without rewriting or blocking CORE-003 state.
+      # Its own outcome remains explicit in GitHub step logs and artifact.
+      - name: Generate MVP-016 cumulative research status (NO BET)
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          for source in \
+            dev009-outcome-scorecards/index.json \
+            core003-pilot-report.json \
+            bet-mvp-shadow/cohort-index.json \
+            dev011-coverage/manifest.json; do
+            if [ ! -f "$source" ]; then
+              echo "::error::MVP016_ORIGINAL_INPUT_MISSING:$source"
+              exit 1
+            fi
+          done
+          python -m hbi.mvp016_research_status \
+            --scorecard-index dev009-outcome-scorecards/index.json \
+            --source-report core003-pilot-report.json \
+            --model-cohort-index bet-mvp-shadow/cohort-index.json \
+            --coverage-manifest dev011-coverage/manifest.json \
+            --output-dir mvp016-research-status
+
+      - name: Upload MVP-016 cumulative read-only research status (NO BET)
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp016-research-status-${{ github.run_id }}
+          path: mvp016-research-status/index.json
+          if-no-files-found: warn
+          retention-days: 21
+
       - name: Upload Collector-to-Betting import and model admission evidence
         if: steps.gate.outputs.run == 'true' && always()
         uses: actions/upload-artifact@v4
