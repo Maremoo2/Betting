@@ -7,11 +7,10 @@ import os
 import re
 from pathlib import Path
 
-import pytest
 import fitz
+import pytest
 
 from hbi.collector_handoff import pdf_field
-
 
 ORIGINAL_SHA256 = {
     "F1_NR_2026-11-04": {
