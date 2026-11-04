@@ -16,6 +16,7 @@ from typing import Any
 
 SCHEMA = "MVP017_RESEARCH_HEALTH_V1"
 SHA = re.compile(r"[0-9a-f]{64}\Z")
+GITHUB_COMMIT_SHA = re.compile(r"(?:[0-9a-f]{40}|[0-9a-f]{64})\Z")
 STATUS = ("CURRENT_VALID", "LAST_KNOWN_VALID", "SOURCE_UNAVAILABLE",
           "INCONSISTENT", "NOT_EVALUATED")
 
@@ -41,7 +42,7 @@ def classify_snapshot(entry: dict) -> dict:
     rid = entry.get("run_id")
     sha = entry.get("github_head_sha")
     if (type(rid) is not int or rid <= 0 or not isinstance(sha, str)
-            or not SHA.fullmatch(sha)):
+            or not GITHUB_COMMIT_SHA.fullmatch(sha)):
         raise ValueError("SOURCE_RUN_OR_HEAD_SHA_INVALID")
     base = {
         "run_id": rid, "github_head_sha_claim": sha,
