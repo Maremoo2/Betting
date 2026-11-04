@@ -1,5 +1,38 @@
 # Betting HQ – master-roadmap og gjennomføringsstatus
 
+## MVP-019B – owner integration, original benchmark reconciliation and disjoint source fix | 4 November 2026
+
+**Grounded repository state at review:** owner merged [PR #140](https://github.com/Maremoo2/Betting/pull/140) to `main` at 17:40:52 UTC, merge SHA `640908bfc7f3aa01c80ddb8daca81d0846835068`. Owner merged [PR #141](https://github.com/Maremoo2/Betting/pull/141) at 17:41:23 UTC **into `dev/mvp018-original-model-freeze-provenance`**, not `main`. #141's branch and tests therefore remain **NOT IN MAIN**; a merged PR cannot simply be retargeted. No DEV main merge. All model and betting policies remain frozen.
+
+**Original scorecard reconciliation, fully source-audited:** [41832416078](https://github.com/Maremoo2/Betting/actions/runs/41832416078), artifact 13324990108, original SHA `a4a667bd596bde42b9e3dbed6d96247731067fe76f82b33ea816194fa68b5ff7`, had 67/24/**16**/**14**. After #138 [41842113458](https://github.com/Maremoo2/Betting/actions/runs/41842113458), artifact 13328604183 SHA `99634bb9654e71fcf1616ae145a9da6af1ce020569ec8a98a1d315c4fd0824ec`, had 68/24/**19**/**18**. Exactly 4 old `OFFICIAL_ACTIVE_FIELD_MISMATCH` races `S2_NR_2026-11-02:{1,2,4}` and `S2_NR_2026-11-03:9` became both scored pairs and WIN triples with unchanged selected model/SHA; previous model-only `S1_NR_2026-11-03:3` exited because #9 Queen Montana was **active at frozen model time**, later officially `Str`, a correct `OFFICIAL_LATE_SCRATCH_NOT_FROZEN` denial. Arithmetic +4−1=+3 pairs; +4 WIN triples. Original WIN observation clocks and official SHA receipts are documented in [full five-race reconciliation](MVP019B_FOUR_SCRATCH_ORIGINAL_RECONCILIATION_20261104.md). The extra physical race did not affect the delta. No original relabels or hindsight replacements.
+
+**Latest verified post-#140 ordinary source, snapshot 4 Nov 17:49 UTC:** [CORE-003 41880220139](https://github.com/Maremoo2/Betting/actions/runs/41880220139) on main `640908bfc7f3aa01c80ddb8daca81d0846835068` is `OPERATIONALLY_VERIFIED`: DEV-009 original artifact **13350305285**, SHA256 `03223d1b4f62e1a75eda0681ca60d49cc66f657d8866904b0c75ca8027cfd4bd`, **80 physical / 32 complete model fields / 21 scored model pairs / 20 same-freeze WIN triples / 0 PIT**. MVP-019 readiness artifact is **absent on this main run** because merged historical #141 is not deployed on main; no operational readiness claim. Previous original 418790 completed success after earlier pending snapshot.
+
+**Newest fully completed ordinary observed benchmark:** [CORE-003 41876750467](https://github.com/Maremoo2/Betting/actions/runs/41876750467), artifact 13347262179 SHA `2416b18f14f0c1acec80c22574656276529facc6243cb9a0b86a8e836c738a74` is **78 physical / 30 complete frozen fields / 20 result pairs / 19 WIN triples / 0 PIT**. Later [CORE-003 41879063497](https://github.com/Maremoo2/Betting/actions/runs/41879063497) original scorecard artifact 13349440390, SHA `6ec0392fd9620b41be90610b5348a019e0a9e43a975562960f8f04d2cbd61a9a`, reports **79 / 31 / 20 / 19 / 0**, ordinary workflow subsequently completed successfully; this 79/31/20/19 is a verified intermediate snapshot, not the latest main result.
+
+**Actual documented implementation failure:** The original 418790 current cohort has **7** physical race IDs, 6 overlap historical cumulative scorecard; `RIKSTOTO:S3_NR_2026-11-04:4` is processed in the current source index but not yet in the cumulative archive. Original cohort SHA `f3af0f08f203044b0cede78ca41b395828144aad794ec21ace3ef4520541dec7` references exact source SHA `ab5a773ef530b061659d2ff2ee78f16806fd97637be6c57f29768d9c51cad560` and cumulative DEV011 SHA `a9b5c7efa0a35191f4693658df58161d553556f3dcc4e1ecc638a2c8b0c4a01e` shares scorecard inventory SHA. MVP-016's `set(current) <= set(scorecard races)` requirement incorrectly blocks this valid **different-horizon** current source; MVP-019B fixes its read-only readiness consumer without inventing a new cumulative scorecard row. Separate denominators: 79 cumulative, 7 current, 1 current-only, 80 union-not-benchmark. Regression replays use the four original SHA-pinned GitHub artifacts and fail closed. New source-readiness artifact remains pending owner-approved integration to `main`, not operatively delivered by historical merged #141.
+
+**Prospective source shortlist, as-of 17:38 UTC:** `S3_NR_2026-11-04:1` and `S2_NR_2026-11-04:3` both have 11/11 complete ATG history and WIN; `S3_NR_2026-11-04:2` has 11/11 ATG, `S3_NR_2026-11-04:3` 8/8 and `S2_NR_2026-11-04:5` 9/9, the last three still lack complete WIN. All five have zero independently attested stable horse IDs/cross-provider registration and no qualified official T−4 scratch receipt, zero collector model approvals and zero PIT. One source-only current race S3 #4 remains out of cumulative benchmark. S2 #4 has additional real ATG/roster/SQLite mismatches. Never approve by name matching, unvalidated TMP registration or archived later results.
+
+**Main V1 audit still fails:** [41879477950](https://github.com/Maremoo2/Betting/actions/runs/41879477950), artifact 13347244894 original audit JSON SHA `54f01128607fc59b27a5fb7723d9ef3f165cfe01308af40af1a7b18672cb3fb6`: temporal PASS, five unchanged combined-probability/conflict-score mismatches, **two** overdue unsettled paper tickets (Skive #82 and Eskilstuna 3 Nov `f2b7e174-c650-4709-8cbb-924c30413ab9`), provider WARN 12 letrot HTTP 403 + 1 Rikstoto 500 + 1 unreachable. Restored main watcher state [41878788182](https://github.com/Maremoo2/Betting/actions/runs/41878788182), artifact 13348416076, independently extracted SQLite SHA `10d77c71c6f07910ed94aa3bfc3a9c642404b1451c227408fc7207f84c624f57`; matches 905 decision-run/15195 provider fetch counts, while audit workflow itself does not publish selected state artifact ID or SHA. Historical five decision provenances were attached after decisions, not proof of reproducible original-time policy. No settlement, history edit or fail-gate downgrade.
+
+**Jägersro:** prospective T−4 planned 20:26 Oslo for `RIKSTOTO:S3_NR_2026-11-04:5` if official start is unchanged, scheduled aftercheck is existing owner work only. Not PIT-certified. External append-only WORM storage remains `BLOCKED_INFRASTRUCTURE`; local #135 tooling not deployed long-term. No new automation. `bet_authority=false` end-to-end.
+
+| Gate / delivery | Verified status |
+|---|---|
+| #140 merged direct main, full existing CI | **MERGED / CI_PASS** |
+| Historical #141 feature merged into side branch, not main | **MERGED_TO_DEVELOPMENT_ONLY / NOT_IN_MAIN** |
+| MVP-019B disjoint-source implementation/tests on research branch | **IMPLEMENTED / CI_PENDING** until exact-HEAD original replay |
+| 16/14 to 19/18 model/official result reconciliation | **OPERATIONALLY_VERIFIED original SHA** |
+| Current same-run source-only race source identity | **ORIGINAL_VERIFIED / RESEARCH_ONLY** |
+| Independent PIT, registration, scratch, fixed source gate | **BLOCKED_SOURCE**, zero |
+| V1 exact-state integrity & settlement | **FAIL** |
+| Permanent external original archive | **BLOCKED_INFRASTRUCTURE** |
+
+**Next action:** owner must separately approve main integration of the source-readiness feature through an unmerged integration PR; merged historical #141 cannot be retargeted. Independently verify exact final PR HEAD CI and first ordinary post-main CORE-003 readiness artifact. Do **not** merge automatically or create any betting execution/automation.
+
+
+
 
 ## MVP-018 – Operational original checkpoint | 4 November 2026, 13:15 UTC
 
@@ -57,6 +90,34 @@ Original first reason distribution at 67: **29** no verified frozen model, **8**
 
 **Eierprosedyre:** PR #137 og #138 står åpne i utelukkende read-only/P0 forsknings- og evaluatorfiler; **ingen merge uten eksplisitt eiersamtykke**. #135 og #136 er separate draft-PR-er med merge-konflikt løst på eksisterende grener; full CI på nye HEAD kreves. Enhver merge av #137/#138 i vilkårlig rekkefølge kan kreve en ny CI-workflow konfliktkontroll; modell og terskler er urørt. No replay-, provider-, V3.3.12-, Champion-/CORE004-vekter eller PIT-regler er endret.
 
+
+
+## MVP-019 | Operational source quality & original admission, 4 November 2026
+
+**Current verified integration branch state:** [PR #140](https://github.com/Maremoo2/Betting/pull/140) is `OPEN/DRAFT` directly against `main`, GitHub mergeable and all four required CI workflows passed on HEAD `98433439e25d96a7a3b49b7fcdc526b262cee23a`. Historical stacked PR #137 was merged into #135's feature branch, and #139 was merged into #137's feature branch; their `MERGED` UI states **did not** place those changes on `main`. Do not repeat or falsely count main delivery. Main was `ee2d5617024b238558072bb24ec92a6b4291c710` when independently inspected. **No DEV merge performed.**
+
+**New diagnostic implementation:** [PR #141](https://github.com/Maremoo2/Betting/pull/141) is `OPEN/DRAFT`, based on #140's feature branch; adds original-joined Source Readiness Matrix, negative regressions and a four-original SHA-checked CI replay. This is research-only. `IMPLEMENTED`; `CI_PASS` and `MERGED` are distinct states and must be checked on its exact final HEAD. The four-source join lacks independently attested per-runner stable identity, official scratch originals and separate official clock receipts, so no source readiness output independently grants `READY_FOR_FREEZE`, PIT or BET.
+
+**Observed ordinary CORE-003 post-#138 data:** [41842113458](https://github.com/Maremoo2/Betting/actions/runs/41842113458) on main `e4cd4b96294030df75af13459f73283b509fe2ae` produced 68 physical races, 24 complete frozen model fields, 19 original-result-scored pairs, 18 same-freeze WIN triples, 0 PIT and incomplete original coverage. Against previous 68/24/16/14, this is **+3 scored pairs and +4 WIN triples**, not the hypothesized 20/18. Four individual scratched-runner race outcomes still require per-original audit; prior CI replay alone is not operational attribution. Later ordinary [41843330305](https://github.com/Maremoo2/Betting/actions/runs/41843330305), on main `ee2d5617024b238558072bb24ec92a6b4291c710`, produced **69 / 24 / 19 / 18 / 0 PIT**, with 50 non-evaluable races. New race discovery **did not** increase qualifying pair count.
+
+| Original-dependent metric | Prior historical baseline | Latest ordinary CORE-003 41843330305 | Status |
+| --- | ---: | ---: | --- |
+| Distinct physical races | 68 | **69** | OPERATIONALLY_VERIFIED |
+| Complete originally frozen model full fields | 24 | **24** | OPERATIONALLY_VERIFIED |
+| Scored Champion/CORE-004 original-result pairs | 16 | **19** | OPERATIONALLY_VERIFIED |
+| Same-freeze normalized WIN triples | 14 | **18** | OPERATIONALLY_VERIFIED |
+| PIT-certified physical races | 0 | **0** | BLOCKED_SOURCE |
+| Not evaluable (not equivalent to source-gate root cause) | 52 | **50** | OPERATIONALLY_VERIFIED |
+| V1 runtime replay mismatches | 5 | **5** in main audit 41842667032 | FAIL |
+| Overdue unsettled paper shadow tickets | 1 | **1**, [#82](https://github.com/Maremoo2/Betting/issues/82) | FAIL |
+
+**Root causes not waived:** historic original source trace for 27 blocked physical races: 9 PDF, 7 ATG full-field, 6 active-roster, 3 independent-identity, 1 start-clock, 1 conservative T−4. Nine PDF original regression checks previously matched post-DEV-012 code but did **not** create retrospective freezes. ATG registration crosswalk, scratch provenance, timing and potential implementation defects require new original evidence. No source-independent fix claimed; `BLOCKED_SOURCE` remains valid.
+
+**V1 evidence:** [main audit 41842667032](https://github.com/Maremoo2/Betting/actions/runs/41842667032) restored a state and still reports temporal PASS, runtime replay FAIL (five combined-probability and conflict-score mismatches), settlement FAIL (Skive ticket #82), provider WARN. Do not compare a different historical SQLite state to claim code error, and do not mark the ticket settled without authenticated official complete result and dividend semantics.
+
+**PIT Jägersro 4 November:** `RIKSTOTO:S3_NR_2026-11-04:5`; original independent registration, official scratches, T−4 freeze and WIN receipts must all be source-verified. Existing scheduled 22:15 aftercheck is owner-controlled; no duplicate scheduling, no retrospective PIT. `bet_authority=false`.
+
+**Next critical path:** (1) owner reviews #140, CI and merge history; (2) validate #141 authentic replay and maintain the read-only matrix; (3) isolate repeated prospective identity/ATG/roster failures using **new original pre-cutoff bytes**, implement only reproducible source-parser/mapping fixes; (4) pinned-state V1 replay and Skive original result, PIT source attestation; (5) increase outcome-paired same-race original benchmark toward 30 without tuning Champion/CORE-004 or changing pricing, gates or stakes. Deadline 13 November 2026 18:00 Oslo. No automatic merge or external writes.
 
 
 ## MVP-017 – Operational hardening and evidence expansion | 4 November 2026
