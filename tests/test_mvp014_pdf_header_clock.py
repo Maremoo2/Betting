@@ -7,8 +7,8 @@ import os
 import re
 from pathlib import Path
 
-import fitz
 import pytest
+import fitz
 
 from hbi.collector_handoff import pdf_field
 
@@ -88,7 +88,7 @@ def test_real_pdf_header_excludes_post_clock_first_runner_numbers(
         headers = [p.get_text().splitlines()[:14] for p in pdf]
     assert any(
         number in lines and any(l.strip() == extra_numeral for l in lines)
-        and any(re.search(r"START\s+KL", l, re.I) for l in lines)
+        and any(re.search(r"START\s+KL", l, re.IGNORECASE) for l in lines)
         for lines in headers
     )
     assert pdf_field(raw, int(number), runner_field, "2026-11-04") == clock
