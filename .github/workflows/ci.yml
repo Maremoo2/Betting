@@ -147,6 +147,67 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+      # Real scheduled 4 Nov source inventory changed during pagination.
+      # Protect cumulative benchmark from a falsely zero-count published scorecard.
+      - name: Replay MVP-016 genuine GitHub inventory outage (NO BET)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/mvp016-inventory"
+          mkdir -p "$root"/{outage,healthy,false_zero}
+          gh run download 41817026855 --repo "$GITHUB_REPOSITORY" \
+            --name dev011-coverage-manifest-41817026855 --dir "$root/outage"
+          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
+            --name dev011-coverage-manifest-41814068321 --dir "$root/healthy"
+          gh run download 41817026855 --repo "$GITHUB_REPOSITORY" \
+            --name dev009-outcome-scorecards-41817026855 --dir "$root/false_zero"
+          printf '%s  %s\n' \
+            b14c61c979c656e49da382d574f3416293303e582b3b864b646df592282c4ac7 \
+            "$root/outage/manifest.json" | sha256sum --check -
+          printf '%s  %s\n' \
+            ecb4477a0ec5fc9c954862943ab8b39876d7b13c6adf701bf4e777eaa9f9df33 \
+            "$root/healthy/manifest.json" | sha256sum --check -
+          printf '%s  %s\n' \
+            be7604e5b9604aa5439769e716038ad863854588fb6340b8333b4f77392e4481 \
+            "$root/false_zero/index.json" | sha256sum --check -
+          MVP016_INVENTORY_OUTAGE_ORIGINAL_ROOT="$root" \
+            pytest -q tests/test_mvp016_inventory_outage.py
+          # A blocked original must *not* produce the current cumulative
+          # report's misleading zero-race index.
+          set +e
+          python -m hbi.mvp016_inventory_guard \
+            --manifest "$root/outage/manifest.json" \
+            --output-dir "$root/research-status"
+          code=$?
+          set -e
+          test "$code" -eq 3
+          test -f "$root/research-status/source-unavailable.json"
+          test ! -e "$root/research-status/index.json"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          root = Path(os.environ["RUNNER_TEMP"]) / "mvp016-inventory"
+          row = json.loads((root / "research-status/source-unavailable.json").read_text())
+          assert row["schema"] == "MVP016_CUMULATIVE_SCORECARD_SOURCE_UNAVAILABLE_V1"
+          assert row["source_reason"] == "PAGINATED_GITHUB_INVENTORY_UNAVAILABLE"
+          assert row["cumulative_physical_races"] is None
+          assert row["scorecard_generated"] is False
+          assert row["bet_authority"] is False
+          PY
+
+      - name: Upload MVP-016 original inventory outage replay evidence
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp016-original-inventory-outage-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp016-inventory/research-status/source-unavailable.json
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Replay DEV-012 against original 3 Nov Vincennes PDF and starts
         if: github.event_name == 'pull_request'
         env:
