@@ -272,6 +272,79 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+      # Five original physical source reasons; no retrospective model freeze.
+      - name: Replay MVP-018 no-freeze source provenance against original 65-race cohort
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/mvp018-freeze"
+          mkdir -p "$root/scorecard"
+          gh run download 41826490000 --repo "$GITHUB_REPOSITORY" \
+            --name dev009-outcome-scorecards-41826490000 --dir "$root/scorecard"
+          printf '%s  %s\n' \
+            a7cc16d026ea08e0042dc4d6c5c2d75d3212bfd5fb00203dbbbbc36455f11d2b \
+            "$root/scorecard/index.json" | sha256sum --check -
+          for run in 41689647527 41710594697 41665938596 41826490000 41811192493; do
+            mkdir -p "$root/run-$run"
+            gh run download "$run" --repo "$GITHUB_REPOSITORY" \
+              --name "bet-mvp-shadow-$run" --dir "$root/run-$run"
+          done
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          root = Path(os.environ["RUNNER_TEMP"]) / "mvp018-freeze"
+          entries = [
+              (41689647527, 13257326927, "ff60ace9f57c3c1193b9024ae48012f12349d4cecc0b7d75f0cc6bd5fcaaf552"),
+              (41710594697, 13267848493, "5cc2a0d920e4dd8db9b0100a9554af79e9941e53dc74ea11bab8d6a0578c1596"),
+              (41665938596, 13245606773, "a371cfd49e21eb8cf70abdf0be3923e19a21e3161f4ede87467d23c8ba2c4a8e"),
+              (41826490000, 13319117566, "87e8cd9751a9987e49180c95c62d16ea418767fdbecaff3345c634f409c5dae4"),
+              (41811192493, 13311119836, "afb2f64cccbaf89837ef22c2368468fff36538b2ce1ece70fb46db34ecadb49a"),
+          ]
+          rows = []
+          for run, artifact, expected in entries:
+              file = root / f"run-{run}/cohort-index.json"
+              assert hashlib.sha256(file.read_bytes()).hexdigest() == expected
+              rows.append({"run_id": run, "artifact_id": artifact,
+                           "sha256": expected, "path": str(file)})
+          (root / "manifest.json").write_text(json.dumps({
+              "schema": "MVP018_SHA_PINNED_COHORT_INPUTS_V1", "archives": rows,
+          }, indent=2))
+          PY
+          MVP018_SOURCE_ORIGINAL_ROOT="$root" \
+            pytest -q tests/test_mvp018_freeze_provenance.py
+          python -m hbi.mvp018_freeze_provenance \
+            --scorecard "$root/scorecard/index.json" \
+            --scorecard-sha256 a7cc16d026ea08e0042dc4d6c5c2d75d3212bfd5fb00203dbbbbc36455f11d2b \
+            --original-cohorts-manifest "$root/manifest.json" \
+            --output-dir "$root/report"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          root = Path(os.environ["RUNNER_TEMP"]) / "mvp018-freeze"
+          x = json.loads((root / "report/index.json").read_text())
+          assert x["original_no_freeze_target_count"] == 27
+          assert x["original_scorecard_model_pairs"] == 16
+          assert x["original_scorecard_win_triples"] == 14
+          assert x["frozen_models_reconstructed_or_promoted"] == 0
+          assert x["pit_certification_performed"] is False
+          assert x["bet_authority"] is False
+          PY
+
+      - name: Upload MVP-018 source diagnostics (no originals or BET)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp018-freeze-source-diagnostics-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp018-freeze/report/index.json
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Replay DEV-012 against original 3 Nov Vincennes PDF and starts
         if: github.event_name == 'pull_request'
         env:
