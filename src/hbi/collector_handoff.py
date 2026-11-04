@@ -104,9 +104,16 @@ def pdf_field(pdf_bytes: bytes, number: int, runners: dict, date: str) -> str:
         pages = [page.get_text() for page in document]
     labels_by_page = []
     for text in pages:
-        # Only the first 14 lines may identify a physical race. Never
-        # interpret historic race numbers deeper in a horse's form as headers.
+        # Only physical header lines BEFORE START KL can identify the race.
+        # Post-clock horse weights/form zeros may occur among the first 14
+        # extracted lines and must never be mistaken for another race label.
         header = text.splitlines()[:14]
+        for i, line in enumerate(header):
+            if re.search(
+                r"\bSTART\s+KL\.?\s*\d{1,2}:\d{2}\b", line, re.IGNORECASE
+            ):
+                header = header[:i]
+                break
         labels = []
         for line in header:
             line = line.strip()
