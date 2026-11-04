@@ -1,6 +1,21 @@
 # Betting HQ – master-roadmap og gjennomføringsstatus
 
 
+## MVP-014 – 4. november: post-merge originals and legacy coverage diagnosis
+
+**Append-only read-only status**, not a retrospective change to earlier audits. [Full SHA-verified evidence](MVP014_20261104_LEGACY_ORIGINAL_INDEX_ROOT_CAUSE.md). Main at this control: `254ae4b5ec6c5e97622a1881b581e9c7d9c86f9b`. Owner has already merged PR #128 (DEV-013) and #129 (V4/V75/V85 probability-only research). No new merge authority.
+
+| Priority | Current factual status | Next acceptance |
+| --- | --- | --- |
+| P0 DEV-013 | **DONE code / CI_PASS / PARTIAL operations** – scheduled 4 Nov 08:07 and 08:17 Oslo executions skipped actual source/model/scorecard steps under hours gate; last real cumulative before merge remains 59 unique race IDs, 10 scored pairs, 0 simultaneous WIN triples, 0 PIT; DEV-013 original PR replay verified eight triples for fixed eligible earlier cohort | First **actual executed** post-merge scheduled CORE-003 scorecard with original SHA/timestamps, no after-the-fact selection |
+| P0 DEV-011 cumulative source quality | **PARTIAL:** last nonempty 2692 GitHub entries, 27 pages, 151 indexed artifacts, 10 pinned results, one conflicting official result. All five earlier 'missing' GitHub model artifact IDs **are actually downloadable**, but have unindexed legacy `shadow.json` layouts; this isolated PR improves blocker classification only | Report five `UNINDEXED_LEGACY_MODEL_ORIGINAL` as still BLOCKED, do not admit them or change historical denominator |
+| P0 Jägersro / MVP-011 | **BLOCKED_SOURCE:** Collector 4 Nov morning original has 9/9 race 5 active, full PDF/startlist consistency, **9/9 TMP registration identifiers**, no independently attested cross-provider IDs; original source publication time not attested. T−4 ~20:26 Oslo today, original after-audit already scheduled 22:15 | Wait for actual future T−4 and complete independent identity/scratch receipts, preserve existing once-only review |
+| P0 V1 integrity | **FAIL** from scheduled audit 41747967150: 5 replay mismatches, settlement ticket issue #82, provider warning 14; code CI GREEN does not satisfy this | Separate immutable official adjudication; no policy/settlement rewriting |
+| P1 DEV-014 V4X | **PARTIAL / BLOCKED_SOURCE economic EV**: original physical composite pool mapping documented, but no verified joint pool pricing/takeout/jackpot/payout and no valid full frozen model on all four legs | Continue after P0, no WIN-for-pool-price substitution |
+
+**Research/BET status:** `bet_authority=false`; no PIT-003A, Champion, CORE-004, V3.3.12 or wagering rule changes. 13 Nov 18:00 Europe/Oslo target unchanged.
+
+
 ## MVP-014 – BULK EXECUTION snapshot, 3 November 2026 (append-only, unmerged review)
 
 **Proposed research-only roadmap update from [MVP-014 source audit](MVP014_BULK_EXECUTION_SOURCE_AUDIT_20261103.md).** Main baseline `4047fdee0984b4289b1ef86797f894b8d0227da0`. Source: original GitHub CORE-003 and Collector archives. This section is a new time-scoped snapshot; legacy audits and decisions below remain immutable. Frist **13.11.2026 18:00 Europe/Oslo**.
