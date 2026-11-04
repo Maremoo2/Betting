@@ -431,14 +431,27 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p dev011-scorecard-models dev011-scorecard-results dev011-coverage
-          if gh api --paginate --slurp \
-              "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" \
-              > "$RUNNER_TEMP/dev011-artifact-pages.json" && \
-             python -m hbi.dev011_coverage plan \
-               --pages "$RUNNER_TEMP/dev011-artifact-pages.json" \
-               --current-run-id "$GITHUB_RUN_ID" \
-               --manifest dev011-coverage/manifest.json \
-               --downloads-tsv "$RUNNER_TEMP/dev011-downloads.tsv"; then
+          # GitHub artifact total_count may change while paginating. Retry
+          # the ENTIRE source inventory from page one. Never accept mixed pages
+          # or weaken DEV-011's strict count/duplicate validation.
+          inventory_ready=false
+          for attempt in 1 2 3; do
+            rm -f "$RUNNER_TEMP/dev011-artifact-pages.json" \
+              "$RUNNER_TEMP/dev011-downloads.tsv" dev011-coverage/manifest.json
+            if gh api --paginate --slurp \
+                "repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" \
+                > "$RUNNER_TEMP/dev011-artifact-pages.json" && \
+               python -m hbi.dev011_coverage plan \
+                 --pages "$RUNNER_TEMP/dev011-artifact-pages.json" \
+                 --current-run-id "$GITHUB_RUN_ID" \
+                 --manifest dev011-coverage/manifest.json \
+                 --downloads-tsv "$RUNNER_TEMP/dev011-downloads.tsv"; then
+              inventory_ready=true
+              break
+            fi
+            echo "::warning::DEV011_INVENTORY_RETRY_FULL_PAGINATION:$attempt"
+          done
+          if [ "$inventory_ready" = true ]; then
             while IFS="$(printf '\t')" read -r prior_run artifact_name kind; do
               test -n "$prior_run" || continue
               if [ "$kind" = model ]; then
@@ -477,13 +490,56 @@ jobs:
       - name: Generate DEV-009 prospective official outcome scorecard (NO BET)
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
         run: |
-          python -m hbi.prospective_outcome_scorecard \
-            --models-root dev011-scorecard-models \
-            --attestation-index pit003a-attestations/index.json \
-            --output-dir dev009-outcome-scorecards \
-            --prior-results-root dev011-scorecard-results \
+          # A failed source-inventory attempt is NOT a new zero-race benchmark.
+          # Instead emit an explicit, distinct source-unavailable research
+          # diagnostic. Keep the independent CORE-003/PIT state untouched.
+          if python -m hbi.mvp016_inventory_guard \
+              --manifest dev011-coverage/manifest.json \
+              --output-dir dev009-outcome-scorecards; then
+            python -m hbi.prospective_outcome_scorecard \
+              --models-root dev011-scorecard-models \
+              --attestation-index pit003a-attestations/index.json \
+              --output-dir dev009-outcome-scorecards \
+              --prior-results-root dev011-scorecard-results \
+              --coverage-manifest dev011-coverage/manifest.json \
+              --fetch-official
+          else
+            echo "::error::DEV009_CUMULATIVE_SCORECARD_SKIPPED_SOURCE_UNAVAILABLE"
+          fi
+
+      # Join existing original source/model/coverage/scorecard artifacts. This
+      # research sidecar can fail without rewriting or blocking CORE-003 state.
+      # Its own outcome remains explicit in GitHub step logs and artifact.
+      - name: Generate MVP-016 cumulative research status (NO BET)
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          for source in \
+            dev009-outcome-scorecards/index.json \
+            core003-pilot-report.json \
+            bet-mvp-shadow/cohort-index.json \
+            dev011-coverage/manifest.json; do
+            if [ ! -f "$source" ]; then
+              echo "::error::MVP016_ORIGINAL_INPUT_MISSING:$source"
+              exit 1
+            fi
+          done
+          python -m hbi.mvp016_research_status \
+            --scorecard-index dev009-outcome-scorecards/index.json \
+            --source-report core003-pilot-report.json \
+            --model-cohort-index bet-mvp-shadow/cohort-index.json \
             --coverage-manifest dev011-coverage/manifest.json \
-            --fetch-official
+            --output-dir mvp016-research-status
+
+      - name: Upload MVP-016 cumulative read-only research status (NO BET)
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp016-research-status-${{ github.run_id }}
+          path: mvp016-research-status/index.json
+          if-no-files-found: warn
+          retention-days: 21
 
       - name: Upload Collector-to-Betting import and model admission evidence
         if: steps.gate.outputs.run == 'true' && always()
