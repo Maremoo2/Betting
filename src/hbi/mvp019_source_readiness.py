@@ -231,11 +231,11 @@ def build_operational_readiness(
     records = scorecard.get("records")
     metrics = scorecard.get("counts")
     if not isinstance(records, list) or not isinstance(metrics, dict):
-        raise ValueError("CUMULATIVE_SCORECARD_MISSING")
+        raise TypeError("CUMULATIVE_SCORECARD_MISSING")
     historical = {}
     for item in records:
         if not isinstance(item, dict) or not isinstance(item.get("race_id"), str):
-            raise ValueError("PHYSICAL_RACE_ROW_INVALID")
+            raise TypeError("PHYSICAL_RACE_ROW_INVALID")
         rid = item["race_id"]
         if rid in historical or item.get("bet_authority") is not False:
             raise ValueError("CUMULATIVE_PHYSICAL_ID_OR_AUTHORITY_CONFLICT")
@@ -263,11 +263,11 @@ def build_operational_readiness(
 
     def keyed(items: object, name: str) -> dict:
         if not isinstance(items, list):
-            raise ValueError(name + "_NOT_LIST")
+            raise TypeError(name + "_NOT_LIST")
         result = {}
         for item in items:
             if not isinstance(item, dict) or not isinstance(item.get("race_id"), str):
-                raise ValueError(name + "_ROW_INVALID")
+                raise TypeError(name + "_ROW_INVALID")
             rid = item["race_id"]
             if rid in result:
                 raise ValueError(name + "_DUPLICATE_PHYSICAL_ID")
