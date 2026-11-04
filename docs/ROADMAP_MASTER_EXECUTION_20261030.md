@@ -59,6 +59,34 @@ Original first reason distribution at 67: **29** no verified frozen model, **8**
 
 
 
+## MVP-019 | Operational source quality & original admission, 4 November 2026
+
+**Current verified integration branch state:** [PR #140](https://github.com/Maremoo2/Betting/pull/140) is `OPEN/DRAFT` directly against `main`, GitHub mergeable and all four required CI workflows passed on HEAD `98433439e25d96a7a3b49b7fcdc526b262cee23a`. Historical stacked PR #137 was merged into #135's feature branch, and #139 was merged into #137's feature branch; their `MERGED` UI states **did not** place those changes on `main`. Do not repeat or falsely count main delivery. Main was `ee2d5617024b238558072bb24ec92a6b4291c710` when independently inspected. **No DEV merge performed.**
+
+**New diagnostic implementation:** [PR #141](https://github.com/Maremoo2/Betting/pull/141) is `OPEN/DRAFT`, based on #140's feature branch; adds original-joined Source Readiness Matrix, negative regressions and a four-original SHA-checked CI replay. This is research-only. `IMPLEMENTED`; `CI_PASS` and `MERGED` are distinct states and must be checked on its exact final HEAD. The four-source join lacks independently attested per-runner stable identity, official scratch originals and separate official clock receipts, so no source readiness output independently grants `READY_FOR_FREEZE`, PIT or BET.
+
+**Observed ordinary CORE-003 post-#138 data:** [41842113458](https://github.com/Maremoo2/Betting/actions/runs/41842113458) on main `e4cd4b96294030df75af13459f73283b509fe2ae` produced 68 physical races, 24 complete frozen model fields, 19 original-result-scored pairs, 18 same-freeze WIN triples, 0 PIT and incomplete original coverage. Against previous 68/24/16/14, this is **+3 scored pairs and +4 WIN triples**, not the hypothesized 20/18. Four individual scratched-runner race outcomes still require per-original audit; prior CI replay alone is not operational attribution. Later ordinary [41843330305](https://github.com/Maremoo2/Betting/actions/runs/41843330305), on main `ee2d5617024b238558072bb24ec92a6b4291c710`, produced **69 / 24 / 19 / 18 / 0 PIT**, with 50 non-evaluable races. New race discovery **did not** increase qualifying pair count.
+
+| Original-dependent metric | Prior historical baseline | Latest ordinary CORE-003 41843330305 | Status |
+| --- | ---: | ---: | --- |
+| Distinct physical races | 68 | **69** | OPERATIONALLY_VERIFIED |
+| Complete originally frozen model full fields | 24 | **24** | OPERATIONALLY_VERIFIED |
+| Scored Champion/CORE-004 original-result pairs | 16 | **19** | OPERATIONALLY_VERIFIED |
+| Same-freeze normalized WIN triples | 14 | **18** | OPERATIONALLY_VERIFIED |
+| PIT-certified physical races | 0 | **0** | BLOCKED_SOURCE |
+| Not evaluable (not equivalent to source-gate root cause) | 52 | **50** | OPERATIONALLY_VERIFIED |
+| V1 runtime replay mismatches | 5 | **5** in main audit 41842667032 | FAIL |
+| Overdue unsettled paper shadow tickets | 1 | **1**, [#82](https://github.com/Maremoo2/Betting/issues/82) | FAIL |
+
+**Root causes not waived:** historic original source trace for 27 blocked physical races: 9 PDF, 7 ATG full-field, 6 active-roster, 3 independent-identity, 1 start-clock, 1 conservative T−4. Nine PDF original regression checks previously matched post-DEV-012 code but did **not** create retrospective freezes. ATG registration crosswalk, scratch provenance, timing and potential implementation defects require new original evidence. No source-independent fix claimed; `BLOCKED_SOURCE` remains valid.
+
+**V1 evidence:** [main audit 41842667032](https://github.com/Maremoo2/Betting/actions/runs/41842667032) restored a state and still reports temporal PASS, runtime replay FAIL (five combined-probability and conflict-score mismatches), settlement FAIL (Skive ticket #82), provider WARN. Do not compare a different historical SQLite state to claim code error, and do not mark the ticket settled without authenticated official complete result and dividend semantics.
+
+**PIT Jägersro 4 November:** `RIKSTOTO:S3_NR_2026-11-04:5`; original independent registration, official scratches, T−4 freeze and WIN receipts must all be source-verified. Existing scheduled 22:15 aftercheck is owner-controlled; no duplicate scheduling, no retrospective PIT. `bet_authority=false`.
+
+**Next critical path:** (1) owner reviews #140, CI and merge history; (2) validate #141 authentic replay and maintain the read-only matrix; (3) isolate repeated prospective identity/ATG/roster failures using **new original pre-cutoff bytes**, implement only reproducible source-parser/mapping fixes; (4) pinned-state V1 replay and Skive original result, PIT source attestation; (5) increase outcome-paired same-race original benchmark toward 30 without tuning Champion/CORE-004 or changing pricing, gates or stakes. Deadline 13 November 2026 18:00 Oslo. No automatic merge or external writes.
+
+
 ## MVP-017 – Operational hardening and evidence expansion | 4 November 2026
 
 
