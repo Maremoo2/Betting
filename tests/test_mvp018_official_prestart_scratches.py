@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from hbi.prospective_outcome_scorecard import _market, _official_winner, clock
 from hbi.evaluation import log_loss
+from hbi.prospective_outcome_scorecard import _market, _official_winner, clock
 
 BASELINE_SCORECARD_SHA = "a7cc16d026ea08e0042dc4d6c5c2d75d3212bfd5fb00203dbbbbc36455f11d2b"
 MODEL_ARTIFACTS = {
@@ -147,9 +147,9 @@ def test_four_sha_pinned_immutable_model_and_official_origins():
             role = receipt["role"]
             raw = (official_dir / f"{role}.raw.json").read_bytes()
             assert hashlib.sha256(raw).hexdigest() == receipt["raw_sha256"]
-            assert receipt["source_uri"].endswith((
+            assert receipt["source_uri"].endswith(
                 "completeresults" if role == "complete" else "raceresults"
-            ))
+            )
             bodies[role] = json.loads(raw)["result"]
         assert set(bodies) == {"complete", "raceday"}
         official_complete = bodies["complete"]
