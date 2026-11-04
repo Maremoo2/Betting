@@ -63,11 +63,18 @@ def test_exact_restore_receipt_pins_actual_selected_original(monkeypatch, tmp_pa
     assert restore_latest_state(
         repository="x/y", token="dummy", target_path=database,
         branch="main", receipt_path=receipt_path,
+        audit_workflow_run_id=41899900123, audit_code_sha="c" * 40,
     )
     actual = json.loads(receipt_path.read_text())
     assert database.read_bytes() == raw
     assert actual["artifact_id"] == 42
     assert actual["source_workflow_run_id"] == 2
+    assert actual["audit_workflow_run_id"] == 41899900123
+    assert actual["audit_code_sha"] == "c" * 40
+    from datetime import datetime, UTC
+    restored = datetime.fromisoformat(actual["restored_at_utc"])
+    assert restored.tzinfo is not None
+    assert abs((datetime.now(UTC) - restored).total_seconds()) < 60
     assert actual["source_head_branch"] == "main"
     assert actual["source_head_sha"] == "b" * 40
     assert actual["artifact_zip_sha256"] == hashlib.sha256(archive).hexdigest()
@@ -91,6 +98,7 @@ def test_unsafe_missing_artifact_metadata_refuses_receipt(monkeypatch, tmp_path)
         restore_latest_state(
             repository="x/y", token="dummy", target_path=db,
             branch="main", receipt_path=receipt,
+            audit_workflow_run_id=41899900123, audit_code_sha="c" * 40,
         )
     assert not db.exists()
     assert not receipt.exists()
@@ -107,6 +115,7 @@ def test_wrong_branch_or_empty_inventory_has_no_receipt(monkeypatch, tmp_path):
     assert restore_latest_state(
         repository="x/y", token="dummy", target_path=tmp_path / "hbi.sqlite",
         branch="main", receipt_path=receipt,
+        audit_workflow_run_id=41899900123, audit_code_sha="c" * 40,
     ) is False
     assert not receipt.exists()
 
@@ -124,3 +133,28 @@ def test_no_receipt_option_keeps_legacy_restore_contract(monkeypatch, tmp_path):
         repository="x/y", token="dummy", target_path=db, receipt_path=None
     )
     assert db.read_bytes() == b"original-sqlite"
+
+
+@pytest.mark.parametrize("bad_run,bad_sha", [
+    (None, "a" * 40), (0, "a" * 40), (-1, "a" * 40),
+    (True, "a" * 40), (1, None), (1, "f" * 39), (1, "not-a-sha"),
+])
+def test_missing_audit_identity_rejects_receipt_before_network(
+    monkeypatch, tmp_path, bad_run, bad_sha,
+):
+    from hbi import state_artifact
+
+    def no_network(*args, **kwargs):
+        raise AssertionError("must fail before any source request")
+
+    monkeypatch.setattr(state_artifact.urllib.request, "urlopen", no_network)
+    target = tmp_path / "hbi.sqlite"
+    receipt = tmp_path / "receipt.json"
+    with pytest.raises(ValueError, match="AUDIT_RUN_AND_CODE_SHA"):
+        restore_latest_state(
+            repository="x/y", token="dummy", target_path=target,
+            branch="main", receipt_path=receipt,
+            audit_workflow_run_id=bad_run, audit_code_sha=bad_sha,
+        )
+    assert not target.exists()
+    assert not receipt.exists()
