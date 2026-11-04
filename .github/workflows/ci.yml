@@ -26,6 +26,75 @@ jobs:
       - name: Pytest
         run: pytest -q
 
+      # Exactly the real 4 Nov morning Collector original, not a synthetic
+      # startlist or a fabricated T-4 receipt. Former parser rejected 3/35.
+      - name: Replay MVP-014 4 Nov genuine PDF race headers (NO PIT/BET)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/mvp014-nov04"
+          gh run download 41784797103 --repo Maremoo2/rikstoto-program-collector \
+            --name rikstoto-morning-programs --dir "$RUNNER_TEMP/mvp014-nov04"
+          MVP014_NOV04_COLLECTOR_ORIGINAL_ROOT="$RUNNER_TEMP/mvp014-nov04" \
+            pytest -q tests/test_mvp014_pdf_header_clock.py
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          from hbi.collector_handoff import pdf_field
+          root = Path(os.environ["RUNNER_TEMP"]) / "mvp014-nov04"
+          manifests = list(root.rglob("manifest.json"))
+          assert len(manifests) == 1
+          folder = manifests[0].parent / "meetings"
+          counts = {}
+          original_sha = {}
+          for meeting in ("F1_NR_2026-11-04", "F2_NR_2026-11-04",
+                          "S1_NR_2026-11-04", "S2_NR_2026-11-04",
+                          "S3_NR_2026-11-04"):
+              source = folder / meeting
+              pdf_raw = (source / "full_program.pdf").read_bytes()
+              starts_raw = (source / "starts.raw.json").read_bytes()
+              field = json.loads(starts_raw)["result"]
+              n = 0
+              for race_no, rows in field.items():
+                  runners = {str(r["startNumber"]): {"name": r["horseName"]}
+                             for r in rows}
+                  assert pdf_field(pdf_raw, int(race_no), runners, "2026-11-04")
+                  n += 1
+              counts[meeting] = n
+              original_sha[meeting] = {
+                  "pdf": hashlib.sha256(pdf_raw).hexdigest(),
+                  "starts": hashlib.sha256(starts_raw).hexdigest(),
+              }
+          assert sum(counts.values()) == 35
+          result = {
+              "evidence_mode": "GITHUB_ORIGINAL_COLLECTOR_MORNING_NOT_T4",
+              "collector_run_id": 41784797103,
+              "original_sha256": original_sha,
+              "physical_races_per_meeting": counts,
+              "total_physical_pdf_fullfield_replays": 35,
+              "parser_status": "35_OF_35_PASS",
+              "pit_certified": False,
+              "bet_authority": False,
+          }
+          (root / "mvp014-original-pdf-replay.json").write_text(
+              json.dumps(result, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+
+      - name: Upload MVP-014 original 4 Nov PDF replay evidence (NO BET)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp014-original-pdf-headers-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp014-nov04/mvp014-original-pdf-replay.json
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Replay DEV-012 against original 3 Nov Vincennes PDF and starts
         if: github.event_name == 'pull_request'
         env:
