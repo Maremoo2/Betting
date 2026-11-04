@@ -208,6 +208,70 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+      # Genuine 4 November four-original scorecard join: never a PIT certificate.
+      - name: Replay MVP-016 original research status (NO BET)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          folder="$RUNNER_TEMP/mvp016-research"
+          mkdir -p "$folder"/{scorecard,source,cohort,manifest}
+          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
+            --name dev009-outcome-scorecards-41814068321 --dir "$folder/scorecard"
+          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
+            --name core003-pilot-report-41814068321 --dir "$folder/source"
+          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
+            --name bet-mvp-shadow-41814068321 --dir "$folder/cohort"
+          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
+            --name dev011-coverage-manifest-41814068321 --dir "$folder/manifest"
+          printf '%s  %s\n' \
+            62b0d78ca75847d2f2bfe895af240e45eada96a7719aefe4f880c1da02cbe178 \
+            "$folder/scorecard/index.json" | sha256sum --check -
+          printf '%s  %s\n' \
+            151168c074b7d1f0c92bb1c568f70bd23d2669a8903540a26c9b97f32121a7d7 \
+            "$folder/source/core003-pilot-report.json" | sha256sum --check -
+          printf '%s  %s\n' \
+            3b804af346a340c6713b64319fd4201881040a264360e4a014069bb60c3e7cd0 \
+            "$folder/cohort/cohort-index.json" | sha256sum --check -
+          printf '%s  %s\n' \
+            ecb4477a0ec5fc9c954862943ab8b39876d7b13c6adf701bf4e777eaa9f9df33 \
+            "$folder/manifest/manifest.json" | sha256sum --check -
+          MVP016_RESEARCH_ORIGINAL_ROOT="$folder" \
+            pytest -q tests/test_mvp016_research_status.py
+          python -m hbi.mvp016_research_status \
+            --scorecard-index "$folder/scorecard/index.json" \
+            --source-report "$folder/source/core003-pilot-report.json" \
+            --model-cohort-index "$folder/cohort/cohort-index.json" \
+            --coverage-manifest "$folder/manifest/manifest.json" \
+            --output-dir "$folder/report"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          folder = Path(os.environ["RUNNER_TEMP"]) / "mvp016-research"
+          result = json.loads((folder / "report/index.json").read_text())
+          assert result["schema"] == "MVP016_CUMULATIVE_RESEARCH_STATUS_V1"
+          assert result["counts"]["physical_races"] == 63
+          assert result["counts"]["paired_champion_core004"] == 16
+          assert result["counts"]["triple_evaluable"] == 14
+          assert result["counts"]["current_source_fixed_cohort"] == 2
+          assert result["counts"]["current_source_rejected"] == 2
+          assert result["counts"]["pit_certified_paired"] == 0
+          assert result["bet_authority"] is False
+          assert all(row["bet_authority"] is False for row in result["per_physical_race"])
+          PY
+
+      - name: Upload MVP-016 original joined research-status evidence
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp016-original-research-status-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp016-research/report/index.json
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Replay DEV-012 against original 3 Nov Vincennes PDF and starts
         if: github.event_name == 'pull_request'
         env:
