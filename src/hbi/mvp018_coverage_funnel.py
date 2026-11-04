@@ -20,9 +20,7 @@ CURRENT_STAGES = (
     "FIXED_PHYSICAL_COHORT",
     "COLLECTOR_SOURCE_SHA_PRESENT",
     "SOURCE_MODEL_INPUT_APPROVED",
-    "ELIGIBLE_FROZEN_AND_INDEXED",
-    "OFFICIAL_RESULT_SCORED",
-    "SAME_FREEZE_WIN_TRIPLE",
+    "CURRENT_MODEL_PROCESSING_RECORDED",
 )
 CUMULATIVE_STAGES = (
     "ORIGINAL_PHYSICAL_COHORT",
@@ -103,12 +101,16 @@ def build_funnel(joined: dict) -> dict:
         if src.get("admission_status") != "PROCESSED":
             for reason in src.get("admission_blockers") or []:
                 current_blocks[str(reason)] += 1
-    current_frozen = current_ids & full_field
-    current_scored = current_ids & scored
-    current_triple = current_ids & triple
+    # The latest source cohort and cumulative outcome union have different
+    # time horizons. An earlier historical freeze for this race_id MUST NOT be
+    # reported as a newly processed freeze in the current source run.
+    current_processed = {
+        r["race_id"] for r in current
+        if r["current_source_readiness"].get("admission_status") == "PROCESSED"
+    }
     current_counts = [
         len(current_ids), len(current_capture), len(current_approved),
-        len(current_frozen), len(current_scored), len(current_triple)
+        len(current_processed),
     ]
     cumulative_counts = [len(ids), len(full_field), len(scored), len(triple)]
     if (any(a < b for a, b in pairwise(current_counts))
@@ -116,7 +118,8 @@ def build_funnel(joined: dict) -> dict:
             or cumulative_counts[1] != counts.get("complete_prediction_fields")
             or cumulative_counts[2] != counts.get("paired_champion_core004")
             or cumulative_counts[3] != counts.get("triple_evaluable")
-            or len(current_ids) != counts.get("current_source_fixed_cohort")):
+            or len(current_ids) != counts.get("current_source_fixed_cohort")
+            or len(current_processed) != counts.get("current_source_model_processed")):
         raise ValueError("FUNNEL_OR_SCORECARD_STAGE_CONFLICT")
     return {
         "schema": SCHEMA,
