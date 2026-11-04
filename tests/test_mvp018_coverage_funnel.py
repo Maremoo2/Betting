@@ -33,6 +33,7 @@ def _joined():
             "physical_races": 2, "complete_prediction_fields": 1,
             "paired_champion_core004": 1, "triple_evaluable": 1,
             "current_source_fixed_cohort": 1,
+            "current_source_model_processed": 0,
             "current_source_verified_full_fundamentals": 0,
             "current_source_complete_win": 0,
         },
