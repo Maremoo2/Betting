@@ -23,7 +23,7 @@ def _clock(value: str | None) -> datetime | None:
     if value is None:
         return None
     if not isinstance(value, str):
-        raise ValueError("SOURCE_CLOCK_TYPE_INVALID")
+        raise TypeError("SOURCE_CLOCK_TYPE_INVALID")
     try:
         parsed = datetime.fromisoformat(value)
     except ValueError as exc:
@@ -64,7 +64,7 @@ def build_readiness(
         raise ValueError("GITHUB_RUN_ID_CLAIM_INVALID")
     source_clocks = joined.get("source_clocks") or {}
     if not isinstance(source_clocks, dict):
-        raise ValueError("SOURCE_CLOCKS_INVALID")
+        raise TypeError("SOURCE_CLOCKS_INVALID")
     at = _clock(
         evaluation_at_utc if evaluation_at_utc is not None
         else source_clocks.get("current_core003_finished_at_utc")
