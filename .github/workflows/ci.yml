@@ -272,6 +272,103 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+      # Offline original-backed health. A failed later GitHub inventory must
+      # not make the last prior validated scorecard look like zero races.
+      - name: Replay MVP-017 last-known-valid health on 3 GitHub runs and V1 audit
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/mvp017-health"
+          for part in early outage recent; do mkdir -p "$root/$part"; done
+          mkdir -p "$root/v1"
+          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
+            --name dev009-outcome-scorecards-41814068321 --dir "$root/early/score"
+          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
+            --name dev011-coverage-manifest-41814068321 --dir "$root/early/coverage"
+          gh run download 41817026855 --repo "$GITHUB_REPOSITORY" \
+            --name dev009-outcome-scorecards-41817026855 --dir "$root/outage/score"
+          gh run download 41817026855 --repo "$GITHUB_REPOSITORY" \
+            --name dev011-coverage-manifest-41817026855 --dir "$root/outage/coverage"
+          gh run download 41820503559 --repo "$GITHUB_REPOSITORY" \
+            --name dev009-outcome-scorecards-41820503559 --dir "$root/recent/score"
+          gh run download 41820503559 --repo "$GITHUB_REPOSITORY" \
+            --name dev011-coverage-manifest-41820503559 --dir "$root/recent/coverage"
+          gh run download 41820373324 --repo "$GITHUB_REPOSITORY" \
+            --name hbi-v1-system-audit-41820373324 --dir "$root/v1"
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          base = Path(os.environ["RUNNER_TEMP"]) / "mvp017-health"
+          original = [
+              ("early", 41814068321, "054dd26c5cfdaaf03219222ead25364b7a0ad915",
+               "62b0d78ca75847d2f2bfe895af240e45eada96a7719aefe4f880c1da02cbe178",
+               "ecb4477a0ec5fc9c954862943ab8b39876d7b13c6adf701bf4e777eaa9f9df33"),
+              ("outage", 41817026855, "054dd26c5cfdaaf03219222ead25364b7a0ad915",
+               "be7604e5b9604aa5439769e716038ad863854588fb6340b8333b4f77392e4481",
+               "b14c61c979c656e49da382d574f3416293303e582b3b864b646df592282c4ac7"),
+              ("recent", 41820503559, "2937150ee0ce5bb7a0f6bb2ebe9ede7b894d01d3",
+               "8a8012777ac49256e95aab9f3f5e2555a938cb8117826d6f47ddb5410f2343e5",
+               "657b6f177e540c53f293f0beadb1ea0811130c544bf1f8a3cc185bf1ca831e94"),
+          ]
+          data = []
+          for name, run, sha, score_sha, manifest_sha in original:
+              score = base / name / "score/index.json"
+              manifest = base / name / "coverage/manifest.json"
+              assert hashlib.sha256(score.read_bytes()).hexdigest() == score_sha
+              assert hashlib.sha256(manifest.read_bytes()).hexdigest() == manifest_sha
+              # Flat replay directory for a single independent test fixture.
+              (base / name / "index.json").write_bytes(score.read_bytes())
+              (base / name / "manifest.json").write_bytes(manifest.read_bytes())
+              data.append({
+                  "run_id": run,
+                  "github_head_sha": sha,
+                  "scorecard_path": str(base / name / "index.json"),
+                  "scorecard_sha256": score_sha,
+                  "coverage_manifest_path": str(base / name / "manifest.json"),
+                  "coverage_manifest_sha256": manifest_sha,
+              })
+          v1 = base / "v1/research-v1/v1-system-audit.json"
+          assert hashlib.sha256(v1.read_bytes()).hexdigest() == (
+              "9ecf547e1792522b15865163bff765c2a87ce90d5220496a7f9f46be369861a6"
+          )
+          (base / "snapshots.json").write_text(json.dumps(data))
+          PY
+          MVP017_RESEARCH_HEALTH_ORIGINAL_ROOT="$root" \
+            pytest -q tests/test_mvp017_research_health.py
+          python -m hbi.mvp017_research_health \
+            --snapshot-manifest "$root/snapshots.json" \
+            --v1-audit "$root/v1/research-v1/v1-system-audit.json" \
+            --v1-audit-sha256 9ecf547e1792522b15865163bff765c2a87ce90d5220496a7f9f46be369861a6 \
+            --output-dir "$root/report"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          path = Path(os.environ["RUNNER_TEMP"]) / "mvp017-health/report/index.json"
+          x = json.loads(path.read_text())
+          assert x["status"] == "CURRENT_VALID"
+          assert x["last_verified_run_id"] == 41820503559
+          assert x["last_verified_counts"]["physical_races"] == 64
+          assert x["last_verified_counts"]["triple_evaluable"] == 14
+          assert x["v1_system_audit"]["runtime_replay_parity"] == "FAIL"
+          assert x["v1_system_audit"]["settlement_integrity"] == "FAIL"
+          assert x["bet_authority"] is False
+          PY
+
+      - name: Upload MVP-017 health metadata only (NO BET)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp017-original-health-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp017-health/report/index.json
+          if-no-files-found: warn
+          retention-days: 30
+
       # Five original physical source reasons; no retrospective model freeze.
       - name: Replay MVP-018 no-freeze source provenance against original 65-race cohort
         if: github.event_name == 'pull_request'
