@@ -59,7 +59,54 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HBI_DB_PATH: data/hbi.sqlite
+          HBI_RESTORE_RECEIPT_PATH: v1-state-restore-receipt.json
         run: python -m hbi.state_artifact
+
+      - name: Verify exact selected original artifact and restored SQLite SHA
+        if: steps.gate.outputs.should_run == 'true'
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from datetime import UTC, datetime
+          from pathlib import Path
+
+          path = Path("v1-state-restore-receipt.json")
+          receipt = json.loads(path.read_text(encoding="utf-8"))
+          assert receipt["schema"] == "HBI_STATE_RESTORE_RECEIPT_V1"
+          assert receipt["repository"] == os.environ["GITHUB_REPOSITORY"]
+          assert receipt["audit_workflow_run_id"] == int(os.environ["GITHUB_RUN_ID"])
+          assert receipt["audit_code_sha"] == os.environ["GITHUB_SHA"]
+          restored = datetime.fromisoformat(receipt["restored_at_utc"])
+          assert restored.tzinfo is not None
+          assert restored <= datetime.now(UTC)
+          assert (datetime.now(UTC) - restored).total_seconds() < 1800
+          assert receipt["artifact_name"] == "hbi-state"
+          assert receipt["source_head_branch"] == os.environ["GITHUB_REF_NAME"]
+          assert type(receipt["artifact_id"]) is int
+          assert type(receipt["source_workflow_run_id"]) is int
+          assert len(receipt["artifact_zip_sha256"]) == 64
+          assert receipt["bet_authority"] is False
+          assert receipt["historical_decisions_modified"] is False
+          sha = hashlib.sha256()
+          size = 0
+          with Path("data/hbi.sqlite").open("rb") as stream:
+              for block in iter(lambda: stream.read(1024 * 1024), b""):
+                  sha.update(block)
+                  size += len(block)
+          assert sha.hexdigest() == receipt["restored_database_sha256"]
+          assert size == receipt["restored_database_size_bytes"]
+          print(
+              "V1_RESTORED_ARTIFACT_PIN=ID:",
+              receipt["artifact_id"],
+              "SOURCE_RUN:", receipt["source_workflow_run_id"],
+              "AUDIT_RUN:", receipt["audit_workflow_run_id"],
+              "AUDIT_SHA:", receipt["audit_code_sha"],
+              "RESTORED_AT:", receipt["restored_at_utc"],
+              "DB_SHA256:", sha.hexdigest(),
+          )
+          PY
 
       - name: Validate V1 engineering contract
         if: steps.gate.outputs.should_run == 'true'
@@ -87,6 +134,7 @@ jobs:
           name: hbi-v1-system-audit-${{ github.run_id }}
           path: |
             v1-readiness.json
+            v1-state-restore-receipt.json
             research-v1/
           if-no-files-found: error
           retention-days: 90
