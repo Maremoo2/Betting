@@ -369,6 +369,65 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+      # An official complete-result list can include verified, PRE-frozen
+      # scratches; it cannot change the frozen active field retroactively.
+      - name: Replay MVP-018 four official pre-frozen scratched runner results (NO BET)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/mvp018-original-scratches"
+          mkdir -p "$root/scorecard"
+          gh run download 41826490000 --repo "$GITHUB_REPOSITORY" \
+            --name dev009-outcome-scorecards-41826490000 --dir "$root/scorecard"
+          printf '%s  %s\n' \
+            a7cc16d026ea08e0042dc4d6c5c2d75d3212bfd5fb00203dbbbbc36455f11d2b \
+            "$root/scorecard/index.json" | sha256sum --check -
+          for run in 41488067799 41492573978 41499820309 41708503913; do
+            mkdir -p "$root/models/$run"
+            gh run download "$run" --repo "$GITHUB_REPOSITORY" \
+              --name "bet-mvp-shadow-$run" --dir "$root/models/$run"
+          done
+          MVP018_ORIGINAL_SCRATCH_REPLAY_ROOT="$root" \
+            pytest -q tests/test_mvp018_official_prestart_scratches.py
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from hbi.prospective_outcome_scorecard import _official_winner
+          root = Path(os.environ["RUNNER_TEMP"]) / "mvp018-original-scratches"
+          report = json.loads((root / "scorecard/index.json").read_text())
+          blocked = [
+              row for row in report["records"]
+              if row["reasons"] == ["OFFICIAL_ACTIVE_FIELD_MISMATCH"]
+          ]
+          assert len(blocked) == 4
+          out = {
+              "schema": "MVP018_ORIGINAL_PRE_FROZEN_SCRATCHES_REPLAY_V1",
+              "scorecard_original_sha256":
+                  "a7cc16d026ea08e0042dc4d6c5c2d75d3212bfd5fb00203dbbbbc36455f11d2b",
+              "source_original_model_runs": [41488067799, 41492573978,
+                                             41499820309, 41708503913],
+              "original_official_field_mismatch_recovered_by_pure_helper": 4,
+              "scorecard_main_production_recount": None,
+              "new_frozen_models_created": 0,
+              "pit_certified": False,
+              "bet_authority": False,
+          }
+          (root / "metadata.json").write_text(json.dumps(out, sort_keys=True, indent=2) + "\n")
+          PY
+
+      - name: Upload MVP-018 original scratched results evidence (metadata only)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp018-original-pre-frozen-scratches-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp018-original-scratches/metadata.json
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Replay DEV-012 against original 3 Nov Vincennes PDF and starts
         if: github.event_name == 'pull_request'
         env:
