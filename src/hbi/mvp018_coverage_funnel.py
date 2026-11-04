@@ -8,8 +8,8 @@ separate: there are no longitudinal source receipts for all cumulative races.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
+from itertools import pairwise
 from collections import Counter
 from pathlib import Path
 
@@ -69,7 +69,7 @@ def build_funnel(joined: dict) -> dict:
         rid = r["race_id"]
         history = r.get("alternative_original_freezes") or []
         if not isinstance(history, list):
-            raise ValueError("FROZEN_HISTORY_NOT_LIST")
+            raise TypeError("FROZEN_HISTORY_NOT_LIST")
         selected = [v for v in history if v.get("selected_benchmark_reference") is True]
         if len(selected) > 1:
             raise ValueError("MULTIPLE_SELECTED_BENCHMARK_FREEZES")
@@ -90,7 +90,7 @@ def build_funnel(joined: dict) -> dict:
             continue
         src = r["current_source_readiness"]
         if not isinstance(src, dict):
-            raise ValueError("CURRENT_SOURCE_READINESS_INVALID")
+            raise TypeError("CURRENT_SOURCE_READINESS_INVALID")
         sha = src.get("collector_source_sha256")
         if isinstance(sha, str) and len(sha) == 64 and all(
             c in "0123456789abcdef" for c in sha
@@ -111,8 +111,8 @@ def build_funnel(joined: dict) -> dict:
         len(current_frozen), len(current_scored), len(current_triple)
     ]
     cumulative_counts = [len(ids), len(full_field), len(scored), len(triple)]
-    if (any(a < b for a, b in zip(current_counts, current_counts[1:]))
-            or any(a < b for a, b in zip(cumulative_counts, cumulative_counts[1:]))
+    if (any(a < b for a, b in pairwise(current_counts))
+            or any(a < b for a, b in pairwise(cumulative_counts))
             or cumulative_counts[1] != counts.get("complete_prediction_fields")
             or cumulative_counts[2] != counts.get("paired_champion_core004")
             or cumulative_counts[3] != counts.get("triple_evaluable")
