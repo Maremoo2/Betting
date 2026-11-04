@@ -2,6 +2,16 @@
 
 **Safety:** Research-only, no betting/settlement/state write, no PIT admission, no model refit, no changed Champion/CORE-004/V3.3.12/odds/stakes/decisions, no automation. All external official GETs must be timestamped; observed after T−4 must never be represented as pre-T−4.
 
+## Newer completed ordinary checkpoint – 4 Nov 2026 19:02:49 UTC
+
+[CORE-003 41892671529](https://github.com/Maremoo2/Betting/actions/runs/41892671529), on unchanged `main` SHA `4fe98264522e8453589a83bda6d9e59c53b22147`, finished successfully and provides the next independently SHA-checked originals:
+
+- DEV009 scorecard artifact **13353618670**, `index.json` SHA `cfbb4aeb10cdfd502d39c13d1a72838cf7633015f174937a43f3e15b51e69d9b`; **87 physical / 37 complete frozen fields / 26 model pairs / 25 WIN triples / 0 PIT**.
+- Readiness artifact **13353443847**, `index.json` SHA `89897b4a878d5304942b7e1bb666d0d5ab5d0657a092f44a63fef6a014432956`, seven current source races, five `BLOCKED_IDENTITY`, two `BLOCKED_ATG_FULL_FIELD`, zero strict Collector approvals. Previously source-only S2 race 9 is now in cumulative physical archive; `source_only_not_yet_cumulative=[]`. **No retroactive result** was manufactured and the added physical row did **not** increase paired or WIN benchmark.
+- Jägersro `RIKSTOTO:S3_NR_2026-11-04:5` in this second **pre-T−4** source had 9/9 ATG and now complete WIN observed **19:02:45.561620 UTC** (20:02:45 Oslo), earlier than conservative T−4 **19:26 UTC**. However all nine Rikstoto registration IDs remained `TMP-*`; no independent cross-provider registration, timed official scratch-original or qualifying PIT. **PIT_NOT_CERTIFIED / BLOCKED_SOURCE** unchanged, no user-money betting.
+
+This later WIN snapshot supplements rather than overwrites the earlier 18:58 UTC incomplete snapshot. It does not imply that odds were observed at T−4 or that frozen decisions can be reconstructed after the deadline.
+
 ## A. First ordinary CORE-003 after owner-merged #142
 
 Main `4fe98264522e8453589a83bda6d9e59c53b22147` is the exact owner merge commit of PR #142; parents `640908bfc7f3aa01c80ddb8daca81d0846835068` and `7ee12616e7950319870cee490f6a63631f0178a6`. [CORE-003 run 41892222531](https://github.com/Maremoo2/Betting/actions/runs/41892222531) is the first full **successful** run on this SHA. Independent download-and-hash of the actual JSON contents:
