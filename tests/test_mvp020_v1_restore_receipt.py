@@ -5,6 +5,7 @@ import hashlib
 import io
 import json
 import zipfile
+from datetime import UTC, datetime
 
 import pytest
 
@@ -71,7 +72,6 @@ def test_exact_restore_receipt_pins_actual_selected_original(monkeypatch, tmp_pa
     assert actual["source_workflow_run_id"] == 2
     assert actual["audit_workflow_run_id"] == 41899900123
     assert actual["audit_code_sha"] == "c" * 40
-    from datetime import datetime, UTC
     restored = datetime.fromisoformat(actual["restored_at_utc"])
     assert restored.tzinfo is not None
     assert abs((datetime.now(UTC) - restored).total_seconds()) < 60
