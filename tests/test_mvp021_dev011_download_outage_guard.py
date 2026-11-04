@@ -76,8 +76,8 @@ def test_failed_original_download_is_explicitly_blocked_not_zero_scorecard(tmp_p
 @pytest.mark.parametrize("raw", [
     b"41880220139\twrong-name\tresult\n",
     b"41880220139\tdev009-outcome-scorecards-41880220139\tmodel\n",
-    b"41880220139\tdev009-outcome-scorecards-41880220139\tresult\n"
-    b"41880220139\tdev009-outcome-scorecards-41880220139\tresult\n",
+    (b"41880220139\tdev009-outcome-scorecards-41880220139\tresult\n"
+     b"41880220139\tdev009-outcome-scorecards-41880220139\tresult\n"),
     b"garbage",
     b"\xff\xfe",
 ])
