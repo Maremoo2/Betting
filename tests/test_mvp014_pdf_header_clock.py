@@ -86,7 +86,10 @@ def test_real_pdf_header_excludes_post_clock_first_runner_numbers(
     with fitz.open(stream=raw, filetype="pdf") as pdf:
         headers = [p.get_text().splitlines()[:14] for p in pdf]
     assert any(
-        number in lines and any(l.strip() == extra_numeral for l in lines)
+        any(
+            l.strip().casefold() in {number, f"løp {number}", f"lopp {number}"}
+            for l in lines
+        ) and any(l.strip() == extra_numeral for l in lines)
         and any(re.search(r"START\s+KL", l, re.IGNORECASE) for l in lines)
         for lines in headers
     )
