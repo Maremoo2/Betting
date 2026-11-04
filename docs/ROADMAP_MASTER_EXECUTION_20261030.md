@@ -3,6 +3,10 @@
 
 ## MVP-017 – Operational hardening and evidence expansion | 4 November 2026
 
+
+**Nyere originalbasert dekningsdelta:** [CORE-003 run 41822832612](https://github.com/Maremoo2/Betting/actions/runs/41822832612), publisert etter 64-løpssnapshotet nedenfor, viser **65 unike fysiske løp / 16 resultatverifiserte modellpar / 14 gyldige treveis WIN-par / 2 modellpar uten WIN / 0 PIT** og **0 archive_errors**. Den eneste nye fysiske ID-en er `RIKSTOTO:F1_NR_2026-11-04:2`; den har `NO_VERIFIED_FROZEN_MODEL`, ingen kvalifisert WIN og ingen ny modellscore. Av de **49** ikke-evaluerbare fysiske løpene har **27** `NO_VERIFIED_FROZEN_MODEL` som første blokkering, **8** `FROZEN_FIELD_MISSING`, **6** `CHAMPION_FULL_FIELD_INVALID`, **4** `OFFICIAL_ACTIVE_FIELD_MISMATCH`, **3** `OFFICIAL_FINISH_NOT_COMPLETE` og **1** `CONFLICTING_OFFICIAL_RESULT_RECEIPTS`. Dette er avvisningsklassene i originalscorecardet, ikke automatiske diagnoser av programfeil. Hvert løp teller én gang. Tidligere 64-løpsmåling under beholdes uendret som historisk kohort.
+
+
 **Newest append-only status, not a rewrite of the prior MVP-014/MVP-016 snapshots below.** Original source: [CORE-003 41820503559](https://github.com/Maremoo2/Betting/actions/runs/41820503559), exact [main V1 systemaudit 41820373324](https://github.com/Maremoo2/Betting/actions/runs/41820373324), and the PR original CI replays. Start-main `2937150ee0ce5bb7a0f6bb2ebe9ede7b894d01d3`, owner review required before any merge. Deadline **13.11.2026 18:00 Europe/Oslo**.
 
 ### Integration – three distinct source conditions and shared CI
