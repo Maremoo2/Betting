@@ -298,6 +298,14 @@ def _frozen_decision(store):
 def test_runtime_replay_matches_frozen_decision(tmp_path):
     store = _store(tmp_path)
     _frozen_decision(store)
+    at = datetime(2026, 9, 27, 17, 56, tzinfo=UTC)
+    for selection, price in {"1": 2.5, "2": 4.0}.items():
+        store.insert_provider_market_snapshot(
+            snapshot_id=f"original:{selection}", provider="rikstoto", race_id="r1",
+            product="V", selection_key=selection, observed_at=at,
+            provider_updated_at=at, source_uri="https://example.test/win",
+            odds_decimal=price,
+        )
     report = run_runtime_replay_parity(store)
     assert report["status"] == "PASS"
     assert report["checked_decisions"] == 1

@@ -1,8 +1,14 @@
 """Regression tests for write-once market provenance on frozen shadow runs."""
+import hashlib
 import json
+import os
+import sqlite3
+from contextlib import contextmanager
 from dataclasses import asdict
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+
+import pytest
 
 from hbi.decision import DecisionPolicy
 from hbi.engine import CombinationPolicy, evaluate_race
@@ -170,3 +176,73 @@ def test_valid_later_recording_still_uses_original_quotes(tmp_path):
     assert _record(store, T0 + timedelta(minutes=11)) == "frozen-1"
     assert json.loads(store.fetch_table("decision_provenance")[0]["market_odds_json"]) == ODDS
     assert run_runtime_replay_parity(store)["status"] == "PASS"
+
+
+def test_audit_retains_late_provenance_but_replays_original_prices(tmp_path):
+    store = _store(tmp_path)
+    _insert_quotes(store, T0, ODDS)
+    _record(store, T0)
+    with store.connect() as con:
+        con.execute("UPDATE decision_provenance SET market_odds_json=?, recorded_at_utc=?",
+                    (json.dumps({"1": 10.0, "2": 1.5}),
+                     (T0 + timedelta(minutes=10)).isoformat()))
+    original = store.fetch_table("decision_provenance")
+    report = run_runtime_replay_parity(store)
+    assert report["status"] == "PASS"
+    assert len(report["provenance_differences"]) == 1
+    assert store.fetch_table("decision_provenance") == original
+
+
+@pytest.mark.parametrize("damage", ["missing", "partial", "changed", "future"])
+def test_audit_cannot_replace_unverifiable_original_with_provenance(tmp_path, damage):
+    store = _store(tmp_path)
+    _insert_quotes(store, T0, ODDS)
+    _record(store, T0)
+    with store.connect() as con:
+        if damage == "missing":
+            con.execute("DELETE FROM provider_market_snapshots")
+        elif damage == "partial":
+            con.execute("DELETE FROM provider_market_snapshots WHERE selection_key='2'")
+        elif damage == "changed":
+            con.execute("UPDATE provider_market_snapshots SET odds_decimal=9 WHERE selection_key='1'")
+        else:
+            future = (T0 + timedelta(seconds=1)).isoformat()
+            con.execute("UPDATE provider_market_snapshots SET observed_at_utc=?", (future,))
+            con.execute("UPDATE shadow_decision_runs SET source_market_observed_at_utc=?", (future,))
+    report = run_runtime_replay_parity(store)
+    assert report["status"] == "FAIL"
+    assert report["checked_decisions"] == 1
+    assert report["skipped_decisions"] == 0
+    assert report["mismatches"][0]["reasons"][0].startswith("original_market_unverifiable:")
+
+
+def test_original_exact_v1_restore_replay_if_available():
+    """No historical fixture reconstruction; an optional original-byte acceptance."""
+    path = os.environ.get("MVP021_EXACT_RESTORE_DB")
+    if not path:
+        pytest.skip("Set MVP021_EXACT_RESTORE_DB to original artifact 13359900337 SQLite")
+    db = Path(path)
+    expected = "01e0432d06c04667723f528510944b16d54e1badf103cf51c07e7db0c96e5471"
+    with db.open("rb") as handle:
+        assert hashlib.file_digest(handle, "sha256").hexdigest() == expected
+
+    class ReadOnlyOriginal(SQLiteStore):
+        @contextmanager
+        def connect(self):
+            con = sqlite3.connect(db.as_uri() + "?mode=ro&immutable=1", uri=True)
+            con.row_factory = sqlite3.Row
+            try:
+                yield con
+            finally:
+                con.close()
+
+        def insert_integrity_audit(self, row):
+            pass  # Audit result stays in the test; the original is read-only.
+
+    result = run_runtime_replay_parity(ReadOnlyOriginal(db))
+    assert result["status"] == "PASS"
+    assert result["checked_decisions"] == 361
+    assert result["skipped_decisions"] == 554
+    assert len(result["provenance_differences"]) == 5
+    with db.open("rb") as handle:
+        assert hashlib.file_digest(handle, "sha256").hexdigest() == expected
