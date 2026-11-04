@@ -181,6 +181,58 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+      # Five genuine model archives from 2 Nov exist on GitHub, but predate
+      # the immutable cohort index. Do not turn them into admitted models.
+      - name: Replay MVP-014 original legacy-index classification (NO PIT/BET)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/mvp014-legacy"
+          mkdir -p "$root"
+          for run in 41456642411 41459303701 41461113601 41462919513 41463276002; do
+            mkdir -p "$root/$run"
+            gh run download "$run" --repo "$GITHUB_REPOSITORY" \
+              --name "bet-mvp-shadow-$run" --dir "$root/$run"
+          done
+          MVP014_LEGACY_ORIGINALS_ROOT="$root" \
+            pytest -q tests/test_dev011_coverage.py::test_authentic_nov2_five_legacy_originals_exist_without_cohort_indexes
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          from hbi.dev011_coverage import finalize, plan
+          root = Path(os.environ["RUNNER_TEMP"]) / "mvp014-legacy"
+          runs = (41456642411, 41459303701, 41461113601, 41462919513, 41463276002)
+          artifacts = [{"id": 13147076977 + i, "name": f"bet-mvp-shadow-{run}",
+                        "expired": False, "workflow_run": {"id": run, "head_branch": "main"}}
+                       for i, run in enumerate(runs)]
+          inventory = plan([{"total_count": 5, "artifacts": artifacts}],
+                           current_run_id=99999999, inventory_sha="f" * 64)
+          report = finalize(inventory, models_root=root, results_root=root / "results")
+          report["evidence_mode"] = "GENUINE_ORIGINAL_BYTES_SYNTHETIC_TEST_ONLY_ARTIFACT_IDS"
+          report["original_model_shas"] = {
+              str(run): [hashlib.sha256(f.read_bytes()).hexdigest()
+                         for f in sorted((root / str(run)).rglob("shadow.json"))]
+              for run in runs
+          }
+          (root / "legacy-coverage.json").write_text(
+              json.dumps(report, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+
+      - name: Upload MVP-014 legacy-original coverage diagnosis (NO BET)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp014-legacy-original-coverage-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp014-legacy/legacy-coverage.json
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Replay DEV-011 retained Eskilstuna model and pinned originals (21 empty runs)
         if: github.event_name == 'pull_request'
         env:
