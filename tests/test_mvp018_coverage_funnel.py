@@ -70,8 +70,18 @@ def _joined():
 
 def test_disjoint_current_and_cumulative_funnel_no_promotion():
     report = build_funnel(_joined())
-    assert list(report["current_cohort_stages"].values()) == [1, 1, 0, 0]
-    assert list(report["cumulative_benchmark_stages"].values()) == [2, 1, 1, 1]
+    assert report["current_cohort_stages"] == {
+        "FIXED_PHYSICAL_COHORT": 1,
+        "COLLECTOR_SOURCE_SHA_PRESENT": 1,
+        "SOURCE_MODEL_INPUT_APPROVED": 0,
+        "CURRENT_MODEL_PROCESSING_RECORDED": 0,
+    }
+    assert report["cumulative_benchmark_stages"] == {
+        "ORIGINAL_PHYSICAL_COHORT": 2,
+        "FROZEN_COMPLETE_FULL_FIELD": 1,
+        "OFFICIAL_RESULT_SCORED": 1,
+        "SAME_FREEZE_WIN_TRIPLE": 1,
+    }
     assert report["current_cohort_blockers_nonexclusive"] == {
         "IDENTITY_CROSS_PROVIDER_NOT_ATTESTED": 1,
     }
@@ -133,8 +143,18 @@ def test_real_four_git_originals_and_zero_false_source_admission(tmp_path):
         "--output-dir", str(tmp_path / "report"),
     ]) == 0
     report = json.loads((tmp_path / "report/index.json").read_text())
-    assert list(report["current_cohort_stages"].values()) == [3, 3, 0, 0]
-    assert list(report["cumulative_benchmark_stages"].values()) == [67, 24, 16, 14]
+    assert report["current_cohort_stages"] == {
+        "FIXED_PHYSICAL_COHORT": 3,
+        "COLLECTOR_SOURCE_SHA_PRESENT": 3,
+        "SOURCE_MODEL_INPUT_APPROVED": 0,
+        "CURRENT_MODEL_PROCESSING_RECORDED": 0,
+    }
+    assert report["cumulative_benchmark_stages"] == {
+        "ORIGINAL_PHYSICAL_COHORT": 67,
+        "FROZEN_COMPLETE_FULL_FIELD": 24,
+        "OFFICIAL_RESULT_SCORED": 16,
+        "SAME_FREEZE_WIN_TRIPLE": 14,
+    }
     assert report["current_source_history_complete"] == 2
     assert report["current_source_win_complete"] == 0
     assert report["bet_authority"] is False
