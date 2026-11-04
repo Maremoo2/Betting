@@ -541,6 +541,39 @@ jobs:
           if-no-files-found: warn
           retention-days: 21
 
+      # Read-only source readiness from the four existing immutable research originals.
+      # Failures remain explicit, but never block/write the CORE-003 model or PIT state.
+      - name: Generate MVP-019 prospective source readiness (NO BET)
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          for source in \
+            dev009-outcome-scorecards/index.json \
+            core003-pilot-report.json \
+            bet-mvp-shadow/cohort-index.json \
+            dev011-coverage/manifest.json; do
+            if [ ! -f "$source" ]; then
+              echo "::error::MVP019_ORIGINAL_SOURCE_MISSING:$source"
+              exit 1
+            fi
+          done
+          python -m hbi.mvp019_source_readiness \
+            --scorecard-index dev009-outcome-scorecards/index.json \
+            --source-report core003-pilot-report.json \
+            --model-cohort-index bet-mvp-shadow/cohort-index.json \
+            --coverage-manifest dev011-coverage/manifest.json \
+            --github-run-id "$GITHUB_RUN_ID" \
+            --output-dir mvp019-source-readiness
+
+      - name: Upload MVP-019 prospective source readiness (NO BET)
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp019-source-readiness-${{ github.run_id }}
+          path: mvp019-source-readiness/index.json
+          if-no-files-found: warn
+          retention-days: 21
       - name: Upload Collector-to-Betting import and model admission evidence
         if: steps.gate.outputs.run == 'true' && always()
         uses: actions/upload-artifact@v4

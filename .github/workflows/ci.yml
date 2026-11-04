@@ -594,13 +594,20 @@ jobs:
             67a2ca0296c5fd571fa58c4b3a90f13d5155cb03228866bd8e0062a737951f33 \
             "$root/manifest/manifest.json" | sha256sum --check -
           MVP018_FUNNEL_ORIGINAL_ROOT="$root" \
-            pytest -q tests/test_mvp018_coverage_funnel.py
+            pytest -q tests/test_mvp018_coverage_funnel.py tests/test_mvp019_source_readiness.py
           python -m hbi.mvp018_coverage_funnel \
             --scorecard-index "$root/scorecard/index.json" \
             --source-report "$root/source/core003-pilot-report.json" \
             --model-cohort-index "$root/cohort/cohort-index.json" \
             --coverage-manifest "$root/manifest/manifest.json" \
             --output-dir "$root/report"
+          python -m hbi.mvp019_source_readiness \
+            --scorecard-index "$root/scorecard/index.json" \
+            --source-report "$root/source/core003-pilot-report.json" \
+            --model-cohort-index "$root/cohort/cohort-index.json" \
+            --coverage-manifest "$root/manifest/manifest.json" \
+            --github-run-id 41832416078 \
+            --output-dir "$root/readiness"
 
       - name: Upload MVP-018 original physical coverage funnel (NO BET)
         if: github.event_name == 'pull_request' && always()
@@ -611,6 +618,15 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+      # Separate read-only original-backed diagnostics, not a PIT/BET gate.
+      - name: Upload MVP-019 original source readiness (NO BET)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp019-original-source-readiness-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp018-funnel/readiness/index.json
+          if-no-files-found: warn
+          retention-days: 30
       - name: Replay DEV-012 against original 3 Nov Vincennes PDF and starts
         if: github.event_name == 'pull_request'
         env:
