@@ -123,7 +123,8 @@ def test_source_join_and_same_race_metrics(tmp_path):
     assert output["primary_rejection_reasons"] == {"NO_VERIFIED_FROZEN_MODEL": 1}
     assert len(output["per_physical_race"]) == 2
     assert output["per_track"]["S1"]["triple_win_benchmarks"] == 1
-    assert output["per_physical_race"][1]["current_source_readiness"]["collector_model_input_approved"] is False
+    current = next(r for r in output["per_physical_race"] if r["race_id"] == R2)
+    assert current["current_source_readiness"]["collector_model_input_approved"] is False
     delta = output["pairwise_model_differences"]["triple_same_races"]["champion_minus_market_log_loss"]
     assert delta["mean_first_minus_second"] == pytest.approx(-.6)
     assert delta["approximate_95_percent_interval"] is None
