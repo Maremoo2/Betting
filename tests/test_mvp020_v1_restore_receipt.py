@@ -31,6 +31,16 @@ def _responses(monkeypatch, artifacts: list[dict], archive: bytes):
 
     monkeypatch.setattr(state_artifact.urllib.request, "urlopen", fake_urlopen)
 
+    class _FakeOpener:
+        def open(self, request, timeout):
+            assert request.full_url.endswith("/zip")
+            return io.BytesIO(archive)
+
+    monkeypatch.setattr(
+        state_artifact.urllib.request, "build_opener",
+        lambda *handlers: _FakeOpener(),
+    )
+
 
 def test_exact_restore_receipt_pins_actual_selected_original(monkeypatch, tmp_path):
     raw = b"immutable-sqlite-original-bytes"
