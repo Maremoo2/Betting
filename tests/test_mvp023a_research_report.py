@@ -35,7 +35,7 @@ def sample():
             "lockbox_2025_accessed_for_tuning": False,
         },
     }
-    feat_row = {"race_id": RID, "active_runners": 2,
+    feat_row = {"race_id": RID, "date": "2020-01-04", "country": "NO", "active_runners": 2,
                 "fundamental_training_eligible": False}
     features = {
         "schema": "MVP023A_HISTORICAL_FEATURE_AUDIT_V1",
@@ -131,7 +131,17 @@ def test_dataset_partition_sha_and_lockbox_authority_rejected():
 
 def test_race_denominator_not_silently_mixed_with_m5():
     inputs = sample()
+    extra = [
+        {"race_id": f"RIKSTOTO:BJ_NR_2019-01-04:{n}",
+         "date": "2019-01-04", "country": "NO",
+         "active_runners": 2, "fundamental_training_eligible": False}
+        for n in range(1, 17)
+    ]
+    inputs["features"]["by_race"].extend(extra)
+    inputs["features"]["feature_audit_sha256"] = digest(inputs["features"]["by_race"])
     inputs["features"]["physical_races"] = 17
+    inputs["features"]["by_year"]["2019"] = {"races": 16, "active_runners": 32}
+    inputs["features"]["by_country"]["NO"] = {"races": 17, "active_runners": 34}
     output = evaluate(inputs)
     assert output["coverage_original_physical_races"] == 1
     assert output["m5_feature_audit_races_separate_cohort"] == 17
@@ -180,4 +190,15 @@ def test_fake_year_coverage_denominator_cannot_be_reported():
     inputs = sample()
     inputs["coverage"]["by_year"] = {}
     with pytest.raises(ValueError, match="COVERAGE_YEAR_DENOMINATOR_MISSING_OR_INVENTED"):
+        evaluate(inputs)
+
+
+def test_fake_feature_country_or_year_denominator_rejected():
+    inputs = sample()
+    inputs["features"]["by_country"]["NO"]["races"] = 5
+    with pytest.raises(ValueError, match="FEATURE_BY_COUNTRY_DENOMINATOR_CONFLICT"):
+        evaluate(inputs)
+    inputs = sample()
+    inputs["features"]["by_year"]["2020"]["active_runners"] = 5
+    with pytest.raises(ValueError, match="FEATURE_BY_YEAR_DENOMINATOR_CONFLICT"):
         evaluate(inputs)
