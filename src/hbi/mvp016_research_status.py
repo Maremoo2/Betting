@@ -139,10 +139,13 @@ def summarize(
              "SCORECARD_ROWS_OR_COUNTS_MISSING")
     names = [r.get("race_id") for r in records]
     _require(
-        len(names) == len(set(names)) == counts.get("physical_races")
-        and set(current) <= set(names),
+        len(names) == len(set(names)) == counts.get("physical_races"),
         "SCORECARD_PHYSICAL_DENOMINATOR_INVALID",
     )
+    # Current source captures can precede their immutable model/result archive.
+    # Keep those physical races entirely outside the cumulative scorecard
+    # denominator, never invent a benchmark row or a post-hoc prediction.
+    source_only = sorted(set(current) - set(names))
     paired = [r for r in records if r.get("status") == "EVALUABLE_RESEARCH_ONLY"]
     triple = [r for r in paired if r.get("benchmark_status") == "TRIPLE_EVALUABLE"]
     _require(
@@ -278,6 +281,7 @@ def summarize(
         "counts": {
             **counts,
             "current_source_fixed_cohort": len(current),
+            "current_source_only_unscored": len(source_only),
             "current_source_model_processed": len(processed),
             "current_source_rejected": len(blocked),
             "current_source_verified_full_fundamentals": sum(
@@ -293,6 +297,11 @@ def summarize(
         },
         "primary_rejection_reasons": dict(sorted(primary_blockers.items())),
         "current_not_processed": cohort["not_processed"],
+        "current_source_only_not_in_benchmark": [
+            {"race_id": rid, "status": "SOURCE_ONLY_NOT_BENCHMARKED",
+             "pit_certified": False, "bet_authority": False}
+            for rid in source_only
+        ],
         "missing_originals": coverage.get("missing_originals") or [],
         "per_track": {k: dict(v) for k, v in sorted(per_track.items())},
         "per_date": {k: dict(v) for k, v in sorted(per_date.items())},
