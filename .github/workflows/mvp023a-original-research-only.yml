@@ -1,0 +1,36 @@
+name: MVP-023A Authentic M4-M5 Research Acceptance (NO BET)
+
+on:
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  original-m5-research:
+    if: github.event.pull_request.head.ref == 'integration/mvp023a-cross-pr-real-source-qa-20261105'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install locked repository research tools
+        run: pip install -e ".[dev]"
+      - name: Replay real original SHA and M5 -> P1-B -> P1-C (NO BET)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/mvp023a_real_source_acceptance.py \
+            --output "$RUNNER_TEMP/mvp023a-real-m5-acceptance"
+      - name: Upload SHA-bound, research-only acceptance JSON
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mvp023a-authentic-2026-m5-partial-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp023a-real-m5-acceptance/real-source-acceptance.json
+          if-no-files-found: warn
+          retention-days: 30
