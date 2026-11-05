@@ -81,7 +81,9 @@ def _classify(fact: object, runner: dict, race: dict, refs: set[tuple]) -> tuple
         return "RETROSPECTIVE_ONLY", "SOURCE_OBSERVED_AT_OR_AFTER_EVENT"
     if (
         not isinstance(runner.get("registration_observed"), str)
-        or runner["registration_observed"].upper().startswith(("TMP", "TEMP", "UNKNOWN"))
+        or runner["registration_observed"].upper().startswith(
+            ("TMP", "TEMP", "UNKNOWN", "ATG:", "ATG_", "ATG-", "NAME:")
+        )
         or runner.get("identity_status") != "IDENTITY_VERIFIED"
         or race.get("independent_identity_attested") is not True
     ):
