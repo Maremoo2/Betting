@@ -12,7 +12,7 @@ import sqlite3
 import time
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from .core_pit_roster_verification import (
@@ -265,6 +265,52 @@ def run_source_capture(
     return index
 
 
+def _collector_meeting_source_path(
+    collector_root: Path, manifest_path: Path, raceday_key: str,
+    member: object,
+) -> Path | None:
+    """Read only an original member under this manifest's physical meeting.
+
+    SHA matching alone does not bind an arbitrary absolute/traversing file or
+    another meeting's identical bytes to the authenticated Collector artifact.
+    Refuse symlinks in every path component, not only at the final file.
+    """
+    if (
+        not isinstance(member, str) or not member
+        or "\\" in member
+    ):
+        return None
+    relative = PurePosixPath(member)
+    if (
+        relative.is_absolute()
+        or member != relative.as_posix()
+        or any(part in (".", "..") for part in member.split("/"))
+    ):
+        return None
+    if collector_root.is_symlink():
+        return None
+    candidate = collector_root.joinpath(*relative.parts)
+    meeting = manifest_path.parent / "meetings" / raceday_key
+    try:
+        # Match the exact physical meeting, rather than an unrelated
+        # source that happens to have a valid manifest-declared SHA.
+        candidate.relative_to(meeting)
+        partial = collector_root
+        for part in relative.parts:
+            partial = partial / part
+            if partial.is_symlink():
+                return None
+        if not candidate.is_file():
+            return None
+        if not candidate.resolve(strict=True).is_relative_to(
+            meeting.resolve(strict=True)
+        ):
+            return None
+    except (OSError, ValueError):
+        return None
+    return candidate
+
+
 def verify_collector_original(
     collector_root: Path, provenance_path: Path, receipt: dict,
 ) -> VerifiedCollectorEvidence | None:
@@ -346,10 +392,10 @@ def verify_collector_original(
             if when is None or when >= t4:
                 return None
             filename = entry.get("raw_path") if role == "starts" else entry.get("path")
-            if not isinstance(filename, str):
-                return None
-            source_path = collector_root / filename
-            if source_path.is_symlink() or not source_path.is_file():
+            source_path = _collector_meeting_source_path(
+                collector_root, manifest_path, key, filename
+            )
+            if source_path is None:
                 return None
             raw = source_path.read_bytes()
             if digest(raw) != entry.get("sha256"):
