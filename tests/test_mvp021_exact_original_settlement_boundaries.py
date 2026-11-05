@@ -18,7 +18,6 @@ from test_shadow_ledger import _store
 from hbi import nightly
 from hbi.providers.rikstoto import FetchResult, RikstotoClient
 
-
 # Real result row values from the original, not synthetic outcome rewrites.
 ESKILSTUNA_COMPLETE = {
     "isComplete": True,
