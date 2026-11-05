@@ -5,7 +5,7 @@ import json
 
 import pytest
 
-from hbi.mvp023a_research_report import build_consolidated_report, main
+from hbi.mvp023a_research_report import archive_digest, build_consolidated_report, main
 from hbi.research_lab import digest
 
 RID = "RIKSTOTO:BJ_NR_2020-01-04:1"
@@ -22,7 +22,7 @@ def sample():
         "schema": "MVP023A_HISTORICAL_COVERAGE_V1",
         "research_only": True, "bet_authority": False,
         "training_performed": False, "historical_not_prospective": True,
-        "by_race": [race], "data_sha256": digest([race]),
+        "by_race": [race], "data_sha256": archive_digest([race]),
         "counts": {"physical_races": 1},
         "by_year": {"2020": {
             "physical_races": 1, "coverage_denominator": 1,
@@ -160,6 +160,14 @@ def test_race_denominator_not_silently_mixed_with_m5():
     inputs["features"]["physical_races"] = 17
     inputs["features"]["by_year"]["2019"] = {"races": 16, "active_runners": 32}
     inputs["features"]["by_country"]["NO"] = {"races": 17, "active_runners": 34}
+    # M5 features and dataset reports must represent one same original cohort.
+    # Only the independent coverage corpus is permitted a different denominator.
+    member_ids = [RID, *(r["race_id"] for r in extra)]
+    inputs["dataset"]["partitions"]["DEVELOPMENT_2015_2022"] = {
+        "race_ids": member_ids, "count": len(member_ids),
+        "sha256": digest(member_ids),
+    }
+    inputs["dataset"]["races"] = len(member_ids)
     output = evaluate(inputs)
     assert output["coverage_original_physical_races"] == 1
     assert output["m5_feature_audit_races_separate_cohort"] == 17
@@ -250,7 +258,7 @@ def test_integration_2025_result_cannot_be_indirectly_hidden_by_report():
     row["year"] = 2025
     row["categories"]["RESULT_VERIFIED"] = True
     row["official_result_sha256"] = "a" * 64
-    inputs["coverage"]["data_sha256"] = digest(inputs["coverage"]["by_race"])
+    inputs["coverage"]["data_sha256"] = archive_digest(inputs["coverage"]["by_race"])
     inputs["coverage"]["by_year"] = {
         "2025": inputs["coverage"]["by_year"].pop("2020")
     }
