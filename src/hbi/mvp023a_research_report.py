@@ -49,6 +49,13 @@ def _quality(coverage: dict, features: dict, dataset: dict, benter: dict) -> Non
         or len({r.get("race_id") for r in rows}) != len(rows)
     ):
         raise ValueError("COVERAGE_ORIGINAL_BASIS_OR_PIT_CLAIM_INVALID")
+    # Never launder a candidate 2025 lockbox outcome through the downstream
+    # report by hiding the result count in the 2025 presentation row.
+    for row in rows:
+        if (isinstance(row, dict) and row.get("year") == 2025
+                and (row.get("categories", {}).get("RESULT_VERIFIED") is True
+                     or row.get("official_result_sha256") is not None)):
+            raise ValueError("2025_LOCKBOX_RESULT_INDIRECTLY_EXPOSED")
     feature_rows = features.get("by_race")
     if (
         not isinstance(feature_rows, list)
@@ -102,6 +109,18 @@ def _quality(coverage: dict, features: dict, dataset: dict, benter: dict) -> Non
         or dataset.get("races") != len(feature_rows)
     ):
         raise ValueError("M5_FEATURE_PARTITION_RACE_COHORT_CONFLICT")
+    if any(
+        isinstance(r, dict) and str(r.get("date", "")).startswith("2025-")
+        for r in feature_rows
+    ):
+        raise ValueError("2025_LOCKBOX_FEATURES_INDIRECTLY_EXPOSED")
+    if any("_NR_2025-" in rid for rid in partition_ids):
+        raise ValueError("2025_LOCKBOX_PARTITION_INDIRECTLY_EXPOSED")
+    if any(
+        isinstance(row, dict) and "_NR_2025-" in str(row.get("race_id", ""))
+        for row in benter.get("per_race", [])
+    ):
+        raise ValueError("2025_LOCKBOX_BENTER_EVALUATION_INDIRECTLY_EXPOSED")
     if (
         dataset.get("model_training_eligible") != 0
         or dataset.get("benter_fit_eligible") != 0
