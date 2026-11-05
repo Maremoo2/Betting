@@ -9,6 +9,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
+from collections import Counter
 from pathlib import Path
 
 from .research_lab import digest
@@ -62,10 +64,11 @@ def _quality(coverage: dict, features: dict, dataset: dict, benter: dict) -> Non
         or dataset.get("readiness") != "BLOCKED_SOURCE"
         or not isinstance(dataset.get("partitions"), dict)
         or any(
-            part.get("count") != len(part.get("race_ids", []))
-            or part.get("sha256") != digest(part.get("race_ids", []))
+            not isinstance(part, dict)
+            or not isinstance(part.get("race_ids"), list)
+            or part.get("count") != len(part["race_ids"])
+            or part.get("sha256") != digest(part["race_ids"])
             for part in dataset["partitions"].values()
-            if isinstance(part, dict)
         )
     ):
         raise ValueError("DATASET_PARTITION_OR_LOCKBOX_CONTRACT_INVALID")
@@ -83,6 +86,28 @@ def _quality(coverage: dict, features: dict, dataset: dict, benter: dict) -> Non
         raise ValueError("COVERAGE_RACE_DENOMINATOR_CONFLICT")
     if any(int(year) not in range(2015, 2027) for year in coverage.get("by_year", {})):
         raise ValueError("COVERAGE_YEAR_OUTSIDE_REGISTERED_RANGE")
+    physical_by_year = Counter()
+    for row in rows:
+        if not isinstance(row, dict):
+            raise TypeError("INVALID_PHYSICAL_RACE_ROW")
+        rid = row.get("race_id")
+        if not isinstance(rid, str):
+            raise ValueError("INVALID_PHYSICAL_RACE_ID")
+        match = re.fullmatch(
+            r"RIKSTOTO:[A-Z0-9]+_NR_(20\d{2})-\d{2}-\d{2}:[1-9]\d*", rid
+        )
+        if match is None or row.get("year") != int(match.group(1)):
+            raise ValueError("COVERAGE_RACE_ID_YEAR_CONFLICT")
+        physical_by_year[match.group(1)] += 1
+    declared_years = coverage.get("by_year", {})
+    if set(declared_years) != set(physical_by_year):
+        raise ValueError("COVERAGE_YEAR_DENOMINATOR_MISSING_OR_INVENTED")
+    if any(
+        values.get("physical_races") != physical_by_year[year]
+        or values.get("coverage_denominator") != physical_by_year[year]
+        for year, values in declared_years.items()
+    ):
+        raise ValueError("COVERAGE_YEAR_DENOMINATOR_MISMATCH")
     if any(int(year) not in range(2015, 2027) for year in features.get("by_year", {})):
         raise ValueError("FEATURE_YEAR_OUTSIDE_REGISTERED_RANGE")
 
@@ -92,7 +117,10 @@ def build_consolidated_report(
     input_sha256: dict[str, str],
 ) -> dict:
     _quality(coverage, features, dataset, benter)
-    if set(input_sha256) != set(COMPONENTS):
+    if (set(input_sha256) != set(COMPONENTS)
+            or any(not isinstance(value, str)
+                   or re.fullmatch(r"[0-9a-f]{64}", value) is None
+                   for value in input_sha256.values())):
         raise ValueError("RESEARCH_REPORT_INPUT_HASH_SET_INCOMPLETE")
     years = []
     for year in range(2015, 2027):
