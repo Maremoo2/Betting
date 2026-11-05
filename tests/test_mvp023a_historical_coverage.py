@@ -281,3 +281,14 @@ def test_failed_starts_meeting_row_is_not_invented_as_physical_race(tmp_path):
     assert report["by_race"][0]["categories"]["DISCOVERED_METADATA_ONLY"]
     assert report["source_file_count"]["unbound_meeting_source_failures_not_physical_races"] == 1
     assert report["readiness"]["eligible_race_count_verified"] == 0
+
+
+def test_2025_candidate_lockbox_result_file_not_even_opened(tmp_path):
+    fixture(tmp_path, market=False)
+    secret = tmp_path / "result-days" / "2025-06-01.json"
+    secret.parent.mkdir(parents=True)
+    secret.write_bytes(b"UNOPENED_LOCKBOX_NOT_EVEN_JSON")
+    report = build_coverage(tmp_path)
+    assert report["counts"]["physical_races"] == 1
+    assert report["source_file_count"]["2025_lockbox_result_files_not_read"] == 1
+    assert report["readiness"]["lockbox_2025_accessed_for_tuning"] is False
