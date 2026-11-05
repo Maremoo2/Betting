@@ -112,7 +112,7 @@ def audit_feature_dataset(directory: Path) -> dict:
         raise ValueError("M5_RESEARCH_MANIFEST_CONTRACT_INVALID")
     months = manifest.get("per_month")
     if not isinstance(months, dict):
-        raise ValueError("M5_MONTHLY_SCOPE_MISSING")
+        raise TypeError("M5_MONTHLY_SCOPE_MISSING")
     # Do this BEFORE reading dataset.jsonl; 2025 is a candidate lockbox and
     # neither its labels nor source outcomes may be opened for this audit.
     if any(str(month).startswith("2025-") for month in months):
@@ -143,7 +143,7 @@ def audit_feature_dataset(directory: Path) -> dict:
         country = row.get("country") or "UNKNOWN"
         field = row.get("roster")
         if not isinstance(field, list):
-            raise ValueError("M5_ROSTER_NOT_LIST")
+            raise TypeError("M5_ROSTER_NOT_LIST")
         identities = [h.get("selection_id") for h in field if isinstance(h, dict)]
         if len(identities) != len(field) or len(set(identities)) != len(identities):
             raise ValueError("M5_DUPLICATE_OR_MISSING_RUNNERS")
@@ -152,7 +152,7 @@ def audit_feature_dataset(directory: Path) -> dict:
         active = [h for h in field if h["scratched"] is False]
         refs = row.get("source_refs") or []
         if not isinstance(refs, list):
-            raise ValueError("M5_INVALID_SOURCE_RECEIPTS")
+            raise TypeError("M5_INVALID_SOURCE_RECEIPTS")
         source_set = {
             (r.get("url"), r.get("body_sha256"), r.get("fetched_at"))
             for r in refs if isinstance(r, dict)
@@ -166,7 +166,7 @@ def audit_feature_dataset(directory: Path) -> dict:
             for runner in active:
                 facts = runner.get("features") or {}
                 if not isinstance(facts, dict):
-                    raise ValueError("M5_FEATURE_OBJECT_INVALID")
+                    raise TypeError("M5_FEATURE_OBJECT_INVALID")
                 if LEAKAGE.intersection({str(k).lower() for k in facts}):
                     raise ValueError("OUTCOME_OR_MARKET_LEAKAGE_IN_FUNDAMENTAL_FEATURES")
                 status, reason = _classify(facts.get(feature), runner, row, source_set)
