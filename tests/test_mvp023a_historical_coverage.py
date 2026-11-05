@@ -209,3 +209,60 @@ def test_no_archives_does_not_invent_census_counts(tmp_path):
     assert report["counts"] == {}
     assert report["by_race"] == []
     assert report["readiness"]["eligible_race_count_verified"] == 0
+
+
+def test_weekly_only_market_freeze_is_detected_not_pit_promoted(tmp_path):
+    from zipfile import ZipFile
+
+    from hbi.mvp023a_historical_coverage import _weekly_market_days
+
+    fixture(tmp_path, outcome=False)
+    source = tmp_path / "market-days" / "2020-01-04.json"
+    raw = source.read_bytes()
+    month = tmp_path / "weekly" / "2020-W01-MARKET.zip"
+    month.parent.mkdir()
+    manifest = {
+        "stage": "MARKET_ONLY", "retrospective": True, "week": "2020-W01",
+        "days": ["2020-01-04"],
+        "files_sha256": {"2020-01-04.json": hashlib.sha256(raw).hexdigest()},
+    }
+    with ZipFile(month, "w") as archive:
+        archive.writestr("MANIFEST.json", json.dumps(manifest))
+        archive.writestr("2020-01-04.json", raw)
+    source.unlink()
+    days, count = _weekly_market_days(tmp_path)
+    assert count == 1 and "2020-01-04" in days
+    row = build_coverage(tmp_path)["by_race"][0]
+    assert row["categories"]["MARKET_COMPLETE"]
+    assert row["categories"]["RETROSPECTIVE_DIAGNOSTIC_ONLY"]
+    assert not row["categories"]["PIT_MODEL_ELIGIBLE"]
+
+
+def test_corrupt_weekly_member_sha_rejected(tmp_path):
+    from zipfile import ZipFile
+
+    fixture(tmp_path, outcome=False)
+    raw = (tmp_path / "market-days" / "2020-01-04.json").read_bytes()
+    zip_path = tmp_path / "weekly" / "2020-W01-MARKET.zip"
+    zip_path.parent.mkdir()
+    with ZipFile(zip_path, "w") as archive:
+        archive.writestr("MANIFEST.json", json.dumps({
+            "stage": "MARKET_ONLY", "retrospective": True, "week": "2020-W01",
+            "days": ["2020-01-04"],
+            "files_sha256": {"2020-01-04.json": "0" * 64},
+        }))
+        archive.writestr("2020-01-04.json", raw)
+    with pytest.raises(ValueError, match="WEEKLY_MARKET_MEMBER_SHA_MISMATCH"):
+        build_coverage(tmp_path)
+
+
+def test_tampered_win_normalization_is_not_market_complete(tmp_path):
+    fixture(tmp_path)
+    file = tmp_path / "market-days" / "2020-01-04.json"
+    doc = json.loads(file.read_text())
+    doc["races"][0]["pWIN"] = {"1": .8, "2": .2}
+    doc["sha256"] = digest(doc["races"])
+    put_json(file, doc)
+    row = build_coverage(tmp_path)["by_race"][0]
+    assert not row["categories"]["MARKET_COMPLETE"]
+    assert "COMPLETE_ORIGINAL_WIN_MARKET_MISSING" in row["blockers"]
