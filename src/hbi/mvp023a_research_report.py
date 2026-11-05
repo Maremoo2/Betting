@@ -49,13 +49,35 @@ def _quality(coverage: dict, features: dict, dataset: dict, benter: dict) -> Non
         or len({r.get("race_id") for r in rows}) != len(rows)
     ):
         raise ValueError("COVERAGE_ORIGINAL_BASIS_OR_PIT_CLAIM_INVALID")
+    feature_rows = features.get("by_race")
     if (
-        not isinstance(features.get("by_race"), list)
-        or features.get("feature_audit_sha256") != digest(features["by_race"])
+        not isinstance(feature_rows, list)
+        or features.get("feature_audit_sha256") != digest(feature_rows)
+        or features.get("physical_races") != len(feature_rows)
         or features.get("training_ready_races") != 0
         or features.get("lockbox_2025_opened") is not False
     ):
         raise ValueError("HISTORICAL_FEATURE_ORIGINAL_BASIS_INVALID")
+    for group, key in (("by_year", "date"), ("by_country", "country")):
+        expected = {}
+        for row in feature_rows:
+            if not isinstance(row, dict) or not isinstance(row.get(key), str):
+                raise TypeError("FEATURE_RACE_DIMENSION_INVALID")
+            name = row[key][:4] if key == "date" else row[key]
+            if name not in expected:
+                expected[name] = Counter()
+            expected[name]["races"] += 1
+            expected[name]["active_runners"] += row.get("active_runners", 0)
+        actual = features.get(group)
+        if (
+            not isinstance(actual, dict) or set(actual) != set(expected)
+            or any(
+                actual[name].get("races") != count["races"]
+                or actual[name].get("active_runners") != count["active_runners"]
+                for name, count in expected.items()
+            )
+        ):
+            raise ValueError("FEATURE_" + group.upper() + "_DENOMINATOR_CONFLICT")
     if (
         dataset.get("model_training_eligible") != 0
         or dataset.get("benter_fit_eligible") != 0
