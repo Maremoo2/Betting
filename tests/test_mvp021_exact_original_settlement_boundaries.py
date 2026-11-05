@@ -15,12 +15,7 @@ import json
 import pytest
 from test_shadow_ledger import _store
 
-from hbi.nightly import (
-    _confirmed_disqualification,
-    _confirmed_win_dividends,
-    _finish_map,
-    settle_open_shadow_tickets,
-)
+from hbi import nightly
 from hbi.providers.rikstoto import FetchResult, RikstotoClient
 
 
@@ -95,15 +90,15 @@ class SourceDerivedClient(RikstotoClient):
 def test_source_derived_zero_place_numeric_is_not_admitted_as_loss(tmp_path):
     """Original Eskilstuna #3: 0 / 19,1 / 24 is NOT an approved settlement."""
     full = copy.deepcopy(ESKILSTUNA_COMPLETE)
-    assert _finish_map(full)["3"] == 0
-    assert _confirmed_disqualification(full, "3") is False
-    assert _confirmed_disqualification(full, "2") is True  # Dsk, odds 60.
-    assert _confirmed_disqualification(full, "1") is True  # Dsk, odds 431.
-    assert _confirmed_win_dividends(ESKILSTUNA_RACEDAY_WIN, 1, {"6"})
+    assert nightly._finish_map(full)["3"] == 0
+    assert nightly._confirmed_disqualification(full, "3") is False
+    assert nightly._confirmed_disqualification(full, "2") is True  # Dsk, odds 60.
+    assert nightly._confirmed_disqualification(full, "1") is True  # Dsk, odds 431.
+    assert nightly._confirmed_win_dividends(ESKILSTUNA_RACEDAY_WIN, 1, {"6"})
     store = _store(tmp_path)
     _ticket(store, selection="3")
     for _ in range(2):
-        summary = settle_open_shadow_tickets(
+        summary = nightly.settle_open_shadow_tickets(
             store, client=SourceDerivedClient()
         )
         assert summary.attempted == 1
@@ -119,7 +114,7 @@ def test_source_derived_dsk_is_executable_under_existing_frozen_contract(tmp_pat
     """Original selection #2 is Dsk with positive odds, NOT a scratch."""
     store = _store(tmp_path)
     _ticket(store, selection="2")
-    result = settle_open_shadow_tickets(
+    result = nightly.settle_open_shadow_tickets(
         store, client=SourceDerivedClient()
     )
     assert result.settled == 1
@@ -127,7 +122,7 @@ def test_source_derived_dsk_is_executable_under_existing_frozen_contract(tmp_pat
     assert row["gross_return_nok"] == 0
     assert row["net_pnl_nok"] == -25
     assert row["closing_price"] is None and row["clv"] is None
-    assert settle_open_shadow_tickets(
+    assert nightly.settle_open_shadow_tickets(
         store, client=SourceDerivedClient()
     ).attempted == 0
 
@@ -145,7 +140,7 @@ def test_authoritative_winner_dividend_negative_cases_remain_pending(
     }
     store = _store(tmp_path)
     _ticket(store, selection="2")
-    result = settle_open_shadow_tickets(
+    result = nightly.settle_open_shadow_tickets(
         store, client=SourceDerivedClient(day=day)
     )
     assert result.settled == 0
@@ -159,7 +154,7 @@ def test_conflicting_complete_winner_and_dividend_is_not_assumed_loss(tmp_path):
     full["results"][1]["place"] = 1  # #4 but only #6 has dividends.
     store = _store(tmp_path)
     _ticket(store, selection="2")
-    result = settle_open_shadow_tickets(
+    result = nightly.settle_open_shadow_tickets(
         store, client=SourceDerivedClient(full=full)
     )
     assert result.settled == 0
@@ -171,5 +166,5 @@ def test_missing_authoritative_complete_source_cannot_settle(tmp_path):
     store = _store(tmp_path)
     _ticket(store, selection="2")
     client = SourceDerivedClient(full={"isComplete": False, "results": []})
-    assert settle_open_shadow_tickets(store, client=client).settled == 0
+    assert nightly.settle_open_shadow_tickets(store, client=client).settled == 0
     assert store.fetch_table("shadow_tickets")[0]["status"] == "SHADOW_BET"
