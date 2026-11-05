@@ -125,6 +125,11 @@ def audit_feature_dataset(directory: Path) -> dict:
     records = []
     seen = set()
     counts = {name: Counter() for name in FIELDS}
+    feature_by_year = {name: defaultdict(Counter) for name in FIELDS}
+    feature_by_country = {name: defaultdict(Counter) for name in FIELDS}
+    feature_reasons = {name: Counter() for name in FIELDS}
+    feature_datatypes = {name: Counter() for name in FIELDS}
+    feature_eligible_races = Counter()
     slices: dict[str, dict[str, Counter]] = {
         "by_year": defaultdict(Counter),
         "by_country": defaultdict(Counter),
@@ -171,10 +176,18 @@ def audit_feature_dataset(directory: Path) -> dict:
                     raise TypeError("M5_FEATURE_OBJECT_INVALID")
                 if LEAKAGE.intersection({str(k).lower() for k in facts}):
                     raise ValueError("OUTCOME_OR_MARKET_LEAKAGE_IN_FUNDAMENTAL_FEATURES")
-                status, reason = _classify(facts.get(feature), runner, row, source_set)
+                raw_feature = facts.get(feature)
+                status, reason = _classify(raw_feature, runner, row, source_set)
                 observed[status] += 1
+                if isinstance(raw_feature, dict) and raw_feature.get("value") is not None:
+                    feature_datatypes[feature][type(raw_feature["value"]).__name__] += 1
                 reasons[reason] += 1
             counts[feature].update(observed)
+            feature_by_year[feature][day[:4]].update(observed)
+            feature_by_country[feature][country].update(observed)
+            feature_reasons[feature].update(reasons)
+            if active and observed["PIT_VERIFIED"] == len(active):
+                feature_eligible_races[feature] += 1
             states_by_feature[feature] = {
                 "active_runners": len(active), "status_counts": dict(sorted(observed.items())),
                 "primary_reason": reasons.most_common(1)[0][0] if reasons else "NO_ACTIVE_RUNNERS",
@@ -203,8 +216,30 @@ def audit_feature_dataset(directory: Path) -> dict:
             "source": "M5_ROSTER_FEATURES",
             "original_field": "roster[*].features." + k,
             "eligible_runners": v["PIT_VERIFIED"],
+            "eligible_races": feature_eligible_races[k],
             "status_counts": dict(sorted(v.items())),
             "denominator_active_runners": sum(v.values()),
+            "qualified_runner_coverage_rate": (
+                v["PIT_VERIFIED"] / sum(v.values()) if v else None
+            ),
+            "observed_value_types": dict(sorted(feature_datatypes[k].items())),
+            "by_year": {
+                year: dict(sorted(counter.items()))
+                for year, counter in sorted(feature_by_year[k].items())
+            },
+            "by_country": {
+                country: dict(sorted(counter.items()))
+                for country, counter in sorted(feature_by_country[k].items())
+            },
+            "main_blocker": (
+                sorted(feature_reasons[k].items(), key=lambda x: (-x[1], x[0]))[0][0]
+                if feature_reasons[k] else "NO_ACTIVE_RUNNERS"
+            ),
+            "source_time_field": "source_observed_at",
+            "historical_event_time_field": "event_at",
+            "availability_time_field": "published_at",
+            "identity_requirement": "INDEPENDENT_HORSE_IDENTITY_AT_PREDICTION_TIME",
+            "leakage_risk": "RETROSPECTIVE_SOURCE_OR_TIME_UNVERIFIED",
             "research_status": "PIT_VERIFIED" if v["PIT_VERIFIED"] else "PARTIAL_OR_BLOCKED",
         } for k, v in sorted(counts.items())},
         "by_year": {k: dict(v) for k, v in sorted(slices["by_year"].items())},
