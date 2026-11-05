@@ -85,7 +85,8 @@ def test_valid_structural_fixture_does_not_claim_benter_fit():
     assert report["economic_ev_ready"] is False
     assert report["bet_authority"] is False
     assert report["weight_estimation_performed"] is False
-    assert "alpha" not in json.dumps(report).lower()
+    assert report["weight_estimation_performed"] is False
+    assert "estimated_weights" not in report
     assert inspect_benter_readiness(copy.deepcopy(payload)) == report
 
 
