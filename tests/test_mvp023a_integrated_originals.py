@@ -5,6 +5,7 @@ AUTHENTIC_SCOPE: SHA-pinned tests/fixtures/rikstoto-historical-truth.json
 TEST_ONLY_SCOPE: coverage fixture and Benter readiness fixture used solely to
 prove all five wire-format interfaces. NEVER report the hybrid as real full E2E.
 """
+# ruff: noqa: I001  # Synthetic test helpers and project modules use separate import roots.
 from __future__ import annotations
 
 import hashlib
@@ -19,7 +20,6 @@ from hbi.mvp023a_dataset_partitions import build_partitioned_dataset
 from hbi.mvp023a_feature_audit import audit_feature_dataset
 from hbi.mvp023a_historical_coverage import build_coverage
 from hbi.mvp023a_research_report import build_consolidated_report, main as report_cli
-from hbi.research_lab import digest
 from test_mvp023a_benter_readiness import _bundle
 from test_mvp023a_historical_coverage import fixture as synthetic_coverage_fixture
 
@@ -40,7 +40,7 @@ def _real_m5(tmp_path):
     assert original["races"] == 39
     assert original["imported_runners"] == 393
     assert sum(s["result_verified_races"] for s in original["per_month"].values()) == 4
-    assert set(month[:4] for month in original["per_month"]) == {"2026"}
+    assert {month[:4] for month in original["per_month"]} == {"2026"}
     return output, original
 
 
@@ -76,7 +76,7 @@ def test_hybrid_five_module_json_schema_only_does_not_falsely_merge_cohorts(tmp_
     coverage = build_coverage(native)
     m5_dir, original = _real_m5(tmp_path)
     features = audit_feature_dataset(m5_dir)
-    dataset, inputs, labels = build_partitioned_dataset(m5_dir)
+    dataset, inputs, _labels = build_partitioned_dataset(m5_dir)
     benter = inspect_benter_readiness(_bundle())
     assert coverage["counts"]["physical_races"] == 1  # TEST_ONLY, not real!
     assert original["races"] == features["physical_races"] == dataset["races"] == 39
