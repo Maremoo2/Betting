@@ -14,7 +14,7 @@ SHAS = {k: k[0] * 64 for k in ("coverage", "features", "dataset", "benter")}
 
 def sample():
     race = {
-        "race_id": RID,
+        "race_id": RID, "year": 2020,
         "categories": {"SOURCE_ARCHIVED": True, "RESULT_VERIFIED": True,
                        "PIT_MODEL_ELIGIBLE": False}, "bet_authority": False,
     }
@@ -169,4 +169,15 @@ def test_fake_green_market_pit_in_coverage_rejected():
     inputs = sample()
     inputs["coverage"]["readiness"]["pit_model_eligible"] = 1
     with pytest.raises(ValueError, match="COVERAGE_ORIGINAL_BASIS_OR_PIT_CLAIM_INVALID"):
+        evaluate(inputs)
+
+
+def test_fake_year_coverage_denominator_cannot_be_reported():
+    inputs = sample()
+    inputs["coverage"]["by_year"]["2020"]["physical_races"] = 5
+    with pytest.raises(ValueError, match="COVERAGE_YEAR_DENOMINATOR_MISMATCH"):
+        evaluate(inputs)
+    inputs = sample()
+    inputs["coverage"]["by_year"] = {}
+    with pytest.raises(ValueError, match="COVERAGE_YEAR_DENOMINATOR_MISSING_OR_INVENTED"):
         evaluate(inputs)
