@@ -8,6 +8,7 @@ from hashlib import sha256
 
 from .decision import DecisionPolicy
 from .engine import CombinationPolicy, evaluate_race
+from .probability import normalize_market_odds
 from .storage import SQLiteStore
 
 
@@ -45,6 +46,7 @@ def run_runtime_replay_parity(store: SQLiteStore) -> dict[str, object]:
     checked = 0
     skipped = 0
     mismatches: list[dict[str, object]] = []
+    provenance_differences: list[dict[str, object]] = []
 
     for decision_id, row in decisions.items():
         meta = provenance.get(decision_id)
@@ -54,15 +56,50 @@ def run_runtime_replay_parity(store: SQLiteStore) -> dict[str, object]:
             skipped += 1
             continue
 
-        odds = _loads_map(meta.get("market_odds_json"))
         combination_raw = meta.get("combination_policy_json")
         decision_raw = meta.get("decision_policy_json")
-        if odds is None or not isinstance(combination_raw, str) or not isinstance(
+        if not isinstance(combination_raw, str) or not isinstance(
             decision_raw,
             str,
         ):
             skipped += 1
             continue
+
+        # Re-run the precise source cohort cited by the immutable decision.
+        # Historical provenance attachments can be later than that decision;
+        # retain them as diagnostics, never substitute their prices.
+        checked += 1
+        try:
+            source_time = str(row["source_market_observed_at_utc"])
+            market_time = datetime.fromisoformat(source_time)
+            decision_time = datetime.fromisoformat(str(row["created_at_utc"]))
+            if (market_time.utcoffset() is None or decision_time.utcoffset() is None
+                    or market_time > decision_time):
+                raise ValueError("original_market_clock_invalid")
+            quotes = store.provider_market_at(str(row["race_id"]), str(row["product"]), source_time)
+            selected = [q for q in quotes if str(q["selection_key"]) in fundamental]
+            odds = {
+                str(q["selection_key"]): float(q["odds_decimal"])
+                for q in selected if q.get("odds_decimal") is not None
+            }
+            if len(selected) != len(odds) or set(odds) != set(fundamental):
+                raise ValueError("original_market_full_field_unavailable")
+            frozen_market = _loads_map(row.get("market_probabilities_json"))
+            if frozen_market is None or not _close_maps(normalize_market_odds(odds), frozen_market):
+                raise ValueError("original_market_frozen_distribution_mismatch")
+        except (KeyError, ValueError, TypeError, OverflowError) as exc:
+            mismatches.append({
+                "decision_run_id": decision_id, "race_id": row["race_id"],
+                "reasons": [f"original_market_unverifiable:{exc}"],
+            })
+            continue
+        if _loads_map(meta.get("market_odds_json")) != odds:
+            provenance_differences.append({
+                "decision_run_id": decision_id, "race_id": row["race_id"],
+                "original_market_observed_at_utc": source_time,
+                "provenance_recorded_at_utc": meta.get("recorded_at_utc"),
+                "classification": "PROVENANCE_PRICES_DIFFER_FROM_FROZEN_SOURCE",
+            })
 
         combination_payload = json.loads(combination_raw)
         decision_payload = json.loads(decision_raw)
@@ -82,7 +119,6 @@ def run_runtime_replay_parity(store: SQLiteStore) -> dict[str, object]:
                 safety_margin=float(decision_payload["safety_margin"]),
             ),
         )
-        checked += 1
 
         reasons: list[str] = []
         if not _close_maps(result.combined_probabilities, stored_combined):
@@ -125,6 +161,8 @@ def run_runtime_replay_parity(store: SQLiteStore) -> dict[str, object]:
         "checked_decisions": checked,
         "skipped_decisions": skipped,
         "mismatches": mismatches,
+        "provenance_differences": provenance_differences,
+        "replay_market_basis": "EXACT_FROZEN_SOURCE_COHORT_NO_LATER_SUBSTITUTION",
         "interpretation": (
             "NO_EVIDENCE means the audit is implemented but no provenance-complete "
             "frozen decision has accumulated yet."
