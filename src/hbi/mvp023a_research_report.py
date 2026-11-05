@@ -92,7 +92,7 @@ def _quality(coverage: dict, features: dict, dataset: dict, benter: dict) -> Non
             raise TypeError("INVALID_PHYSICAL_RACE_ROW")
         rid = row.get("race_id")
         if not isinstance(rid, str):
-            raise ValueError("INVALID_PHYSICAL_RACE_ID")
+            raise TypeError("INVALID_PHYSICAL_RACE_ID")
         match = re.fullmatch(
             r"RIKSTOTO:[A-Z0-9]+_NR_(20\d{2})-\d{2}-\d{2}:[1-9]\d*", rid
         )
