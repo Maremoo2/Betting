@@ -106,3 +106,30 @@ def test_explicit_noncanonical_bootstrap_remains_opt_in(monkeypatch, tmp_path, c
     state_artifact.main()
     assert "STATE_RESTORE=EMPTY" in capsys.readouterr().out
     assert not (tmp_path / "hbi.sqlite").exists()
+
+
+def test_required_watcher_rejects_wrong_archive_database_member(
+    monkeypatch, tmp_path,
+):
+    _env(monkeypatch, tmp_path)
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as zf:
+        zf.writestr("data/other.sqlite", b"wrong-state")
+    artifact = {
+        "id": 44, "expired": False, "created_at": "2026-11-05T10:00:00Z",
+        "archive_download_url": "https://api.github.com/repos/x/y/actions/artifacts/44/zip",
+        "workflow_run": {"head_branch": "main"},
+    }
+    _inventory(monkeypatch, [artifact])
+
+    class _FakeOpener:
+        def open(self, request, timeout):
+            return io.BytesIO(buffer.getvalue())
+
+    monkeypatch.setattr(
+        state_artifact.urllib.request, "build_opener",
+        lambda *handlers: _FakeOpener(),
+    )
+    with pytest.raises(RuntimeError, match="STATE_RESTORE_DATABASE_MEMBER_NOT_UNIQUE"):
+        state_artifact.main()
+    assert not (tmp_path / "hbi.sqlite").exists()
