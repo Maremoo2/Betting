@@ -161,6 +161,7 @@ def _research_row(row: dict) -> tuple[dict, dict, str]:
         "track": row.get("track"), "discipline": row.get("discipline"),
         "start_at": row.get("event_time"), "partition": partition,
         "active_runner_ids": [h["runner_id"] for h in runners],
+        "scratched_runner_ids": sorted(h["selection_id"] for h in field if h["scratched"]),
         "runners": runners,
         "source_provenance": pre_refs,
         "market_input": None,
@@ -184,6 +185,7 @@ def build_partitioned_dataset(directory: Path) -> tuple[dict, list[dict], list[d
     labels: list[dict] = []
     partitions: dict[str, list[str]] = {}
     countries = Counter()
+    years = Counter()
     seen = set()
     exclusions = Counter()
     for row in sorted(rows, key=lambda item: str(item.get("race_id"))):
@@ -196,11 +198,13 @@ def build_partitioned_dataset(directory: Path) -> tuple[dict, list[dict], list[d
         labels.append(label_row)
         partitions.setdefault(partition, []).append(rid)
         countries[str(row.get("country") or "UNKNOWN")] += 1
+        years[input_row["date"][:4]] += 1
         exclusions["HISTORICAL_FEATURE_PIT_CONTRACT_NOT_VERIFIED"] += 1
     for value in partitions.values():
         value.sort()
     manifest = {
         "schema": SCHEMA,
+        "feature_schema_version": "M5_DRIVER_EXTRA_DISTANCE_SOURCE_BOUND_V1",
         "research_only": True, "bet_authority": False,
         "source_m5_manifest_sha256": source_manifest_sha,
         "source_m5_dataset_sha256": source["dataset_sha256"],
@@ -210,6 +214,13 @@ def build_partitioned_dataset(directory: Path) -> tuple[dict, list[dict], list[d
             "race_ids": ids, "count": len(ids), "sha256": digest(ids),
         } for name, ids in sorted(partitions.items())},
         "countries": dict(sorted(countries.items())),
+        "by_year": dict(sorted(years.items())),
+        "deduplication_report": {
+            "unique_physical_races": len(seen),
+            "duplicate_physical_races_in_accepted_dataset": 0,
+            "duplicate_ids_fail_closed": True,
+        },
+        "time_provenance_contract": "M5_SOURCE_OBSERVED_AT_NO_HISTORICAL_PUBLICATION_ATTESTATION",
         "races": len(inputs), "active_runners": sum(len(r["runners"]) for r in inputs),
         "model_training_eligible": 0, "benter_fit_eligible": 0,
         "exclusions": dict(sorted(exclusions.items())),
