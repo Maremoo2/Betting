@@ -105,7 +105,7 @@ def audit_feature_dataset(directory: Path) -> dict:
     manifest = json.loads((directory / "model-readiness.json").read_text(encoding="utf-8"))
     if (
         manifest.get("schema") != "HBI_RESEARCH_DATASET_V1"
-        or manifest.get("model_eligible") is not False
+        or manifest.get("model_eligible") != 0
         or not isinstance(manifest.get("dataset_sha256"), str)
         or SHA.fullmatch(manifest["dataset_sha256"]) is None
     ):
