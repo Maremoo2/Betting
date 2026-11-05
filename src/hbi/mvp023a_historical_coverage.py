@@ -151,6 +151,7 @@ def _verified_roster(row: dict, source: dict | None, race_no: int) -> tuple[set[
             not isinstance(h, dict)
             or type(h.get("startNumber")) is not int or h["startNumber"] <= 0
             or h.get("raceNumber") != race_no
+            or h.get("raceKey") != row.get("raceday_key", "") + "#" + str(race_no)
             or h.get("isScratched") not in (True, False)
             or type(h.get("isScratched")) is not bool
             or not isinstance(h.get("horseName"), str) or not h["horseName"].strip()
@@ -223,12 +224,28 @@ def _assess(
     win_rows = win.get("body", {}).get("result") if win else None
     win_ids = {str(h["startNumber"]) for h in win_rows if isinstance(h, dict)
                and type(h.get("startNumber")) is int} if isinstance(win_rows, list) else set()
-    market_complete = (
-        field and win is not None and isinstance(win_rows, list)
-        and len(win_rows) == len(active) and win_ids == active
-        and _normalized_complete(row.get("pWIN"), active)
-        and all(type(h.get("odds")) in (int, float) and math.isfinite(h["odds"]) and h["odds"] > 1
-                for h in win_rows if isinstance(h, dict))
+    win_odds_valid = bool(
+        isinstance(win_rows, list) and len(win_rows) == len(active)
+        and all(
+            isinstance(h, dict) and type(h.get("odds")) in (int, float)
+            and math.isfinite(h["odds"]) and h["odds"] > 1
+            for h in win_rows
+        )
+    )
+    implied = (
+        {str(h["startNumber"]): 1 / h["odds"] for h in win_rows}
+        if win_odds_valid else {}
+    )
+    implied_total = sum(implied.values())
+    repriced = (
+        bool(implied and implied_total > 0 and isinstance(row.get("pWIN"), dict))
+        and all(abs(row["pWIN"].get(n, -1) - v / implied_total) < 1e-6
+                for n, v in implied.items())
+    )
+    market_complete = bool(
+        field and win is not None and win_odds_valid
+        and win_ids == active and _normalized_complete(row.get("pWIN"), active)
+        and repriced
     )
     collective_complete = any(
         p.get("status") == "COMPLETE" and _normalized_complete(p.get("pCOL"), active)
@@ -398,6 +415,19 @@ def build_coverage(root: Path) -> dict:
             key, day, number = parsed
             if day != path.stem:
                 raise ValueError("MARKET_DAY_RACE_DATE_CONFLICT")
+            metadata.setdefault(rid, {
+                "race_id": rid, "day": day, "month": day[:7],
+                "year": int(day[:4]), "country": row.get("country") or "UNKNOWN",
+                "track": "UNKNOWN", "start_time_original": (row.get("metadata") or {}).get("startTime"),
+            })
+    # Weekly-only input is a valid derived freeze, but without original raw
+    # envelopes it remains source-blocked. Do not make weekly rows invisible.
+    for day, document in sorted(market_days.items()):
+        for row in document["races"]:
+            parsed = _physical_id(row.get("race_id") if isinstance(row, dict) else None)
+            if parsed is None or parsed[1] != day:
+                raise ValueError("WEEKLY_PHYSICAL_RACE_ID_INVALID")
+            rid = row["race_id"]
             metadata.setdefault(rid, {
                 "race_id": rid, "day": day, "month": day[:7],
                 "year": int(day[:4]), "country": row.get("country") or "UNKNOWN",
