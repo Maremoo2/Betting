@@ -13,6 +13,8 @@ import re
 from collections import Counter
 from pathlib import Path
 
+from rikstoto_crawler.transport import digest as archive_digest
+
 from .research_lab import digest
 
 SCHEMA = "MVP023A_CONSOLIDATED_RESEARCH_REPORT_V1"
@@ -43,7 +45,7 @@ def _quality(coverage: dict, features: dict, dataset: dict, benter: dict) -> Non
     if (
         coverage.get("historical_not_prospective") is not True
         or not isinstance(rows, list)
-        or coverage.get("data_sha256") != digest(rows)
+        or coverage.get("data_sha256") != archive_digest(rows)
         or coverage.get("readiness", {}).get("pit_model_eligible") != 0
         or coverage.get("readiness", {}).get("lockbox_2025_accessed_for_tuning") is not False
         or len({r.get("race_id") for r in rows}) != len(rows)
@@ -240,6 +242,8 @@ def build_consolidated_report(
         "schema": SCHEMA, "research_only": True, "bet_authority": False,
         "training_performed": False, "model_promotion": False,
         "raw_source_scope": "SELECTED_LOCAL_ARCHIVES_ONLY",
+        "coverage_source_hash_contract": "RIKSTOTO_ARCHIVE_CANONICAL_JSON_SORTED_UTF8_WITH_SPACES",
+        "m5_source_hash_contract": "M5_MANIFEST_AND_DATASET_RAW_BYTES_SHA256",
         "input_report_sha256": dict(sorted(input_sha256.items())),
         "years": years,
         "coverage_original_physical_races": coverage.get("counts", {}).get("physical_races", 0),
