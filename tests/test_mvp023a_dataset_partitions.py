@@ -152,3 +152,24 @@ def test_write_once_cli_and_original_unchanged(tmp_path):
     assert manifest["bet_authority"] is False
     with pytest.raises(FileExistsError):
         main(["--dataset-dir", str(directory), "--output-dir", str(output)])
+
+
+def test_racekey_and_country_scope_cannot_be_forged(tmp_path):
+    directory, row = setup_m5(tmp_path)
+    row["raceday_key"] = "WRONG_NR_2020-01-04"
+    rewrite(directory, row)
+    with pytest.raises(ValueError, match="CANONICAL_RACEDAY_KEY_CONFLICT"):
+        build_partitioned_dataset(directory)
+    row["raceday_key"] = KEY
+    row["country"] = "FR"
+    rewrite(directory, row)
+    with pytest.raises(ValueError, match="M5_COUNTRY_OR_DISCIPLINE_OUT_OF_SCOPE"):
+        build_partitioned_dataset(directory)
+
+
+def test_m5_feature_source_reference_must_bind_to_original_starts(tmp_path):
+    directory, row = setup_m5(tmp_path)
+    row["roster"][0]["features"]["driver"]["source_body_sha256"] = "f" * 64
+    rewrite(directory, row)
+    with pytest.raises(ValueError, match="M5_FEATURE_SOURCE_REFERENCE_CONFLICT"):
+        build_partitioned_dataset(directory)
