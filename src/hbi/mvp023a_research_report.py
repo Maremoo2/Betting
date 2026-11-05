@@ -175,8 +175,20 @@ def build_consolidated_report(
     feature_rows = {
         name: {
             "status_counts": data.get("status_counts", {}),
+            "qualified_races": data.get("eligible_races"),
             "qualified_runners": data.get("eligible_runners"),
             "m5_active_runner_denominator": data.get("denominator_active_runners"),
+            "qualified_runner_coverage_rate": data.get("qualified_runner_coverage_rate"),
+            "by_year": data.get("by_year", {}),
+            "by_country": data.get("by_country", {}),
+            "main_blocker": data.get("main_blocker"),
+            "observed_value_types": data.get("observed_value_types", {}),
+            "source_time_field": data.get("source_time_field"),
+            "historical_event_time_field": data.get("historical_event_time_field"),
+            "availability_time_field": data.get("availability_time_field"),
+            "identity_integrity_requirement": data.get("identity_requirement"),
+            "time_integrity": "NOT_PIT_CERTIFIED",
+            "leakage_risk": data.get("leakage_risk", "NOT_REVIEWED"),
             "scope": "M5_DIAGNOSTIC_COHORT_NOT_JOINED_TO_COVERAGE",
         }
         for name, data in sorted(features.get("features", {}).items())
@@ -197,7 +209,12 @@ def build_consolidated_report(
         "benter": {
             "fit_readiness": "NOT_READY",
             "blocker_counts": benter.get("blocker_counts", {}),
+            "fundamental_dataset_ready": False,
             "oos_fundamental_predictions_ready": False,
+            "pre_race_market_ready": False,
+            "same_race_alignment_structure_only": benter.get(
+                "same_race_alignment_structure_ready", False
+            ),
             "combination_fit_ready": False,
             "independent_validation_ready": False,
             "economic_ev_ready": False,
