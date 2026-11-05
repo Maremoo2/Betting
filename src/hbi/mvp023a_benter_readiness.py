@@ -172,7 +172,7 @@ def inspect_benter_readiness(bundle: dict) -> dict:
             if any(re.search(r"_NR_2025-", rid) for rid in weight_fit):
                 raise ValueError("CANDIDATE_2025_LOCKBOX_COMBINATION_FIT_NOT_AUTHORIZED")
             if not weight_fit or any(
-                re.fullmatch(r"RIKSTOTO:[A-Z0-9]+_NR_2023-\\d{2}-\\d{2}:[1-9]\\d*", rid) is None
+                re.fullmatch(r"RIKSTOTO:[A-Z0-9]+_NR_2023-\d{2}-\d{2}:[1-9]\d*", rid) is None
                 for rid in weight_fit
             ):
                 stats["COMBINATION_FIT_ROLE_NOT_VERIFIED"] += 1
