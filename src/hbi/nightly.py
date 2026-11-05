@@ -49,15 +49,25 @@ def _finish_map(complete: dict[str, object]) -> dict[str, int]:
     if not isinstance(rows, list):
         return {}
     output: dict[str, int] = {}
+    seen_start_numbers: set[str] = set()
     for item in rows:
         if not isinstance(item, dict):
             continue
         start = item.get("startNumber")
+        if start is None:
+            continue
+        key = str(start)
+        # A runner may appear only once in one race's official complete result.
+        # The old dict assignment silently overwrote contradictory duplicates,
+        # potentially turning unverifiable source data into a settled loss.
+        if key in seen_start_numbers:
+            return {}
+        seen_start_numbers.add(key)
         place = item.get("place")
-        if start is None or place is None:
+        if place is None:
             continue
         try:
-            output[str(start)] = int(place)
+            output[key] = int(place)
         except (TypeError, ValueError):
             continue
     return output
