@@ -454,7 +454,13 @@ def build_coverage(root: Path) -> dict:
                 "track": "UNKNOWN", "start_time_original": (row.get("metadata") or {}).get("startTime"),
             })
     results = {}
+    lockbox_result_files_withheld = 0
     for path in sorted((root / "result-days").glob("*.json")):
+        # 2025 is only a lockbox candidate. Do NOT parse or hash its outcomes;
+        # even a retrospective coverage read can disclose hidden labels.
+        if path.stem.startswith("2025-"):
+            lockbox_result_files_withheld += 1
+            continue
         doc = _read(path)
         pre = market_days.get(path.stem)
         if doc.get("stage") != "RESULTS" or not isinstance(doc.get("outcomes"), list):
@@ -509,6 +515,7 @@ def build_coverage(root: Path) -> dict:
             "inventories": len(list((root / "inventory").glob("*.json"))),
             "market_days": len(market_days), "result_days": len(results),
             "weekly_market_archives": weekly_count,
+            "2025_lockbox_result_files_not_read": lockbox_result_files_withheld,
             "unbound_meeting_source_failures_not_physical_races": len(unbound_meeting_rows),
         },
         "counts": dict(totals), "primary_blockers": dict(sorted(blockers.items())),
