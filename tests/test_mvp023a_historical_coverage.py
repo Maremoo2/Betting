@@ -1,4 +1,5 @@
 """TEST_ONLY source-shaped fixtures; never mislabel as genuine 2015-2026 coverage."""
+# ruff: noqa: I001  # Import ordering differs across CLI's package detection.
 from __future__ import annotations
 
 import hashlib
