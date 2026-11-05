@@ -170,6 +170,11 @@ def test_racekey_and_country_scope_cannot_be_forged(tmp_path):
     rewrite(directory, row)
     with pytest.raises(ValueError, match="M5_COUNTRY_OR_DISCIPLINE_OUT_OF_SCOPE"):
         build_partitioned_dataset(directory)
+    row["country"] = "NO"
+    row["discipline"] = "gallop"
+    rewrite(directory, row)
+    with pytest.raises(ValueError, match="M5_COUNTRY_OR_DISCIPLINE_OUT_OF_SCOPE"):
+        build_partitioned_dataset(directory)
 
 
 def test_m5_feature_source_reference_must_bind_to_original_starts(tmp_path):
