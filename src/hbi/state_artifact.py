@@ -177,6 +177,11 @@ def main() -> None:
             os.environ.get("GITHUB_SHA") if receipt_path is not None else None
         ),
     )
+    # A scheduled canonical watcher must never silently begin with a fresh DB
+    # when the previous state archive is missing, expired, or not selectable.
+    # Keep opt-in bootstrap behavior for separate research/first-run workflows.
+    if not restored and os.environ.get("HBI_RESTORE_REQUIRED") == "1":
+        raise SystemExit("STATE_RESTORE_REQUIRED_BUT_NO_VERIFIED_ARTIFACT")
     print("STATE_RESTORE=RESTORED" if restored else "STATE_RESTORE=EMPTY")
 
 
