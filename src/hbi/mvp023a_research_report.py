@@ -78,6 +78,30 @@ def _quality(coverage: dict, features: dict, dataset: dict, benter: dict) -> Non
             )
         ):
             raise ValueError("FEATURE_" + group.upper() + "_DENOMINATOR_CONFLICT")
+    # Both M5-derived reports must attest the *same* original JSONL and
+    # manifest. Schema-valid reports from different archive versions cannot
+    # silently enter a common research summary.
+    if (
+        not isinstance(features.get("source_dataset_sha256"), str)
+        or not isinstance(features.get("source_manifest_sha256"), str)
+        or features["source_dataset_sha256"] != dataset.get("source_m5_dataset_sha256")
+        or features["source_manifest_sha256"] != dataset.get("source_m5_manifest_sha256")
+    ):
+        raise ValueError("M5_FEATURE_PARTITION_ORIGINAL_PROVENANCE_CONFLICT")
+    feature_ids = {r.get("race_id") for r in feature_rows}
+    partition_ids = [
+        race_id
+        for part in dataset.get("partitions", {}).values()
+        if isinstance(part, dict) and isinstance(part.get("race_ids"), list)
+        for race_id in part["race_ids"]
+    ] if isinstance(dataset.get("partitions"), dict) else []
+    if (
+        len(feature_ids) != len(feature_rows)
+        or len(partition_ids) != len(set(partition_ids))
+        or feature_ids != set(partition_ids)
+        or dataset.get("races") != len(feature_rows)
+    ):
+        raise ValueError("M5_FEATURE_PARTITION_RACE_COHORT_CONFLICT")
     if (
         dataset.get("model_training_eligible") != 0
         or dataset.get("benter_fit_eligible") != 0
