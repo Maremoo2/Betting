@@ -193,5 +193,5 @@ def test_p1e_explicit_scratches_excluded_from_active_inputs(tmp_path):
     assert manifest["active_runners"] == 2
     assert inputs[0]["active_runner_ids"] == ["1", "2"]
     assert inputs[0]["scratched_runner_ids"] == ["3"]
-    assert "3" not in json.dumps(inputs[0]["runners"])
+    assert {runner["runner_id"] for runner in inputs[0]["runners"]} == {"1", "2"}
     assert len(labels[0]["results"]) == 2
