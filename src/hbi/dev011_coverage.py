@@ -89,6 +89,7 @@ def finalize(manifest: dict, *, models_root: Path, results_root: Path) -> dict:
     if manifest.get("schema") != SCHEMA or manifest.get("bet_authority") is not False:
         raise ValueError("INVENTORY_MANIFEST_INVALID")
     missing = []
+    integrity_failures = []
     for entry in manifest["selected_artifacts"]:
         if entry["expired"]:
             missing.append({
@@ -103,6 +104,13 @@ def finalize(manifest: dict, *, models_root: Path, results_root: Path) -> dict:
         try:
             raw = path.read_bytes() if path.is_file() and not path.is_symlink() else b""
             if not raw:
+                diagnostic = path.parent / "source-unavailable.json"
+                if diagnostic.is_file() and not diagnostic.is_symlink():
+                    blocked = _json_original(diagnostic)
+                    if (blocked.get("schema") == "MVP016_CUMULATIVE_SCORECARD_SOURCE_UNAVAILABLE_V1"
+                            and blocked.get("scorecard_generated") is False
+                            and blocked.get("bet_authority") is False):
+                        raise ValueError("ORIGINAL_PRODUCER_SOURCE_BLOCKED")
                 # Older genuine GitHub artifacts predate the per-run cohort
                 # index. Distinguish their present-but-unattested original
                 # bytes from a genuinely absent artifact. Never admit or
@@ -150,6 +158,13 @@ def finalize(manifest: dict, *, models_root: Path, results_root: Path) -> dict:
                     for r in doc.get("records", []) if isinstance(r, dict)
                 )
         except (OSError, ValueError, TypeError) as exc:
+            reason = str(exc)
+            if reason not in {"UNINDEXED_LEGACY_MODEL_ORIGINAL", "ORIGINAL_PRODUCER_SOURCE_BLOCKED"}:
+                integrity_failures.append({
+                    "artifact_id": entry["artifact_id"],
+                    "source_run_id": entry["source_run_id"], "kind": entry["kind"],
+                    "reason": reason,
+                })
             entry["status"] = (
                 "UNINDEXED_LEGACY_MODEL_ORIGINAL"
                 if str(exc) == "UNINDEXED_LEGACY_MODEL_ORIGINAL"
@@ -166,8 +181,14 @@ def finalize(manifest: dict, *, models_root: Path, results_root: Path) -> dict:
             "kind": "result",
             "reason": ",".join(reasons),
         })
+        if "PINNED_RESULT_ORIGINAL_MISSING_OR_CHANGED" in reasons:
+            integrity_failures.append({
+                "race_id": race_id, "kind": "result",
+                "reason": "PINNED_RESULT_ORIGINAL_MISSING_OR_CHANGED",
+            })
     manifest["pinned_result_races_checked"] = len(pinned_official(results_root)[0])
     manifest["missing_originals"] = missing
+    manifest["original_integrity_failures"] = integrity_failures
     manifest["recovered_artifacts"] = sum(
         r["status"] == "ORIGINAL_INDEX_AVAILABLE" for r in manifest["selected_artifacts"]
     )
