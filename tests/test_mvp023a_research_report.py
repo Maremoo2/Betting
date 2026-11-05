@@ -241,3 +241,37 @@ def test_cross_pr_same_valid_m5_source_but_disjoint_race_ids_fails():
     })
     with pytest.raises(ValueError, match="M5_FEATURE_PARTITION_RACE_COHORT_CONFLICT"):
         evaluate(inputs)
+
+
+def test_integration_2025_result_cannot_be_indirectly_hidden_by_report():
+    inputs = sample()
+    row = inputs["coverage"]["by_race"][0]
+    row["race_id"] = "RIKSTOTO:BJ_NR_2025-01-04:1"
+    row["year"] = 2025
+    row["categories"]["RESULT_VERIFIED"] = True
+    row["official_result_sha256"] = "a" * 64
+    inputs["coverage"]["data_sha256"] = digest(inputs["coverage"]["by_race"])
+    inputs["coverage"]["by_year"] = {
+        "2025": inputs["coverage"]["by_year"].pop("2020")
+    }
+    with pytest.raises(ValueError, match="2025_LOCKBOX_RESULT_INDIRECTLY_EXPOSED"):
+        evaluate(inputs)
+
+
+def test_integration_2025_benter_or_dataset_cannot_be_laundered():
+    inputs = sample()
+    inputs["benter"]["per_race"] = [{
+        "race_id": "RIKSTOTO:BJ_NR_2025-01-04:1",
+        "readiness": "NOT_READY",
+    }]
+    with pytest.raises(ValueError, match="2025_LOCKBOX_BENTER_EVALUATION_INDIRECTLY_EXPOSED"):
+        evaluate(inputs)
+    inputs = sample()
+    ids = ["RIKSTOTO:BJ_NR_2025-01-04:1"]
+    inputs["dataset"]["partitions"] = {
+        "DEVELOPMENT_2015_2022": {
+            "race_ids": ids, "count": 1, "sha256": digest(ids),
+        }
+    }
+    with pytest.raises(ValueError, match="2025_LOCKBOX_PARTITION_INDIRECTLY_EXPOSED"):
+        evaluate(inputs)
