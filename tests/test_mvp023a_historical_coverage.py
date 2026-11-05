@@ -173,7 +173,7 @@ def test_frozen_market_and_result_chain_tampering_refused(tmp_path):
 
 
 def test_duplicate_physical_race_refused(tmp_path):
-    fixture(tmp_path)
+    fixture(tmp_path, outcome=False)
     file = tmp_path / "market-days" / "2020-01-04.json"
     doc = json.loads(file.read_text())
     doc["races"].append(doc["races"][0])
@@ -257,7 +257,7 @@ def test_corrupt_weekly_member_sha_rejected(tmp_path):
 
 
 def test_tampered_win_normalization_is_not_market_complete(tmp_path):
-    fixture(tmp_path)
+    fixture(tmp_path, outcome=False)
     file = tmp_path / "market-days" / "2020-01-04.json"
     doc = json.loads(file.read_text())
     doc["races"][0]["pWIN"] = {"1": .8, "2": .2}
