@@ -1,4 +1,5 @@
 """TEST_ONLY M5 partition serialization and strict lockbox/label segregation."""
+# ruff: noqa: I001  # Preserve TEST_ONLY fixture import grouping across classifiers.
 from __future__ import annotations
 
 import hashlib
