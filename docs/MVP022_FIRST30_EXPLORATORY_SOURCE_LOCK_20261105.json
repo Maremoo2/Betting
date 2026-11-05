@@ -1,0 +1,79 @@
+{
+  "schema": "BETTING_MVP022_FIRST30_EXPLORATORY_COHORT_REFERENCE_V1",
+  "classification": "RETROSPECTIVE_EXPLORATORY_SOURCE_LOCK_NOT_PROSPECTIVE_PRE_REGISTRATION",
+  "decision_rule": "FIRST_THIRTY_DISTINCT_TRIPLE_EVALUABLE_SORTED_BY_ORIGINAL_RACE_START_UTC_THEN_PHYSICAL_RACE_ID",
+  "source": {
+    "repository": "Maremoo2/Betting",
+    "main_sha": "2238a9b891b16cd74ced7eaa581c630dd572f4b9",
+    "core003_run_id": 41911371831,
+    "scorecard_artifact_id": 13364215238,
+    "scorecard_original_index_sha256": "6dd2ab97bc4e2893e22836777290e9f3d985e0a88c99d5b7df57a68fa6cfa019"
+  },
+  "data": {
+    "physical_races": 30,
+    "distinct_races": 30,
+    "source_racedays": 6,
+    "calendar_dates": 3,
+    "source_market": "NORMALIZED_SAME_FREEZE_WIN",
+    "pit_certified": 0,
+    "source_model_shas": "SEE_SHA_PINNED_ORIGINAL_SCORECARD_INDEX_AND_INDEPENDENT_FULL_LEDGER"
+  },
+  "metrics": {
+    "champion": {
+      "log_loss": 2.12908725033343,
+      "multiclass_brier": 0.8614155898208862
+    },
+    "core004": {
+      "log_loss": 2.0876948876149384,
+      "multiclass_brier": 0.848072764111595
+    },
+    "market": {
+      "log_loss": 1.9491062640456285,
+      "multiclass_brier": 0.8235196459130825
+    }
+  },
+  "independent_original_checks": {
+    "official_complete_and_raceday_raw_sources_rehashed": 60,
+    "sha_conflicts_in_first30": 0,
+    "per_race_full_ledger_sha256": "08de79b2df0ffcec10b2711e6d6661c07c03d2dbca34a389d7ac86189905c5b7",
+    "per_race_full_ledger_is_separate_downloadable_qa_file": true
+  },
+  "race_ids_in_frozen_order": [
+    "RIKSTOTO:S3_NR_2026-11-02:2",
+    "RIKSTOTO:S3_NR_2026-11-02:3",
+    "RIKSTOTO:S3_NR_2026-11-02:4",
+    "RIKSTOTO:S2_NR_2026-11-02:1",
+    "RIKSTOTO:S2_NR_2026-11-02:2",
+    "RIKSTOTO:S2_NR_2026-11-02:3",
+    "RIKSTOTO:S2_NR_2026-11-02:4",
+    "RIKSTOTO:S2_NR_2026-11-02:5",
+    "RIKSTOTO:S2_NR_2026-11-02:6",
+    "RIKSTOTO:S2_NR_2026-11-02:8",
+    "RIKSTOTO:S2_NR_2026-11-02:9",
+    "RIKSTOTO:S2_NR_2026-11-02:10",
+    "RIKSTOTO:S1_NR_2026-11-03:1",
+    "RIKSTOTO:S1_NR_2026-11-03:5",
+    "RIKSTOTO:S1_NR_2026-11-03:6",
+    "RIKSTOTO:S1_NR_2026-11-03:7",
+    "RIKSTOTO:S1_NR_2026-11-03:8",
+    "RIKSTOTO:S2_NR_2026-11-03:9",
+    "RIKSTOTO:S2_NR_2026-11-04:1",
+    "RIKSTOTO:S2_NR_2026-11-04:2",
+    "RIKSTOTO:S3_NR_2026-11-04:1",
+    "RIKSTOTO:S2_NR_2026-11-04:3",
+    "RIKSTOTO:S3_NR_2026-11-04:2",
+    "RIKSTOTO:S3_NR_2026-11-04:3",
+    "RIKSTOTO:S2_NR_2026-11-04:5",
+    "RIKSTOTO:S3_NR_2026-11-04:4",
+    "RIKSTOTO:S2_NR_2026-11-04:6",
+    "RIKSTOTO:S3_NR_2026-11-04:5",
+    "RIKSTOTO:S2_NR_2026-11-04:8",
+    "RIKSTOTO:S3_NR_2026-11-04:7"
+  ],
+  "bet_authority": false,
+  "pit_certification_performed": false,
+  "historical_predictions_modified": false,
+  "not_robust_calibration": true,
+  "prospective_holdout": false,
+  "owner_review_required": true
+}
