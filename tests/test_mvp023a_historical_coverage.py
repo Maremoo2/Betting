@@ -7,8 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from hbi.mvp023a_historical_coverage import build_coverage, main
-from rikstoto_crawler.transport import HOST, digest
+from hbi.mvp023a_historical_coverage import HOST, build_coverage, digest, main
 
 
 KEY = "BJ_NR_2020-01-04"
