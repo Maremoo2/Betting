@@ -80,6 +80,11 @@ def test_research_partition_inputs_separated_from_late_results(tmp_path):
     directory, row = setup_m5(tmp_path)
     manifest, inputs, labels = build_partitioned_dataset(directory)
     assert manifest["races"] == 1
+    assert manifest["feature_schema_version"] == "M5_DRIVER_EXTRA_DISTANCE_SOURCE_BOUND_V1"
+    assert manifest["by_year"] == {"2020": 1}
+    assert manifest["deduplication_report"]["duplicate_physical_races_in_accepted_dataset"] == 0
+    assert manifest["time_provenance_contract"].startswith("M5_SOURCE_OBSERVED_AT")
+    assert inputs[0]["scratched_runner_ids"] == []
     assert manifest["partitions"]["DEVELOPMENT_2015_2022"]["race_ids"] == [RID]
     assert manifest["model_training_eligible"] == 0
     assert inputs[0]["market_input"] is None
@@ -173,3 +178,20 @@ def test_m5_feature_source_reference_must_bind_to_original_starts(tmp_path):
     rewrite(directory, row)
     with pytest.raises(ValueError, match="M5_FEATURE_SOURCE_REFERENCE_CONFLICT"):
         build_partitioned_dataset(directory)
+
+
+def test_p1e_explicit_scratches_excluded_from_active_inputs(tmp_path):
+    directory, row = setup_m5(tmp_path)
+    row["roster"].append({
+        "selection_id": "3", "name": "Scratched",
+        "registration_observed": "H3", "scratched": True,
+        "identity_status": "UNRESOLVED", "features": {},
+    })
+    rewrite(directory, row)
+    manifest, inputs, labels = build_partitioned_dataset(directory)
+    assert manifest["races"] == 1
+    assert manifest["active_runners"] == 2
+    assert inputs[0]["active_runner_ids"] == ["1", "2"]
+    assert inputs[0]["scratched_runner_ids"] == ["3"]
+    assert "3" not in json.dumps(inputs[0]["runners"])
+    assert len(labels[0]["results"]) == 2
