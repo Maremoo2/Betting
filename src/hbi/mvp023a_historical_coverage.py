@@ -14,6 +14,7 @@ import re
 from collections import Counter, defaultdict
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from zipfile import ZipFile
 from zoneinfo import ZoneInfo
 
 from rikstoto_crawler.archive import verify_outcome
@@ -328,17 +329,66 @@ def _assess(
     }
 
 
+
+def _weekly_market_days(root: Path) -> tuple[dict[str, dict], int]:
+    """Verify existing MARKET_ONLY weekly ZIP manifests without extracting files."""
+    days: dict[str, dict] = {}
+    count = 0
+    for zip_path in sorted((root / "weekly").glob("*-MARKET.zip")):
+        if zip_path.is_symlink():
+            raise ValueError("SYMLINKED_WEEKLY_ARCHIVE_REJECTED")
+        with ZipFile(zip_path) as archive:
+            names = archive.namelist()
+            if len(names) != len(set(names)) or "MANIFEST.json" not in names:
+                raise ValueError("WEEKLY_ARCHIVE_MEMBERS_INVALID")
+            if any(name.startswith("/") or "/" in name or "\\" in name or ".." in name for name in names):
+                raise ValueError("WEEKLY_ARCHIVE_MEMBER_PATH_INVALID")
+            if sum(item.file_size for item in archive.infolist()) > 500_000_000:
+                raise ValueError("WEEKLY_ARCHIVE_TOO_LARGE")
+            manifest = json.loads(archive.read("MANIFEST.json"))
+            checks = manifest.get("files_sha256")
+            expected = {day + ".json" for day in manifest.get("days", [])}
+            if (
+                manifest.get("stage") != "MARKET_ONLY"
+                or manifest.get("retrospective") is not True
+                or not isinstance(checks, dict) or set(checks) != expected
+                or set(names) != expected | {"MANIFEST.json"}
+                or not isinstance(manifest.get("week"), str)
+                or not zip_path.stem.startswith(manifest["week"] + "-")
+            ):
+                raise ValueError("WEEKLY_ARCHIVE_MANIFEST_INVALID")
+            for name in sorted(expected):
+                raw = archive.read(name)
+                if hashlib.sha256(raw).hexdigest() != checks[name]:
+                    raise ValueError("WEEKLY_MARKET_MEMBER_SHA_MISMATCH:" + name)
+                doc = json.loads(raw)
+                if (
+                    doc.get("stage") != "MARKET_ONLY"
+                    or not isinstance(doc.get("races"), list)
+                    or doc.get("sha256") != digest(doc["races"])
+                ):
+                    raise ValueError("WEEKLY_MARKET_DAY_FREEZE_INVALID:" + name)
+                day = name.removesuffix(".json")
+                if day in days and digest(days[day]) != digest(doc):
+                    raise ValueError("CONFLICTING_WEEKLY_MARKET_DAY:" + day)
+                days[day] = doc
+        count += 1
+    return days, count
+
+
 def build_coverage(root: Path) -> dict:
     """Build from a supplied UNPACKED native archive root; never touch network."""
     root = Path(root)
     if not root.is_dir():
         raise ValueError("HISTORICAL_ARCHIVE_ROOT_NOT_FOUND")
     metadata = _inventory(root)
-    market_days = {}
+    market_days, weekly_count = _weekly_market_days(root)
     for path in sorted((root / "market-days").glob("*.json")):
         doc = _read(path)
         if doc.get("stage") != "MARKET_ONLY" or not isinstance(doc.get("races"), list) or doc.get("sha256") != digest(doc["races"]):
             raise ValueError("MARKET_DAY_FREEZE_SHA_INVALID:" + path.name)
+        if path.stem in market_days and digest(market_days[path.stem]) != digest(doc):
+            raise ValueError("WEEKLY_DAILY_FREEZE_CONFLICT:" + path.stem)
         market_days[path.stem] = doc
         for row in doc["races"]:
             rid = row.get("race_id") if isinstance(row, dict) else None
@@ -408,6 +458,7 @@ def build_coverage(root: Path) -> dict:
         "source_file_count": {
             "inventories": len(list((root / "inventory").glob("*.json"))),
             "market_days": len(market_days), "result_days": len(results),
+            "weekly_market_archives": weekly_count,
         },
         "counts": dict(totals), "primary_blockers": dict(sorted(blockers.items())),
         **{label: {
