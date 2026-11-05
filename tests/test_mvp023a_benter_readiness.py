@@ -180,3 +180,47 @@ def test_write_once_read_only_cli(tmp_path):
     assert json.loads(target.read_text())["bet_authority"] is False
     with pytest.raises(FileExistsError):
         main(["--bundle", str(source), "--output", str(target)])
+
+
+def test_p1e_fundamental_model_calibration_must_exclude_evaluation_races():
+    payload = _bundle()
+    payload["fundamental_model"]["calibration_race_ids"] = [RACE]
+    with pytest.raises(ValueError, match="FUNDAMENTAL_MODEL_CALIBRATED_ON_EVALUATION_RACES"):
+        inspect_benter_readiness(payload)
+    payload["fundamental_model"]["calibration_race_ids"] = [
+        "RIKSTOTO:BJ_NR_2025-03-01:1"
+    ]
+    with pytest.raises(ValueError, match="CANDIDATE_2025_LOCKBOX_CALIBRATION_NOT_AUTHORIZED"):
+        inspect_benter_readiness(payload)
+
+
+def test_p1e_benter_weight_fit_cannot_reuse_eval_or_lockbox():
+    payload = _bundle()
+    payload["combination_weights"] = {
+        "fundamental_weight": 0.6, "market_weight": 0.4,
+        "fit_race_ids": [RACE],
+    }
+    with pytest.raises(ValueError, match="COMBINATION_FIT_TUNED_ON_EVALUATION_RACES"):
+        inspect_benter_readiness(payload)
+    payload["combination_weights"]["fit_race_ids"] = [
+        "RIKSTOTO:BJ_NR_2025-03-01:1"
+    ]
+    with pytest.raises(ValueError, match="CANDIDATE_2025_LOCKBOX_COMBINATION_FIT_NOT_AUTHORIZED"):
+        inspect_benter_readiness(payload)
+    payload["combination_weights"]["fit_race_ids"] = [
+        "RIKSTOTO:BJ_NR_2023-01-20:1"
+    ]
+    result = inspect_benter_readiness(payload)
+    assert result["fit_readiness"] == "NOT_READY"
+    assert result["combination_fit_ready"] is False
+    assert result["blocker_counts"]["COMBINATION_WEIGHTS_NOT_PROVEN_INDEPENDENTLY_FITTED"] == 1
+
+
+def test_p1e_fitted_weights_without_published_fit_cohort_stay_blocked():
+    payload = _bundle()
+    payload["combination_weights"] = {
+        "fundamental_weight": .6, "market_weight": .4,
+    }
+    result = inspect_benter_readiness(payload)
+    assert result["blocker_counts"]["COMBINATION_FIT_COHORT_NOT_ATTESTED"] == 1
+    assert result["economic_ev_ready"] is False
