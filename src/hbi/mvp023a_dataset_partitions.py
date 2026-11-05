@@ -79,6 +79,12 @@ def _research_row(row: dict) -> tuple[dict, dict, str]:
     if match is None or day != match.group(1):
         raise ValueError("PHYSICAL_RACE_OR_DATE_CONFLICT")
     partition = role(day)
+    if row.get("raceday_key") != rid.split(":")[1]:
+        raise ValueError("CANONICAL_RACEDAY_KEY_CONFLICT")
+    if row.get("country") not in {"NO", "SE"} or row.get("discipline") != "trot":
+        raise ValueError("M5_COUNTRY_OR_DISCIPLINE_OUT_OF_SCOPE")
+    if not _time(row.get("event_time")):
+        raise ValueError("M5_EVENT_CLOCK_NOT_AUTHENTICATED")
     field = row.get("roster")
     if not isinstance(field, list) or len(field) < 2:
         raise ValueError("FULL_FIELD_ROSTER_UNAVAILABLE")
@@ -128,8 +134,20 @@ def _research_row(row: dict) -> tuple[dict, dict, str]:
             raise TypeError("M5_FEATURE_OBJECT_NOT_DICT")
         if PROHIBITED.intersection({str(key).lower() for key in facts}):
             raise ValueError("HISTORICAL_RESULT_OR_MARKET_FEATURE_LEAKAGE")
-        # Whitelist only the exact M5 fields and retain explicit missing values.
+        # Preserve only exact M5 source-bound facts; never copy arbitrary
+        # biographical or market values into a research feature sidecar.
         safe = {name: facts.get(name) if name in facts else None for name in SAFE_FACTS}
+        for name, fact in safe.items():
+            if fact is None:
+                continue
+            if not isinstance(fact, dict):
+                raise TypeError("M5_UNSUPPORTED_FEATURE_OBJECT:" + name)
+            if fact.get("value") is not None and (
+                fact.get("source_url") != pre_refs[0]["url"]
+                or fact.get("source_body_sha256") != pre_refs[0]["body_sha256"]
+                or fact.get("source_observed_at") != pre_refs[0]["fetched_at"]
+            ):
+                raise ValueError("M5_FEATURE_SOURCE_REFERENCE_CONFLICT:" + name)
         if any(name not in (*SAFE_FACTS,) for name in facts):
             raise ValueError("UNREVIEWED_M5_FEATURE_FIELD")
         runners.append({
