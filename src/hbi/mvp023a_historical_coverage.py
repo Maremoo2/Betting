@@ -170,7 +170,7 @@ def _verified_roster(row: dict, source: dict | None, race_no: int) -> tuple[set[
     if not isinstance(row.get("roster"), list) or digest(row["roster"]) != digest(original):
         return active, False, False
     stable = bool(registrations) and len(registrations) == len(set(registrations)) and all(
-        registration and not registration.upper().startswith(("TMP", "TEMP", "UNKNOWN"))
+        registration and not registration.upper().startswith(("TMP", "TEMP", "UNKNOWN", "ATG:", "ATG_", "ATG-", "NAME:"))
         for registration in registrations
     )
     return active, len(active) >= 2, stable
