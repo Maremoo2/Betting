@@ -232,7 +232,7 @@ def audit_feature_dataset(directory: Path) -> dict:
                 for country, counter in sorted(feature_by_country[k].items())
             },
             "main_blocker": (
-                sorted(feature_reasons[k].items(), key=lambda x: (-x[1], x[0]))[0][0]
+                min(feature_reasons[k].items(), key=lambda x: (-x[1], x[0]))[0]
                 if feature_reasons[k] else "NO_ACTIVE_RUNNERS"
             ),
             "source_time_field": "source_observed_at",
