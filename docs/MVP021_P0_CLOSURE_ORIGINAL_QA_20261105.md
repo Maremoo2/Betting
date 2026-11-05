@@ -71,3 +71,16 @@ Permanent EU immutable original archive remains a non-deployed owner decision: [
 | Full MVP-021 acceptance | **`NOT_FULL_ACCEPTED`** | Three settlement blockers + first authentic PIT + independent source/contract closure |
 
 **Governance:** Deadline 13 Nov 2026 18:00 Europe/Oslo. No actual betting or paper settlement write, no model/prediction/risk/odds/staking change, no new schedule, no auto-merge. `bet_authority=false`. This is a dated, source-grounded research handoff, not a signed production go-live.
+
+
+## F. Newer genuine post-merge source checkpoint: 5 Nov 2026 09:04 UTC
+
+After this source report's first QA observation, ordinary [CORE003 41999339887](https://github.com/Maremoo2/Betting/actions/runs/41999339887) completed with genuine source/DEV011/PIT steps (not a skipped job). Exact downloaded original bytes:
+
+- DEV009 scorecard artifact **13401279417**, `index.json` SHA256 `14ac6c767b3fe9a70ec74ecaa27078e0a40238c8bf76bac732aba9fd6cba224b`: **89 physical / 39 complete models / 34 paired / 33 same-freeze WIN triples / 0 PIT** (unchanged from predecessor). `INCOMPLETE_ORIGINAL_COVERAGE`.
+- DEV011 manifest artifact **13401179916**, `manifest.json` SHA256 `a2c76a2463911cad5a17b780ef00e0ea18289b2ebeea48653e60f31fdc73899e`: **341 selected**, **329 recovered**, **13** recorded original defects; `download-failures.tsv` empty.
+- Source report artifact **13401383936**, original SHA `e2908d63a541a40d598bfed55ff750f2742368bdc6bfcfb2666cf1ce43111efd`, capture 09:04:23–09:04:24 UTC: **195 discovered, zero in current 90-min fixed cohort, zero model invokes**; first genuine future NO/SE Bollnäs race1 start 11:20 UTC was still **136 min ahead**, so legitimately outside current selection horizon. Never mark this as a model-eligibility failure or 360-second timeout.
+- Readiness artifact **13401199734** original SHA `66916b20f3179cd6e7b4f15d71cd088d000b739c1d0243d92e5f8872d05a470b` independently matches scorecard, manifest, source report and model cohort index SHA `83eda33cd0089e1dd364cb08b5a4bc18ee77ae909fb49ac9184d10059c7adbca`.
+- PIT source receipts artifact **13401653248** SHA `545c761632de74347168e995d5f37af5c4c26faddee1c311dc58ed47ccd54207`: `plan.eligible=[]`, `records=[]`. PIT attestation artifact **13402490320** SHA `74c8e670e16e12e635a63a9790902beebe5bf2cdd0e2ecf1ae4e1e077bc9a925`, `pit_certified_count=0`. The 360-second window remains **NOT OPERATIONALLY_VERIFIED** because no eligible runner field triggered it.
+
+This is the **newer** original snapshot for current cumulative benchmark and PIT count. Previously documented 419980 originals remain valid snapshots, not replacements or cumulative regressions. No source or betting gate changed.
