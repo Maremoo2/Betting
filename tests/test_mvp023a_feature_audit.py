@@ -166,3 +166,41 @@ def test_read_only_write_once_cli(tmp_path):
     assert json.loads(output.read_text())["bet_authority"] is False
     with pytest.raises(FileExistsError):
         main(["--dataset-dir", str(path), "--output", str(output)])
+
+
+def test_p1e_atg_and_name_namespace_cannot_become_historical_identity(tmp_path):
+    path, row = original_input(tmp_path)
+    observed = "2020-01-03T10:05:00+00:00"
+    row["independent_identity_attested"] = True
+    row["source_refs"][0]["fetched_at"] = observed
+    for runner in row["roster"]:
+        for fact in runner["features"].values():
+            fact["source_observed_at"] = observed
+    for copied in ("ATG:SE987654", "ATG_SE987654", "NAME:Similar Horse"):
+        row["roster"][0]["registration_observed"] = copied
+        rewrite_dataset(path, row)
+        result = audit_feature_dataset(path)
+        assert result["features"]["driver"]["status_counts"]["UNVERIFIED_IDENTITY"] == 1
+        assert result["training_ready_races"] == 0
+
+
+def test_p1e_feature_year_country_denominators_and_source_times(tmp_path):
+    path, _ = original_input(tmp_path)
+    result = audit_feature_dataset(path)
+    driver = result["features"]["driver"]
+    assert driver["by_year"]["2020"] == {"RETROSPECTIVE_ONLY": 2}
+    assert driver["by_country"]["NO"] == {"RETROSPECTIVE_ONLY": 2}
+    assert driver["denominator_active_runners"] == 2
+    assert driver["eligible_runners"] == 0
+    assert driver["eligible_races"] == 0
+    assert driver["qualified_runner_coverage_rate"] == 0
+    assert driver["observed_value_types"] == {"str": 2}
+    assert driver["source_time_field"] == "source_observed_at"
+    assert driver["historical_event_time_field"] == "event_at"
+    assert driver["availability_time_field"] == "published_at"
+    assert driver["identity_requirement"] == "INDEPENDENT_HORSE_IDENTITY_AT_PREDICTION_TIME"
+    assert driver["main_blocker"] == "SOURCE_OBSERVED_AT_OR_AFTER_EVENT"
+    missing = result["features"]["gallop_rate"]
+    assert missing["by_country"]["NO"] == {"MISSING": 2}
+    assert missing["observed_value_types"] == {}
+    assert missing["eligible_races"] == 0
