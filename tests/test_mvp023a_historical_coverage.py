@@ -292,3 +292,61 @@ def test_2025_candidate_lockbox_result_file_not_even_opened(tmp_path):
     assert report["counts"]["physical_races"] == 1
     assert report["source_file_count"]["2025_lockbox_result_files_not_read"] == 1
     assert report["readiness"]["lockbox_2025_accessed_for_tuning"] is False
+
+
+def test_p1e_atg_or_name_only_identity_does_not_pass_independent_gate(tmp_path):
+    from hbi.mvp023a_historical_coverage import _verified_roster
+
+    data = fixture(tmp_path, outcome=False)
+    roster = data["starts"]
+    frozen = {"raceday_key": KEY, "roster": roster, "active_field": ["1", "2"]}
+    original = {"body": {"result": {"1": roster}}}
+    active, full, stable = _verified_roster(frozen, original, 1)
+    assert active == {"1", "2"} and full and stable
+    for placeholder in ("ATG:SE987654", "ATG_SE987654", "NAME:Horse One", "TMP-42"):
+        roster[0]["horseRegistrationNumber"] = placeholder
+        active, full, stable = _verified_roster(frozen, original, 1)
+        assert full and not stable, placeholder
+    result = build_coverage(tmp_path)["by_race"][0]
+    assert result["categories"]["IDENTITY_VERIFIED"] is False
+    assert result["categories"]["PIT_MODEL_ELIGIBLE"] is False
+
+
+def test_p1e_missing_scratches_cannot_be_made_into_full_field(tmp_path):
+    fixture(tmp_path, outcome=False)
+    path = tmp_path / "market-days" / "2020-01-04.json"
+    doc = json.loads(path.read_text())
+    doc["races"][0]["active_field"] = ["1"]
+    doc["races"][0]["pWIN"] = {"1": 1.0}
+    doc["sha256"] = digest(doc["races"])
+    put_json(path, doc)
+    race = build_coverage(tmp_path)["by_race"][0]
+    assert race["categories"]["FULL_FIELD_VERIFIED"] is False
+    assert race["categories"]["MARKET_COMPLETE"] is False
+    assert race["categories"]["PIT_MODEL_ELIGIBLE"] is False
+    assert "ACTIVE_FIELD_OR_SCRATCH_MISMATCH" in race["blockers"]
+
+
+def test_p1e_migrated_win_updated_clock_cannot_pass_pre_t4(tmp_path):
+    data = fixture(tmp_path, outcome=False)
+    win_path = f"/game/{KEY}/betdistribution/winodds/1"
+    market_file = tmp_path / "raw-markets" / (
+        hashlib.sha256(win_path.encode()).hexdigest() + ".json"
+    )
+    original = json.loads(market_file.read_text())
+    for horse in original["body"]["result"]:
+        horse["lastUpdated"] = "2021-02-01T09:00:00+01:00"
+    original["body_sha256"] = digest(original["body"])
+    put_json(market_file, original)
+    archive = tmp_path / "market-days" / "2020-01-04.json"
+    frozen = json.loads(archive.read_text())
+    for source in frozen["races"][0]["sources"]:
+        if source["path"] == win_path:
+            source["body_sha256"] = original["body_sha256"]
+    frozen["sha256"] = digest(frozen["races"])
+    put_json(archive, frozen)
+    race = build_coverage(tmp_path)["by_race"][0]
+    assert race["categories"]["MARKET_COMPLETE"] is True
+    assert race["categories"]["MARKET_PRE_RACE_VERIFIED"] is False
+    assert race["categories"]["PIT_MODEL_ELIGIBLE"] is False
+    assert "PRE_T4_MARKET_OR_PUBLICATION_UNVERIFIED" in race["blockers"]
