@@ -328,7 +328,7 @@ def test_p1e_missing_scratches_cannot_be_made_into_full_field(tmp_path):
 
 
 def test_p1e_migrated_win_updated_clock_cannot_pass_pre_t4(tmp_path):
-    data = fixture(tmp_path, outcome=False)
+    fixture(tmp_path, outcome=False)
     win_path = f"/game/{KEY}/betdistribution/winodds/1"
     market_file = tmp_path / "raw-markets" / (
         hashlib.sha256(win_path.encode()).hexdigest() + ".json"
