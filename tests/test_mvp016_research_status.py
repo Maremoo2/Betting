@@ -189,3 +189,38 @@ def test_exact_original_four_artifact_replay_with_63_physical_races():
     assert output["coverage_status"] == "INCOMPLETE_ORIGINAL_COVERAGE"
     assert output["pairwise_model_differences"]["triple_same_races"]["champion_minus_market_log_loss"]["n_distinct_physical_races"] == 14
     assert all(r["bet_authority"] is False for r in output["per_physical_race"])
+
+
+def test_new_prospective_source_race_not_yet_in_cumulative_scorecard(tmp_path):
+    """Real ordinary CORE-003 can see a future race before DEV011 archives it."""
+    paths = _seed(tmp_path)
+    scorecard = json.loads(paths["scorecard"].read_text())
+    scorecard["records"] = [
+        r for r in scorecard["records"] if r["race_id"] != R2
+    ]
+    scorecard["counts"]["physical_races"] = 1
+    _write(paths["scorecard"], scorecard)
+
+    report = _evaluate(paths)
+    assert report["counts"]["physical_races"] == 1
+    assert report["counts"]["paired_champion_core004"] == 1
+    assert report["counts"]["current_source_fixed_cohort"] == 1
+    assert report["counts"]["current_source_only_unscored"] == 1
+    assert [r["race_id"] for r in report["per_physical_race"]] == [R1]
+    assert report["current_source_only_not_in_benchmark"] == [{
+        "race_id": R2,
+        "status": "SOURCE_ONLY_NOT_BENCHMARKED",
+        "pit_certified": False,
+        "bet_authority": False,
+    }]
+    assert report["counts"]["pit_certified_paired"] == 0
+
+
+def test_disjoint_source_still_rejects_false_scorecard_denominator(tmp_path):
+    paths = _seed(tmp_path)
+    scorecard = json.loads(paths["scorecard"].read_text())
+    scorecard["records"] = [scorecard["records"][0]]
+    # Deliberately retain the old count of two: never hide a corrupt archive.
+    _write(paths["scorecard"], scorecard)
+    with pytest.raises(ValueError, match="SCORECARD_PHYSICAL_DENOMINATOR_INVALID"):
+        _evaluate(paths)
