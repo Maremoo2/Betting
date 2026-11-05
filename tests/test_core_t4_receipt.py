@@ -450,3 +450,57 @@ def test_cli_counts_capture_records_or_assessed_attestations(
         "captures": len(statuses),
         "certified": certified,
     }
+
+
+@pytest.mark.parametrize("source_kind", [
+    "absolute_outside", "parent_traversal", "other_meeting", "symlink_parent",
+])
+def test_collector_cross_meeting_or_traversing_original_is_never_authenticated(
+    tmp_path, source_kind,
+):
+    """Negative original-byte replay: valid SHA cannot legalize wrong origin.
+
+    Before this fix verify_collector_original returned VERIFIED for ALL FOUR
+    of these fixtures: it trusted any existing source path with matching SHA.
+    """
+    receipt, _, capture_dir = _capture(tmp_path)
+    root, provenance = _original_collector_fixture(tmp_path, capture_dir)
+    manifest_path = next(root.glob("**/manifest.json"))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    original_starts = (capture_dir / "starts.raw.json").read_bytes()
+    outside = tmp_path / "outside_starts.raw.json"
+    outside.write_bytes(original_starts)
+    meeting_dir = manifest_path.parent / "meetings" / KEY
+
+    if source_kind == "absolute_outside":
+        malicious = str(outside)
+    elif source_kind == "parent_traversal":
+        malicious = "../outside_starts.raw.json"
+    elif source_kind == "other_meeting":
+        other = manifest_path.parent / "meetings" / "UNRELATED_NR_2026-11-03"
+        other.mkdir(parents=True)
+        target = other / "starts.raw.json"
+        target.write_bytes(original_starts)
+        malicious = target.relative_to(root).as_posix()
+    else:
+        link = meeting_dir / "linked"
+        link.symlink_to(tmp_path, target_is_directory=True)
+        malicious = (link / "outside_starts.raw.json").relative_to(root).as_posix()
+
+    # Same original bytes, same SHA, legitimate listed manifest receipt;
+    # only path provenance is forged or cross-bound to the wrong meeting.
+    manifest["requests"][0]["raw_path"] = malicious
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    assert verify_collector_original(root, provenance, receipt) is None
+
+
+def test_collector_verified_meeting_path_still_passes_original_qa(tmp_path):
+    """Existing canonical physical meeting path remains source-attestable."""
+    receipt, _, capture_dir = _capture(tmp_path)
+    root, provenance = _original_collector_fixture(tmp_path, capture_dir)
+    result = verify_collector_original(root, provenance, receipt)
+    assert isinstance(result, VerifiedCollectorEvidence)
+    assert result.origin_authenticated_independently is True
+    assert result.full_field_pdf_startlist_reconciled is True
+    assert result.version_identical_to_t4 is True
+    assert result.race_id == RACE
