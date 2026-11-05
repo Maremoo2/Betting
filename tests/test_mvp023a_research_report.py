@@ -44,8 +44,15 @@ def sample():
         "training_ready_races": 0, "lockbox_2025_opened": False,
         "physical_races": 1,
         "features": {"driver": {
-            "eligible_runners": 0, "denominator_active_runners": 2,
+            "eligible_runners": 0, "eligible_races": 0,
+            "denominator_active_runners": 2, "qualified_runner_coverage_rate": 0,
             "status_counts": {"RETROSPECTIVE_ONLY": 2},
+            "by_year": {"2020": {"RETROSPECTIVE_ONLY": 2}},
+            "by_country": {"NO": {"RETROSPECTIVE_ONLY": 2}},
+            "main_blocker": "SOURCE_OBSERVED_AT_OR_AFTER_EVENT",
+            "leakage_risk": "RETROSPECTIVE_SOURCE_OR_TIME_UNVERIFIED",
+            "identity_requirement": "INDEPENDENT_HORSE_IDENTITY_AT_PREDICTION_TIME",
+            "source_time_field": "source_observed_at",
         }},
         "by_country": {"NO": {"races": 1, "active_runners": 2}},
         "by_year": {"2020": {"races": 1, "active_runners": 2}},
@@ -92,7 +99,14 @@ def test_distinct_annual_denominators_and_unobserved_years():
     assert year[2025]["data_scope"] == "CANDIDATE_2025_LOCKBOX_RESULTS_WITHHELD"
     assert year[2025]["official_result_verified"] is None
     assert output["features"]["driver"]["m5_active_runner_denominator"] == 2
+    assert output["features"]["driver"]["by_year"]["2020"] == {"RETROSPECTIVE_ONLY": 2}
+    assert output["features"]["driver"]["main_blocker"] == "SOURCE_OBSERVED_AT_OR_AFTER_EVENT"
+    assert output["features"]["driver"]["qualified_races"] == 0
+    assert output["features"]["driver"]["time_integrity"] == "NOT_PIT_CERTIFIED"
     assert output["benter"]["fit_readiness"] == "NOT_READY"
+    assert output["benter"]["fundamental_dataset_ready"] is False
+    assert output["benter"]["pre_race_market_ready"] is False
+    assert output["benter"]["same_race_alignment_structure_only"] is False
     assert output["readiness"]["production_betting_ready"] is False
     assert output["2025_lockbox_opened"] is False
     assert output["training_performed"] is False
