@@ -25,7 +25,11 @@ from .core_shadow_pilot import plan_t4_source_receipts
 from .providers.rikstoto import FetchResult, RikstotoClient
 
 SCHEMA = "PIT_T4_SOURCE_RECEIPT_V1"
-MAX_WAIT_SECONDS = 240  # One five-minute tick, without indefinite job occupancy.
+# A five-minute cron is best effort: the original 4 Nov handoff reached us
+# 327.6s before T4, then the next tick arrived AFTER T4. A bounded six-minute
+# wait covers that observed gap while retaining the before-T4 clock checks.
+# This changes no schedule, creates no jobs and cannot certify a past receipt.
+MAX_WAIT_SECONDS = 360
 TARGET_BEFORE_T4_SECONDS = 60
 
 

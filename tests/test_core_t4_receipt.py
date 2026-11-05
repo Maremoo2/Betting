@@ -259,6 +259,33 @@ def test_pending_near_t4_is_not_a_failed_run(tmp_path):
     assert not client.calls
 
 
+@pytest.mark.parametrize("oversleep", [False, True])
+def test_observed_327_second_handoff_gap_is_bounded_and_never_backdated(tmp_path, oversleep):
+    # Original 13356060955: 19:20:32.413975 -> T4 19:26:00.
+    # This only replays scheduling delay on a TEST clock, never original PIT.
+    now = T4 - timedelta(seconds=327.586025)
+    sleeps = []
+    client = FakeClient(_payloads(), observed=T4 - timedelta(seconds=60))
+
+    def sleeper(seconds):
+        nonlocal now
+        sleeps.append(seconds)
+        now += timedelta(seconds=seconds + (61 if oversleep else 0))
+
+    report = capture_one(_target(), client=client, out=tmp_path,
+                         clock=lambda: now, sleeper=sleeper)
+    assert sleeps == [267.586025]
+    if oversleep:
+        assert report["status"] == "BLOCKED"
+        assert report["blockers"] == ["MISSED_T4"]
+        assert client.calls == []
+    else:
+        assert report["status"] == "SOURCE_OBSERVED_BEFORE_T4"
+        assert len(client.calls) == 3
+    assert report["pit_status"] == "PIT_NOT_CERTIFIED"
+    assert report["bet_authority"] is False
+
+
 def _original_collector_fixture(tmp_path, receipt_dir, *, mismatch=False):
     root = tmp_path / "collector"
     folder = root / "output/daily/2026-11-03/20261103T060000000000Z"
