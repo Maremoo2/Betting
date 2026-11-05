@@ -45,6 +45,11 @@ must supply or run against the **actual archive root**, including original raw
 envelopes and monthly inventory files. A report from an empty or pilot-only
 root explicitly describes **that root only**, not all Norwegian/Swedish racing.
 
+The **2025 candidate lockbox is withheld by default**: 2025 result-day files are
+not opened, parsed or hashed, and their count appears only as
+`2025_lockbox_result_files_not_read`. The 2025 inventory and market-only
+metadata may be counted, but cannot yield a verified result or training label.
+
 All PR tests use **TEST_ONLY synthetic source-shaped fixture files**. They are
 integrity/regression cases, not authentic race evidence and do not establish a
 usable training sample. No 2025 lockbox outcomes are opened for tuning.
