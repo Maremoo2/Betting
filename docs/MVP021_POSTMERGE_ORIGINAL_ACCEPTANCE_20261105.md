@@ -15,6 +15,27 @@
 - Genuine scorecard counted **89 distinct physical/39 complete models/34 result-scored pairs/33 same-freeze WIN triples/0 PIT**, `SPARSE_BINS_NO_CALIBRATION_CLAIM`. DEV011 **4 509 artifacts /46 original pages /316 recovered**, with **five unindexed legacy models, six unavailable prior result indexes and one `RIKSTOTO:S2_NR_2026-11-03:8` conflicting official result original**; cumulative status **`INCOMPLETE_ORIGINAL_COVERAGE`**, not a completeness pass. Readiness links the exact four source SHAs, but current model cohort `0`, source races `0`, no new freezes in that run. Later gate-skipped runs cannot replace it.
 - The separate *first 30* research milestone is locked chronologically in [source manifest](MVP022_FIRST30_EXPLORATORY_SOURCE_LOCK_20261105.json) with original scorecard SHA. Original complete- and raceday-bytes for all 30 were independently re-hashed (60 SHA matches), without rewriting any scores. Data are **exploratory/not PIT**; 33 is latest observed research coverage, not 33 independent PIT.
 
+## P0-A2 – First **actually executed** post-merge ordinary run (new observation 09:02–09:08 Oslo)
+
+[CORE-003 41991423533](https://github.com/Maremoo2/Betting/actions/runs/41991423533) on exact main `2238a9b891b16cd74ced7eaa581c630dd572f4b9` finished `SUCCESS` **with actual source capture, immutable DEV011 GETs, DEV009 scorecard and MVP019 readiness steps executed**. The earlier 41986285369/41987283702 remained gate-skipped; this run supersedes their operational limitation *for component execution, not for PIT success*.
+
+All original ZIP members downloaded and independently SHA256 rehashed; the readiness source-join verifies exactly these four source SHA values:
+
+| Source original | GitHub artifact ID | Original JSON SHA256 |
+| --- | ---: | --- |
+| Cumulative DEV009 index | **13397674684** | `ec47b3f8a0e9d2c679d0024fa2ff0e095ccf8b1f9e19fbe701082f053ff3a873` |
+| DEV011 manifest | **13398273350** | `4a89421c843c04ae688dd5d88ea96812f1bb090d59fbb8669df3392d8eb3a710` |
+| CORE003 original report | **13398866360** | `98d7da115e17fdb1077213227e8d1afd415423cf5e296f3990e57bdee9b00626` |
+| Frozen model cohort index | **13397619842** | `20a5c4dff62857ed58219ab44105f3618cbb88ce7625b4bdc0319bc9f73d90c8` |
+| Joined source-readiness index | **13397674668** | `04a8fee51ffc5fb3c8222645e54fa322cc7011936b2475fe2e012b2222949d9a` |
+| PIT attestations | **13397674679** | `74c8e670e16e12e635a63a9790902beebe5bf2cdd0e2ecf1ae4e1e077bc9a925` |
+| PIT capture receipts | **13398073771** | `47b5ca4d01588477b3beb9fc1f6ee73ad40b2e7f2b0fcc367d4aff379a07745c` |
+| Collector handoff | **13397594966** | `70866bd5971dd6c69bac526ca7b90d1c1b31c90a868af07a68e8949847c32743` |
+
+DEV011 `download-failures.tsv` in artifact 13398273350 is **exactly empty** with SHA256 `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`. Source journal `started_at=2026-11-05T08:02:19Z`, `finished_at=08:02:21Z`, `discovered_races=195`, yet `races_in_fixed_cohort=[]`, `tasks_available=0`, `tasks_attempted=0`, `model_invocations=0`. Collector handoff `records=[]`; model cohort `processed=[]`; PIT capture `records=[]`, attestation `results=[]`, `pit_certified_count=0`. Thus **actual research source/DEV011/readiness pipeline is `OPERATIONALLY_VERIFIED`** on merged main, but **future qualified PIT eligibility is still `BLOCKED_SOURCE`** and 360-second capture wait has not been exercised for a real eligible runner field.
+
+DEV009 benchmark remains **89 distinct /39 full frozen fields /34 official model pairs /33 same-freeze WIN triples /0 PIT**. `calibration.status=SPARSE_BINS_NO_CALIBRATION_CLAIM`. DEV011 manifest selected **329** historical artifacts, **318** recovered with source SHA; **12** missing/blocked: five historical `UNINDEXED_LEGACY_MODEL_ORIGINAL`, six `MISSING_OR_UNVERIFIABLE_ORIGINAL` source-unavailable result indexes (not actual downloads failed in THIS run), and one `CONFLICTING_OFFICIAL_RESULT_RECEIPTS` for `RIKSTOTO:S2_NR_2026-11-03:8`. Correct status `INCOMPLETE_ORIGINAL_COVERAGE`; old data not invented. `source_only_not_yet_cumulative=[]` for this **empty** current cohort; distinct-source-horizon regression was verified in older active cohort, not falsely inferred from an empty cohort.
+
 ## P0-B – Exact-state V1, independent ZIP and SQLite verification
 
 [Ordinary audit run 41985710357](https://github.com/Maremoo2/Betting/actions/runs/41985710357) on **exact** main SHA above, original audit artifact **13395494318**:
