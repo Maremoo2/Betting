@@ -19,6 +19,7 @@ SHA = re.compile(r"^[0-9a-f]{64}$")
 FORBIDDEN_FEATURES = {
     "market", "odds", "closing_odds", "win_odds", "winner", "result",
     "placing", "place", "payout", "dividend", "pwin", "pcol", "prize",
+    "market_probability", "final_odds", "result_position",
 }
 
 
