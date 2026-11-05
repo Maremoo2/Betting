@@ -266,3 +266,18 @@ def test_tampered_win_normalization_is_not_market_complete(tmp_path):
     row = build_coverage(tmp_path)["by_race"][0]
     assert not row["categories"]["MARKET_COMPLETE"]
     assert "COMPLETE_ORIGINAL_WIN_MARKET_MISSING" in row["blockers"]
+
+
+def test_failed_starts_meeting_row_is_not_invented_as_physical_race(tmp_path):
+    fixture(tmp_path, market=False)
+    failed = {"race_id": KEY, "country": "NO", "category": "RAW_OR_REJECTED",
+              "reason": "HTTP 403"}
+    put_json(tmp_path / "market-days" / "2020-01-04.json", {
+        "stage": "MARKET_ONLY", "races": [failed],
+        "sha256": digest([failed]),
+    })
+    report = build_coverage(tmp_path)
+    assert report["counts"]["physical_races"] == 1
+    assert report["by_race"][0]["categories"]["DISCOVERED_METADATA_ONLY"]
+    assert report["source_file_count"]["unbound_meeting_source_failures_not_physical_races"] == 1
+    assert report["readiness"]["eligible_race_count_verified"] == 0
