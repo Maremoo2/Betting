@@ -239,8 +239,12 @@ def _assess(
     implied_total = sum(implied.values())
     repriced = (
         bool(implied and implied_total > 0 and isinstance(row.get("pWIN"), dict))
-        and all(abs(row["pWIN"].get(n, -1) - v / implied_total) < 1e-6
-                for n, v in implied.items())
+        and all(
+            type(row["pWIN"].get(n)) in (int, float)
+            and math.isfinite(row["pWIN"][n])
+            and abs(row["pWIN"][n] - v / implied_total) < 1e-6
+            for n, v in implied.items()
+        )
     )
     market_complete = bool(
         field and win is not None and win_odds_valid
@@ -249,7 +253,7 @@ def _assess(
     )
     collective_complete = any(
         p.get("status") == "COMPLETE" and _normalized_complete(p.get("pCOL"), active)
-        for p in row.get("collective", []) if isinstance(p, dict)
+        for p in (row.get("collective") or []) if isinstance(p, dict)
     )
     cutoff = start - timedelta(minutes=4) if start else None
     win_observed = _time(win.get("fetched_at")) if win else None
