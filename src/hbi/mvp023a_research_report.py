@@ -104,6 +104,10 @@ def _quality(coverage: dict, features: dict, dataset: dict, benter: dict) -> Non
         if isinstance(part, dict) and isinstance(part.get("race_ids"), list)
         for race_id in part["race_ids"]
     ] if isinstance(dataset.get("partitions"), dict) else []
+    # Diagnose lockbox exposure before ordinary cohort divergence so a
+    # forged 2025 race can never be reported as just a missing/extra M5 row.
+    if any("_NR_2025-" in rid for rid in partition_ids):
+        raise ValueError("2025_LOCKBOX_PARTITION_INDIRECTLY_EXPOSED")
     if (
         len(feature_ids) != len(feature_rows)
         or len(partition_ids) != len(set(partition_ids))
@@ -116,8 +120,6 @@ def _quality(coverage: dict, features: dict, dataset: dict, benter: dict) -> Non
         for r in feature_rows
     ):
         raise ValueError("2025_LOCKBOX_FEATURES_INDIRECTLY_EXPOSED")
-    if any("_NR_2025-" in rid for rid in partition_ids):
-        raise ValueError("2025_LOCKBOX_PARTITION_INDIRECTLY_EXPOSED")
     if any(
         isinstance(row, dict) and "_NR_2025-" in str(row.get("race_id", ""))
         for row in benter.get("per_race", [])
