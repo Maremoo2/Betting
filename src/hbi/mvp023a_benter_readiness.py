@@ -68,6 +68,12 @@ def inspect_benter_readiness(bundle: dict) -> dict:
         raise ValueError("FUNDAMENTAL_MODEL_NOT_MARKET_INDEPENDENT")
     seen = set()
     records = []
+    proposed_calibration = model.get("calibration_race_ids", [])
+    if (not isinstance(proposed_calibration, list)
+            or any(not isinstance(r, str) for r in proposed_calibration)
+            or len(set(proposed_calibration)) != len(proposed_calibration)):
+        raise ValueError("FUNDAMENTAL_MODEL_CALIBRATION_COHORT_INVALID")
+
     stats = Counter()
     for race in races:
         if not isinstance(race, dict) or not isinstance(race.get("race_id"), str):
@@ -144,10 +150,32 @@ def inspect_benter_readiness(bundle: dict) -> dict:
             "readiness": "NOT_READY",
             "bet_authority": False,
         })
+    if set(proposed_calibration).intersection(seen):
+        raise ValueError("FUNDAMENTAL_MODEL_CALIBRATED_ON_EVALUATION_RACES")
+    if any(re.search(r"_NR_2025-", rid) for rid in proposed_calibration):
+        raise ValueError("CANDIDATE_2025_LOCKBOX_CALIBRATION_NOT_AUTHORIZED")
     if not races:
         stats["NO_EVALUATION_RACES"] += 1
-    if bundle.get("combination_weights") is not None:
+    proposed_weights = bundle.get("combination_weights")
+    if proposed_weights is not None:
         stats["COMBINATION_WEIGHTS_NOT_PROVEN_INDEPENDENTLY_FITTED"] += 1
+        if not isinstance(proposed_weights, dict):
+            raise TypeError("COMBINATION_WEIGHTS_MALFORMED")
+        weight_fit = proposed_weights.get("fit_race_ids")
+        if not isinstance(weight_fit, list) or any(not isinstance(rid, str) for rid in weight_fit):
+            stats["COMBINATION_FIT_COHORT_NOT_ATTESTED"] += 1
+        else:
+            if len(weight_fit) != len(set(weight_fit)):
+                raise ValueError("DUPLICATE_COMBINATION_FIT_RACES")
+            if set(weight_fit).intersection(seen):
+                raise ValueError("COMBINATION_FIT_TUNED_ON_EVALUATION_RACES")
+            if any(re.search(r"_NR_2025-", rid) for rid in weight_fit):
+                raise ValueError("CANDIDATE_2025_LOCKBOX_COMBINATION_FIT_NOT_AUTHORIZED")
+            if not weight_fit or any(
+                re.fullmatch(r"RIKSTOTO:[A-Z0-9]+_NR_2023-\\d{2}-\\d{2}:[1-9]\\d*", rid) is None
+                for rid in weight_fit
+            ):
+                stats["COMBINATION_FIT_ROLE_NOT_VERIFIED"] += 1
     else:
         stats["UNFITTED_ALPHA_BETA_NOT_ESTIMATED"] += 1
     if bundle.get("lockbox_exposure_approved") is True:
