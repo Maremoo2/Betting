@@ -404,6 +404,7 @@ def build_coverage(root: Path) -> dict:
         raise ValueError("HISTORICAL_ARCHIVE_ROOT_NOT_FOUND")
     metadata = _inventory(root)
     market_days, weekly_count = _weekly_market_days(root)
+    unbound_meeting_rows: set[tuple[str, str]] = set()
     for path in sorted((root / "market-days").glob("*.json")):
         doc = _read(path)
         if doc.get("stage") != "MARKET_ONLY" or not isinstance(doc.get("races"), list) or doc.get("sha256") != digest(doc["races"]):
@@ -415,6 +416,13 @@ def build_coverage(root: Path) -> dict:
             rid = row.get("race_id") if isinstance(row, dict) else None
             parsed = _physical_id(rid)
             if parsed is None:
+                # The legacy collector emits one meeting-level RAW_OR_REJECTED
+                # row when /starts fails; this is not a physical race ID.
+                if (isinstance(row, dict) and row.get("category") == "RAW_OR_REJECTED"
+                        and re.fullmatch(r"[A-Z0-9]+_NR_\d{4}-\d{2}-\d{2}", str(rid))
+                        and str(rid).endswith(path.stem)):
+                    unbound_meeting_rows.add((path.stem, rid))
+                    continue
                 raise ValueError("UNVERIFIED_PHYSICAL_RACE_ID")
             key, day, number = parsed
             if day != path.stem:
@@ -429,8 +437,16 @@ def build_coverage(root: Path) -> dict:
     for day, document in sorted(market_days.items()):
         for row in document["races"]:
             parsed = _physical_id(row.get("race_id") if isinstance(row, dict) else None)
-            if parsed is None or parsed[1] != day:
+            if parsed is None:
+                rid = row.get("race_id") if isinstance(row, dict) else None
+                if (isinstance(row, dict) and row.get("category") == "RAW_OR_REJECTED"
+                        and re.fullmatch(r"[A-Z0-9]+_NR_\d{4}-\d{2}-\d{2}", str(rid))
+                        and str(rid).endswith(day)):
+                    unbound_meeting_rows.add((day, rid))
+                    continue
                 raise ValueError("WEEKLY_PHYSICAL_RACE_ID_INVALID")
+            if parsed[1] != day:
+                raise ValueError("WEEKLY_PHYSICAL_RACE_DATE_CONFLICT")
             rid = row["race_id"]
             metadata.setdefault(rid, {
                 "race_id": rid, "day": day, "month": day[:7],
@@ -493,6 +509,7 @@ def build_coverage(root: Path) -> dict:
             "inventories": len(list((root / "inventory").glob("*.json"))),
             "market_days": len(market_days), "result_days": len(results),
             "weekly_market_archives": weekly_count,
+            "unbound_meeting_source_failures_not_physical_races": len(unbound_meeting_rows),
         },
         "counts": dict(totals), "primary_blockers": dict(sorted(blockers.items())),
         **{label: {
