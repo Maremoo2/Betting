@@ -37,7 +37,7 @@ def _read(path: Path) -> dict:
         raise ValueError("SYMLINKED_SOURCE_REJECTED")
     doc = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(doc, dict):
-        raise ValueError("INVALID_ARCHIVE_DOCUMENT")
+        raise TypeError("INVALID_ARCHIVE_DOCUMENT")
     return doc
 
 
@@ -45,7 +45,7 @@ def _time(value: object) -> datetime | None:
     if not isinstance(value, str) or not value or value.startswith("0001-"):
         return None
     try:
-        instant = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        instant = datetime.fromisoformat(value)
         if instant.tzinfo is None or instant.utcoffset() is None:
             return None
         return instant.astimezone(UTC)
@@ -95,7 +95,7 @@ def _inventory(root: Path) -> dict[str, dict]:
             raise ValueError("HISTORICAL_INVENTORY_ORIGIN_OR_SHA_INVALID:" + file.name)
         meetings = doc["body"].get("result")
         if not isinstance(meetings, list):
-            raise ValueError("INVALID_INVENTORY_MEETINGS")
+            raise TypeError("INVALID_INVENTORY_MEETINGS")
         for meeting in meetings:
             key = meeting.get("raceDayKey") if isinstance(meeting, dict) else None
             if not isinstance(key, str) or re.fullmatch(r"[A-Z0-9]+_NR_\d{4}-\d{2}-\d{2}", key) is None:
@@ -424,7 +424,7 @@ def build_coverage(root: Path) -> dict:
                     unbound_meeting_rows.add((path.stem, rid))
                     continue
                 raise ValueError("UNVERIFIED_PHYSICAL_RACE_ID")
-            key, day, number = parsed
+            _key, day, _number = parsed
             if day != path.stem:
                 raise ValueError("MARKET_DAY_RACE_DATE_CONFLICT")
             metadata.setdefault(rid, {
