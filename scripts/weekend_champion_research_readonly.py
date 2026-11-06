@@ -18,6 +18,7 @@ from hbi.providers.atg import AtgClient, AtgFetchResult
 
 SCHEMA = "WEEKEND_AUTHENTIC_CHAMPION_V1_1_RESEARCH_V1"
 TRACKS = {
+    "FARJESTAD_V64": ("Färjestad", "SE"),
     "BERGSAKER_V85": ("Bergsåker", "SE"),
     "KLOSTERSKOGEN_V75": ("Klosterskogen", "NO"),
 }
@@ -79,6 +80,7 @@ def _atg_receipts(source: dict, folder: Path, completed: datetime) -> dict:
         if (not isinstance(url, str) or
                 not url.startswith((
                     AtgClient.GAME_API + "/vinnare_",
+                    AtgClient.CALENDAR_API + "/calendar/day/2026-11-06?",
                     AtgClient.CALENDAR_API + "/calendar/day/2026-11-07?",
                 ))):
             raise ValueError("UNAPPROVED_ATG_ORIGINAL_URL")
@@ -159,21 +161,23 @@ def audit(original_capture: Path, atg_folder: Path) -> dict:
     if completed < _time(source["source_as_of_utc"]):
         raise ValueError("ORIGINALS_OBSERVATION_REVERSED")
     originals = _atg_receipts(atg, atg_folder, completed)
-    calendar_key = (AtgClient.CALENDAR_API
-                    + "/calendar/day/2026-11-07?headToHeadEnabled=true")
-    if calendar_key not in originals:
-        raise ValueError("APPROVED_ATG_CALENDAR_MISSING")
-    cal_payload, cal_receipt = originals[calendar_key]
-    calendar = AtgFetchResult(
-        url=calendar_key, payload=cal_payload, success=True,
-        status_code=200, latency_ms=0,
-    )
     model = MarketFreeFundamentalChampionV1()
     rounds, research_assessed = {}, 0
     for game in source["weekend_rounds"]:
         name = game["name"]
         if name not in TRACKS:
             continue
+        if game.get("race_date") not in {"2026-11-06", "2026-11-07"}:
+            raise ValueError("ATG_RESEARCH_DATE_NOT_ALLOWED")
+        calendar_key = (AtgClient.CALENDAR_API + "/calendar/day/"
+                        + game["race_date"] + "?headToHeadEnabled=true")
+        if calendar_key not in originals:
+            raise ValueError("APPROVED_ATG_CALENDAR_MISSING")
+        cal_payload, cal_receipt = originals[calendar_key]
+        calendar = AtgFetchResult(
+            url=calendar_key, payload=cal_payload, success=True,
+            status_code=200, latency_ms=0,
+        )
         if not game.get("source_raceday_keys") or len(game["source_raceday_keys"]) != 1:
             raise ValueError("SOURCE_RACEDAY_KEY_NOT_UNIQUE")
         track, country = TRACKS[name]
