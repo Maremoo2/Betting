@@ -7,7 +7,6 @@ links by horse name and does not open any 2025 source *member*. The underlying
 from __future__ import annotations
 
 import argparse
-import hashlib
 import io
 import json
 import re
