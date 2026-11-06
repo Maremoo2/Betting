@@ -1,13 +1,5 @@
 """TEST_ONLY weekend source mapping / fail-closed research tests, no synthetic BET."""
 # ruff: noqa: I001
-from datetime import UTC, datetime
-
-import pytest
-
-from rikstoto_crawler.transport import digest
-from hbi.providers.rikstoto import RikstotoClient
-from test_mvp023a_historical_coverage import fixture
-
 import runpy
 from pathlib import Path
 
