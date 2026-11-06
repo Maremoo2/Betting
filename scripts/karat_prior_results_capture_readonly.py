@@ -16,7 +16,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from hbi.providers.atg import AtgClient
-from scripts.weekend_atg_readiness_readonly import _get_original
 
 SCHEMA="KARAT_RIVER_HISTORICAL_ATG_RESULTS_RESEARCH_ONLY_V1"
 HORSE_ID=767446
@@ -93,6 +92,10 @@ def _first_party_result(payload: dict, rid: str) -> dict:
 
 
 def capture(output: Path) -> dict:
+    # Import only for an actual network capture; evidence-only unit tests
+    # must never initialize provider clients or depend on scripts sys.path.
+    from scripts.weekend_atg_readiness_readonly import _get_original
+
     output.mkdir(parents=True,exist_ok=False)
     originals=output/"originals"
     originals.mkdir()
