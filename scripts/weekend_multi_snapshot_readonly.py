@@ -156,7 +156,7 @@ def _verify_collective_original(snapshot: dict, product: str | None,
             raise ValueError("UNMAPPED_PUBLIC_POOL_SHARE_CLAIM")
         return
     if not isinstance(pool_key, str):
-        raise ValueError("MISSING_EXACT_POOL_KEY")
+        raise TypeError("MISSING_EXACT_POOL_KEY")
     prefix = f"{race_key}#{product}#"
     if not pool_key.startswith(prefix):
         raise ValueError("POOL_KEY_OR_RACEDAY_CONFLICT")
@@ -231,10 +231,10 @@ def _validate_roster(snapshot: dict, race_key: str, race_no: int, runners: list[
         raise ValueError("SCRATCH_ORIGINAL_UNAVAILABLE")
     source_scratches = scratch[1].get("result")
     if not isinstance(source_scratches, dict):
-        raise ValueError("SCRATCH_ORIGINAL_SCHEMA_UNVERIFIED")
+        raise TypeError("SCRATCH_ORIGINAL_SCHEMA_UNVERIFIED")
     values = source_scratches.get(str(race_no), [])
     if not isinstance(values, list):
-        raise ValueError("SCRATCH_ORIGINAL_RACE_SCHEMA_UNVERIFIED")
+        raise TypeError("SCRATCH_ORIGINAL_RACE_SCHEMA_UNVERIFIED")
     scratched = set()
     for value in values:
         n = value.get("startNumber") if isinstance(value, dict) else value
