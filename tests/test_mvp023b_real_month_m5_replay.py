@@ -1,4 +1,5 @@
 """TEST_ONLY adversarial source-admission/replay tests. Real 2022 replay runs in CI."""
+# ruff: noqa: I001  # Test helper fixture imports are a separate test root.
 import json
 
 import pytest
