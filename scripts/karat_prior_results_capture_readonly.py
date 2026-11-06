@@ -62,7 +62,7 @@ def _first_party_result(payload: dict, rid: str) -> dict:
     # blob is dynamic and must never be reused for prior-date strength.
     outcome=entry.get("result")
     if not isinstance(outcome,dict):
-        raise ValueError("HISTORIC_KARAT_RESULT_MISSING")
+        raise TypeError("HISTORIC_KARAT_RESULT_MISSING")
     opponents=[]
     for row in starts:
         if not isinstance(row,dict):
