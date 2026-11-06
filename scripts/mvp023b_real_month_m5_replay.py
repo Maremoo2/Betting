@@ -97,7 +97,7 @@ def replay(root: Path, admission_path: Path, month: str, output: Path) -> dict:
     source_manifest = output / "m5-input.json"
     with source_manifest.open("x", encoding="utf-8") as handle:
         json.dump(specification, handle, sort_keys=True, indent=2)
-        handle.write("\\n")
+        handle.write("\n")
     m5 = run_batch(source_manifest, output / "m5")
     features = audit_feature_dataset(output / "m5")
     partitions, inputs, labels = build_partitioned_dataset(output / "m5")
