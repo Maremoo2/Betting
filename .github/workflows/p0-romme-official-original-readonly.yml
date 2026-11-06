@@ -22,11 +22,17 @@ jobs:
         run: |
           python scripts/romme_official_result_snapshot_readonly.py \
             --output "$RUNNER_TEMP/romme-official-originals"
+      - name: Capture weekend original race fields and WIN markets (read only)
+        run: |
+          python scripts/weekend_race_intelligence_readonly.py \
+            --output "$RUNNER_TEMP/weekend-current"
       - name: Upload original result sources and SHA receipts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: romme-official-p0-${{ github.run_id }}
-          path: ${{ runner.temp }}/romme-official-originals/
+          path: |
+            ${{ runner.temp }}/romme-official-originals/
+            ${{ runner.temp }}/weekend-current/
           if-no-files-found: warn
           retention-days: 14
