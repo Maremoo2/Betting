@@ -1,0 +1,40 @@
+name: P0 Romme official result originals (NO BET)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/romme_official_result_snapshot_readonly.py"
+      - "tests/test_romme_official_result_snapshot_readonly.py"
+      - ".github/workflows/p0-romme-official-original-readonly.yml"
+permissions:
+  contents: read
+jobs:
+  original-results:
+    if: github.event.pull_request.head.ref == 'research/romme-official-p0-20261106'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Capture six official completed races as immutable source bytes
+        run: |
+          python scripts/romme_official_result_snapshot_readonly.py \
+            --output "$RUNNER_TEMP/romme-official-originals"
+      - name: Install existing source provider (no strategy changes)
+        run: pip install -e .
+      - name: Capture weekend original race fields and WIN markets (read only)
+        run: |
+          python scripts/weekend_race_intelligence_readonly.py \
+            --output "$RUNNER_TEMP/weekend-current"
+      - name: Upload original result sources and SHA receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: romme-official-p0-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/romme-official-originals/
+            ${{ runner.temp }}/weekend-current/
+          if-no-files-found: warn
+          retention-days: 14
