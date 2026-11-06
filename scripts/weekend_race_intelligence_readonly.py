@@ -14,7 +14,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from hbi.providers.rikstoto import RikstotoClient
-from rikstoto_crawler.capture import field_market
+from rikstoto_crawler.capture import assess, field_market
 from rikstoto_crawler.extract import keyed
 
 SCHEMA = "WEEKEND_20261106_07_ORIGINAL_INTELLIGENCE_V1"
@@ -205,7 +205,7 @@ def _roster(starts: object, race_no: int) -> tuple[list[dict], list[str]]:
                     if not item["isScratched"] else "SCRATCHED"
                 ),
                 "win_odds": None, "win_odds_observed_utc": None,
-                "collective_share": None,
+                "raw_win_odds_unqualified": None, "collective_share": None,
             })
         return sorted(output, key=lambda r: r["number"]), []
     except (TypeError, ValueError, KeyError):
@@ -219,6 +219,15 @@ def _assess_win(win_payload: object, roster: list[dict]) -> str:
     if not isinstance(raw, list):
         return "NOT_VERIFIED"
     try:
+        raw_index = keyed(raw)
+        # A partial pre-race pool can carry isolated prices, which are only
+        # descriptive until exact full-field market completeness is verified.
+        for r in roster:
+            snapshot = raw_index.get(str(r["number"]))
+            if snapshot and type(snapshot.get("odds")) in (int, float):
+                odds = float(snapshot["odds"])
+                if odds > 1:
+                    r["raw_win_odds_unqualified"] = odds
         market = field_market(
             raw,
             {str(r["number"]): r for r in roster},
@@ -227,7 +236,6 @@ def _assess_win(win_payload: object, roster: list[dict]) -> str:
         )
         if market["status"] != "COMPLETE":
             return market["status"] + ":" + str(market.get("reason"))
-        raw_index = keyed(raw)
         for r in roster:
             if r["active"]:
                 source = raw_index[str(r["number"])]
@@ -277,7 +285,8 @@ def _original_report(*, client: RikstotoClient, output: Path) -> dict:
             "legs": [], "race_catalog": [],
             "legs_verified": 0, "active_runners": None,
             "fundamental_complete_fields": 0,
-            "win_complete_fields": 0, "pit_eligible_fields": 0,
+            "win_complete_fields": 0, "collective_complete_fields": 0,
+            "pit_eligible_fields": 0,
             "bet_count": 0, "watch_count": 0, "pass_count": None,
             "total_runners_observed": None,
             "system_ev": "NOT_ESTABLISHED", "jackpot": None,
@@ -311,6 +320,31 @@ def _original_report(*, client: RikstotoClient, output: Path) -> dict:
                            if r["physical_race_id"].startswith(f"RIKSTOTO:{key}:")]
             if not mapping:
                 continue
+            # Reuse the verified V3 research parser for percentage shares.
+            # A collective percentage is NOT a WIN model probability.
+            pool_meta = next((p for p in meeting.get("pools") or []
+                              if isinstance(p, dict) and p.get("product") == product), None)
+            distribution = None
+            if pool_meta is not None and product in {"V65", "V75", "V85"}:
+                anchor = pool_meta.get("raceNumber")
+                if type(anchor) is int and anchor > 0:
+                    distribution, pool_receipt = _capture(
+                        client,
+                        f"/game/{key}/betdistribution/investment/{product}?raceNumber={anchor}",
+                        originals,
+                    )
+                    receipts.append(pool_receipt)
+                else:
+                    game["blockers"].append("POOL_ANCHOR_RACE_NUMBER_UNVERIFIED")
+            # Turnover/jackpot remain market *context*, never EV evidence.
+            context, context_receipt = _capture(
+                client, f"/results/raceDays/{key}/totalInvestment", originals
+            )
+            receipts.append(context_receipt)
+            game["turnover_status"] = (
+                "RAW_PROVIDER_CONTEXT_SAVED_NOT_INTERPRETED"
+                if context is not None else "NOT_VERIFIED"
+            )
             starts, starts_receipt = _capture(client, f"/racedays/{key}/starts", originals)
             scratched, scratch_receipt = _capture(
                 client, f"/racedays/{key}/scratched", originals
@@ -332,6 +366,29 @@ def _original_report(*, client: RikstotoClient, output: Path) -> dict:
                 )
                 receipts.append(win_receipt)
                 win_status = _assess_win(win, field)
+                collective_status = "NO_VALIDATED_POOL_DISTRIBUTION"
+                if field and pool_meta is not None and isinstance(distribution, dict):
+                    try:
+                        raw_starts = starts["result"][str(no)]
+                        parsed = assess(
+                            key, no, raw_starts, win.get("result") or []
+                            if isinstance(win, dict) else [], [], [(pool_meta, distribution.get("result") or [])],
+                        )
+                        choices = parsed["collective"]
+                        if len(choices) == 1 and choices[0]["status"] == "COMPLETE":
+                            shares = choices[0]["pCOL"]
+                            for runner in field:
+                                if runner["active"]:
+                                    runner["collective_share"] = shares[str(runner["number"])]
+                            collective_status = "COMPLETE_PUBLIC_POOL_SHARE_NOT_PWIN"
+                        elif choices:
+                            collective_status = choices[0]["status"] + ":" + str(
+                                choices[0].get("reason") or ""
+                            )
+                    except (KeyError, ValueError, TypeError):
+                        collective_status = "INVALID_POOL_SOURCE_OR_CROSS_FIELD"
+                if collective_status != "COMPLETE_PUBLIC_POOL_SHARE_NOT_PWIN":
+                    issues.append("COLLECTIVE_DISTRIBUTION_NOT_VERIFIED")
                 if not win_status.startswith("COMPLETE"):
                     issues.append("WIN_ORIGINAL_INCOMPLETE_OR_UNAVAILABLE")
                 source_race = next(
@@ -360,6 +417,7 @@ def _original_report(*, client: RikstotoClient, output: Path) -> dict:
                     "active_runners": sum(r["active"] for r in field) if field else None,
                     "scratched_runners": sum(not r["active"] for r in field) if field else None,
                     "runners": field, "win_status": win_status,
+                    "collective_status": collective_status,
                     "scratch_status": "VERIFIED" if scratch_numbers is not None
                                       and "SCRATCHED_STARTS_SOURCE_CONFLICT" not in issues
                                       else "NOT_VERIFIED",
@@ -380,6 +438,10 @@ def _original_report(*, client: RikstotoClient, output: Path) -> dict:
             game["pass_count"] = sum(r["decision"] == "PASS" for r in known)
             game["win_complete_fields"] = sum(x["win_status"].startswith("COMPLETE")
                                               for x in game["legs"])
+            game["collective_complete_fields"] = sum(
+                x["collective_status"] == "COMPLETE_PUBLIC_POOL_SHARE_NOT_PWIN"
+                for x in game["legs"]
+            )
         game["blockers"] = sorted(set(game["blockers"]))
         rounds.append(game)
     report = {
