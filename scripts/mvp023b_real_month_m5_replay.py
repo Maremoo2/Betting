@@ -9,7 +9,6 @@ import argparse
 import hashlib
 import json
 import re
-import tempfile
 import zipfile
 from pathlib import Path
 
@@ -80,24 +79,26 @@ def replay(root: Path, admission_path: Path, month: str, output: Path) -> dict:
         raise ValueError("NO_ORIGINAL_RAW_MARKET_RECEIPTS")
     # Research-only replay from disposable copies. NEVER edit source originals.
     output.mkdir(parents=True, exist_ok=False)
-    with tempfile.TemporaryDirectory(prefix="mvp023b-m5-source-only-") as tmp:
-        tmp = Path(tmp)
-        native = tmp / "native-month.zip"
-        with zipfile.ZipFile(native, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-            for name, raw in sorted(selected.items()):
-                archive.writestr(name, raw)
-        specification = {
-            "schema": "HBI_BACKFILL_INPUT_V1",
-            "cohort": "MVP023B_AUTHENTIC_HISTORICAL_SOURCE_ONLY_" + month,
-            "archives": [{
-                "path": str(native),
-                "format": "CRAWLER_NATIVE_ZIP",
-                "sha256": _sha(native.read_bytes()),
-            }],
-        }
-        source_manifest = tmp / "m5-input.json"
-        source_manifest.write_text(json.dumps(specification), encoding="utf-8")
-        m5 = run_batch(source_manifest, output / "m5")
+    # Retain a byte-verified derived archive and relative M5 manifest alongside
+    # the write-once report; do not depend on a deleted CI temporary directory.
+    native = output / "native-month.zip"
+    with zipfile.ZipFile(native, "x", compression=zipfile.ZIP_DEFLATED) as archive:
+        for name, raw in sorted(selected.items()):
+            archive.writestr(name, raw)
+    specification = {
+        "schema": "HBI_BACKFILL_INPUT_V1",
+        "cohort": "MVP023B_AUTHENTIC_HISTORICAL_SOURCE_ONLY_" + month,
+        "archives": [{
+            "path": "native-month.zip",
+            "format": "CRAWLER_NATIVE_ZIP",
+            "sha256": _sha(native.read_bytes()),
+        }],
+    }
+    source_manifest = output / "m5-input.json"
+    with source_manifest.open("x", encoding="utf-8") as handle:
+        json.dump(specification, handle, sort_keys=True, indent=2)
+        handle.write("\\n")
+    m5 = run_batch(source_manifest, output / "m5")
     features = audit_feature_dataset(output / "m5")
     partitions, inputs, labels = build_partitioned_dataset(output / "m5")
     if (
@@ -120,6 +121,9 @@ def replay(root: Path, admission_path: Path, month: str, output: Path) -> dict:
         "month": month, "source_archive_files_verified": len(selected),
         "admission_manifest_sha256": admission["source_manifest_sha256"],
         "m5_original_dataset_sha256": m5["dataset_sha256"],
+        "replay_archive_sha256": specification["archives"][0]["sha256"],
+        "replay_archive_relative_path": "native-month.zip",
+        "replay_manifest_relative_path": "m5-input.json",
         "source_inventory_physical_entries": admission["physical_races"],
         "native_market_full_field_verified": admission["full_field_verified"],
         "native_official_results_verified": admission["official_results_verified"],
