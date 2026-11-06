@@ -18,7 +18,7 @@ INPUT_SCHEMA = "WEEKEND_20261106_07_ORIGINAL_INTELLIGENCE_V1"
 
 def _utc(value: object) -> datetime:
     if not isinstance(value, str):
-        raise ValueError("SOURCE_TIME_UNVERIFIED")
+        raise TypeError("SOURCE_TIME_UNVERIFIED")
     try:
         parsed = datetime.fromisoformat(value)
     except ValueError as exc:
@@ -117,7 +117,7 @@ def _market(snapshot: dict, race_key: str, number: int, runners: list[dict]) -> 
         stamp = item.get("lastUpdated") if item else None
         try:
             _utc(stamp)
-        except ValueError:
+        except (TypeError, ValueError):
             if runner["active"]:
                 all_aware = False
         output[n] = {
@@ -142,7 +142,7 @@ def _aware(stamp: str) -> bool:
     try:
         _utc(stamp)
         return True
-    except ValueError:
+    except (TypeError, ValueError):
         return False
 
 
@@ -152,7 +152,7 @@ def _validate_roster(snapshot: dict, race_key: str, race_no: int, runners: list[
         raise ValueError("ORIGINAL_STARTS_UNAVAILABLE")
     original = item[1].get("result", {}).get(str(race_no))
     if not isinstance(original, list):
-        raise ValueError("ORIGINAL_PHYSICAL_ROSTER_UNAVAILABLE")
+        raise TypeError("ORIGINAL_PHYSICAL_ROSTER_UNAVAILABLE")
     index = {r["startNumber"]: r for r in original}
     if len(index) != len(original) or set(index) != {r["number"] for r in runners}:
         raise ValueError("ORIGINAL_ROSTER_MISMATCH")
