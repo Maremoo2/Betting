@@ -124,8 +124,10 @@ def audit(original_capture: Path, output: Path) -> dict:
         if not isinstance(source_start, dict) or not isinstance(scratched_result, dict):
             raise TypeError("RACEDAY_ORIGINAL_STARTS_SCRATCHES_INVALID")
         # One official ATG calendar read per country/track, not per horse.
-        date = game.get("race_date")
-        if date not in {"2026-11-06", "2026-11-07"}:
+        expected_date = ("2026-11-06" if game["name"] == "FARJESTAD_V64"
+                         else "2026-11-07")
+        date = game.get("race_date") or expected_date
+        if date != expected_date:
             raise ValueError("ATG_RESEARCH_DATE_NOT_ALLOWED")
         cal_url = (f"{AtgClient.CALENDAR_API}/calendar/day/"
                    f"{date}?headToHeadEnabled=true")
