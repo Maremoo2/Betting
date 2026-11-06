@@ -62,8 +62,12 @@ def _targets(groups: list[dict]) -> dict[str, list[dict]]:
         if not key or key in unique:
             continue
         unique.add(key)
-        label = _norm(str(item.get("raceDayName") or item.get("trackName") or "")
-                      + " " + str(item.get("trackCode") or ""))
+        raw_name = str(item.get("raceDayName") or item.get("trackName") or "")
+        # X1 is a synthetic cross-track pool wrapper: its races are NOT
+        # physical Bergsaker/Klosterskogen race IDs.
+        if "/" in raw_name or str(item.get("trackCode") or "").startswith("X"):
+            continue
+        label = _norm(raw_name + " " + str(item.get("trackCode") or ""))
         date = _date(item)
         for name, target_date, identifiers, _, _ in TARGETS:
             if date == target_date and any(x in label for x in identifiers):
@@ -146,7 +150,7 @@ def _scratched(payload: object, race_no: int) -> set[int] | None:
     if not isinstance(payload, dict) or not isinstance(payload.get("result"), dict):
         return None
     contents = payload["result"]
-    sub = contents.get(str(race_no))
+    sub = contents.get(str(race_no), [])
     if not isinstance(sub, list):
         return None
     selected = set()
@@ -175,7 +179,6 @@ def _roster(starts: object, race_no: int) -> tuple[list[dict], list[str]]:
             registration = str(item["horseRegistrationNumber"])
             if (
                 n < 1 or n in seen or not registration
-                or registration.startswith("TMP-")
                 or type(item.get("isScratched")) is not bool
                 or not str(item.get("horseName") or "").strip()
             ):
@@ -187,6 +190,10 @@ def _roster(starts: object, race_no: int) -> tuple[list[dict], list[str]]:
             output.append({
                 "number": n, "name": item["horseName"],
                 "horse_registration": registration,
+                "identity_status": (
+                    "BLOCKED_TMP_NOT_AUTHORITY" if registration.startswith("TMP-")
+                    else "PROVIDER_REGISTRATION_ONLY_NOT_CROSS_VERIFIED"
+                ),
                 "scratched_in_starts": item["isScratched"],
                 "active": not item["isScratched"],
                 "p_win": None, "fair_odds": None, "frozen_min_odds": None,
@@ -249,6 +256,17 @@ def _original_report(*, client: RikstotoClient, output: Path) -> dict:
         receipts.append(rec)
         groups.extend(_meetings(extra))
     matches = _targets(groups)
+    # Preserve original cross-track pool metadata without treating X1
+    # pseudo-races as additional physical track races.
+    composite_meetings = [{
+        "key": str(g.get("raceDayKey") or g.get("raceDay")),
+        "name": g.get("raceDayName"),
+        "products": [p.get("product") for p in g.get("pools", [])
+                     if isinstance(p, dict)],
+        "physical_race_id_authority": False,
+        "reason": "MULTITRACK_POOL_SYNTHETIC_RACEDAY_NOT_PHYSICAL_TRACK",
+    } for g in groups if isinstance(g, dict)
+       and "/" in str(g.get("raceDayName") or "")]
     rounds = []
     for target_name, target_day, _, product, expected_legs in TARGETS:
         candidates = matches[target_name]
@@ -301,6 +319,9 @@ def _original_report(*, client: RikstotoClient, output: Path) -> dict:
             for leg in mapping:
                 no = leg["race_no"]
                 field, issues = _roster(starts, no)
+                if any(r.get("identity_status") == "BLOCKED_TMP_NOT_AUTHORITY"
+                       for r in field):
+                    issues.append("TMP_IDENTITIES_NOT_AUTHORITATIVE_FOR_MODEL")
                 scratch_numbers = _scratched(scratched, no)
                 if scratch_numbers is None:
                     issues.append("SCRATCHED_ENDPOINT_UNVERIFIED")
@@ -368,6 +389,7 @@ def _original_report(*, client: RikstotoClient, output: Path) -> dict:
         "frozen_model_changed": False,
         "new_model_invocations": 0, "model_predictions_made": 0,
         "weekend_rounds": rounds, "original_receipts": receipts,
+        "composite_pool_wrappers_not_physical_races": composite_meetings,
         "original_sha256": {r["request_path"]: r["response_sha256"] for r in receipts},
         "v85_v75_v65_system_ev": "NOT_ESTABLISHED",
         "interpretation": (
