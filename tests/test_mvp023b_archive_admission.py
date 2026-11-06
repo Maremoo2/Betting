@@ -86,7 +86,7 @@ def test_original_cache_tamper_and_missing_are_distinct(tmp_path):
 
 
 def test_duplicate_race_and_bad_freeze_rejected(tmp_path):
-    fixture(tmp_path)
+    fixture(tmp_path, outcome=False)
     path = tmp_path / "market-days/2020-01-04.json"
     doc = json.loads(path.read_text())
     doc["races"].append(doc["races"][0])
