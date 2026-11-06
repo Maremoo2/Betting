@@ -65,6 +65,7 @@ def build(folder: Path, research_file: Path | None, cutoff: str) -> dict:
         raise ValueError("PROVIDER_REPORT_SOURCE_INVALID")
     model_raw = research_file.read_bytes() if research_file else None
     models = _models(model_raw, _sha(raw))
+    model_bundle = json.loads(model_raw) if model_raw is not None else None
     rounds = []
     for game in source["weekend_rounds"]:
         races = []
@@ -140,6 +141,9 @@ def build(folder: Path, research_file: Path | None, cutoff: str) -> dict:
                 ),
                 "model_version":model.get("model_version") if model else None,
                 "model_run_id":model.get("actual_model_run_id") if model else None,
+                "model_frozen_at_utc":(
+                    model_bundle.get("source_observation_utc") if model_bundle else None
+                ),
                 "source_model_sha256":_sha(model_raw) if model_raw else None,
                 "source_original_sha256":{
                     "starts":start_r["response_sha256"],
