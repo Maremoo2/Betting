@@ -64,7 +64,7 @@ def test_result_not_final_fails_closed():
 def test_historic_source_missing_actual_result_cannot_be_filled_by_stats():
     source=past_race()
     source["races"][0]["starts"][0].pop("result")
-    with pytest.raises(ValueError,match="HISTORIC_KARAT_RESULT_MISSING"):
+    with pytest.raises(TypeError,match="HISTORIC_KARAT_RESULT_MISSING"):
         M["_first_party_result"](source,"2026-06-06_7_8")
 
 
