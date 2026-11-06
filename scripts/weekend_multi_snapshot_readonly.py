@@ -146,6 +146,70 @@ def _aware(stamp: str) -> bool:
         return False
 
 
+def _verify_collective_original(snapshot: dict, product: str | None,
+                                pool_key: str | None, race_key: str,
+                                race_no: int, runners: list[dict]) -> None:
+    """Never trust copied public shares without a matching original pool receipt."""
+    reported = {r["number"]: r.get("collective_share") for r in runners if r["active"]}
+    if product is None:
+        if any(v is not None for v in reported.values()):
+            raise ValueError("UNMAPPED_PUBLIC_POOL_SHARE_CLAIM")
+        return
+    if not isinstance(pool_key, str):
+        raise ValueError("MISSING_EXACT_POOL_KEY")
+    prefix = f"{race_key}#{product}#"
+    if not pool_key.startswith(prefix):
+        raise ValueError("POOL_KEY_OR_RACEDAY_CONFLICT")
+    try:
+        anchor = int(pool_key[len(prefix):])
+    except ValueError as exc:
+        raise ValueError("POOL_ANCHOR_NOT_VERIFIED") from exc
+    if anchor < 1:
+        raise ValueError("POOL_ANCHOR_NOT_VERIFIED")
+    path = (f"/game/{race_key}/betdistribution/investment/"
+            f"{product}?raceNumber={anchor}")
+    entry = snapshot["receipts"].get(path)
+    if not entry or entry[0].get("http_status") != 200 or not isinstance(entry[1], dict):
+        if any(v is not None for v in reported.values()):
+            raise ValueError("PUBLIC_SHARES_WITHOUT_ORIGINAL")
+        return
+    source_rows = entry[1].get("result")
+    if not isinstance(source_rows, list):
+        raise TypeError("COLLECTIVE_ORIGINAL_NOT_LIST")
+    selected = [x for x in source_rows if isinstance(x, dict)
+                and x.get("raceNumber") == race_no]
+    if len(selected) != 1 or selected[0].get("raceKey") != f"{race_key}#{race_no}":
+        raise ValueError("COLLECTIVE_PHYSICAL_RACE_JOIN_CONFLICT")
+    raw = selected[0].get("investmentDistribution")
+    if not isinstance(raw, list):
+        raise TypeError("COLLECTIVE_ORIGINAL_FIELD_NOT_LIST")
+    indexed = {}
+    for item in raw:
+        if (not isinstance(item, dict) or type(item.get("startNumber")) is not int
+                or item["startNumber"] < 1 or item["startNumber"] in indexed):
+            raise ValueError("COLLECTIVE_ORIGINAL_DUPLICATE_OR_INVALID_RUNNER")
+        indexed[item["startNumber"]] = item
+    roster_ids = {r["number"] for r in runners}
+    if set(indexed) - roster_ids or not set(reported) <= set(indexed):
+        raise ValueError("COLLECTIVE_ORIGINAL_ROSTER_CONFLICT")
+    values = {}
+    for n in reported:
+        value = indexed[n].get("percentage")
+        if (type(value) not in (int, float) or not math.isfinite(value)
+                or value < 0 or value > 100):
+            raise ValueError("INVALID_ORIGINAL_COLLECTIVE_PERCENTAGE")
+        values[n] = float(value)
+    total = sum(values.values())
+    if total <= 0:
+        raise ValueError("EMPTY_ORIGINAL_COLLECTIVE_FIELD")
+    for n, raw_share in values.items():
+        expected = raw_share / total
+        if (type(reported[n]) not in (int, float)
+                or not math.isfinite(reported[n])
+                or abs(reported[n] - expected) > 1e-9):
+            raise ValueError("REPORTED_COLLECTIVE_SHARE_NOT_ORIGINAL_VERIFIED")
+
+
 def _validate_roster(snapshot: dict, race_key: str, race_no: int, runners: list[dict]) -> None:
     item = snapshot["receipts"].get(f"/racedays/{race_key}/starts")
     if not item or not isinstance(item[1], dict):
@@ -162,6 +226,23 @@ def _validate_roster(snapshot: dict, race_key: str, race_no: int, runners: list[
                 or str(source.get("horseRegistrationNumber")) != r["horse_registration"]
                 or source.get("isScratched") is not (not r["active"])):
             raise ValueError("ORIGINAL_RUNNER_IDENTITY_OR_SCRATCH_MISMATCH")
+    scratch = snapshot["receipts"].get(f"/racedays/{race_key}/scratched")
+    if not scratch or scratch[0].get("http_status") != 200 or not isinstance(scratch[1], dict):
+        raise ValueError("SCRATCH_ORIGINAL_UNAVAILABLE")
+    source_scratches = scratch[1].get("result")
+    if not isinstance(source_scratches, dict):
+        raise ValueError("SCRATCH_ORIGINAL_SCHEMA_UNVERIFIED")
+    values = source_scratches.get(str(race_no), [])
+    if not isinstance(values, list):
+        raise ValueError("SCRATCH_ORIGINAL_RACE_SCHEMA_UNVERIFIED")
+    scratched = set()
+    for value in values:
+        n = value.get("startNumber") if isinstance(value, dict) else value
+        if type(n) is not int or n < 1 or n in scratched:
+            raise ValueError("SCRATCH_ORIGINAL_INVALID_START_NUMBER")
+        scratched.add(n)
+    if scratched != {r["number"] for r in runners if not r["active"]}:
+        raise ValueError("SCRATCH_ORIGINAL_AND_ACTIVE_ROSTER_CONFLICT")
 
 
 def _rounds(snapshot: dict) -> dict:
@@ -182,6 +263,8 @@ def _rounds(snapshot: dict) -> dict:
             if int(race_no) != leg["race_no"]:
                 raise ValueError("PHYSICAL_RACE_NUMBER_CONFLICT")
             _validate_roster(snapshot, race_key, leg["race_no"], leg["runners"])
+            _verify_collective_original(snapshot, game.get("product"), leg["pool_key"],
+                                        race_key, leg["race_no"], leg["runners"])
             market = _market(snapshot, race_key, leg["race_no"], leg["runners"])
             active = [r for r in leg["runners"] if r["active"]]
             runners = []
