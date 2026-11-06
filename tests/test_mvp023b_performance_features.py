@@ -1,4 +1,5 @@
 """MVP-023B: authentic 2026 previous-start research and explicit TEST_ONLY attacks."""
+# ruff: noqa: I001  # Real-source integration helpers use test-local import roots.
 import copy
 import json
 from pathlib import Path
