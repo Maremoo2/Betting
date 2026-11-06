@@ -345,6 +345,34 @@ def _original_report(*, client: RikstotoClient, output: Path) -> dict:
                 "RAW_PROVIDER_CONTEXT_SAVED_NOT_INTERPRETED"
                 if context is not None else "NOT_VERIFIED"
             )
+            # Join the official investment line using the *exact* product,
+            # poolKey, raceday and raceNumber. The numeric unit is NOT certified:
+            # never present provider integer amounts as NOK/SEK or as jackpot.
+            if isinstance(context, dict) and isinstance(context.get("result"), list) and pool_meta:
+                matching = [x for x in context["result"] if isinstance(x, dict)
+                            and x.get("raceDay") == key
+                            and x.get("poolKey") == pool_meta.get("poolKey")
+                            and x.get("product") == product
+                            and x.get("raceNumber") == pool_meta.get("raceNumber")]
+                if len(matching) == 1:
+                    entry = matching[0]
+                    if (type(entry.get("totalInvestment")) is int
+                            and entry["totalInvestment"] >= 0):
+                        game["turnover"] = {
+                            "provider_raw_total_investment": entry["totalInvestment"],
+                            "raw_number_of_systems": entry.get("numberOfSystems"),
+                            "raw_max_pay_value_not_jackpot": entry.get("maxPayValue"),
+                            "unit": "UNVERIFIED_PROVIDER_RAW_UNIT",
+                            "exact_pool_key": pool_meta.get("poolKey"),
+                            "source_sha256": context_receipt["response_sha256"],
+                            "source_observed_utc": context_receipt["response_completed_utc"],
+                        }
+                        game["turnover_status"] = "EXACT_POOL_SOURCE_RAW_UNIT_UNVERIFIED"
+                    if type(entry.get("jackpot")) in (int, float):
+                        game["jackpot"] = {
+                            "provider_raw": entry["jackpot"],
+                            "unit": "UNVERIFIED_PROVIDER_RAW_UNIT",
+                        }
             starts, starts_receipt = _capture(client, f"/racedays/{key}/starts", originals)
             scratched, scratch_receipt = _capture(
                 client, f"/racedays/{key}/scratched", originals
