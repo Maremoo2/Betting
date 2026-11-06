@@ -73,6 +73,15 @@ def test_cross_day_and_name_only_discovery_not_assumed():
     assert _targets([valid, valid])["BERGSAKER_V85"] == [valid]
 
 
+def test_x1_composite_wrapper_must_not_be_counted_as_physical_bergsaker():
+    x1 = meeting("X1_NR_2026-11-07", "V4", [1, 2, 3, 4])
+    x1["raceDayName"] = "Klosterskogen/Bergsåker"
+    x1["trackCode"] = "X1"
+    direct = meeting()
+    assert _targets([x1, direct])["BERGSAKER_V85"] == [direct]
+    assert _targets([x1, direct])["KLOSTERSKOGEN_V75"] == []
+
+
 def test_nested_discovery_group_from_original_is_supported():
     m = meeting()
     assert _meetings({"result": [{"raceDays": [m]}]}) == [m]
@@ -96,7 +105,10 @@ def test_no_unknown_roster_becomes_zero_horses_or_bets():
     source["result"]["5"][1]["horseRegistrationNumber"] = "SE123"
     assert _roster(source, 5)[1] == ["INVALID_OR_DUPLICATE_RUNNER_IDENTITY"]
     source["result"]["5"][1]["horseRegistrationNumber"] = "TMP-non-authoritative"
-    assert _roster(source, 5)[1] == ["INVALID_OR_DUPLICATE_RUNNER_IDENTITY"]
+    temporary, issues = _roster(source, 5)
+    assert issues == []
+    assert temporary[1]["identity_status"] == "BLOCKED_TMP_NOT_AUTHORITY"
+    assert temporary[1]["p_win"] is None and temporary[1]["decision"] == "NOT_APPLICABLE"
 
 
 def test_unknown_win_not_misrepresented_as_zero_value():
