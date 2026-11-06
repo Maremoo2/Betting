@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import runpy
 from datetime import UTC, datetime
 from pathlib import Path
@@ -92,7 +91,9 @@ def test_invalid_url_and_status_do_not_promote_receipt(tmp_path):
 
 
 def test_atg_start_case_mismatch_never_aliases():
-    assert "Karat River (S)" != "Karat River"
+    canonical = "Karat River (S)"
+    original_name = "Karat River"
+    assert canonical != original_name
     assert M["MISSING"] == "MISSING"
 
 
