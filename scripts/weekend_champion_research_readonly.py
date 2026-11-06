@@ -167,6 +167,16 @@ def audit(original_capture: Path, atg_folder: Path) -> dict:
         name = game["name"]
         if name not in TRACKS:
             continue
+        if name == "FARJESTAD_V64" and any(
+            _time(leg["race_start_utc"]) <= completed for leg in game["legs"]
+        ):
+            # Keep the genuinely prestart Friday original in its immutable
+            # artifact; never create a new after-start Friday probability.
+            rounds[name] = {
+                "status":"HISTORICAL_SKIP_NO_NEW_MODEL","legs":[],
+                "blocker":"SOME_PHYSICAL_RACES_ALREADY_STARTED",
+            }
+            continue
         if game.get("race_date") not in {"2026-11-06", "2026-11-07"}:
             raise ValueError("ATG_RESEARCH_DATE_NOT_ALLOWED")
         calendar_key = (AtgClient.CALENDAR_API + "/calendar/day/"
