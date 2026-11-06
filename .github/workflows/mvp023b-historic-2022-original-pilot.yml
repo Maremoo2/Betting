@@ -89,6 +89,47 @@ jobs:
           # Blocked provider is a truthful *source status*, not an acceptance;
           # preserve all original/failed attempt evidence for independent review.
           exit 0
+      - name: Replay admitted genuine 2022 archive through M5 and Feature Audit (NO BET)
+        if: always()
+        shell: bash
+        run: |
+          set -uo pipefail
+          root="$RUNNER_TEMP/mvp023b-month"
+          if [ -f "$root/admission.json" ]; then
+            python scripts/mvp023b_real_month_m5_replay.py \
+              --root "$root/originals" \
+              --admission "$root/admission.json" \
+              --month 2022-10 \
+              --output "$root/historic-m5-replay" \
+              > "$root/m5-replay.stdout" \
+              2> "$root/m5-replay.stderr"
+            replay_rc=$?
+          else
+            replay_rc=90
+          fi
+          REPLAY_RC="$replay_rc" python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          root = Path(os.environ["RUNNER_TEMP"]) / "mvp023b-month"
+          code = int(os.environ["REPLAY_RC"])
+          result = root / "historic-m5-replay/historic-m5-feature-replay.json"
+          status = {
+              "schema": "MVP023B_HISTORIC_M5_REPLAY_STATUS_V1",
+              "research_only": True, "bet_authority": False,
+              "2025_lockbox_opened": False,
+              "exit_code": code,
+              "status": "PASS_REAL_2022_M5_FEATURE_PARTITIONS" if code == 0 and result.is_file()
+                        else "BLOCKED_OR_FAILED_M5_HISTORIC_SOURCE_CONTRACT",
+          }
+          if result.exists():
+              status["report"] = json.loads(result.read_text())
+          (root / "m5-replay-status.json").write_text(
+              json.dumps(status, indent=2, sort_keys=True) + "\n"
+          )
+          print(json.dumps(status, sort_keys=True))
+          PY
+          # Preserve source errors; do not infer training/PIT from available 2022 races.
       - name: Upload genuine bounded native original pilot and admission receipts
         uses: actions/upload-artifact@v4
         if: always()
