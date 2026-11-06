@@ -46,6 +46,19 @@ def snapshot(root, *, observed="2026-11-06T09:32:40+00:00",
     ]}
     win = _write_source(root, f"/game/{race_key}/betdistribution/winodds/{number}",
                         raw_win, observed)
+    scratch = _write_source(root, f"/racedays/{race_key}/scratched",
+                            {"result": {str(number): list(scratched)}}, observed)
+    collective = _write_source(
+        root, f"/game/{race_key}/betdistribution/investment/V85?raceNumber=5",
+        {"result": [{
+            "raceNumber": number, "raceKey": f"{race_key}#{number}",
+            "updatedTime": provider_updated,
+            "investmentDistribution": [
+                {"startNumber": n, "percentage": shares[n - 1] * 100}
+                for n in (1, 2)
+            ],
+        }]}, observed,
+    )
     leg = {
         "leg": 1, "race_no": number,
         "physical_race_id": f"RIKSTOTO:{race_key}:{number}",
@@ -61,8 +74,9 @@ def snapshot(root, *, observed="2026-11-06T09:32:40+00:00",
         "model_predictions_made": 0,
         "source_as_of_utc": "2026-11-06T09:32:00+00:00",
         "source_observation_completed_utc": observed,
-        "original_receipts": [starts, win],
-        "weekend_rounds": [{"name": "BERGSAKER_V85", "legs": [leg]}],
+        "original_receipts": [starts, win, scratch, collective],
+        "weekend_rounds": [{"name": "BERGSAKER_V85",
+                            "product": "V85", "legs": [leg]}],
         "composite_pool_wrappers_not_physical_races": [
             {"key": "X1_NR_2026-11-07", "name": "Klosterskogen/Bergsåker"}
         ],
@@ -203,3 +217,31 @@ def test_unrelated_market_runner_is_a_join_defect(tmp_path):
     p.write_text(json.dumps(report))
     leg = compare(a, b)["rounds"]["BERGSAKER_V85"]["legs"][0]
     assert leg["after"]["win_status"] == "JOIN_DEFECT"
+
+def test_tampered_reported_collective_share_is_rejected(tmp_path):
+    a = snapshot(tmp_path / "a")
+    file = a / "weekend-race-intelligence.json"
+    report = json.loads(file.read_text())
+    report["weekend_rounds"][0]["legs"][0]["runners"][0]["collective_share"] = 0.99
+    file.write_text(json.dumps(report))
+    b = snapshot(tmp_path / "b", observed="2026-11-06T09:34:00+00:00")
+    with pytest.raises(ValueError, match="REPORTED_COLLECTIVE_SHARE_NOT_ORIGINAL_VERIFIED"):
+        compare(a, b)
+
+
+def test_scratch_status_must_match_original_scratched_endpoint(tmp_path):
+    a = snapshot(tmp_path / "a")
+    file = a / "weekend-race-intelligence.json"
+    report = json.loads(file.read_text())
+    report["weekend_rounds"][0]["legs"][0]["runners"][0]["active"] = False
+    file.write_text(json.dumps(report))
+    b = snapshot(tmp_path / "b", observed="2026-11-06T09:34:00+00:00")
+    with pytest.raises(ValueError, match="ORIGINAL_RUNNER_IDENTITY_OR_SCRATCH_MISMATCH"):
+        compare(a, b)
+
+
+def test_wrong_collective_pool_key_is_rejected(tmp_path):
+    a = snapshot(tmp_path / "a", pool="UNTRUSTED_POOL")
+    b = snapshot(tmp_path / "b", observed="2026-11-06T09:34:00+00:00")
+    with pytest.raises(ValueError, match="POOL_KEY_OR_RACEDAY_CONFLICT"):
+        compare(a, b)
