@@ -13,6 +13,8 @@ import re
 from collections import Counter
 from pathlib import Path
 
+from rikstoto_crawler.transport import digest as archive_digest
+
 from .research_lab import digest
 
 SCHEMA = "MVP023A_CONSOLIDATED_RESEARCH_REPORT_V1"
@@ -43,12 +45,19 @@ def _quality(coverage: dict, features: dict, dataset: dict, benter: dict) -> Non
     if (
         coverage.get("historical_not_prospective") is not True
         or not isinstance(rows, list)
-        or coverage.get("data_sha256") != digest(rows)
+        or coverage.get("data_sha256") != archive_digest(rows)
         or coverage.get("readiness", {}).get("pit_model_eligible") != 0
         or coverage.get("readiness", {}).get("lockbox_2025_accessed_for_tuning") is not False
         or len({r.get("race_id") for r in rows}) != len(rows)
     ):
         raise ValueError("COVERAGE_ORIGINAL_BASIS_OR_PIT_CLAIM_INVALID")
+    # Never launder a candidate 2025 lockbox outcome through the downstream
+    # report by hiding the result count in the 2025 presentation row.
+    for row in rows:
+        if (isinstance(row, dict) and row.get("year") == 2025
+                and (row.get("categories", {}).get("RESULT_VERIFIED") is True
+                     or row.get("official_result_sha256") is not None)):
+            raise ValueError("2025_LOCKBOX_RESULT_INDIRECTLY_EXPOSED")
     feature_rows = features.get("by_race")
     if (
         not isinstance(feature_rows, list)
@@ -78,6 +87,44 @@ def _quality(coverage: dict, features: dict, dataset: dict, benter: dict) -> Non
             )
         ):
             raise ValueError("FEATURE_" + group.upper() + "_DENOMINATOR_CONFLICT")
+    # Both M5-derived reports must attest the *same* original JSONL and
+    # manifest. Schema-valid reports from different archive versions cannot
+    # silently enter a common research summary.
+    if (
+        not isinstance(features.get("source_dataset_sha256"), str)
+        or not isinstance(features.get("source_manifest_sha256"), str)
+        or features["source_dataset_sha256"] != dataset.get("source_m5_dataset_sha256")
+        or features["source_manifest_sha256"] != dataset.get("source_m5_manifest_sha256")
+    ):
+        raise ValueError("M5_FEATURE_PARTITION_ORIGINAL_PROVENANCE_CONFLICT")
+    feature_ids = {r.get("race_id") for r in feature_rows}
+    partition_ids = [
+        race_id
+        for part in dataset.get("partitions", {}).values()
+        if isinstance(part, dict) and isinstance(part.get("race_ids"), list)
+        for race_id in part["race_ids"]
+    ] if isinstance(dataset.get("partitions"), dict) else []
+    # Diagnose lockbox exposure before ordinary cohort divergence so a
+    # forged 2025 race can never be reported as just a missing/extra M5 row.
+    if any("_NR_2025-" in rid for rid in partition_ids):
+        raise ValueError("2025_LOCKBOX_PARTITION_INDIRECTLY_EXPOSED")
+    if (
+        len(feature_ids) != len(feature_rows)
+        or len(partition_ids) != len(set(partition_ids))
+        or feature_ids != set(partition_ids)
+        or dataset.get("races") != len(feature_rows)
+    ):
+        raise ValueError("M5_FEATURE_PARTITION_RACE_COHORT_CONFLICT")
+    if any(
+        isinstance(r, dict) and str(r.get("date", "")).startswith("2025-")
+        for r in feature_rows
+    ):
+        raise ValueError("2025_LOCKBOX_FEATURES_INDIRECTLY_EXPOSED")
+    if any(
+        isinstance(row, dict) and "_NR_2025-" in str(row.get("race_id", ""))
+        for row in benter.get("per_race", [])
+    ):
+        raise ValueError("2025_LOCKBOX_BENTER_EVALUATION_INDIRECTLY_EXPOSED")
     if (
         dataset.get("model_training_eligible") != 0
         or dataset.get("benter_fit_eligible") != 0
@@ -197,6 +244,8 @@ def build_consolidated_report(
         "schema": SCHEMA, "research_only": True, "bet_authority": False,
         "training_performed": False, "model_promotion": False,
         "raw_source_scope": "SELECTED_LOCAL_ARCHIVES_ONLY",
+        "coverage_source_hash_contract": "RIKSTOTO_ARCHIVE_CANONICAL_JSON_SORTED_UTF8_WITH_SPACES",
+        "m5_source_hash_contract": "M5_MANIFEST_AND_DATASET_RAW_BYTES_SHA256",
         "input_report_sha256": dict(sorted(input_sha256.items())),
         "years": years,
         "coverage_original_physical_races": coverage.get("counts", {}).get("physical_races", 0),
