@@ -10,8 +10,7 @@ import hashlib
 import json
 import re
 import unicodedata
-from collections import Counter
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from pathlib import Path
 
 from hbi.providers.rikstoto import RikstotoClient
