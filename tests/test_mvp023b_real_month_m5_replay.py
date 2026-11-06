@@ -89,3 +89,25 @@ def test_replay_rejects_2026_or_unauthenticated_admission(tmp_path):
     receipt.write_text(json.dumps(doc))
     with pytest.raises(ValueError, match="HISTORICAL_MONTH_SOURCE_ADMISSION_REQUIRED"):
         replay(source, receipt, MONTH, tmp_path / "no-bets")
+
+
+def test_opaque_raw_cache_sha_cannot_smuggle_a_2025_provider_endpoint(tmp_path):
+    source, receipt = _admitted(tmp_path)
+    doc = json.loads(receipt.read_text())
+    raw = next(r for r in doc["read_only_native_files_sha256"]
+               if r["path"].startswith("raw-markets/"))
+    target = source / raw["path"]
+    envelope = json.loads(target.read_text())
+    envelope["path"] = "/racedays/OR_NR_2025-10-31/starts"
+    envelope["url"] = "https://www.rikstoto.no/api" + envelope["path"]
+    data = json.dumps(envelope).encode()
+    target.write_bytes(data)
+    import hashlib
+
+    from rikstoto_crawler.transport import digest
+
+    raw["sha256"] = hashlib.sha256(data).hexdigest()
+    doc["source_manifest_sha256"] = digest(doc["read_only_native_files_sha256"])
+    receipt.write_text(json.dumps(doc))
+    with pytest.raises(ValueError, match="CROSS_MONTH_OR_UNVERIFIED_RAW_ORIGINAL_REFUSED"):
+        replay(source, receipt, MONTH, tmp_path / "no-indirect-lockbox")
