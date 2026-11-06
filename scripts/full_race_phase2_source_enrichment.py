@@ -9,7 +9,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import math
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -26,7 +25,7 @@ def _sha(data: bytes) -> str:
 
 def _clock(text: Any) -> datetime:
     if not isinstance(text, str):
-        raise ValueError("REQUIRED_ORIGINAL_UTC_MISSING")
+        raise TypeError("REQUIRED_ORIGINAL_UTC_MISSING")
     d = datetime.fromisoformat(text)
     if d.utcoffset() is None:
         raise ValueError("REQUIRED_ORIGINAL_UTC_NAIVE")
@@ -87,12 +86,12 @@ def _number(value: Any) -> int | None:
 def _historical(entrant: dict, receipt: dict, observed: datetime) -> dict:
     horse = entrant.get("horse")
     if not isinstance(horse, dict):
-        raise ValueError("ATG_ENTRY_HORSE_RECORD_REQUIRED")
+        raise TypeError("ATG_ENTRY_HORSE_RECORD_REQUIRED")
     stats = horse.get("statistics") or {}
     life = stats.get("life") or {}
     years = stats.get("years") or {}
     if not isinstance(life, dict) or not isinstance(years, dict):
-        raise ValueError("ATG_HORSE_STATISTICS_SCHEMA_UNVERIFIED")
+        raise TypeError("ATG_HORSE_STATISTICS_SCHEMA_UNVERIFIED")
     recent = stats.get("lastFiveStarts") or {}
     annual = {}
     for year in ("2025","2026"):
