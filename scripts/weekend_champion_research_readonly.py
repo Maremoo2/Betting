@@ -9,11 +9,11 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from hbi.fundamental import MarketFreeFundamentalChampionV1
-from hbi.provider_capability import name_key, resolve_field
+from hbi.provider_capability import resolve_field
 from hbi.providers.atg import AtgClient, AtgFetchResult
 
 SCHEMA = "WEEKEND_AUTHENTIC_CHAMPION_V1_1_RESEARCH_V1"
@@ -300,7 +300,7 @@ def audit(original_capture: Path, atg_folder: Path) -> dict:
                 "leg": leg["leg"], "physical_race_id": rid,
                 "atg_race_id": resolved.race_id,
                 "start_at_utc": start.isoformat(),
-                "t4_at_utc": (start - __import__("datetime").timedelta(minutes=4)).isoformat(),
+                "t4_at_utc": (start - timedelta(minutes=4)).isoformat(),
                 "active_runners": len(active),
                 "atg_valid_history": sum(r["name_number_join"] for r in result_runners),
                 "independent_registrations_attested": 0,
