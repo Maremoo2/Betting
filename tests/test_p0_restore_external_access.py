@@ -172,14 +172,15 @@ def test_missing_head_branch_never_becomes_main_state(monkeypatch, tmp_path):
     assert not (tmp_path / "hbi.sqlite").exists()
 
 
-def test_http_429_rate_limit_preserved_and_fails_closed(monkeypatch, tmp_path):
+def test_http_429_rate_limit_preserved_and_fails_closed(monkeypatch, tmp_path, capsys):
     def denied(request, timeout):
         raise urllib.error.HTTPError(
             request.full_url, 429, "Too Many Requests", {"X-RateLimit-Remaining": "0"},
             io.BytesIO(b'{"message":"secondary rate limit"}'),
         )
     monkeypatch.setattr(state_artifact.urllib.request, "urlopen", denied)
-    with pytest.raises(urllib.error.HTTPError, match="GITHUB_INSTALLATION_RATE_LIMIT") as err:
+    with pytest.raises(urllib.error.HTTPError) as err:
         _restore(tmp_path, required=True)
     assert err.value.code == 429
+    assert "classification=INSTALLATION_RATE_LIMIT" in capsys.readouterr().err
     assert not (tmp_path / "hbi.sqlite").exists()
