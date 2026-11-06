@@ -100,6 +100,8 @@ def capture(output: Path) -> dict:
     items=[]
     request_count=0
     for date,track_name,number in CANDIDATES:
+        if date >= TARGET_RACE_START[:10]:
+            raise ValueError("HISTORICAL_RESULT_EVENT_NOT_PRE_RACE")
         hint={"date":date,"track_hint":track_name,"race_hint":number,
               "hint_is_original_source":False}
         calendar_url=(AtgClient.CALENDAR_API+"/calendar/day/"
