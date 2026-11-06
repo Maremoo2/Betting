@@ -1,0 +1,61 @@
+name: P0 Weekend Race Intelligence Original Pilot (NO BET)
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  original-weekend:
+    if: github.event.pull_request.head.ref == 'research/weekend-v85-race-intelligence-pilot-20261106'
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install frozen existing provider and test dependencies
+        run: pip install -e ".[dev]"
+      - name: Capture authentic Romme Bergsåker Klosterskogen Harstad originals
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p "$RUNNER_TEMP/weekend-race-intelligence"
+          python scripts/weekend_race_intelligence_readonly.py \
+            --output "$RUNNER_TEMP/weekend-race-intelligence/original-capture" \
+            > "$RUNNER_TEMP/weekend-race-intelligence/capture.stdout" \
+            2> "$RUNNER_TEMP/weekend-race-intelligence/capture.stderr"
+          status=$?
+          STATUS="$status" python - <<'PY'
+          import json
+          import os
+          from datetime import UTC, datetime
+          from pathlib import Path
+          root = Path(os.environ["RUNNER_TEMP"]) / "weekend-race-intelligence"
+          output = {
+              "status": ("CAPTURE_COMPLETED_RESEARCH_ONLY" if os.environ["STATUS"] == "0"
+                         else "SOURCE_CAPTURE_BLOCKED_OR_CODE_FAILURE"),
+              "utc": datetime.now(UTC).isoformat(),
+              "exit_code": int(os.environ["STATUS"]),
+              "bet_authority": False,
+              "frozen_model_changed": False,
+          }
+          (root / "pilot-status.json").write_text(
+              json.dumps(output, sort_keys=True, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(output, sort_keys=True))
+          PY
+          exit "$status"
+      - name: Publish exact SHA original receipts and consolidated weekend report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekend-p0-original-pilot-\${{ github.run_id }}
+          path: \${{ runner.temp }}/weekend-race-intelligence/
+          if-no-files-found: warn
+          retention-days: 7
