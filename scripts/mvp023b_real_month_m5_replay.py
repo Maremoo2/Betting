@@ -67,11 +67,26 @@ def replay(root: Path, admission_path: Path, month: str, output: Path) -> dict:
             target = target / part
             if target.is_symlink():
                 raise ValueError("SYMLINKED_ORIGINAL_SOURCE_REFUSED")
+        if not target.is_file() or target.stat().st_size > 500_000_000:
+            raise ValueError("INVALID_OR_OVERSIZED_SOURCE_MEMBER")
         data = target.read_bytes()
         if _sha(data) != expected:
             raise ValueError("HISTORICAL_ORIGINAL_BYTES_SHA_CONFLICT")
-        # Refuse metadata/day content referring to a forbidden lockbox.
-        if not path.startswith("raw-") and month not in path:
+        # The receipt filename for raw cache members is an opaque SHA. Verify
+        # the ORIGINAL embedded endpoint date before the M5 importer opens it.
+        # This is necessary to prevent an indirect 2025 lockbox read.
+        if path.startswith("raw-"):
+            envelope = json.loads(data)
+            original_path = envelope.get("path") if isinstance(envelope, dict) else None
+            if (
+                not isinstance(original_path, str) or month not in original_path
+                or "2025-" in original_path
+                or envelope.get("url") != "https://www.rikstoto.no/api" + original_path
+                or not isinstance(envelope.get("body"), dict)
+                or envelope.get("body_sha256") != digest(envelope["body"])
+            ):
+                raise ValueError("CROSS_MONTH_OR_UNVERIFIED_RAW_ORIGINAL_REFUSED")
+        elif month not in path:
             raise ValueError("CROSS_MONTH_ORIGINAL_REFUSED")
         selected[path] = data
     if not any(name.startswith("raw-markets/") for name in selected):
