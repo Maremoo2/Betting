@@ -1,5 +1,4 @@
 """TEST_ONLY adversarial source-admission/replay tests. Real 2022 replay runs in CI."""
-import hashlib
 import json
 
 import pytest
