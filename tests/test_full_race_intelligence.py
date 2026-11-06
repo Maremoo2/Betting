@@ -1,7 +1,6 @@
 """Full race intelligence mathematical/regression admission tests (NO BET)."""
 from __future__ import annotations
 
-import copy
 import math
 
 import pytest
