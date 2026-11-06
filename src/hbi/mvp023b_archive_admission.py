@@ -10,7 +10,6 @@ import argparse
 import hashlib
 import json
 import re
-import shutil
 import tempfile
 from datetime import date
 from pathlib import Path
@@ -62,7 +61,7 @@ def _stage(root: Path, view: Path, relative: str, originals: dict) -> bytes:
 def _weekly(root: Path, view: Path, month: str, relative: str, originals: dict) -> list[dict]:
     if not re.fullmatch(r"weekly/20\d{2}-W\d{2}-MARKET\.zip", relative):
         raise ValueError("UNSUPPORTED_WEEKLY_NATIVE_PATH")
-    raw = _stage(root, view, relative, originals)
+    _stage(root, view, relative, originals)
     with ZipFile(view / relative) as archive:
         entries = archive.infolist()
         names = [i.filename for i in entries]
