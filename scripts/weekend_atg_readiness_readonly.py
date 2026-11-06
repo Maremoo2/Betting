@@ -11,7 +11,7 @@ import hashlib
 import json
 import urllib.error
 import urllib.request
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from hbi.provider_capability import name_key, resolve_field, validate_lifetime
@@ -121,7 +121,7 @@ def audit(original_capture: Path, output: Path) -> dict:
         scratched_result = scratch.get("result")
         source_start = starts.get("result")
         if not isinstance(source_start, dict) or not isinstance(scratched_result, dict):
-            raise ValueError("RACEDAY_ORIGINAL_STARTS_SCRATCHES_INVALID")
+            raise TypeError("RACEDAY_ORIGINAL_STARTS_SCRATCHES_INVALID")
         # One official ATG calendar read per country/track, not per horse.
         cal_url = (f"{AtgClient.CALENDAR_API}/calendar/day/"
                    "2026-11-07?headToHeadEnabled=true")
@@ -136,7 +136,7 @@ def audit(original_capture: Path, output: Path) -> dict:
                 raise ValueError("RACEDAY_PHYSICAL_JOIN_MISMATCH")
             roster = source_start.get(str(n))
             if not isinstance(roster, list):
-                raise ValueError("MISSING_ORIGINAL_RACE_ROSTER")
+                raise TypeError("MISSING_ORIGINAL_RACE_ROSTER")
             original_scratch = scratched_result.get(str(n), [])
             if not isinstance(original_scratch, list):
                 raise TypeError("SCRATCH_ORIGINAL_NOT_LIST")
