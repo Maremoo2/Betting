@@ -40,7 +40,7 @@ def _report_github_artifact_error(exc: urllib.error.HTTPError, *, stage: str) ->
     message = body.decode("utf-8", errors="replace").lower()
     kind = (
         "INSTALLATION_RATE_LIMIT"
-        if "rate limit" in message
+        if "rate limit" in message or str((exc.headers or {}).get("X-RateLimit-Remaining")) == "0"
         else "HTTP_ACCESS_OR_SCOPE_UNVERIFIED"
     )
     headers = exc.headers or {}
@@ -96,7 +96,7 @@ def restore_latest_state(
         if not item.get("expired", False)
         and (
             branch is None
-            or item.get("workflow_run", {}).get("head_branch") == branch
+            or (item.get("workflow_run") or {}).get("head_branch") == branch
         )
     ]
     if not artifacts:
