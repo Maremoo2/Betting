@@ -61,6 +61,14 @@ jobs:
           python scripts/weekend_atg_readiness_readonly.py \
             --original-capture "$RUNNER_TEMP/weekend-race-intelligence/original-capture" \
             --output "$RUNNER_TEMP/weekend-race-intelligence/atg-original-readiness"
+      - name: Run unchanged Champion V1.1 original-only fundamental research (NO BET)
+        if: github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106'
+        shell: bash
+        run: |
+          python scripts/weekend_champion_research_readonly.py \
+            --original-capture "$RUNNER_TEMP/weekend-race-intelligence/original-capture" \
+            --atg-readiness "$RUNNER_TEMP/weekend-race-intelligence/atg-original-readiness" \
+            --output "$RUNNER_TEMP/weekend-race-intelligence/champion-research-v1_1.json"
       - name: Read immutable first pilot original artifact (PR follow-up only)
         if: github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106'
         uses: actions/download-artifact@v4
