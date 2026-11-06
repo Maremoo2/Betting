@@ -92,8 +92,13 @@ def _atg_receipts(source: dict, folder: Path, completed: datetime) -> dict:
             raise ValueError("ATG_ORIGINAL_PATH_MISMATCH")
         raw = _verified_bytes(folder / "atg-originals", digest, digest + ".json")
         payload = json.loads(raw)
-        if url in indexed and indexed[url][0] != payload:
-            raise ValueError("DUPLICATED_ATG_SOURCE_CONFLICT")
+        if url in indexed:
+            if indexed[url][0] != payload:
+                raise ValueError("DUPLICATED_ATG_SOURCE_CONFLICT")
+            # Keep the earliest real receipt: later duplicate calendar reads
+            # cannot retroactively timestamp an earlier game original.
+            if stamp >= _time(indexed[url][1]["response_completed_utc"]):
+                continue
         indexed[url] = (payload, receipt)
     if not indexed:
         raise ValueError("ATG_ORIGINALS_MISSING")
