@@ -9,7 +9,7 @@ import argparse
 import hashlib
 import json
 import math
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from pathlib import Path
 
 SCHEMA = "WEEKEND_MULTISNAPSHOT_SOURCE_AUDIT_V1"
