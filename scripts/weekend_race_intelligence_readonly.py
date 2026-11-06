@@ -197,8 +197,13 @@ def _roster(starts: object, race_no: int) -> tuple[list[dict], list[str]]:
                 "scratched_in_starts": item["isScratched"],
                 "active": not item["isScratched"],
                 "p_win": None, "fair_odds": None, "frozen_min_odds": None,
-                "model_ev": None, "decision": (
-                    "PASS" if not item["isScratched"] else "NOT_APPLICABLE"
+                "model_ev": None,
+                "data_quality": "BLOCKED",
+                "model_status": "NOT_ASSESSED",
+                "fundamental_history_status": "NOT_PROBED",
+                "independent_identity_attested": False,
+                "decision": (
+                    "NOT_EXECUTABLE" if not item["isScratched"] else "NOT_APPLICABLE"
                 ),
                 "decision_reason": (
                     "NO_PIT_VERIFIED_INDEPENDENT_FUNDAMENTAL"
@@ -287,7 +292,8 @@ def _original_report(*, client: RikstotoClient, output: Path) -> dict:
             "fundamental_complete_fields": 0,
             "win_complete_fields": 0, "collective_complete_fields": 0,
             "pit_eligible_fields": 0,
-            "bet_count": 0, "watch_count": 0, "pass_count": None,
+            "bet_count": 0, "watch_count": 0, "pass_count": 0,
+            "not_executable_count": None, "model_assessed_count": 0,
             "total_runners_observed": None,
             "system_ev": "NOT_ESTABLISHED", "jackpot": None,
             "turnover": None, "turnover_status": "NOT_VERIFIED",
@@ -464,6 +470,9 @@ def _original_report(*, client: RikstotoClient, output: Path) -> dict:
             game["active_runners"] = sum(x["active_runners"] for x in game["legs"])
             game["total_runners_observed"] = len(known)
             game["pass_count"] = sum(r["decision"] == "PASS" for r in known)
+            game["not_executable_count"] = sum(
+                r["decision"] == "NOT_EXECUTABLE" for r in known
+            )
             game["win_complete_fields"] = sum(x["win_status"].startswith("COMPLETE")
                                               for x in game["legs"])
             game["collective_complete_fields"] = sum(
@@ -485,7 +494,8 @@ def _original_report(*, client: RikstotoClient, output: Path) -> dict:
         "interpretation": (
             "No synthetic p(win), executable historical prices or inferred cross-track game legs. "
             "Public pool percentages never substitute for winner probability. "
-            "Blocked runners PASS; a scheduled watcher is NOT T-4 certification."
+            "NOT_ASSESSED is not PASS; blocked runners are NOT_EXECUTABLE. "
+            "A scheduled watcher is NOT T-4 certification."
         ),
     }
     with (output / "weekend-race-intelligence.json").open("x", encoding="utf-8") as f:
