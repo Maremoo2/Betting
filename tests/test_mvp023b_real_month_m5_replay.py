@@ -1,13 +1,16 @@
 """TEST_ONLY adversarial source-admission/replay tests. Real 2022 replay runs in CI."""
 # ruff: noqa: I001  # Test helper fixture imports are a separate test root.
 import json
+import runpy
+from pathlib import Path
 
 import pytest
 
 from hbi.mvp023b_archive_admission import admit_month
 from test_mvp023a_historical_coverage import fixture
 
-from scripts.mvp023b_real_month_m5_replay import replay
+replay = runpy.run_path(str(Path(__file__).resolve().parents[1] /
+                            "scripts/mvp023b_real_month_m5_replay.py"))["replay"]
 
 MONTH = "2020-01"
 
