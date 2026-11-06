@@ -54,6 +54,13 @@ jobs:
           print(json.dumps(output, sort_keys=True))
           PY
           exit "$status"
+      - name: Probe original ATG full-field history for Saturday only (NO MODEL/NO BET)
+        if: github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106'
+        shell: bash
+        run: |
+          python scripts/weekend_atg_readiness_readonly.py \
+            --original-capture "$RUNNER_TEMP/weekend-race-intelligence/original-capture" \
+            --output "$RUNNER_TEMP/weekend-race-intelligence/atg-original-readiness"
       - name: Read immutable first pilot original artifact (PR follow-up only)
         if: github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106'
         uses: actions/download-artifact@v4
