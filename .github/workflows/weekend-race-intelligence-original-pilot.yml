@@ -70,6 +70,15 @@ jobs:
             --original-capture "$RUNNER_TEMP/weekend-race-intelligence/original-capture" \
             --atg-readiness "$RUNNER_TEMP/weekend-race-intelligence/atg-original-readiness" \
             --output "$RUNNER_TEMP/weekend-race-intelligence/champion-research-v1_1.json"
+      - name: Analyze every physical race for WIN anti-favourite dutching (research only)
+        if: github.event.pull_request.head.ref == 'research/p0-full-race-intelligence-20261106'
+        shell: bash
+        run: |
+          python scripts/full_race_intelligence_readonly.py \
+            --original-capture "$RUNNER_TEMP/weekend-race-intelligence/original-capture" \
+            --frozen-research "$RUNNER_TEMP/weekend-race-intelligence/champion-research-v1_1.json" \
+            --output-json "$RUNNER_TEMP/weekend-race-intelligence/full-race-intelligence.json" \
+            --output-md "$RUNNER_TEMP/weekend-race-intelligence/full-race-intelligence.md"
       - name: Read immutable first pilot original artifact (PR follow-up only)
         if: github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106'
         uses: actions/download-artifact@v4
