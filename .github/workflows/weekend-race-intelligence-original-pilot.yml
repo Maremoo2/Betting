@@ -91,7 +91,7 @@ jobs:
         if: github.event.pull_request.head.ref == 'research/p0-full-race-intelligence-20261106'
         shell: bash
         run: |
-          python scripts/karat_prior_results_capture_readonly.py \
+          PYTHONPATH=. python scripts/karat_prior_results_capture_readonly.py \
             --output "$RUNNER_TEMP/weekend-race-intelligence/karat-prior-original-results"
       - name: Read immutable first pilot original artifact (PR follow-up only)
         if: github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106'
