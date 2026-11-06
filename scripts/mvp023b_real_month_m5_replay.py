@@ -70,10 +70,9 @@ def replay(root: Path, admission_path: Path, month: str, output: Path) -> dict:
         data = target.read_bytes()
         if _sha(data) != expected:
             raise ValueError("HISTORICAL_ORIGINAL_BYTES_SHA_CONFLICT")
-        if not path.startswith("raw-"):
-            # Refuse metadata/day content referring to a forbidden lockbox.
-            if month not in path:
-                raise ValueError("CROSS_MONTH_ORIGINAL_REFUSED")
+        # Refuse metadata/day content referring to a forbidden lockbox.
+        if not path.startswith("raw-") and month not in path:
+            raise ValueError("CROSS_MONTH_ORIGINAL_REFUSED")
         selected[path] = data
     if not any(name.startswith("raw-markets/") for name in selected):
         raise ValueError("NO_ORIGINAL_RAW_MARKET_RECEIPTS")
