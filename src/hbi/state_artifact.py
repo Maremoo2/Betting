@@ -69,6 +69,7 @@ def restore_latest_state(
     receipt_path: str | Path | None = None,
     audit_workflow_run_id: int | None = None,
     audit_code_sha: str | None = None,
+    required: bool = False,
 ) -> bool:
     """Restore the newest non-expired HBI SQLite database artifact.
 
@@ -100,6 +101,8 @@ def restore_latest_state(
         )
     ]
     if not artifacts:
+        if required:
+            raise RuntimeError("STATE_RESTORE_REQUIRED_BUT_NO_VERIFIED_ARTIFACT")
         return False
 
     artifacts.sort(key=lambda item: item["created_at"], reverse=True)
