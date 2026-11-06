@@ -112,6 +112,18 @@ def audit(original_capture: Path, output: Path) -> dict:
     for game in source["weekend_rounds"]:
         if game["name"] not in TRACKS:
             continue
+        # Friday V64 was already captured before first start in immutable
+        # run 42270567852. Never revisit a started Friday leg as pre-race.
+        if game["name"] == "FARJESTAD_V64" and any(
+            datetime.now(UTC) >= datetime.fromisoformat(leg["race_start_utc"])
+            for leg in game["legs"]
+        ):
+            rounds[game["name"]] = {
+                "status":"HISTORICAL_SKIP_NO_NEW_MODEL",
+                "legs":[],
+                "blocker":"SOME_PHYSICAL_RACES_ALREADY_STARTED",
+            }
+            continue
         track, country = TRACKS[game["name"]]
         if not game["legs"]:
             rounds[game["name"]] = {"status": "NO_AUTHORITATIVE_LEGS", "legs": []}
