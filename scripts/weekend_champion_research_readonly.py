@@ -77,8 +77,10 @@ def _atg_receipts(source: dict, folder: Path, completed: datetime) -> dict:
     for receipt in source["original_atg_receipts"]:
         url = receipt["url"]
         if (not isinstance(url, str) or
-                not (url.startswith(AtgClient.GAME_API + "/vinnare_")
-                     or url.startswith(AtgClient.CALENDAR_API + "/calendar/day/2026-11-07?"))):
+                not url.startswith((
+                    AtgClient.GAME_API + "/vinnare_",
+                    AtgClient.CALENDAR_API + "/calendar/day/2026-11-07?",
+                ))):
             raise ValueError("UNAPPROVED_ATG_ORIGINAL_URL")
         stamp = _time(receipt["response_completed_utc"])
         if stamp > completed:
