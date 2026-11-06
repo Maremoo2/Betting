@@ -16,7 +16,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from hbi.providers.atg import AtgClient
-from weekend_atg_readiness_readonly import _get_original
+from scripts.weekend_atg_readiness_readonly import _get_original
 
 SCHEMA="KARAT_RIVER_HISTORICAL_ATG_RESULTS_RESEARCH_ONLY_V1"
 HORSE_ID=767446
