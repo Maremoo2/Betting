@@ -1,0 +1,99 @@
+name: MVP-023B P1-A Original Historic Month Pilot (NO BET)
+
+on:
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  original-2022-pilot:
+    if: github.event.pull_request.head.ref == 'research/mvp023b-authentic-month-admission-20261106'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install source-preserving archive research tools
+        run: pip install -e ".[dev]"
+      - name: Attempt bounded authentic October 2022 existing crawler and source admission
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p "$RUNNER_TEMP/mvp023b-month"
+          python -m rikstoto_crawler.cli archive \
+            --mode pilot --first 2022-10 --last 2022-10 \
+            --output "$RUNNER_TEMP/mvp023b-month/originals" \
+            > "$RUNNER_TEMP/mvp023b-month/collector.stdout" \
+            2> "$RUNNER_TEMP/mvp023b-month/collector.stderr"
+          collector_rc=$?
+          admission_rc=99
+          if [ "$collector_rc" -eq 0 ]; then
+            python -m hbi.mvp023b_archive_admission \
+              --root "$RUNNER_TEMP/mvp023b-month/originals" \
+              --month 2022-10 \
+              --output "$RUNNER_TEMP/mvp023b-month/admission.json" \
+              > "$RUNNER_TEMP/mvp023b-month/admission.stdout" \
+              2> "$RUNNER_TEMP/mvp023b-month/admission.stderr"
+            admission_rc=$?
+          fi
+          COLLECTOR_RC="$collector_rc" ADMISSION_RC="$admission_rc" python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          root = Path(os.environ["RUNNER_TEMP"]) / "mvp023b-month"
+          original = root / "originals"
+          inventory = []
+          if original.exists():
+              for path in sorted(original.rglob("*")):
+                  if path.is_file() and not path.is_symlink():
+                      relative = path.relative_to(original).as_posix()
+                      if relative.startswith(("raw-markets/", "raw-results/", "inventory/",
+                                              "market-days/", "result-days/", "weekly/")):
+                          inventory.append({"relative_path": relative,
+                                            "bytes": path.stat().st_size,
+                                            "sha256": hashlib.sha256(path.read_bytes()).hexdigest()})
+          collector_rc = int(os.environ["COLLECTOR_RC"])
+          admission_rc = int(os.environ["ADMISSION_RC"])
+          data = {
+              "schema": "MVP023B_2022_HISTORIC_PILOT_RUN_V1",
+              "research_only": True, "bet_authority": False,
+              "requested_month": "2022-10", "collector_returncode": collector_rc,
+              "admission_returncode": admission_rc,
+              "sources": inventory,
+              "source_file_count": len(inventory),
+              "source_status": "ADMITTED_SOURCE_BOUNDED_2022_10"
+                  if collector_rc == 0 and admission_rc == 0
+                  else "BLOCKED_NO_VERIFIED_NATIVE_2022_MONTH_ADMISSION",
+              "historic_pit_verified": False,
+              "2025_lockbox_opened": False,
+              "fundamental_model_fit_ready": False,
+          }
+          admitted = root / "admission.json"
+          if admitted.exists():
+              validated = json.loads(admitted.read_bytes())
+              if validated.get("month") != "2022-10" or validated.get("2025_lockbox_opened") is not False:
+                  raise SystemExit("HISTORIC_PILOT_INVALID_ADMISSION")
+              data["source_admission"] = validated
+          (root / "pilot-status.json").write_text(json.dumps(data, sort_keys=True, indent=2) + "\n")
+          print(json.dumps({"status": data["source_status"],
+                            "sha_bound_source_files": data["source_file_count"],
+                            "collector_rc": collector_rc, "admission_rc": admission_rc},
+                            sort_keys=True))
+          PY
+          # Blocked provider is a truthful *source status*, not an acceptance;
+          # preserve all original/failed attempt evidence for independent review.
+          exit 0
+      - name: Upload genuine bounded native original pilot and admission receipts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mvp023b-authentic-2022-pilot-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp023b-month
+          if-no-files-found: warn
+          retention-days: 30
