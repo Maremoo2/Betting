@@ -19,6 +19,7 @@ from rikstoto_crawler.extract import keyed
 
 SCHEMA = "WEEKEND_20261106_07_ORIGINAL_INTELLIGENCE_V1"
 TARGETS = (
+    ("FARJESTAD_V64", "2026-11-06", ("farjestad",), "V64", 6),
     ("ROMME_V65", "2026-11-06", ("romme",), "V65", 6),
     ("BERGSAKER_V85", "2026-11-07", ("bergsaker",), "V85", 8),
     ("KLOSTERSKOGEN_V75", "2026-11-07", ("klosterskogen",), "V75", 7),
@@ -262,7 +263,7 @@ def _original_report(*, client: RikstotoClient, output: Path) -> dict:
     groups = _meetings(discovery)
     # Official historical discovery endpoint is an optional fallback; it does
     # not prove race-specific WIN or even current runner status.
-    if not all(_targets(groups).get(k) for k in ("BERGSAKER_V85", "KLOSTERSKOGEN_V75")):
+    if not all(_targets(groups).get(k) for k in ("FARJESTAD_V64", "BERGSAKER_V85", "KLOSTERSKOGEN_V75")):
         extra, rec = _capture(
             client, "/results/racedays/2026-11-06/2026-11-07/list", originals
         )
@@ -331,7 +332,7 @@ def _original_report(*, client: RikstotoClient, output: Path) -> dict:
             pool_meta = next((p for p in meeting.get("pools") or []
                               if isinstance(p, dict) and p.get("product") == product), None)
             distribution = None
-            if pool_meta is not None and product in {"V65", "V75", "V85"}:
+            if pool_meta is not None and product in {"V64", "V65", "V75", "V85"}:
                 anchor = pool_meta.get("raceNumber")
                 if type(anchor) is int and anchor > 0:
                     distribution, pool_receipt = _capture(

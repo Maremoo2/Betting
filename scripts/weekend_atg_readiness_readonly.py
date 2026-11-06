@@ -20,6 +20,7 @@ from hbi.providers.atg import AtgClient, AtgFetchResult
 SCHEMA = "WEEKEND_ATG_AUTHENTIC_SOURCE_DIAGNOSTIC_V1"
 MAX_BYTES = 3_000_000
 TRACKS = {
+    "FARJESTAD_V64": ("Färjestad", "SE"),
     "BERGSAKER_V85": ("Bergsåker", "SE"),
     "KLOSTERSKOGEN_V75": ("Klosterskogen", "NO"),
 }
@@ -111,6 +112,18 @@ def audit(original_capture: Path, output: Path) -> dict:
     for game in source["weekend_rounds"]:
         if game["name"] not in TRACKS:
             continue
+        # Friday V64 was already captured before first start in immutable
+        # run 42270567852. Never revisit a started Friday leg as pre-race.
+        if game["name"] == "FARJESTAD_V64" and any(
+            datetime.now(UTC) >= datetime.fromisoformat(leg["race_start_utc"])
+            for leg in game["legs"]
+        ):
+            rounds[game["name"]] = {
+                "status":"HISTORICAL_SKIP_NO_NEW_MODEL",
+                "legs":[],
+                "blocker":"SOME_PHYSICAL_RACES_ALREADY_STARTED",
+            }
+            continue
         track, country = TRACKS[game["name"]]
         if not game["legs"]:
             rounds[game["name"]] = {"status": "NO_AUTHORITATIVE_LEGS", "legs": []}
@@ -123,8 +136,13 @@ def audit(original_capture: Path, output: Path) -> dict:
         if not isinstance(source_start, dict) or not isinstance(scratched_result, dict):
             raise TypeError("RACEDAY_ORIGINAL_STARTS_SCRATCHES_INVALID")
         # One official ATG calendar read per country/track, not per horse.
+        expected_date = ("2026-11-06" if game["name"] == "FARJESTAD_V64"
+                         else "2026-11-07")
+        date = game.get("race_date") or expected_date
+        if date != expected_date:
+            raise ValueError("ATG_RESEARCH_DATE_NOT_ALLOWED")
         cal_url = (f"{AtgClient.CALENDAR_API}/calendar/day/"
-                   "2026-11-07?headToHeadEnabled=true")
+                   f"{date}?headToHeadEnabled=true")
         calendar, calendar_receipt = _get_original(cal_url, originals)
         receipts.append(calendar_receipt)
         client = AtgClient(timeout=12)

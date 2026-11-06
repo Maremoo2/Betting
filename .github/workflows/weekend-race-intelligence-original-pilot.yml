@@ -12,7 +12,8 @@ jobs:
   original-weekend:
     if: >-
       github.event.pull_request.head.ref == 'research/weekend-v85-race-intelligence-pilot-20261106' ||
-      github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106'
+      github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106' ||
+      github.event.pull_request.head.ref == 'research/p0-full-race-intelligence-20261106'
     runs-on: ubuntu-latest
     timeout-minutes: 14
     steps:
@@ -55,20 +56,43 @@ jobs:
           PY
           exit "$status"
       - name: Probe original ATG full-field history for Saturday only (NO MODEL/NO BET)
-        if: github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106'
+        if: github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106' || github.event.pull_request.head.ref == 'research/p0-full-race-intelligence-20261106'
         shell: bash
         run: |
           python scripts/weekend_atg_readiness_readonly.py \
             --original-capture "$RUNNER_TEMP/weekend-race-intelligence/original-capture" \
             --output "$RUNNER_TEMP/weekend-race-intelligence/atg-original-readiness"
       - name: Run unchanged Champion V1.1 original-only fundamental research (NO BET)
-        if: github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106'
+        if: github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106' || github.event.pull_request.head.ref == 'research/p0-full-race-intelligence-20261106'
         shell: bash
         run: |
           python scripts/weekend_champion_research_readonly.py \
             --original-capture "$RUNNER_TEMP/weekend-race-intelligence/original-capture" \
             --atg-readiness "$RUNNER_TEMP/weekend-race-intelligence/atg-original-readiness" \
             --output "$RUNNER_TEMP/weekend-race-intelligence/champion-research-v1_1.json"
+      - name: Analyze every physical race for WIN anti-favourite dutching (research only)
+        if: github.event.pull_request.head.ref == 'research/p0-full-race-intelligence-20261106'
+        shell: bash
+        run: |
+          python scripts/full_race_intelligence_readonly.py \
+            --original-capture "$RUNNER_TEMP/weekend-race-intelligence/original-capture" \
+            --frozen-research "$RUNNER_TEMP/weekend-race-intelligence/champion-research-v1_1.json" \
+            --output-json "$RUNNER_TEMP/weekend-race-intelligence/full-race-intelligence.json" \
+            --output-md "$RUNNER_TEMP/weekend-race-intelligence/full-race-intelligence.md"
+      - name: Phase 2 strict ATG prestart career/class/opponent-context audit (NO BET)
+        if: github.event.pull_request.head.ref == 'research/p0-full-race-intelligence-20261106'
+        shell: bash
+        run: |
+          python scripts/full_race_phase2_source_enrichment.py \
+            --original-root "$RUNNER_TEMP/weekend-race-intelligence" \
+            --full-race "$RUNNER_TEMP/weekend-race-intelligence/full-race-intelligence.json" \
+            --output "$RUNNER_TEMP/weekend-race-intelligence/phase2-source-history.json"
+      - name: One-time ATG originals for Karat River's 10 past race hints (NO BET)
+        if: github.event.pull_request.head.ref == 'research/p0-full-race-intelligence-20261106'
+        shell: bash
+        run: |
+          PYTHONPATH=. python scripts/karat_prior_results_capture_readonly.py \
+            --output "$RUNNER_TEMP/weekend-race-intelligence/karat-prior-original-results"
       - name: Read immutable first pilot original artifact (PR follow-up only)
         if: github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106'
         uses: actions/download-artifact@v4
