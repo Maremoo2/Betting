@@ -242,7 +242,6 @@ def build(originals: Path, full_race: Path) -> dict:
                     row["active"] and ent
                     and isinstance(ent.get("horse"),dict)
                     and ent["horse"].get("name") == row["name"]
-                    and type(ent["horse"].get("id")) is int
                 )
                 if matched:
                     evidence=_historical(ent,receipt,observed)
@@ -256,7 +255,7 @@ def build(originals: Path, full_race: Path) -> dict:
                     history_count+=1
                 else:
                     evidence={
-                        "source_status":"NOT_PIT_IDENTITY_MATCHED" if ent else
+                        "source_status":"ATG_NAME_MISMATCH_NO_IDENTITY_ALIAS" if ent else
                                         "MISSING_IN_ATG_ORIGINAL",
                         "last_5_individual_results":MISSING,
                         "last_10_individual_results":MISSING,
