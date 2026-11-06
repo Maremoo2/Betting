@@ -7,7 +7,7 @@ from zipfile import ZipFile
 import pytest
 
 from hbi.mvp023b_archive_admission import admit_month, main
-from test_mvp023a_historical_coverage import KEY, RID, fixture, put_json
+from test_mvp023a_historical_coverage import KEY, fixture, put_json
 
 MONTH = "2020-01"
 
@@ -105,6 +105,8 @@ def test_symlink_or_traversal_not_read(tmp_path):
     original.symlink_to(archive / "market-days" / "2020-01-04.json")
     with pytest.raises(ValueError, match="SYMLINK"):
         admit_month(archive, MONTH)
+    original.unlink()
+    fixture(archive)
     with pytest.raises(ValueError, match="UNSUPPORTED_WEEKLY_NATIVE_PATH"):
         admit_month(archive, MONTH, weekly=("../2025/secret.zip",))
 
@@ -159,7 +161,6 @@ def test_cli_write_once_no_source_changes(tmp_path):
 
 
 def test_authentic_2026_regression_not_misclassified_as_historical_archive(tmp_path):
-    import hashlib
     root = Path(__file__).resolve().parents[1]
     truth = root / "tests/fixtures/rikstoto-historical-truth.json"
     assert hashlib.sha256(truth.read_bytes()).hexdigest() == (
