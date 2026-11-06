@@ -125,7 +125,7 @@ def _result(value: object, disqualified: object) -> str:
 def _safe_value(row: dict) -> dict:
     values = row.get("values")
     if not isinstance(values, dict):
-        raise ValueError("ORIGINAL_OFFICIAL_VALUES_REQUIRED")
+        raise TypeError("ORIGINAL_OFFICIAL_VALUES_REQUIRED")
     allowed = {"placing", "distance_m", "km_time", "start_method",
                "gallop_flag", "disqualification_flag"}
     if set(values) != allowed:
@@ -163,7 +163,7 @@ def build_performance_features(rows: list[dict], *, evidence_mode: str = "TEST_O
         raise ValueError("UNSUPPORTED_RESEARCH_EVIDENCE_MODE")
     seen, identity, groups = set(), {}, defaultdict(list)
     if not isinstance(rows, list):
-        raise ValueError("EXPECTED_VERIFIED_PRIOR_START_LIST")
+        raise TypeError("EXPECTED_VERIFIED_PRIOR_START_LIST")
     for item in rows:
         if not isinstance(item, dict) or item.get("model_eligible") is not False:
             raise ValueError("UNVERIFIED_PRIOR_START_OR_PREMATURE_MODEL_APPROVAL")
