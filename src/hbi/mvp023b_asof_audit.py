@@ -63,7 +63,9 @@ def assess_one(record: dict, *, root: Path | None = None,
                evidence_mode: str = "TEST_ONLY") -> dict:
     if evidence_mode not in {"TEST_ONLY", "SOURCE_REPLAYED"}:
         raise ValueError("UNREGISTERED_ASOF_EVIDENCE_MODE")
-    if not isinstance(record, dict) or record.get("bet_authority") is not False:
+    if not isinstance(record, dict):
+        raise TypeError("HISTORICAL_RESEARCH_ONLY_INPUT_REQUIRED")
+    if record.get("bet_authority") is not False:
         raise ValueError("HISTORICAL_RESEARCH_ONLY_INPUT_REQUIRED")
     if record.get("model_eligible") is not False:
         raise ValueError("MODEL_OR_PIT_PROMOTION_NOT_ALLOWED")
@@ -120,7 +122,7 @@ def assess_one(record: dict, *, root: Path | None = None,
             envelope.get("path") != original.get("provider_path")
             or envelope.get("body_sha256") != original.get("body_sha256")
             or not envelope.get("path", "").endswith("/completeresults")
-            or not envelope.get("path", "").find(prior_day) >= 0
+            or prior_day not in envelope.get("path", "")
         ):
             raise ValueError("HISTORICAL_ORIGINAL_EVENT_OR_SOURCE_CONFLICT")
         observed_at = _time(envelope.get("fetched_at"))
