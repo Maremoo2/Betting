@@ -28,7 +28,7 @@ def _write_source(root, path, data, observed):
 
 
 def snapshot(root, *, observed="2026-11-06T09:32:40+00:00",
-             odds=(2.4, 0.0), scratched=(), pool="POOL1", number=5,
+             odds=(2.4, 0.0), scratched=(), pool="S1_NR_2026-11-07#V85#5", number=5,
              race_key="S1_NR_2026-11-07", shares=(0.6, 0.4),
              provider_updated="2026-11-06T10:31:00"):
     root.mkdir()
@@ -48,8 +48,9 @@ def snapshot(root, *, observed="2026-11-06T09:32:40+00:00",
                         raw_win, observed)
     scratch = _write_source(root, f"/racedays/{race_key}/scratched",
                             {"result": {str(number): list(scratched)}}, observed)
+    anchor = pool.rsplit("#", 1)[-1] if "#" in pool else "5"
     collective = _write_source(
-        root, f"/game/{race_key}/betdistribution/investment/V85?raceNumber=5",
+        root, f"/game/{race_key}/betdistribution/investment/V85?raceNumber={anchor}",
         {"result": [{
             "raceNumber": number, "raceKey": f"{race_key}#{number}",
             "updatedTime": provider_updated,
@@ -65,7 +66,11 @@ def snapshot(root, *, observed="2026-11-06T09:32:40+00:00",
         "pool_key": pool, "race_start_utc": "2026-11-07T14:00:00+00:00",
         "runners": [{
             "number": n, "name": f"Runner {n}", "active": n not in scratched,
-            "horse_registration": f"TMP-{n}", "collective_share": shares[n - 1],
+            "horse_registration": f"TMP-{n}", "collective_share": (
+                shares[n - 1] / sum(shares[k - 1] for k in (1, 2)
+                                  if k not in scratched)
+                if n not in scratched else None
+            ),
         } for n in (1, 2)],
     }
     report = {
@@ -114,7 +119,8 @@ def test_new_scratch_is_real_change_not_missing_price(tmp_path):
 
 def test_pool_key_change_blocks_market_comparison(tmp_path):
     a = snapshot(tmp_path / "a")
-    b = snapshot(tmp_path / "b", observed="2026-11-06T09:34:00+00:00", pool="POOL2")
+    b = snapshot(tmp_path / "b", observed="2026-11-06T09:34:00+00:00",
+                 pool="S1_NR_2026-11-07#V85#6")
     leg = compare(a, b)["rounds"]["BERGSAKER_V85"]["legs"][0]
     assert leg["status"] == "POOL_KEY_CHANGED"
     assert "price_changes" not in leg
