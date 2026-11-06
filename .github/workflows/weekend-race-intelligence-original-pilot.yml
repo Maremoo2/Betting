@@ -87,6 +87,12 @@ jobs:
             --original-root "$RUNNER_TEMP/weekend-race-intelligence" \
             --full-race "$RUNNER_TEMP/weekend-race-intelligence/full-race-intelligence.json" \
             --output "$RUNNER_TEMP/weekend-race-intelligence/phase2-source-history.json"
+      - name: One-time ATG originals for Karat River's 10 past race hints (NO BET)
+        if: github.event.pull_request.head.ref == 'research/p0-full-race-intelligence-20261106'
+        shell: bash
+        run: |
+          python scripts/karat_prior_results_capture_readonly.py \
+            --output "$RUNNER_TEMP/weekend-race-intelligence/karat-prior-original-results"
       - name: Read immutable first pilot original artifact (PR follow-up only)
         if: github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106'
         uses: actions/download-artifact@v4
