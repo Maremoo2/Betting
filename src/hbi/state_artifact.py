@@ -148,6 +148,16 @@ def restore_latest_state(
             _report_github_artifact_error(storage_error, stage="ARTIFACT_SIGNED_STORAGE")
             raise
 
+    # GitHub Actions artifacts may advertise their immutable ZIP digest.
+    # Verify that digest before extracting or touching the canonical state.
+    advertised = latest.get("digest")
+    if advertised is not None:
+        if (not isinstance(advertised, str)
+                or re.fullmatch(r"sha256:[0-9a-f]{64}", advertised) is None):
+            raise ValueError("STATE_RESTORE_ARTIFACT_DIGEST_INVALID")
+        if hashlib.sha256(archive).hexdigest() != advertised.removeprefix("sha256:"):
+            raise ValueError("STATE_RESTORE_ARTIFACT_ZIP_SHA_MISMATCH")
+
     target = Path(target_path)
     target.parent.mkdir(parents=True, exist_ok=True)
     database_sha256 = hashlib.sha256()
