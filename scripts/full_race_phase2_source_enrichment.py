@@ -175,6 +175,14 @@ def build(originals: Path, full_race: Path) -> dict:
             continue
         if game["name"] not in atg["rounds"]:
             raise ValueError("ATG_TARGET_NOT_IN_ORIGINAL_PROBE")
+        if atg["rounds"][game["name"]].get("status") == "HISTORICAL_SKIP_NO_NEW_MODEL":
+            games.append({
+                "name":game["name"],"legs":[],"active":0,
+                "current_aggregate_history_verified":0,
+                "source_status":"HISTORICAL_DO_NOT_REPROCESS",
+                "source_blocker":"SOME_PHYSICAL_RACES_ALREADY_STARTED",
+            })
+            continue
         probe = {q["physical_race_id"]:q for q in atg["rounds"][game["name"]]["legs"]}
         leg_reports=[]
         for leg in game["legs"]:
