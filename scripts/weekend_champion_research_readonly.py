@@ -240,7 +240,16 @@ def audit(original_capture: Path, atg_folder: Path) -> dict:
                 horse = data.get("horse") if isinstance(data.get("horse"), dict) else {}
                 matched_row = next((v for v in evidence["runners"]
                                     if v["selection_id"] == str(n)), {})
-                valid = (str(n) in matched and not s["isScratched"])
+                # resolve_field intentionally withholds the entire matched map
+                # when ANY runner fails. Its per-runner evidence still records
+                # independently observed matching histories, without granting
+                # full-field admission to that partial race.
+                source_match = bool(
+                    not s["isScratched"]
+                    and matched_row.get("match_confidence") == 1.0
+                    and matched_row.get("schema_ok") is True
+                )
+                valid = source_match
                 stats = horse.get("statistics") if isinstance(horse.get("statistics"), dict) else {}
                 life = stats.get("life") if isinstance(stats.get("life"), dict) else {}
                 wins = life.get("placement", {}).get("1") if isinstance(life.get("placement"), dict) else None
