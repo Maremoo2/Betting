@@ -20,6 +20,7 @@ from hbi.providers.atg import AtgClient, AtgFetchResult
 SCHEMA = "WEEKEND_ATG_AUTHENTIC_SOURCE_DIAGNOSTIC_V1"
 MAX_BYTES = 3_000_000
 TRACKS = {
+    "FARJESTAD_V64": ("Färjestad", "SE"),
     "BERGSAKER_V85": ("Bergsåker", "SE"),
     "KLOSTERSKOGEN_V75": ("Klosterskogen", "NO"),
 }
@@ -123,8 +124,11 @@ def audit(original_capture: Path, output: Path) -> dict:
         if not isinstance(source_start, dict) or not isinstance(scratched_result, dict):
             raise TypeError("RACEDAY_ORIGINAL_STARTS_SCRATCHES_INVALID")
         # One official ATG calendar read per country/track, not per horse.
+        date = game.get("race_date")
+        if date not in {"2026-11-06", "2026-11-07"}:
+            raise ValueError("ATG_RESEARCH_DATE_NOT_ALLOWED")
         cal_url = (f"{AtgClient.CALENDAR_API}/calendar/day/"
-                   "2026-11-07?headToHeadEnabled=true")
+                   f"{date}?headToHeadEnabled=true")
         calendar, calendar_receipt = _get_original(cal_url, originals)
         receipts.append(calendar_receipt)
         client = AtgClient(timeout=12)
