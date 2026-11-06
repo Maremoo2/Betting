@@ -1,5 +1,4 @@
 """TEST_ONLY weekend source mapping / fail-closed research tests, no synthetic BET."""
-# ruff: noqa: I001
 import runpy
 from pathlib import Path
 
