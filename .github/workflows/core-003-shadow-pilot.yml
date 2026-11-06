@@ -363,6 +363,26 @@ jobs:
               raise SystemExit('BET_MVP_FIXED_COHORT_INCOMPLETE_REPORTS')
           PY
 
+      # Offline sidecar: reuse already-frozen reports and exact SQLite physical race
+      # catalog. No provider reads, model retraining, bets or schedule changes.
+      - name: Analyze all upcoming physical races (WIN anti-favourite dutching NO BET)
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && success()
+        continue-on-error: true
+        run: |
+          python scripts/full_race_intelligence_core003_readonly.py \
+            --db data/core003-pilot.sqlite \
+            --models bet-mvp-shadow \
+            --output full-race-intelligence-core003.json
+
+      - name: Upload all-races research-only source status
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-race-intelligence-core003-${{ github.run_id }}
+          path: full-race-intelligence-core003.json
+          if-no-files-found: warn
+          retention-days: 14
+
       # Prior frozen reports are downloaded by original run ID, never recomputed.
       # Any missing artifact remains an explicit model-link blocker.
       - name: Recover prior original prospective models (read only)
