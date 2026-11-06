@@ -125,6 +125,15 @@ def assess_one(record: dict, *, root: Path | None = None,
             raise ValueError("HISTORICAL_ORIGINAL_EVENT_OR_SOURCE_CONFLICT")
         observed_at = _time(envelope.get("fetched_at"))
         published_at = _time(original.get("provider_published_at_utc"))
+        # Never certify an as-of date solely from a later caller's
+        # sidecar: the exact frozen source envelope must corroborate it.
+        if (
+            original.get("provider_published_at_utc")
+            != envelope.get("source_published_at_utc")
+        ):
+            blockers.append("FIRST_PUBLICATION_NOT_IN_IMMUTABLE_ORIGINAL")
+        if envelope.get("version_history_attested") is not True:
+            blockers.append("ORIGINAL_CORRECTION_TIMELINE_NOT_SOURCE_ATTESTED")
         if observed_at is None:
             blockers.append("ORIGINAL_ACQUISITION_CLOCK_UNVERIFIED")
         if published_at is None:
