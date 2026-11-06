@@ -5,6 +5,7 @@ import io
 import json
 import os
 import re
+import sys
 import urllib.error
 import urllib.request
 import zipfile
@@ -23,6 +24,38 @@ def _request(url: str, token: str) -> urllib.request.Request:
             "X-GitHub-Api-Version": "2022-11-28",
             "User-Agent": "horse-betting-intelligence",
         },
+    )
+
+
+def _report_github_artifact_error(exc: urllib.error.HTTPError, *, stage: str) -> None:
+    """Classify external API failures without masking them or creating new state.
+
+    GitHub can return HTTP 403 for installation-wide rate limits as well as
+    access-policy denials. Emit an evidence-only marker; preserve the original
+    HTTPError so canonical state restore *always* fails closed.
+    """
+    if exc.code not in {403, 429}:
+        return
+    body = exc.read(4096)
+    message = body.decode("utf-8", errors="replace").lower()
+    kind = (
+        "INSTALLATION_RATE_LIMIT"
+        if "rate limit" in message
+        else "HTTP_ACCESS_OR_SCOPE_UNVERIFIED"
+    )
+    headers = exc.headers or {}
+    remaining = headers.get("X-RateLimit-Remaining", "UNVERIFIED")
+    reset = headers.get("X-RateLimit-Reset", "UNVERIFIED")
+    if not str(remaining).isdigit():
+        remaining = "UNVERIFIED"
+    if not str(reset).isdigit():
+        reset = "UNVERIFIED"
+    print(
+        f"EXTERNAL_ACCESS_FAILURE stage={stage} http={exc.code} "
+        f"classification={kind} rate_remaining={remaining} "
+        f"rate_reset_unix={reset} "
+        "source_state=NOT_RESTORED no_bootstrap=true",
+        file=sys.stderr,
     )
 
 
@@ -50,8 +83,12 @@ def restore_latest_state(
     ):
         raise ValueError("V1_AUDIT_RUN_AND_CODE_SHA_NOT_ATTESTED")
     url = f"{API}/repos/{repository}/actions/artifacts?name={artifact_name}&per_page=100"
-    with urllib.request.urlopen(_request(url, token), timeout=30) as response:
-        payload = json.loads(response.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(_request(url, token), timeout=30) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        _report_github_artifact_error(exc, stage="ARTIFACT_INVENTORY")
+        raise
 
     artifacts = [
         item
@@ -59,7 +96,7 @@ def restore_latest_state(
         if not item.get("expired", False)
         and (
             branch is None
-            or item.get("workflow_run", {}).get("head_branch") in (None, branch)
+            or item.get("workflow_run", {}).get("head_branch") == branch
         )
     ]
     if not artifacts:
@@ -90,6 +127,7 @@ def restore_latest_state(
             archive = response.read()
     except urllib.error.HTTPError as exc:
         if exc.code not in {301, 302, 303, 307, 308}:
+            _report_github_artifact_error(exc, stage="ARTIFACT_ZIP")
             raise
         location = exc.headers.get("Location")
         if not location:
