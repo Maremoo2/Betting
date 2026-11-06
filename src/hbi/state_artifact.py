@@ -141,8 +141,12 @@ def restore_latest_state(
             location,
             headers={"User-Agent": "horse-betting-intelligence"},
         )
-        with urllib.request.urlopen(clean_request, timeout=60) as response:
-            archive = response.read()
+        try:
+            with urllib.request.urlopen(clean_request, timeout=60) as response:
+                archive = response.read()
+        except urllib.error.HTTPError as storage_error:
+            _report_github_artifact_error(storage_error, stage="ARTIFACT_SIGNED_STORAGE")
+            raise
 
     target = Path(target_path)
     target.parent.mkdir(parents=True, exist_ok=True)
