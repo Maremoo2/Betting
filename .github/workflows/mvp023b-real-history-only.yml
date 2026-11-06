@@ -1,0 +1,54 @@
+name: MVP-023B P1-B Genuine Prior Starts (Research Only)
+
+on:
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  genuine-no-prior-start-replay:
+    if: github.event.pull_request.head.ref == 'research/mvp023b-horse-performance-originals-20261106'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install existing Research Lab
+        run: pip install -e ".[dev]"
+      - name: Original replay M7B1A DNT NO 2026 7 verified previous starts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/mvp023b-original"
+          python -m hbi.mvp023b_performance_features --root . \
+            --output "$RUNNER_TEMP/mvp023b-original/source-replayed-features.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          p = Path(os.environ["RUNNER_TEMP"]) / "mvp023b-original/source-replayed-features.json"
+          doc = json.loads(p.read_bytes())
+          assert doc["schema"] == "MVP023B_HORSE_PERFORMANCE_RESEARCH_V1"
+          assert doc["evidence_mode"] == "SOURCE_REPLAYED_NO_2026"
+          assert doc["source_observations"] == 7
+          assert doc["historical_date_years"] == ["2026"]
+          assert doc["historical_asof_verified_horses"] == doc["model_eligible_races"] == 0
+          assert doc["2025_lockbox_opened"] is False and doc["bet_authority"] is False
+          print(json.dumps({"source_original_starts": doc["source_observations"],
+                            "unique_target_horses": doc["unique_horses_for_target"],
+                            "historical_date_years": doc["historical_date_years"],
+                            "model_eligible_races": doc["model_eligible_races"]},
+                           sort_keys=True))
+          PY
+      - name: Upload original source-bound research features (NO BET)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp023b-real-2026-history-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp023b-original/source-replayed-features.json
+          if-no-files-found: warn
+          retention-days: 30
