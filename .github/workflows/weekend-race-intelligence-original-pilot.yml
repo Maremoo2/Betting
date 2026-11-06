@@ -12,7 +12,8 @@ jobs:
   original-weekend:
     if: >-
       github.event.pull_request.head.ref == 'research/weekend-v85-race-intelligence-pilot-20261106' ||
-      github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106'
+      github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106' ||
+      github.event.pull_request.head.ref == 'research/p0-full-race-intelligence-20261106'
     runs-on: ubuntu-latest
     timeout-minutes: 14
     steps:
@@ -55,14 +56,14 @@ jobs:
           PY
           exit "$status"
       - name: Probe original ATG full-field history for Saturday only (NO MODEL/NO BET)
-        if: github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106'
+        if: github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106' || github.event.pull_request.head.ref == 'research/p0-full-race-intelligence-20261106'
         shell: bash
         run: |
           python scripts/weekend_atg_readiness_readonly.py \
             --original-capture "$RUNNER_TEMP/weekend-race-intelligence/original-capture" \
             --output "$RUNNER_TEMP/weekend-race-intelligence/atg-original-readiness"
       - name: Run unchanged Champion V1.1 original-only fundamental research (NO BET)
-        if: github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106'
+        if: github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106' || github.event.pull_request.head.ref == 'research/p0-full-race-intelligence-20261106'
         shell: bash
         run: |
           python scripts/weekend_champion_research_readonly.py \
