@@ -1,9 +1,11 @@
 """P0 restore HTTP 403 evidence: no bootstrap, no trust-gate relaxation."""
 from __future__ import annotations
 
+import hashlib
 import io
 import json
 import urllib.error
+import zipfile
 
 import pytest
 
@@ -138,3 +140,42 @@ def test_http_429_installation_rate_limit_fails_closed(monkeypatch, tmp_path, ca
         _restore(tmp_path)
     assert "classification=INSTALLATION_RATE_LIMIT" in capsys.readouterr().err
     assert not (tmp_path / "hbi.sqlite").exists()
+
+def _valid_archive():
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as stream:
+        stream.writestr("data/hbi.sqlite", b"SQLite format 3\\x00authentic")
+    return buf.getvalue()
+
+
+@pytest.mark.parametrize("correct", [True, False])
+def test_exact_original_zip_digest_required_when_advertised(
+    monkeypatch, tmp_path, correct,
+):
+    archive = _valid_archive()
+    artifact = _artifact()
+    artifact["digest"] = (
+        "sha256:" + (hashlib.sha256(archive).hexdigest() if correct else "0" * 64)
+    )
+
+    def inventory(request, timeout):
+        return io.BytesIO(json.dumps({"artifacts": [artifact]}).encode())
+
+    class OriginalZip:
+        def open(self, request, timeout):
+            assert request.full_url == artifact["archive_download_url"]
+            return io.BytesIO(archive)
+
+    monkeypatch.setattr(state_artifact.urllib.request, "urlopen", inventory)
+    monkeypatch.setattr(
+        state_artifact.urllib.request, "build_opener",
+        lambda *handlers: OriginalZip(),
+    )
+    db = tmp_path / "hbi.sqlite"
+    if correct:
+        assert _restore(tmp_path) is True
+        assert db.read_bytes() == b"SQLite format 3\\x00authentic"
+    else:
+        with pytest.raises(ValueError, match="ARTIFACT_ZIP_SHA_MISMATCH"):
+            _restore(tmp_path)
+        assert not db.exists()
