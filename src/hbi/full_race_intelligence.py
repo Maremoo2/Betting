@@ -153,7 +153,7 @@ def analyze_race(
     and already-frozen p(win), if actually available. Never backfit a model.
     """
     if not isinstance(race, dict) or not isinstance(race.get("runners"), list):
-        raise ValueError("RACE_AND_RUNNERS_REQUIRED")
+        raise TypeError("RACE_AND_RUNNERS_REQUIRED")
     rid = race.get("physical_race_id")
     if not isinstance(rid, str) or not rid.startswith("RIKSTOTO:"):
         raise ValueError("PHYSICAL_RACE_ID_REQUIRED")
