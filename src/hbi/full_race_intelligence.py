@@ -162,6 +162,11 @@ def analyze_race(
     if clock is None or start is None:
         raise ValueError("SOURCE_AWARE_DECISION_AND_START_REQUIRED")
     prospective = clock < start
+    model_clock = _time(race.get("model_frozen_at_utc"))
+    has_model = race.get("model_run_id") is not None
+    model_clock_ok = (not has_model or (
+        model_clock is not None and model_clock <= clock and model_clock < start
+    ))
     rows = []
     for original in race["runners"]:
         if (not isinstance(original, dict)
@@ -171,7 +176,7 @@ def analyze_race(
                 or original["selection_id"].startswith("0")):
             raise ValueError("RUNNER_OR_IDENTITY_SCHEMA_INVALID")
         n = original["selection_id"]
-        p = _prob(original.get("p_win_frozen"))
+        p = (_prob(original.get("p_win_frozen")) if model_clock_ok else None)
         odds = _odds(original.get("win_odds_raw"))
         rows.append({
             "selection_id": n,
@@ -241,6 +246,16 @@ def analyze_race(
             r["market_implied_p_unnormalized"] = None
             r["research_ev_roi_arithmetic"] = None
 
+    # A raw quote with a future or unknown observation clock cannot complete
+    # a contemporaneous WIN market even when the provider payload had all rows.
+    market_full = (
+        market_full and all(
+            r["win_odds_raw"] is not None
+            and _time(r["win_observed_at_utc"]) is not None
+            and _time(r["win_observed_at_utc"]) <= clock
+            for r in active
+        )
+    )
     full_price = [r for r in active if r["win_odds_raw"] is not None]
     priced_leader = (min(full_price, key=lambda r:(r["win_odds_raw"], r["selection_id"]))
                      if full_price else None)
@@ -330,6 +345,7 @@ def analyze_race(
         "runners": rows, "decision":"NOT_EXECUTABLE",
         "hardgate_blockers": sorted(set(
             (["RACE_ALREADY_STARTED_AT_ANALYSIS_TIME"] if not prospective else [])
+            + (["FROZEN_MODEL_CLOCK_NOT_ATTESTED"] if not model_clock_ok else [])
             + (["NO_COMPLETE_FROZEN_FULL_FIELD_P_WIN"] if not model_full else [])
             + (["FULL_FIELD_WIN_MARKET_UNVERIFIED"] if not market_full else [])
             + (["PIT_NOT_CERTIFIED"] if race.get("pit_certified") is not True else [])
