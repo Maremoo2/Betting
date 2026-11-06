@@ -22,6 +22,8 @@ jobs:
         run: |
           python scripts/romme_official_result_snapshot_readonly.py \
             --output "$RUNNER_TEMP/romme-official-originals"
+      - name: Install existing source provider (no strategy changes)
+        run: pip install -e .
       - name: Capture weekend original race fields and WIN markets (read only)
         run: |
           python scripts/weekend_race_intelligence_readonly.py \
