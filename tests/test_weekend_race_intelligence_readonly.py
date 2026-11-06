@@ -99,7 +99,7 @@ def test_no_unknown_roster_becomes_zero_horses_or_bets():
     ]}}
     rows, errors = _roster(source, 5)
     assert not errors
-    assert [r["decision"] for r in rows] == ["PASS", "NOT_APPLICABLE"]
+    assert [r["decision"] for r in rows] == ["NOT_EXECUTABLE", "NOT_APPLICABLE"]
     assert all(r["p_win"] is None and r["fair_odds"] is None and
                r["frozen_min_odds"] is None for r in rows)
     source["result"]["5"][1]["horseRegistrationNumber"] = "SE123"
@@ -118,4 +118,17 @@ def test_unknown_win_not_misrepresented_as_zero_value():
     ]}}, 5)
     assert not err
     assert _assess_win(None, rows) == "NOT_VERIFIED"
-    assert all(r["win_odds"] is None and r["decision"] == "PASS" for r in rows)
+    assert all(r["win_odds"] is None and r["decision"] == "NOT_EXECUTABLE" for r in rows)
+
+def test_unassessed_horse_is_never_model_pass():
+    source = {"result": {"5": [
+        {"startNumber": 1, "horseRegistrationNumber": "SE1",
+         "horseName": "Original Horse", "isScratched": False},
+        {"startNumber": 2, "horseRegistrationNumber": "SE2",
+         "horseName": "Another Horse", "isScratched": False},
+    ]}}
+    rows, errors = _roster(source, 5)
+    assert not errors
+    assert all(r["model_status"] == "NOT_ASSESSED" for r in rows)
+    assert all(r["decision"] == "NOT_EXECUTABLE" for r in rows)
+    assert all(r["p_win"] is None and r["fair_odds"] is None for r in rows)
