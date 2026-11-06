@@ -1,4 +1,5 @@
 """TEST_ONLY native 2020 fixture; no historical 2015-24 originals shipped here."""
+# ruff: noqa: I001  # Standalone test fixture helpers use project test import roots.
 import hashlib
 import json
 from pathlib import Path
