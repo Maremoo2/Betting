@@ -14,7 +14,8 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from rikstoto_crawler.transport import HOST, digest as source_digest
+from rikstoto_crawler.transport import HOST
+from rikstoto_crawler.transport import digest as source_digest
 
 SCHEMA = "MVP023B_HISTORICAL_ASOF_RESEARCH_AUDIT_V1"
 RID = re.compile(r"^RIKSTOTO:[A-Z0-9]+_NR_(20\d{2}-\d{2}-\d{2}):[1-9]\d*$")
