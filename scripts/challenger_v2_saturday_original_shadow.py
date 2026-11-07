@@ -208,8 +208,9 @@ def audit(
                     "number":r["number"],"name":r["name"],"active":r["active"],
                     "champion_p_win_immutable":p1,"challenger_p_win_shadow":p2,
                     "challenger_minus_champion":p2-p1 if p1 and p2 else None,
-                    "career_starts":rows[r["number"]-1].get("career_starts")
-                       if r["number"]-1 < len(rows) else None,
+                    "career_starts":next(
+                        (z["career_starts"] for z in rows
+                         if z["selection_id"] == str(r["number"])),None),
                     "season_starts":next(
                         (z["season_starts"] for z in rows
                          if z["selection_id"] == str(r["number"])),None),
