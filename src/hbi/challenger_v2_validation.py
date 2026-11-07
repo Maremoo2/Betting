@@ -7,12 +7,10 @@ an improved coefficient based on outcomes.
 """
 from __future__ import annotations
 
-import json
 import math
 import random
 from datetime import UTC, datetime
 from statistics import mean
-from typing import Any
 
 SCHEMA = "CHALLENGER_V2_PROSPECTIVE_VALIDATION_V1"
 
