@@ -4,15 +4,17 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-from datetime import UTC, datetime
 
 import pytest
 
 from hbi.challenger_v2_shadow import (
-    MODEL_VERSION, CandidatePolicy, estimate_shadow,
+    MODEL_VERSION,
+    CandidatePolicy,
+    estimate_shadow,
 )
 from hbi.historical_intelligence_v2 import (
-    history_coverage, verified_past_race,
+    history_coverage,
+    verified_past_race,
 )
 
 START = "2026-11-07T14:00:00+00:00"
