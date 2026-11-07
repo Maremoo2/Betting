@@ -144,11 +144,14 @@ def test_history_must_be_ascending_without_reordering_or_lookahead():
 
 def test_future_historical_result_relative_to_source_observation_is_rejected():
     result_rows=entries()
-    result_rows[4]["historical_date"]="2026-11-06"
+    # A PDF supposedly observed on 25 Oct cannot already contain the 28 Oct result.
     with pytest.raises(
         ValueError,match="DATA005_HISTORICAL_EVENT_NOT_BEFORE_SOURCE_OBSERVATION"
     ):
-        research(original_entries=result_rows)
+        research(
+            original_entries=result_rows,
+            source_observed_at_utc="2026-10-25T06:18:23+00:00",
+        )
 
 
 def test_each_original_history_line_requires_source_sha():
