@@ -1,3 +1,4 @@
+import json
 from datetime import date
 
 import numpy as np
@@ -59,3 +60,35 @@ def test_lockbox_and_non_archive_source_fail_closed(tmp_path):
     with pytest.raises(ValueError, match="Outside source allowlist"):
         bench.purse_proxy(tmp_path, {"source_id": "2025/opaque.json"})
     assert bench.historical_day("2024-12-31") == date(2024, 12, 31)
+
+
+def test_export_hashes_and_lockbox_manifest(tmp_path):
+    content = b'{"row": 1}\n'
+    path = tmp_path / "EXPORT_MANIFEST.json"
+    files = {name: {"sha256": bench.sha(content)} for name in ("events.jsonl", "targets.jsonl")}
+    path.write_text(json.dumps({"years": [2025], "files": files}), encoding="utf-8")
+    with pytest.raises(ValueError, match="outside historical allowlist"):
+        list(bench.load_export(tmp_path))
+    path.write_text(json.dumps({"years": list(range(2015, 2025)), "files": files}),
+                    encoding="utf-8")
+    for name in files:
+        (tmp_path / name).write_bytes(content)
+    assert [list(rows) for rows in bench.load_export(tmp_path)] == [[{"row": 1}]] * 2
+    (tmp_path / "targets.jsonl").write_bytes(b"changed")
+    with pytest.raises(ValueError, match="Source hash mismatch"):
+        list(bench.load_export(tmp_path))
+
+
+def test_legacy_ledger_requires_pinned_bytes(tmp_path):
+    path = tmp_path / "2022" / "D_2022_CUMULATIVE_FORWARD_LEDGER.jsonl"
+    path.parent.mkdir()
+    data = b'{"primary":true,"race_id":"r1"}\n'
+    path.write_bytes(data)
+    synthesis = tmp_path / "synthesis.json"
+    synthesis.write_text(json.dumps([{"year": 2022, "source": {"path": "C:/2022/a.json"}}]),
+                         encoding="utf-8")
+    pins = {path.relative_to(tmp_path).as_posix(): bench.sha(data)}
+    assert list(bench.load_legacy(tmp_path, synthesis, pins)) == [{"primary": True, "race_id": "r1"}]
+    path.write_bytes(b"changed")
+    with pytest.raises(ValueError, match="Source hash mismatch"):
+        list(bench.load_legacy(tmp_path, synthesis, pins))

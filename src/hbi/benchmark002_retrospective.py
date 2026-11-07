@@ -294,8 +294,10 @@ def main():
     export = root / "HIST_FORM_001" / "EXPORT_RELEASE"
     events, targets = load_export(export)
     races, coverage, diagnostics = build_races(workspace, events, targets)
+    previous = json.loads((root / "P0_BENCHMARK_001" / "RESULTS.json").read_bytes())
+    synthesis = root / "HBI_POST_2024_RESEARCH_SYNTHESIS_V1"
     legacy = {r["race_id"]: r for r in load_legacy(
-        root, root / "HBI_POST_2024_RESEARCH_SYNTHESIS_V1" / "ORIGINAL_ANNUAL_RESULTS_UNCHANGED.json")}
+        root, synthesis / "ORIGINAL_ANNUAL_RESULTS_UNCHANGED.json", previous["input_sha256"])}
     report = {"scope": SCOPE, "model_eligible": False, "bet_authority": False,
               "model_version": "BENCHMARK002_CHALLENGER_V2_RETRO_V1",
               "export_manifest_sha256": sha((export / "EXPORT_MANIFEST.json").read_bytes()),
@@ -306,10 +308,13 @@ def main():
         for year, train, cal, test, models in freeze_model_rows(races):
             paired_cal = [p for r in cal if (p := distributions(r, models, legacy.get(r["id"])))]
             paired = [p for r in test if (p := distributions(r, models, legacy.get(r["id"])))]
-            beta = fit(list(combo_inputs(paired_cal)), (0, 1))
+            calibration_rows = list(combo_inputs(paired_cal))
+            beta = fit(calibration_rows, (0, 1))
+            market_beta = fit(calibration_rows, (0,))
             for row, combo in zip(paired, combo_inputs(paired)):
                 p = row["probabilities"]
                 p["V2_MARKET_COMBO"] = dict(zip(p["M0"], predict(combo, (0, 1), beta)))
+                p["CALIBRATED_WIN_FOLD"] = dict(zip(p["M0"], predict(combo, (0,), market_beta)))
                 row["model_version"] = report["model_version"]
                 row["feature_data_manifest_sha256"] = report["export_manifest_sha256"]
                 row["challenger_fair_odds"] = {k: 1 / v for k, v in p["CHALLENGER_V2"].items()}
@@ -319,6 +324,7 @@ def main():
             report["folds"].append({"test_year": year, "train_n": len(train), "cal_n": len(paired_cal),
                                     "full_test_n": len(test), "n": len(paired), "scores": scores,
                                     "calibration": bins, "combo_beta": beta.tolist(),
+                                    "market_beta": market_beta.tolist(),
                                     "coefficients": {k: v.tolist() for k, v in models.items()}})
     (args.output / "benchmark.json").write_text(json.dumps(report, indent=2, allow_nan=False),
                                                 encoding="utf-8")
