@@ -116,7 +116,7 @@ def _dated_lines(entry: dict, text: str) -> list[dict]:
     for row in history:
         stamp,raw=row.get("date"),row.get("raw_text")
         if not isinstance(stamp,str) or not isinstance(raw,str):
-            raise ValueError("PDF_LINE_DATE_OR_RAW_MISSING")
+            raise TypeError("PDF_LINE_DATE_OR_RAW_MISSING")
         matches=re.findall(r"(\d\d)\.(\d\d)\.(\d\d)-(\d+)",raw)
         if len(matches)!=1 or raw not in entry.get("raw_section","") or raw not in text:
             raise ValueError("PDF_LINE_NOT_IN_ORIGINAL_EXTRACTION")
