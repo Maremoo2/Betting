@@ -83,10 +83,7 @@ def test_exact_original_pdf_hash_from_manifest_and_derived_qa(tmp_path):
     archive=mod["OriginalArchive"](path)
     source,parsed=mod["_collector_pdf"](
         archive,KEY,cutoff=datetime(2026,11,7,7,0,tzinfo=UTC))
-    assert source["source_original_pdf_sha256"] == source.get(
-        "source_pdf_sha256"
-    ) if "source_original_pdf_sha256" in source else len(
-        source["source_pdf_sha256"])==64
+    assert len(source["source_pdf_sha256"]) == 64
     assert source["parser_qa_status"]=="REVIEW_REQUIRED"
     assert parsed["races"]==[]
 
