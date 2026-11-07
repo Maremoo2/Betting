@@ -140,3 +140,19 @@ def test_history_must_be_ascending_without_reordering_or_lookahead():
     assert result["status"]=="PARTIAL"
     assert "NO_CHRONOLOGICALLY_COMPLETE_FIVE_SOURCE_ROWS" in result["blockers"]
     assert result["model_feature_authority"] is False
+
+
+def test_future_historical_result_relative_to_source_observation_is_rejected():
+    result_rows=entries()
+    result_rows[4]["historical_date"]="2026-11-06"
+    with pytest.raises(
+        ValueError,match="DATA005_HISTORICAL_EVENT_NOT_BEFORE_SOURCE_OBSERVATION"
+    ):
+        research(original_entries=result_rows)
+
+
+def test_each_original_history_line_requires_source_sha():
+    result_rows=entries()
+    result_rows[0]["original_line_sha256"]="MISSING"
+    with pytest.raises(ValueError,match="DATA005_ORIGINAL_HISTORY_LINE_SHA_MISSING"):
+        research(original_entries=result_rows)
