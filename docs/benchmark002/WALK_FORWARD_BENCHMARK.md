@@ -26,3 +26,20 @@ PIT_HARDGATES_UNCHANGED=true
 AUTO_BET=false
 BET_AUTHORITY=false
 AUTO_MERGE=false
+
+## New results on the common retrospective cohort
+
+| Candidate | Log loss | Brier | ECE 0.10 | Status vs calibrated terminal WIN |
+| --- | ---: | ---: | ---: | --- |
+| Challenger V2 + market | 1.5516082 | 0.6929415 | 0.0047427 | SUPERIOR on this retrospective LL contrast |
+| LegacyCombined | 1.5545104 | 0.6933397 | 0.0040920 | SUPERIOR on this retrospective LL contrast |
+| Calibrated terminal WIN | 1.5569939 | 0.6937543 | 0.0039238 | Reference |
+| Normalized terminal WIN | 1.5652601 | 0.6966418 | 0.0107086 | INFERIOR |
+| Challenger V2 fundamental | 1.8247338 | 0.7846381 | 0.0075126 | INFERIOR |
+| Simple recent form | 1.8451295 | 0.7912964 | 0.0105001 | INFERIOR |
+| Uniform | 2.1878630 | 0.8840020 | 0 | INFERIOR |
+| Frozen Champion and CORE-004 | — | — | — | NOT_TESTABLE on the common cohort |
+
+All measured rows use 5,274 races and 158 week blocks. Paired sample sizes are 1,837 in 2022, 1,749 in 2023 and 1,688 in 2024. Before matching to the archived market and Legacy fields the test folds contain 8,526 eligible full fields. For Challenger + market, delta LL vs calibrated terminal WIN is −0.005386 with 95% week interval [−0.008902, −0.001974]. Paired delta Brier is −0.000813 with interval [−0.002396, +0.000749]. The exploratory comparison against LegacyCombined is −0.002902 LL, interval [−0.005800, −0.000031], without a multiplicity correction on this secondary head-to-head. Generalization against decision-time WIN remains NOT_TESTABLE.
+
+Adding F1 reduced LL by 0.084970 compared with the fitted career baseline. F2's winner-payout proxy increased LL by 0.001684. F3 reduced LL by 0.022080 against form plus the same proxy. These are within-experiment estimates, not estimates of the effect of verified class or certified history.

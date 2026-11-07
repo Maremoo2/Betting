@@ -42,9 +42,21 @@ def historical_day(value):
 
 
 def load_export(root):
-    manifest = json.loads((root / "EXPORT_MANIFEST.json").read_bytes())["files"]
+    manifest = json.loads((root / "EXPORT_MANIFEST.json").read_bytes())
+    if manifest["years"] != list(range(2015, 2025)):
+        raise ValueError("Export years outside historical allowlist")
     for filename in ("events.jsonl", "targets.jsonl"):
-        yield lines(source(root / filename, manifest[filename]["sha256"]))
+        path = root / filename
+        with path.open("rb") as stream:
+            actual = hashlib.file_digest(stream, "sha256").hexdigest()
+        if actual != manifest["files"][filename]["sha256"]:
+            raise ValueError(f"Source hash mismatch: {filename}")
+        yield read_jsonl(path)
+
+
+def read_jsonl(path):
+    with path.open("rb") as stream:
+        yield from map(json.loads, stream)
 
 
 def finite_time(row):
@@ -172,7 +184,10 @@ def build_races(workspace, events, targets):
                 won = i == winner
                 updates.append((horse, (day, won, relative, purse, faced), 0.15 * (won - expectation[i])))
             result.append({"id": rid, "day": day, "track": target["track"], "selections": selections,
-                           "x": features, "winner": winner})
+                           "x": features, "winner": winner,
+                           "result_version": field[winner]["result_version"],
+                           "result_source_hash": field[winner].get("source_hash"),
+                           "history_counts": dict(zip(selections, [len(histories[h]) for h in horses]))})
         # No outcome enters another race on the same day, including rating or class state.
         for horse, history, change in updates:
             histories[horse].append(history)
@@ -215,7 +230,7 @@ def freeze_model_rows(races):
         yield year, train, calibration, test, models
 
 
-def load_legacy(root, synthesis):
+def load_legacy(root, synthesis, expected_hashes):
     for item in json.loads(synthesis.read_bytes()):
         year = item["year"]
         if year not in range(2018, 2025):
@@ -224,7 +239,7 @@ def load_legacy(root, synthesis):
             continue
         folder = Path(item["source"]["path"].replace(chr(92), "/")).parent.name
         path, = (root / folder).glob(f"*{year}*CUMULATIVE_FORWARD_LEDGER.jsonl")
-        for row in lines(path.read_bytes()):
+        for row in lines(source(path, expected_hashes[path.relative_to(root).as_posix()])):
             if row["primary"]:
                 yield row
 
@@ -241,7 +256,10 @@ def distributions(row, models, legacy):
         probs[model] = dict(zip(selections, predict(row, VARIANTS[model], beta)))
     probs["UNIFORM"] = dict.fromkeys(selections, 1 / len(selections))
     return {"race_id": row["id"], "day": row["day"].isoformat(), "track": row["track"],
-            "winner": winner, "scope": SCOPE, "probabilities": probs}
+            "winner": winner, "scope": SCOPE, "probabilities": probs,
+            "result_version": row["result_version"],
+            "result_source_hash": row["result_source_hash"],
+            "observed_history_count": row["history_counts"]}
 
 
 def combo_inputs(rows):
@@ -292,6 +310,10 @@ def main():
             for row, combo in zip(paired, combo_inputs(paired)):
                 p = row["probabilities"]
                 p["V2_MARKET_COMBO"] = dict(zip(p["M0"], predict(combo, (0, 1), beta)))
+                row["model_version"] = report["model_version"]
+                row["feature_data_manifest_sha256"] = report["export_manifest_sha256"]
+                row["challenger_fair_odds"] = {k: 1 / v for k, v in p["CHALLENGER_V2"].items()}
+                row["pit_status"] = "PIT_UNPROVEN"
                 stream.write(json.dumps(row, allow_nan=False) + "\n")
             scores, bins = evaluate(paired)
             report["folds"].append({"test_year": year, "train_n": len(train), "cal_n": len(paired_cal),
