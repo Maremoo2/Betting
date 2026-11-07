@@ -111,6 +111,23 @@ jobs:
             --baseline "$RUNNER_TEMP/weekend-race-intelligence/baseline/original-capture" \
             --latest "$RUNNER_TEMP/weekend-race-intelligence/original-capture" \
             --output "$RUNNER_TEMP/weekend-race-intelligence/multi-snapshot-comparison.json"
+      - name: Read immutable November 6 prestart originals and frozen Champion (NO BET)
+        if: github.event.pull_request.head.ref == 'research/challenger-v2-shadow-20261107'
+        uses: actions/download-artifact@v4
+        with:
+          name: weekend-p0-original-pilot-42270567852
+          run-id: 42270567852
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: Maremoo2/Betting
+          path: ${{ runner.temp }}/weekend-race-intelligence/baseline-immutable
+      - name: Score Saturday fields with market-free V2 shadow, zero retroactive Champion writes
+        if: github.event.pull_request.head.ref == 'research/challenger-v2-shadow-20261107'
+        shell: bash
+        run: |
+          python scripts/challenger_v2_saturday_original_shadow.py \
+            --baseline-root "$RUNNER_TEMP/weekend-race-intelligence/baseline-immutable" \
+            --latest-root "$RUNNER_TEMP/weekend-race-intelligence/original-capture" \
+            --output "$RUNNER_TEMP/weekend-race-intelligence/challenger-v2-shadow.json"
       - name: Publish exact SHA original receipts and consolidated weekend report
         if: always()
         uses: actions/upload-artifact@v4
