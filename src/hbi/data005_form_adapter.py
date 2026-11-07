@@ -78,6 +78,12 @@ def form_candidate(
             raise ValueError("DATA005_HISTORICAL_EVENT_DATE_INVALID") from exc
         if dt >= start.date():
             raise ValueError("DATA005_HISTORIC_EVENT_NOT_BEFORE_TARGET")
+        if dt >= observed.date():
+            # Without an actual historical event clock, today's later race
+            # cannot be proven to have happened before the PDF was archived.
+            raise ValueError("DATA005_HISTORICAL_EVENT_NOT_BEFORE_SOURCE_OBSERVATION")
+        if not _sha(row.get("original_line_sha256")):
+            raise ValueError("DATA005_ORIGINAL_HISTORY_LINE_SHA_MISSING")
         key = (event_date, row.get("historical_track_code"),
                row.get("historical_race_number"))
         if key in seen:
