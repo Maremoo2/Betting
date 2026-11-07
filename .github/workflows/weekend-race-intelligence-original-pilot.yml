@@ -13,7 +13,8 @@ jobs:
     if: >-
       github.event.pull_request.head.ref == 'research/weekend-v85-race-intelligence-pilot-20261106' ||
       github.event.pull_request.head.ref == 'research/weekend-v85-multisnapshot-20261106' ||
-      github.event.pull_request.head.ref == 'research/p0-full-race-intelligence-20261106'
+      github.event.pull_request.head.ref == 'research/p0-full-race-intelligence-20261106' ||
+      github.event.pull_request.head.ref == 'research/challenger-v2-shadow-20261107'
     runs-on: ubuntu-latest
     timeout-minutes: 14
     steps:
