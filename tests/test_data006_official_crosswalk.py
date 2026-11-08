@@ -33,7 +33,7 @@ def official():
     return [{
         "horse_name":"Tysvær Tjerand",
         "official_result_url":f"https://old.travsport.no/Sport/Resultater/Jarlsberg-Travbane/?date={d.replace('-','')}",
-        "date":DATES[i],"track_code":"J","race_number":RACE_NUMS[i],
+        "date":d,"track_code":"J","race_number":RACE_NUMS[i],
         "start_number":NUMS[i],"distance_m":2100,
         "placing_code":PLACES[i],"km_time":PACEs[i],
         "gallop":GALLOPS[i],"disqualified":i==0,
