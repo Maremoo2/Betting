@@ -74,7 +74,7 @@ def test_five_official_rows_match_but_not_pit_and_not_model_enabled():
 
 
 @pytest.mark.parametrize("key,bad",[
-    ("placing_code","1"),("km_time","14,4"),("gallop",False),
+    ("placing_code","1"),("km_time","14,4"),("gallop",True),
     ("disqualified",True),("distance_m",1640),
 ])
 def test_mismatch_is_never_silently_reconciled(key,bad):
