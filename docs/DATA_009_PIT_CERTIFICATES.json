@@ -1,0 +1,8 @@
+{
+  "schema": "DATA009_PIT_CERTIFICATE_LEDGER_V1",
+  "date": "2026-11-09",
+  "certificates": [],
+  "pit_certified_race_count": 0,
+  "reason": "No new exact-version original-body prospectively attested chain in sprint",
+  "bet_authority": false
+}
