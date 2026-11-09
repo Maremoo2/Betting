@@ -1,0 +1,3 @@
+cohort_id,scope,intended_races,qualified_pit_races,exclusion
+BENCHMARK002_2022_2024,TERMINAL_RETROSPECTIVE,5274,0,terminal_prices_not_decision_time
+DATA009_NEW_PROSPECTIVE,PIT_CERTIFIED,0,0,no_verified_prospective_source_chain
