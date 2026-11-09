@@ -1,6 +1,8 @@
 """Ensure the accelerated research interface cannot silently acquire betting authority."""
+
 import json
 from pathlib import Path
+
 
 def test_canonical_contract_explicit_fields_and_no_bet():
     root = Path(__file__).resolve().parents[1]
