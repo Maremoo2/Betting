@@ -5,10 +5,10 @@ are treated as input assertions, never independently issued certificates.
 """
 from __future__ import annotations
 
+import random
 from collections import defaultdict
 from datetime import date, datetime
 from math import isfinite
-import random
 from typing import Any
 
 from hbi.evaluation import calibration_bins, log_loss, multiclass_brier
@@ -21,8 +21,8 @@ SCOPES = {
 
 def instant(value: str) -> datetime:
     if not isinstance(value, str):
-        raise ValueError("TIMESTAMP_MISSING")
-    d = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        raise TypeError("TIMESTAMP_MISSING")
+    d = datetime.fromisoformat(value)
     if d.tzinfo is None or d.utcoffset() is None:
         raise ValueError("TIMESTAMP_NAIVE")
     return d
@@ -64,9 +64,8 @@ def validate(row: dict[str, Any]) -> dict[str, Any]:
             or instant(row["model_frozen_at"]) > cutoff
         ):
             raise ValueError("DECISION_TIME_LOOKAHEAD")
-    elif scope == "DECISION_TIME_OBSERVED":
-        if instant(row["market_observed_at"]) > cutoff:
-            raise ValueError("MARKET_AFTER_CUTOFF")
+    elif scope == "DECISION_TIME_OBSERVED" and instant(row["market_observed_at"]) > cutoff:
+        raise ValueError("MARKET_AFTER_CUTOFF")
     return row
 
 
