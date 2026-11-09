@@ -1,0 +1,9 @@
+race_id,scheduled_start_utc,t_minus4_utc,roster_rows,verified_history_rows,full_history,full_win,full_research_sources,pit_certified,benchmark_eligible
+RIKSTOTO:S2_NR_2026-11-09:2,2026-11-09T17:42:00Z,2026-11-09T17:38:00Z,12,12,true,true,true,false,false
+RIKSTOTO:OR_NR_2026-11-09:3,2026-11-09T17:55:00Z,2026-11-09T17:51:00Z,9,0,false,false,false,false,false
+RIKSTOTO:S2_NR_2026-11-09:3,2026-11-09T18:05:00Z,2026-11-09T18:01:00Z,11,10,true,true,true,false,false
+RIKSTOTO:OR_NR_2026-11-09:4,2026-11-09T18:15:00Z,2026-11-09T18:11:00Z,9,0,false,false,false,false,false
+RIKSTOTO:S2_NR_2026-11-09:4,2026-11-09T18:30:00Z,2026-11-09T18:26:00Z,0,0,false,false,false,false,false
+RIKSTOTO:OR_NR_2026-11-09:5,2026-11-09T18:40:00Z,2026-11-09T18:36:00Z,0,0,false,false,false,false,false
+RIKSTOTO:S2_NR_2026-11-09:5,2026-11-09T18:52:00Z,2026-11-09T18:48:00Z,0,0,false,false,false,false,false
+RIKSTOTO:OR_NR_2026-11-09:6,2026-11-09T19:05:00Z,2026-11-09T19:01:00Z,0,0,false,false,false,false,false
