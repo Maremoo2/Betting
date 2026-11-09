@@ -54,18 +54,31 @@ def validate(row: dict[str, Any]) -> dict[str, Any]:
     cutoff = instant(row["decision_cutoff"])
     if cutoff >= start:
         raise ValueError("CUTOFF_NOT_PRESTART")
+    # These three scopes depend on an independently frozen pre-cutoff snapshot.
+    # The timestamp fields are input evidence only: passing here never creates
+    # an independent PIT certificate or changes model/betting authority.
     if scope in {"PIT_CERTIFIED", "PROSPECTIVE_FROZEN"}:
         if row.get("pit_evidence_status") != "PIT_CERTIFIED":
             raise ValueError("PIT_CLAIM_WITHOUT_CERTIFICATE")
         if any(not row.get(k) for k in ("source_hash", "snapshot_id", "model_version")):
             raise ValueError("SOURCE_PROVENANCE_INCOMPLETE")
-        if (
-            instant(row["market_observed_at"]) > cutoff
-            or instant(row["model_frozen_at"]) > cutoff
-        ):
-            raise ValueError("DECISION_TIME_LOOKAHEAD")
-    elif scope == "DECISION_TIME_OBSERVED" and instant(row["market_observed_at"]) > cutoff:
-        raise ValueError("MARKET_AFTER_CUTOFF")
+    if scope in {"DECISION_TIME_OBSERVED", "PIT_CERTIFIED", "PROSPECTIVE_FROZEN"}:
+        if "market_observed_at" not in row:
+            raise ValueError("MARKET_TIMESTAMP_MISSING")
+        if instant(row["market_observed_at"]) > cutoff:
+            raise ValueError("MARKET_AFTER_CUTOFF")
+        if "model_calculated_at" not in row:
+            raise ValueError("MODEL_CALCULATED_TIMESTAMP_MISSING")
+        if "model_frozen_at" not in row:
+            raise ValueError("MODEL_FROZEN_TIMESTAMP_MISSING")
+        calculated = instant(row["model_calculated_at"])
+        frozen = instant(row["model_frozen_at"])
+        if calculated > cutoff:
+            raise ValueError("MODEL_CALCULATED_AFTER_CUTOFF")
+        if frozen > cutoff:
+            raise ValueError("MODEL_FROZEN_AFTER_CUTOFF")
+        if calculated > frozen:
+            raise ValueError("MODEL_CALCULATED_AFTER_FROZEN")
     return row
 
 
@@ -78,9 +91,11 @@ def score(rows: list[dict[str, Any]], left: str, right: str) -> dict[str, Any]:
     points = defaultdict(list)
     favorite_points = defaultdict(list)
     for row in rows:
-        validate(row)
+        # Report a mixed-cohort violation before row-level timestamp
+        # validation, preserving the existing no-mixed-scope contract.
         if scope is not None and row["scope"] != scope:
             raise ValueError("MIXED_SCOPE_NOT_ALLOWED")
+        validate(row)
         scope = row["scope"]
         key = row["race_id"]
         if key in seen:
