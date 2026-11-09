@@ -1,0 +1,4 @@
+experiment,races,status,log_loss,description
+V3_REAL_CERTIFIED,0,NOT_TESTABLE,,no_PIT_certified_training_cohort
+V2_PLUS_TERMINAL_WIN_OLD_REFERENCE,5274,EXISTING_BENCHMARK002,1.5516082,not_new_V3_result
+TERMINAL_WIN_OLD_REFERENCE,5274,EXISTING_BENCHMARK002,1.5569939,not_decision_time
