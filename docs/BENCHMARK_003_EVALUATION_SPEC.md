@@ -1,0 +1,7 @@
+# BENCHMARK-003 evaluation framework — research only
+
+Kanonisk fullfeltinput: race_id, race_date, scope, active_field (unique selection IDs), probabilities[model][selection_id], winner_selection_id, race_start_at, decision_cutoff; prospective claimed PIT additionally requires market_observed_at, model_frozen_at, snapshot_id, source_hash, model_version, pit_evidence_status. Reuse existing `hbi.evaluation` for log loss, multiclass Brier and calibration. New layer handles exact full-field/scope consistency, paired deltas and deterministic 2,000-draw week-block bootstrap.
+
+Four evidence scopes MUST NEVER MIX: TERMINAL_RETROSPECTIVE, DECISION_TIME_OBSERVED, PIT_CERTIFIED, PROSPECTIVE_FROZEN. PIT_CERTIFIED is an *unverified upstream assertion* inside this evaluator and cannot itself create a certificate. Separate DATA-009 source and provider gate is required to authorize eventual real evaluation. Baselines available only when on same physical race and complete field: uniform, Champion, CORE004, LegacyCombined, Challenger V2/V3, normalized/calibrated WIN, or combination; missing baseline causes explicit error.
+
+Run `python -m pytest -q tests/test_benchmark003_framework.py`. Synthetic tests do not provide empirical predictive superiority or betting EV. No model retraining or active decision changes.
