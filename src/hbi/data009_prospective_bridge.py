@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import math
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -17,11 +17,11 @@ POST_ROLES = ("RESULT", "SETTLEMENT")
 
 def utc(s: str) -> datetime:
     if not isinstance(s, str):
-        raise ValueError("TIME_MISSING")
-    d = datetime.fromisoformat(s.replace("Z", "+00:00"))
+        raise TypeError("TIME_MISSING")
+    d = datetime.fromisoformat(s)
     if d.tzinfo is None or d.utcoffset() is None:
         raise ValueError("NAIVE_TIME")
-    return d.astimezone(timezone.utc)
+    return d.astimezone(UTC)
 
 
 def source_record(
@@ -102,7 +102,7 @@ def audit(race: dict[str, Any], root: Path) -> dict[str, Any]:
     model = race.get("model_probabilities")
     odds = race.get("win_odds")
     if isinstance(runner_ids, list) and len(
-        set(str(x) for x in runner_ids)
+        {str(x) for x in runner_ids}
     ) == len(runner_ids):
         for label, values in (("MODEL", model), ("WIN", odds)):
             if not isinstance(values, dict) or set(values) != set(runner_ids):
