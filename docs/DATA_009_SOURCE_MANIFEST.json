@@ -1,0 +1,9 @@
+{
+  "schema": "DATA009_SOURCE_AUDIT_MANIFEST_V1",
+  "betting_main": "7d5c80e02b521fbbaf5b76917952a8187df03fae",
+  "collector_main": "0d860759e8065f50e9fd9f3371fa22438cfca1fc",
+  "collector_run_id": 42346290934,
+  "original_program_sha256": "020eedb5bfb3f5cea0e2d55bac6622a01f3fe51a473c8a33bd9ecaa93c1f222a",
+  "actual_tminus4_win_certified": false,
+  "prospective_source_captures": 0
+}
