@@ -1,0 +1,4 @@
+# MERGE-002 GO / NO-GO
+All #176–#182 already externally MERGED, do NOT remerge. Research code integration: CODE_MERGE_READY=PASS (already done) for PR #180 and PR #181. However independent permanent identity, true T−4 raw WIN receipt, official result and model-freeze certificate are unavailable for qualifying benchmark; `RESEARCH_DATA_READY=BLOCKED`, `PROSPECTIVE_EVIDENCE_READY=BLOCKED`, `PRODUCTION_READY=BLOCKED`.
+Main push Ruff & Pytest PASS (1,981/106 skipped); Research Integrity PASS; Provider Live Smoke PASS; V1 System Audit FAIL on settlement integrity (three overdue unsettled shadow tickets). Prior GitHub replay HTTP403 persists, but local original SHA replay 35/35 PASS. No waiver of scheduled or source hard gates.
+No automatic merge, code promotion, altered betting thresholds, 2025 lockbox access, model weights or workflows. Owner should review any new isolated research timing validation PR separately. Stop if new source integrity regression appears.

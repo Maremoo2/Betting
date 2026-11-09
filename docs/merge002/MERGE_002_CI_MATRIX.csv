@@ -1,0 +1,16 @@
+control,status,scope,github_run_id,evidence
+Ruff,PASS,MAIN_PUSH,42649172454,Main CI
+Full Pytest,PASS,MAIN_PUSH,42649172454,"1981 passed; 106 skipped"
+Protected Strategy Files,NOT_RUN,EXACT_MAIN,,PR182 prior identical tree PASS 42630383175
+HBI V1 Research Integrity,PASS,MAIN_PUSH,42649172256,Green
+HBI Provider Live Smoke,PASS,MAIN_PUSH,42649172351,FR SE NO DK verified
+HBI V1 System Audit,FAIL,MAIN_PUSH,42649172455,Three unsettled shadow tickets after grace
+MVP014 original CI replay,BLOCKED,PR182,42630382729,Cross repository artifact API HTTP403
+MVP014 local equivalent replay,PASS,LOCAL,,10 exact original files 35 races 2 negative checks
+Other historical original replays,NOT_RUN,MAIN_PUSH,42649172454,PR-only workflow steps
+DATA006 result linkage tests,PASS,MAIN_PYTEST,42649172454,Synthetic or fixed source tests
+DATA009 source bridge tests,PASS,MAIN_PYTEST,42649172454,No independent PIT certification
+MERGE001 integration tests,PASS,MAIN_PYTEST,42649172454,No authorization
+BENCHMARK003 evaluator tests,PASS,MAIN_PYTEST,42649172454,Research only
+MODEL003 feature tests,PASS,MAIN_PYTEST,42649172454,Unfitted shadow only
+PIT003A source attestation,BLOCKED,ARCHIVED_REAL_CAPTURE,42665536177,Zero certified
