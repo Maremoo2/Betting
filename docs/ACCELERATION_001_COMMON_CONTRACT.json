@@ -1,0 +1,32 @@
+{
+  "schema": "ACCELERATION_001_RACE_EVIDENCE_V1",
+  "purpose": "RESEARCH_ONLY",
+  "required": [
+    "race_id",
+    "horse_id",
+    "source_id",
+    "source_hash",
+    "observed_at",
+    "race_start_time",
+    "decision_cutoff",
+    "model_version",
+    "model_probability",
+    "normalized_win_probability",
+    "executable_price_status",
+    "official_result",
+    "settlement_status",
+    "pit_evidence_status"
+  ],
+  "missing_value_rule": "EXPLICIT_NULL_OR_MISSING_STATUS_NOT_ZERO",
+  "single_physical_race_rule": "SAME_RACE_AND_FULL_ACTIVE_FIELD",
+  "source_sha_rule": "HASH_OF_EXACT_ORIGINAL_BYTES_WITH_READBACK",
+  "time_rule": "OFFSET_AWARE_AND_SOURCE_OBSERVED_BEFORE_CUTOFF",
+  "scope_categories": [
+    "TERMINAL_RETROSPECTIVE",
+    "DECISION_TIME_OBSERVED",
+    "PIT_CERTIFIED",
+    "PROSPECTIVE_FROZEN"
+  ],
+  "bet_authority": false,
+  "auto_merge": false
+}
