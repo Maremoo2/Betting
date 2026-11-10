@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import json
+import logging
 import math
+import os
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from .benchmark import closing_line_value
@@ -11,6 +15,7 @@ from .providers.rikstoto import RikstotoClient
 from .storage import SQLiteStore
 
 OSLO = ZoneInfo("Europe/Oslo")
+LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -112,42 +117,120 @@ def settle_open_shadow_tickets(
     *,
     client: RikstotoClient | None = None,
     settled_at: datetime | None = None,
+    trace_hook: Callable[[dict[str, object]], None] | None = None,
 ) -> SettlementSummary:
     api = client or RikstotoClient()
     now = settled_at or datetime.now(UTC)
     open_tickets = store.open_shadow_tickets()
     result_cache: dict[str, tuple[dict[str, object], str]] = {}
     complete_cache: dict[tuple[str, int], tuple[dict[str, object], str]] = {}
+    # Provenance metadata is separate from cached result payloads; the normal
+    # settlement decisions and source lookup count remain unchanged.
+    day_receipts: dict[str, dict[str, object]] = {}
+    complete_receipts: dict[tuple[str, int], dict[str, object]] = {}
     settled = pending = failed = 0
 
+    def receipt(fetch: object) -> dict[str, object]:
+        completed = getattr(fetch, "response_completed_at", None)
+        return {
+            "source_url": getattr(fetch, "url", None) or "MISSING",
+            "http_status": getattr(fetch, "status_code", None),
+            "source_observed_at_utc": (
+                completed.isoformat() if isinstance(completed, datetime) else "MISSING"
+            ),
+            "received_at_utc": (
+                completed.isoformat() if isinstance(completed, datetime) else "MISSING"
+            ),
+            "source_published_at_utc": "MISSING",
+            "source_body_sha256": getattr(fetch, "response_body_sha256", None) or "MISSING",
+            "original_raw_body_reference": "MISSING",
+            "source_error_type": (
+                "MISSING" if getattr(fetch, "success", False)
+                else str(getattr(fetch, "error", None) or "UNKNOWN_FETCH_ERROR").split(":")[0][:80]
+            ),
+        }
+
     for ticket in open_tickets:
+        attempt_id = str(uuid4())
+        attempt_started = datetime.now(UTC)
+        trace_day: dict[str, object] | None = None
+        trace_complete: dict[str, object] | None = None
+
+        def emit(reason: str, *, after: str = "SHADOW_BET") -> None:
+            """Explicit opt-in only. Tracer errors must NEVER change settlement."""
+            if trace_hook is None:
+                return
+            try:
+                selections = json.loads(str(ticket.get("selections_json")))  # noqa: B023
+                selection = str(selections[0]) if isinstance(selections, list) and selections else "MISSING"
+            except (TypeError, ValueError, IndexError):
+                selection = "MISSING"
+            event: dict[str, object] = {
+                "schema": "PIT012_SETTLEMENT_ATTEMPT_V1",
+                "attempt_id": attempt_id,  # noqa: B023
+                "ticket_id": str(ticket.get("ticket_id") or "MISSING"),  # noqa: B023
+                "race_id": str(ticket.get("race_id") or "MISSING"),  # noqa: B023
+                "horse_id": selection,
+                "horse_id_scope": "RACE_LOCAL_SELECTION_NOT_PERMANENT_ID",
+                "job_run_id": os.getenv("GITHUB_RUN_ID") or "MISSING",
+                "started_at_utc": attempt_started.isoformat(),  # noqa: B023
+                "finished_at_utc": datetime.now(UTC).isoformat(),
+                "settlement_code_sha": os.getenv("GITHUB_SHA") or "MISSING",
+                "raceday_results": trace_day or {"status": "MISSING"},  # noqa: B023
+                "complete_results": trace_complete or {"status": "MISSING"},  # noqa: B023
+                "cached_outcome_is_original_official_proof": False,
+                "eligibility": "ACCEPTED" if reason == "SETTLED" else "REJECTED",
+                "decision_reason": reason,
+                "ticket_status_before": str(ticket.get("status") or "MISSING"),  # noqa: B023
+                "ticket_status_after": after,
+                "bet_authority": False,
+                "source_raw_body_retained_by_settlement": False,
+            }
+            try:
+                trace_hook(event)
+            except Exception as exc:  # noqa: BLE001
+                # The sidecar never changes settlement. Log only the *type*,
+                # not source content, tokens or other private details.
+                LOGGER.warning("PIT012 trace unavailable: %s", type(exc).__name__)
+
+
         raceday = ticket.get("provider_raceday_key")
         race_id = ticket.get("race_id")
         if not raceday or not race_id:
             pending += 1
+            emit("MISSING_RACE_REFERENCE")
             continue
         race = store.get_race(str(race_id))
         if race is None:
             pending += 1
+            emit("RACE_NOT_FOUND")
             continue
         race_number = int(race["race_no"])
 
         if str(raceday) not in result_cache:
             fetched = api.raceday_results(str(raceday))
+            day_receipts[str(raceday)] = receipt(fetched)
             if not fetched.success:
                 failed += 1
                 pending += 1
+                trace_day = day_receipts[str(raceday)]
+                emit("RACEDAY_RESULTS_FETCH_FAILED")
                 continue
             result_cache[str(raceday)] = (api.result_object(fetched), fetched.url)
+        trace_day = day_receipts.get(str(raceday))
 
         key = (str(raceday), race_number)
         if key not in complete_cache:
             fetched = api.complete_results(str(raceday), race_number)
+            complete_receipts[key] = receipt(fetched)
             if not fetched.success:
                 failed += 1
                 pending += 1
+                trace_complete = complete_receipts[key]
+                emit("COMPLETE_RESULTS_FETCH_FAILED")
                 continue
             complete_cache[key] = (api.result_object(fetched), fetched.url)
+        trace_complete = complete_receipts.get(key)
 
         raceday_result, odds_url = result_cache[str(raceday)]
         complete, result_url = complete_cache[key]
@@ -155,6 +238,7 @@ def settle_open_shadow_tickets(
         selections = json.loads(str(ticket["selections_json"]))
         if not selections:
             pending += 1
+            emit("SELECTION_MISSING")
             continue
         selection = str(selections[0])
         stake = float(ticket.get("stake_nok") or 0.0)
@@ -170,6 +254,14 @@ def settle_open_shadow_tickets(
                 or not _confirmed_win_dividends(raceday_result, race_number, winners)
             ):
                 pending += 1
+                if complete.get("isComplete") is not True:
+                    emit("OFFICIAL_RESULT_INCOMPLETE")
+                elif finish is None:
+                    emit("HORSE_NOT_IN_COMPLETE_RESULT")
+                elif finish <= 0 and not _confirmed_disqualification(complete, selection):
+                    emit("RESULT_CODE_UNSUPPORTED")
+                else:
+                    emit("WINNING_DIVIDEND_MISSING_OR_UNCONFIRMED")
                 continue
             price = _final_odds(
                 raceday_result,
@@ -180,6 +272,7 @@ def settle_open_shadow_tickets(
             won = finish == 1
             if won and price is None:
                 pending += 1
+                emit("WINNER_FINAL_PRICE_MISSING")
                 continue
             gross = stake * price if won else 0.0
         elif product == "P":
@@ -196,6 +289,7 @@ def settle_open_shadow_tickets(
             )
             if not isinstance(race_place_odds, dict) or not finishes:
                 pending += 1
+                emit("PLACE_ODDS_OR_RESULTS_MISSING")
                 continue
             price = _final_odds(
                 raceday_result,
@@ -210,6 +304,7 @@ def settle_open_shadow_tickets(
             # final odds. Other products stay pending until an official dividend
             # contract is verified.
             pending += 1
+            emit("UNSUPPORTED_PRODUCT")
             continue
 
         close = price
@@ -235,6 +330,7 @@ def settle_open_shadow_tickets(
             },
         )
         settled += 1
+        emit("SETTLED", after="SETTLED")
 
     return SettlementSummary(
         attempted=len(open_tickets),
