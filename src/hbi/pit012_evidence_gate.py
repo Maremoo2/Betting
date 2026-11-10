@@ -84,11 +84,13 @@ def audit_win_original(
         times[key] = value
         if value is None:
             blockers.append("MISSING_OR_NAIVE_" + key.upper())
-        elif value > deadline:
+        elif value >= deadline:
             blockers.append(key.upper() + "_AFTER_CUTOFF")
-    if all(t is not None for t in times.values()):
-        if not times["request_started_at_utc"] <= times["response_completed_at_utc"] <= times["archive_completed_at_utc"]:
-            blockers.append("SOURCE_CLOCK_ORDER_INVALID")
+    if (all(t is not None for t in times.values())
+            and not (times["request_started_at_utc"]
+                     <= times["response_completed_at_utc"]
+                     <= times["archive_completed_at_utc"])):
+        blockers.append("SOURCE_CLOCK_ORDER_INVALID")
     raw, err = read_bound_bytes(root, record.get("member"), record.get("sha256"))
     if err:
         blockers.append(err)
@@ -171,9 +173,9 @@ def audit_frozen_model(
         issues.append("MODEL_CALCULATED_TIME_MISSING")
     if frozen is None:
         issues.append("MODEL_FROZEN_TIME_MISSING")
-    if calculated is not None and calculated > deadline:
+    if calculated is not None and calculated >= deadline:
         issues.append("MODEL_CALCULATED_AFTER_CUTOFF")
-    if frozen is not None and frozen > deadline:
+    if frozen is not None and frozen >= deadline:
         issues.append("MODEL_FROZEN_AFTER_CUTOFF")
     if calculated is not None and frozen is not None and calculated > frozen:
         issues.append("MODEL_CALCULATED_AFTER_FROZEN")

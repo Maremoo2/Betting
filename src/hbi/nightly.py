@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import json
+import logging
 import math
 import os
-from uuid import uuid4
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from .benchmark import closing_line_value
@@ -14,6 +15,7 @@ from .providers.rikstoto import RikstotoClient
 from .storage import SQLiteStore
 
 OSLO = ZoneInfo("Europe/Oslo")
+LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -159,37 +161,37 @@ def settle_open_shadow_tickets(
             if trace_hook is None:
                 return
             try:
-                selections = json.loads(str(ticket.get("selections_json")))
+                selections = json.loads(str(ticket.get("selections_json")))  # noqa: B023
                 selection = str(selections[0]) if isinstance(selections, list) and selections else "MISSING"
             except (TypeError, ValueError, IndexError):
                 selection = "MISSING"
             event: dict[str, object] = {
                 "schema": "PIT012_SETTLEMENT_ATTEMPT_V1",
-                "attempt_id": attempt_id,
-                "ticket_id": str(ticket.get("ticket_id") or "MISSING"),
-                "race_id": str(ticket.get("race_id") or "MISSING"),
+                "attempt_id": attempt_id,  # noqa: B023
+                "ticket_id": str(ticket.get("ticket_id") or "MISSING"),  # noqa: B023
+                "race_id": str(ticket.get("race_id") or "MISSING"),  # noqa: B023
                 "horse_id": selection,
                 "horse_id_scope": "RACE_LOCAL_SELECTION_NOT_PERMANENT_ID",
                 "job_run_id": os.getenv("GITHUB_RUN_ID") or "MISSING",
-                "started_at_utc": attempt_started.isoformat(),
+                "started_at_utc": attempt_started.isoformat(),  # noqa: B023
                 "finished_at_utc": datetime.now(UTC).isoformat(),
                 "settlement_code_sha": os.getenv("GITHUB_SHA") or "MISSING",
-                "raceday_results": trace_day or {"status": "MISSING"},
-                "complete_results": trace_complete or {"status": "MISSING"},
+                "raceday_results": trace_day or {"status": "MISSING"},  # noqa: B023
+                "complete_results": trace_complete or {"status": "MISSING"},  # noqa: B023
                 "cached_outcome_is_original_official_proof": False,
                 "eligibility": "ACCEPTED" if reason == "SETTLED" else "REJECTED",
                 "decision_reason": reason,
-                "ticket_status_before": str(ticket.get("status") or "MISSING"),
+                "ticket_status_before": str(ticket.get("status") or "MISSING"),  # noqa: B023
                 "ticket_status_after": after,
                 "bet_authority": False,
                 "source_raw_body_retained_by_settlement": False,
             }
             try:
                 trace_hook(event)
-            except Exception:
-                # Optional diagnostics cannot affect any settlement outcome.
-                # A failed sidecar must report its own missing-trace count.
-                pass
+            except Exception as exc:  # noqa: BLE001
+                # The sidecar never changes settlement. Log only the *type*,
+                # not source content, tokens or other private details.
+                LOGGER.warning("PIT012 trace unavailable: %s", type(exc).__name__)
 
 
         raceday = ticket.get("provider_raceday_key")

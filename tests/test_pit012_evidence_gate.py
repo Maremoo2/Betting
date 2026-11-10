@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from hbi.pit012_evidence_gate import audit_win_original, audit_frozen_model
+from hbi.pit012_evidence_gate import audit_frozen_model, audit_win_original
 
 
 def digest(raw):
