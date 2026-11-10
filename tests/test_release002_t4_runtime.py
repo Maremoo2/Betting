@@ -5,14 +5,32 @@ All clocks and races are synthetic test inputs; never prospective PIT proof.
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
-from test_shadow_ledger import _store
 
 from hbi import watcher
 from hbi.shadow import ShadowPolicy
+from hbi.storage import SQLiteStore
+
+ROOT = Path(__file__).parents[1]
+
+
+def _store(tmp_path):
+    store = SQLiteStore(tmp_path / "state.sqlite")
+    store.initialize(ROOT / "db" / "schema.sql")
+    store.upsert_race({
+        "race_id": "r1",
+        "race_date": "2026-09-27", "country": "NO",
+        "track": "Bjerke", "race_no": 1,
+        "start_time_utc": "2026-09-27T18:00:00+00:00",
+        "discipline": "trot", "distance_m": 2100,
+        "start_method": "auto", "race_class": None,
+        "created_at_utc": "2026-09-27T10:00:00+00:00",
+    })
+    return store
 
 
 START = datetime(2026, 9, 27, 18, 0, tzinfo=UTC)
