@@ -30,6 +30,19 @@ def preview_handoff(race: dict[str, Any], root: Path, *, race_date: str) -> dict
             "blockers": ["MODEL_VERSION_MISSING"], "benchmark_eligible": False,
             "pit_evidence_status": "PIT_UNPROVEN", "bet_authority": False,
         }
+    # A receipt for MODEL source bytes cannot stand in for a model calculation
+    # or immutable freeze timestamp. Never infer either clock from observed_at.
+    missing_clocks = [
+        key for key in ("model_calculated_at", "model_frozen_at")
+        if not race.get(key)
+    ]
+    if missing_clocks:
+        return {
+            "status": "BLOCKED_MODEL_FREEZE_PROVENANCE",
+            "blockers": ["MISSING_" + key.upper() for key in missing_clocks],
+            "benchmark_eligible": False, "pit_evidence_status": "PIT_UNPROVEN",
+            "bet_authority": False,
+        }
     date.fromisoformat(race_date)
     candidate = {
         "race_id": race["race_id"], "race_date": race_date,
@@ -45,6 +58,8 @@ def preview_handoff(race: dict[str, Any], root: Path, *, race_date: str) -> dict
         "winner_selection_id": race["winner_selection_id"],
         "market_observed_at": race["sources"]["WIN"]["observed_at"],
         "model_source_observed_at": race["sources"]["MODEL"]["observed_at"],
+        "model_calculated_at": race["model_calculated_at"],
+        "model_frozen_at": race["model_frozen_at"],
         "model_version": model_version,
         "source_hash": race["sources"]["WIN"]["source_hash"],
     }

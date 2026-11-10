@@ -35,6 +35,10 @@ def fixture(tmp_path):
         "source_publication_or_asof_attested": True,
         "provider_identity_verified": True,
         "winner_selection_id": "1", "model_version": "SHADOW_TEST_ONLY",
+        # Explicit fake fixture clocks; the adapter must not infer them from
+        # MODEL source observed_at or grant actual model/PIT authority.
+        "model_calculated_at": "2026-11-09T19:55:00+00:00",
+        "model_frozen_at": "2026-11-09T19:55:00+00:00",
     }
 
 
@@ -96,3 +100,19 @@ def test_missing_model_version_stays_blocked(tmp_path):
     out = preview_handoff(race, tmp_path, race_date="2026-11-09")
     assert out["status"] == "BLOCKED_MODEL_VERSION_UNATTESTED"
     assert out["benchmark_eligible"] is False
+
+def test_missing_model_freeze_clocks_block_structural_handoff(tmp_path):
+    race = fixture(tmp_path)
+    del race["model_calculated_at"]
+    result = preview_handoff(race, tmp_path, race_date="2026-11-09")
+    assert result["status"] == "BLOCKED_MODEL_FREEZE_PROVENANCE"
+    assert "MISSING_MODEL_CALCULATED_AT" in result["blockers"]
+    assert result["benchmark_eligible"] is False
+
+
+def test_model_source_receipt_clock_cannot_mask_late_calculation(tmp_path):
+    race = fixture(tmp_path)
+    race["model_calculated_at"] = "2026-11-09T19:58:00+00:00"
+    race["model_frozen_at"] = "2026-11-09T19:59:00+00:00"
+    with pytest.raises(ValueError, match="MODEL_CALCULATED_AFTER_CUTOFF"):
+        preview_handoff(race, tmp_path, race_date="2026-11-09")
