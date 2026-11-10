@@ -9,10 +9,10 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
+from test_shadow_ledger import _store
 
 from hbi import watcher
 from hbi.shadow import ShadowPolicy
-from test_shadow_ledger import _store
 
 
 START = datetime(2026, 9, 27, 18, 0, tzinfo=UTC)
