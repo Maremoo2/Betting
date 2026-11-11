@@ -3,6 +3,7 @@
 Synthetic fixtures only. The four scoring tests intentionally expose the
 missing downstream T-4 receipt gate; they must pass before merge approval.
 """
+
 from __future__ import annotations
 
 import json
