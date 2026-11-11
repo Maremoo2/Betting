@@ -161,6 +161,7 @@ def test_guarded_shadow_never_creates_paper_ticket_before_attestation(tmp_path):
         datetime(2026, 9, 27, 17, 55, 50, tzinfo=UTC),
         datetime(2026, 9, 27, 17, 55, 51, tzinfo=UTC),
         datetime(2026, 9, 27, 17, 55, 52, tzinfo=UTC),
+        datetime(2026, 9, 27, 17, 55, 53, tzinfo=UTC),
     ])
     result = run_win_shadow_decision(
         store, race_id="r1", provider_raceday_key="BJ_NR_2026-09-27",
