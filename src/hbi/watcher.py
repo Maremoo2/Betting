@@ -46,6 +46,7 @@ class WatcherAudit:
     passes: int = 0
     # Additive evidence; never a substitute for private original WIN bytes.
     t4_attempts: list[dict[str, object]] = field(default_factory=list)
+    cutoff_rejections: list[dict[str, object]] = field(default_factory=list)
 
 
 def _store(path: str) -> SQLiteStore:
@@ -164,6 +165,21 @@ def run_watcher(
         if not fundamental_ok:
             audit.fundamental_failures += 1
 
+    def reject_at(race: dict[str, object], observed_at: datetime, stage: str) -> bool:
+        if not _reject_missed_t4(store, race=race, policy=policy, observed_now=observed_at):
+            return False
+        start = datetime.fromisoformat(str(race["start_time_utc"]))
+        audit.not_executable += 1
+        audit.cutoff_rejections.append({
+            "race_id": str(race["race_id"]),
+            "race_start_utc": start.isoformat(),
+            "cutoff_utc": (start - timedelta(minutes=policy.target_minutes_to_start)).isoformat(),
+            "observed_at_utc": observed_at.isoformat(),
+            "stage": stage,
+            "reason": "T4_CUTOFF_MISSED",
+        })
+        return True
+
     target_schedule: list[tuple[datetime, dict[str, object]]] = []
     for race in due:
         start = datetime.fromisoformat(str(race["start_time_utc"]))
@@ -183,8 +199,7 @@ def run_watcher(
 
         # GitHub schedule lag, source latency and earlier races can all push
         # this attempt beyond T-4. Fail closed before a fresh source request.
-        if _reject_missed_t4(store, race=race, policy=policy, observed_now=live_now):
-            audit.not_executable += 1
+        if reject_at(race, live_now, "BEFORE_FINAL_SOURCE_REFRESH"):
             continue
 
         raw = json.loads(str(race.get("raw_json") or "{}"))
@@ -220,8 +235,7 @@ def run_watcher(
         # Decisions must occur after provider responses, never at request start.
         if now is None:
             live_now = datetime.now(UTC)
-        if _reject_missed_t4(store, race=race, policy=policy, observed_now=live_now):
-            audit.not_executable += 1
+        if reject_at(race, live_now, "AFTER_FINAL_SOURCE_REFRESH"):
             continue
         model_finished_at: datetime | None = None
         if fundamental_ok:
@@ -243,8 +257,7 @@ def run_watcher(
         # timestamp cannot certify that the computation finished before T-4.
         if now is None:
             live_now = datetime.now(UTC)
-        if _reject_missed_t4(store, race=race, policy=policy, observed_now=live_now):
-            audit.not_executable += 1
+        if reject_at(race, live_now, "AFTER_MODEL_STAGE"):
             continue
 
         marks: dict[str, datetime] = {}

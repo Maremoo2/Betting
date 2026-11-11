@@ -122,6 +122,15 @@ def test_runner_started_after_t4_never_reprices_or_bets(monkeypatch, tmp_path):
     assert audit.not_executable == 1
     assert audit.passes == 0
     assert audit.shadow_bets_created == 0
+    assert audit.t4_attempts == []
+    assert audit.cutoff_rejections == [{
+        "race_id": store.fetch_table("shadow_decision_runs")[0]["race_id"],
+        "race_start_utc": (CUTOFF + timedelta(minutes=4)).isoformat(),
+        "cutoff_utc": CUTOFF.isoformat(),
+        "observed_at_utc": (CUTOFF + timedelta(seconds=1)).isoformat(),
+        "stage": "BEFORE_FINAL_SOURCE_REFRESH",
+        "reason": "T4_CUTOFF_MISSED",
+    }]
     assert collector.calls == ["discover", "due", "market", "pool", "fundamentals"]
     assert shadow.call_count == model.call_count == 0
     assert store.fetch_table("shadow_decision_runs")[0]["reason"] == "T4_CUTOFF_MISSED"
@@ -159,6 +168,8 @@ def test_provider_crossing_t4_blocks_model_and_shadow(monkeypatch, tmp_path):
     )
     audit = watcher.run_watcher(db_path="IGNORED", allow_sleep=False)
     assert audit.not_executable == 1 and audit.passes == 0
+    assert audit.cutoff_rejections[0]["stage"] == "AFTER_FINAL_SOURCE_REFRESH"
+    assert audit.t4_attempts == []
     assert fake.calls.count("market") == 2
     model.assert_not_called()
     shadow.assert_not_called()
@@ -182,6 +193,8 @@ def test_model_crossing_t4_blocks_shadow(monkeypatch, tmp_path):
     )
     audit = watcher.run_watcher(db_path="IGNORED", allow_sleep=False)
     assert audit.fundamental_runs == 1
+    assert audit.cutoff_rejections[0]["stage"] == "AFTER_MODEL_STAGE"
+    assert audit.t4_attempts == []
     assert audit.not_executable == 1 and audit.passes == 0
     shadow.assert_not_called()
     assert store.fetch_table("shadow_decision_runs")[0]["reason"] == "T4_CUTOFF_MISSED"
@@ -205,6 +218,7 @@ def test_before_t4_still_permits_existing_watch_no_bet(monkeypatch, tmp_path):
     audit = watcher.run_watcher(db_path="IGNORED", allow_sleep=False)
     assert audit.passes == 1 and audit.shadow_bets_created == 0
     assert audit.not_executable == 0
+    assert audit.cutoff_rejections == []
     assert decision.call_count == 1
     assert decision.call_args.kwargs["decision_time"] == CUTOFF - timedelta(seconds=30)
 
