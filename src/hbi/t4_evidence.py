@@ -1,4 +1,5 @@
 """RELEASE-004 post-commit T-4 evidence, not a PIT certificate or betting authority."""
+
 from __future__ import annotations
 
 import hashlib
@@ -89,13 +90,16 @@ def classify_t4_receipt(
     for key, value in phases.items():
         if value is None:
             reasons.append(f"{key}_UNATTESTED")
-    if len(source_clocks) == 3 and all(phases.values()):
-        # Individual source fetches may overlap: check max, not source order.
-        if not (
+    # Individual source fetches may overlap: check max, not source order.
+    if (
+        len(source_clocks) == 3
+        and all(phases.values())
+        and not (
             max(source_clocks) <= model_end <= calculated
             <= persist_start <= persisted
-        ):
-            reasons.append("RUNTIME_CLOCK_ORDER_INVALID")
+        )
+    ):
+        reasons.append("RUNTIME_CLOCK_ORDER_INVALID")
     if cutoff is not None:
         for name, stamp in [
             ("WIN", _aware(receipt_sources["WIN"]["response_completed_at_utc"])),

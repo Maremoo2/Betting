@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from hashlib import sha256
-from typing import Callable
 from uuid import uuid4
 
 from .contender_gate import Contender, Pricing, Quote, review_contenders

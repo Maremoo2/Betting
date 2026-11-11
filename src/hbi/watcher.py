@@ -248,9 +248,6 @@ def run_watcher(
 
         marks: dict[str, datetime] = {}
 
-        def milestone(phase: str, instant: datetime) -> None:
-            marks[phase] = instant
-
         result = run_win_shadow_decision(
             store,
             race_id=str(race["race_id"]),
@@ -261,7 +258,7 @@ def run_watcher(
             # The synthetic clock-injected test path is never a real T-4
             # attestation. Live calls explicitly use the absolute deadline.
             t4_cutoff=target if now is None else None,
-            milestone=milestone,
+            milestone=marks.__setitem__,
         )
         # Read back the committed row before taking the independent clock.
         frozen_id = _decision_run_id(
