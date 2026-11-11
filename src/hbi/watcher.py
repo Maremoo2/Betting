@@ -46,6 +46,9 @@ class WatcherAudit:
     passes: int = 0
     # Additive evidence; never a substitute for private original WIN bytes.
     t4_attempts: list[dict[str, object]] = field(default_factory=list)
+    cutoff_rejections: list[dict[str, object]] = field(default_factory=list)
+    startup_timing_ms: dict[str, int] = field(default_factory=dict)
+    race_timing_ms: dict[str, dict[str, int]] = field(default_factory=dict)
 
 
 def _store(path: str) -> SQLiteStore:
@@ -111,6 +114,10 @@ def _reject_missed_t4(
     return True
 
 
+def _elapsed_ms(started: float) -> int:
+    return round((time.perf_counter() - started) * 1000)
+
+
 def run_watcher(
     *,
     db_path: str,
@@ -119,11 +126,15 @@ def run_watcher(
 ) -> WatcherAudit:
     current = now or datetime.now(UTC)
     audit = WatcherAudit(started_at_utc=current.isoformat())
+    started = time.perf_counter()
     store = _store(db_path)
+    audit.startup_timing_ms["sqlite_open_and_migrate"] = _elapsed_ms(started)
     collector = RikstotoCollector(store)
     policy = _policy_from_env()
 
+    started = time.perf_counter()
     races = collector.discover(current)
+    audit.startup_timing_ms["discovery"] = _elapsed_ms(started)
     audit.discovered = len(races)
     due = collector.due_races(now=current, min_minutes=1.0, max_minutes=8.0)
     audit.due_races = len(due)
@@ -131,6 +142,7 @@ def run_watcher(
     # Capture an early snapshot first. This creates market-path history even when
     # GitHub starts late and the ideal T-4 decision cannot be hit exactly.
     for race in due:
+        started = time.perf_counter()
         raw = json.loads(str(race.get("raw_json") or "{}"))
         single_products = set(raw.get("single_leg_products") or [])
         inserted, failures = collector.collect_market(
@@ -164,6 +176,23 @@ def run_watcher(
         if not fundamental_ok:
             audit.fundamental_failures += 1
 
+        audit.race_timing_ms[str(race["race_id"])] = {"early_collection": _elapsed_ms(started)}
+
+    def reject_at(race: dict[str, object], observed_at: datetime, stage: str) -> bool:
+        if not _reject_missed_t4(store, race=race, policy=policy, observed_now=observed_at):
+            return False
+        start = datetime.fromisoformat(str(race["start_time_utc"]))
+        audit.not_executable += 1
+        audit.cutoff_rejections.append({
+            "race_id": str(race["race_id"]),
+            "race_start_utc": start.isoformat(),
+            "cutoff_utc": (start - timedelta(minutes=policy.target_minutes_to_start)).isoformat(),
+            "observed_at_utc": observed_at.isoformat(),
+            "stage": stage,
+            "reason": "T4_CUTOFF_MISSED",
+        })
+        return True
+
     target_schedule: list[tuple[datetime, dict[str, object]]] = []
     for race in due:
         start = datetime.fromisoformat(str(race["start_time_utc"]))
@@ -172,6 +201,7 @@ def run_watcher(
     target_schedule.sort(key=lambda item: item[0])
 
     for target, race in target_schedule:
+        timing = audit.race_timing_ms[str(race["race_id"])]
         race_start = datetime.fromisoformat(str(race["start_time_utc"]))
         live_now = datetime.now(UTC) if now is None else current
         # Do not wake AT T-4 and only then start network/model work. Plan
@@ -183,10 +213,10 @@ def run_watcher(
 
         # GitHub schedule lag, source latency and earlier races can all push
         # this attempt beyond T-4. Fail closed before a fresh source request.
-        if _reject_missed_t4(store, race=race, policy=policy, observed_now=live_now):
-            audit.not_executable += 1
+        if reject_at(race, live_now, "BEFORE_FINAL_SOURCE_REFRESH"):
             continue
 
+        started = time.perf_counter()
         raw = json.loads(str(race.get("raw_json") or "{}"))
         single_products = set(raw.get("single_leg_products") or [])
         inserted, failures = collector.collect_market(
@@ -217,19 +247,21 @@ def run_watcher(
             ],
         )
         audit.fundamental_snapshots_inserted += fundamental_inserted
+        timing["final_collection"] = _elapsed_ms(started)
         # Decisions must occur after provider responses, never at request start.
         if now is None:
             live_now = datetime.now(UTC)
-        if _reject_missed_t4(store, race=race, policy=policy, observed_now=live_now):
-            audit.not_executable += 1
+        if reject_at(race, live_now, "AFTER_FINAL_SOURCE_REFRESH"):
             continue
         model_finished_at: datetime | None = None
         if fundamental_ok:
+            started = time.perf_counter()
             fundamental_run = run_and_persist_fundamental(
                 store,
                 race_id=str(race["race_id"]),
                 created_at=live_now,
             )
+            timing["fundamental_model_and_write"] = _elapsed_ms(started)
             audit.fundamental_runs += 1
             audit.fundamental_shadow_eligible += int(
                 fundamental_run.shadow_eligible
@@ -243,11 +275,16 @@ def run_watcher(
         # timestamp cannot certify that the computation finished before T-4.
         if now is None:
             live_now = datetime.now(UTC)
-        if _reject_missed_t4(store, race=race, policy=policy, observed_now=live_now):
-            audit.not_executable += 1
+        if reject_at(race, live_now, "AFTER_MODEL_STAGE"):
             continue
 
         marks: dict[str, datetime] = {}
+        mark_ticks: dict[str, float] = {}
+
+        def mark(phase: str, observed_at: datetime) -> None:
+            marks[phase] = observed_at  # noqa: B023
+            mark_ticks[phase] = time.perf_counter()  # noqa: B023
+
         source_receipts = getattr(collector, "source_receipts", {})
         bound_sources = {
             label: source_receipts.get((str(race["race_id"]), code), {})
@@ -256,6 +293,7 @@ def run_watcher(
             )
         }
 
+        decision_started = time.perf_counter()
         result = run_win_shadow_decision(
             store,
             race_id=str(race["race_id"]),
@@ -266,15 +304,25 @@ def run_watcher(
             # The synthetic clock-injected test path is never a real T-4
             # attestation. Live calls explicitly use the absolute deadline.
             t4_cutoff=target if now is None else None,
-            milestone=marks.__setitem__,
+            milestone=mark,
             source_receipts=bound_sources,
         )
+        if "DECISION_CALCULATED" in mark_ticks:
+            timing["decision_calculation"] = round(
+                (mark_ticks["DECISION_CALCULATED"] - decision_started) * 1000
+            )
+        if "PERSIST_STARTED" in mark_ticks and "DECISION_PERSISTED" in mark_ticks:
+            timing["decision_persistence"] = round(
+                (mark_ticks["DECISION_PERSISTED"] - mark_ticks["PERSIST_STARTED"]) * 1000
+            )
         # Read back the committed row before taking the independent clock.
         frozen_id = _decision_run_id(
             str(race["race_id"]), "V", policy.model_version,
             policy.target_minutes_to_start,
         )
+        started = time.perf_counter()
         committed = store.get_shadow_decision_run(frozen_id)
+        timing["decision_readback"] = _elapsed_ms(started)
         # Fake clock / mocked shadow calls cannot supply a real commit marker.
         verified_at = (
             datetime.now(UTC)
