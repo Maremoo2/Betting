@@ -147,3 +147,14 @@ def test_restart_skips_frozen_race_before_source_fetch(tmp_path, monkeypatch):
     assert fake.calls == ["discover", "due"]
     assert audit.t4_attempts == []
     assert state.fetch_table("shadow_decision_runs") == before
+
+
+def test_incomplete_deployment_stops_before_clock_and_watcher(host, monkeypatch, tmp_path):
+    state, journal, _ = host
+    monkeypatch.setattr(local, "GOVERNANCE", tmp_path / "missing-governance.json")
+    monkeypatch.setattr(local, "clock_offset", lambda _: pytest.fail("clock must not run"))
+    monkeypatch.setattr(local, "run_watcher", lambda **_: pytest.fail("watcher must not run"))
+    result = local.run_tick(state.path, journal, "clock")
+    assert result["status"] == "FAILED"
+    assert result["error_type"] == "FileNotFoundError"
+    assert not state.fetch_table("shadow_decision_runs")

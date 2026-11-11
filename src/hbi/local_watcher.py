@@ -12,6 +12,8 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import uuid4
 
+from .governance import load_governance
+from .manifest import GOVERNANCE
 from .schedule import evaluate_shadow_watcher_schedule
 from .state_artifact import _verify_canonical_sqlite
 from .watcher import run_watcher
@@ -110,6 +112,9 @@ def run_tick(state: Path, journal: Path, clock_server: str) -> dict:
         write_journal(path, record)
         try:
             record["recent_gaps"] = recent_gaps(journal, slot)
+            # Manifest and provenance both need the pinned governance document.
+            # Check before any provider fetch or decision writes.
+            load_governance(GOVERNANCE)
             record["clock_offset_seconds"] = clock_offset(clock_server)
             # SQLite runs on the pre-staged local copy, including recovery of its WAL.
             _verify_canonical_sqlite(state, include_wal=True)
