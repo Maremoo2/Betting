@@ -123,6 +123,8 @@ def test_runner_started_after_t4_never_reprices_or_bets(monkeypatch, tmp_path):
     assert audit.passes == 0
     assert audit.shadow_bets_created == 0
     assert audit.t4_attempts == []
+    assert set(audit.startup_timing_ms) == {"sqlite_open_and_migrate", "discovery"}
+    assert set(audit.race_timing_ms["r1"]) == {"early_collection"}
     assert audit.cutoff_rejections == [{
         "race_id": store.fetch_table("shadow_decision_runs")[0]["race_id"],
         "race_start_utc": (CUTOFF + timedelta(minutes=4)).isoformat(),
@@ -168,6 +170,7 @@ def test_provider_crossing_t4_blocks_model_and_shadow(monkeypatch, tmp_path):
     )
     audit = watcher.run_watcher(db_path="IGNORED", allow_sleep=False)
     assert audit.not_executable == 1 and audit.passes == 0
+    assert set(audit.race_timing_ms["r1"]) == {"early_collection", "final_collection"}
     assert audit.cutoff_rejections[0]["stage"] == "AFTER_FINAL_SOURCE_REFRESH"
     assert audit.t4_attempts == []
     assert fake.calls.count("market") == 2
@@ -193,6 +196,7 @@ def test_model_crossing_t4_blocks_shadow(monkeypatch, tmp_path):
     )
     audit = watcher.run_watcher(db_path="IGNORED", allow_sleep=False)
     assert audit.fundamental_runs == 1
+    assert "fundamental_model_and_write" in audit.race_timing_ms["r1"]
     assert audit.cutoff_rejections[0]["stage"] == "AFTER_MODEL_STAGE"
     assert audit.t4_attempts == []
     assert audit.not_executable == 1 and audit.passes == 0
@@ -204,7 +208,13 @@ def test_before_t4_still_permits_existing_watch_no_bet(monkeypatch, tmp_path):
     store = _store(tmp_path)
     setup(monkeypatch, store)
     model = Mock(return_value=SimpleNamespace(shadow_eligible=True))
-    decision = Mock(return_value=SimpleNamespace(status="WATCH", created=0))
+
+    def decide(_store, **kwargs):
+        for phase in ("DECISION_CALCULATED", "PERSIST_STARTED", "DECISION_PERSISTED"):
+            kwargs["milestone"](phase, CUTOFF - timedelta(seconds=30))
+        return SimpleNamespace(status="WATCH", created=0)
+
+    decision = Mock(side_effect=decide)
     monkeypatch.setattr(watcher, "run_and_persist_fundamental", model)
     monkeypatch.setattr(watcher, "run_win_shadow_decision", decision)
     clock(
@@ -218,6 +228,11 @@ def test_before_t4_still_permits_existing_watch_no_bet(monkeypatch, tmp_path):
     audit = watcher.run_watcher(db_path="IGNORED", allow_sleep=False)
     assert audit.passes == 1 and audit.shadow_bets_created == 0
     assert audit.not_executable == 0
+    assert set(audit.race_timing_ms["r1"]) == {
+        "early_collection", "final_collection", "fundamental_model_and_write",
+        "decision_calculation", "decision_persistence", "decision_readback",
+    }
+    assert audit.t4_attempts[0]["decision_persisted_before_t4"] is False
     assert audit.cutoff_rejections == []
     assert decision.call_count == 1
     assert decision.call_args.kwargs["decision_time"] == CUTOFF - timedelta(seconds=30)
