@@ -8,6 +8,7 @@ from statistics import mean, median
 from zoneinfo import ZoneInfo
 
 from .evaluation import calibration_bins, log_loss, multiclass_brier
+from .prospective_gate import is_new_regime, qualification_index, qualifies_primary
 from .providers.rikstoto import RikstotoClient
 from .storage import SQLiteStore
 
@@ -198,7 +199,13 @@ def materialize_race_evaluations(
     ]
 
     written = 0
+    t4_receipts = qualification_index(store)
     for run in decision_runs:
+        # Historical rows remain in their legacy regime. Every new primary
+        # prospective evaluation requires an independently linked postcommit
+        # receipt, not created_at_utc or a matching model SHA alone.
+        if is_new_regime(run) and not qualifies_primary(run, t4_receipts):
+            continue
         race_id = str(run["race_id"])
         outcome = outcomes.get(race_id)
         if outcome is None:
@@ -466,15 +473,26 @@ def build_evaluation_summary(
         if _in_window(row.get("start_time_utc"), start, end)
     }
     race_ids = set(races)
-    evaluations = [
-        row
-        for row in store.fetch_table("race_research_evaluations")
-        if str(row.get("race_id")) in race_ids
-    ]
     decision_runs = [
         row
         for row in store.fetch_table("shadow_decision_runs")
         if str(row.get("race_id")) in race_ids
+    ]
+    by_key = {
+        (str(row["race_id"]), str(row["shadow_model_version"])): row
+        for row in decision_runs
+    }
+    t4_index = qualification_index(store)
+    raw_evaluations = [
+        row for row in store.fetch_table("race_research_evaluations")
+        if str(row.get("race_id")) in race_ids
+    ]
+    evaluations = [
+        row for row in raw_evaluations
+        if (decision := by_key.get(
+            (str(row["race_id"]), str(row["shadow_model_version"]))
+        )) is not None
+        and (not is_new_regime(decision) or qualifies_primary(decision, t4_index))
     ]
     outcomes = {
         str(row["race_id"]): str(row["winner_selection_id"])
@@ -490,6 +508,8 @@ def build_evaluation_summary(
     ):
         observations: list[tuple[float, bool]] = []
         for run in decision_runs:
+            if is_new_regime(run) and not qualifies_primary(run, t4_index):
+                continue
             winner = outcomes.get(str(run["race_id"]))
             distribution = _loads_distribution(run.get(column))
             if winner is None or distribution is None or winner not in distribution:
@@ -534,6 +554,15 @@ def build_evaluation_summary(
     return {
         "report_date": report_date.isoformat(),
         "race_evaluations_n": len(evaluations),
+        "primary_prospective_evaluations_n": sum(
+            is_new_regime(by_key[(str(e["race_id"]), str(e["shadow_model_version"]))])
+            for e in evaluations
+        ),
+        "legacy_uncertified_evaluations_n": sum(
+            not is_new_regime(by_key[(str(e["race_id"]), str(e["shadow_model_version"]))])
+            for e in evaluations
+        ),
+        "blocked_unattested_new_evaluations_n": len(raw_evaluations) - len(evaluations),
         "decision_runs_n": len(decision_runs),
         "evaluation_coverage": (
             None if not decision_runs else len(evaluations) / len(decision_runs)
@@ -577,7 +606,19 @@ def build_evaluation_summary(
 
 
 def build_trend_summary(store: SQLiteStore) -> dict[str, object]:
-    evaluations = store.fetch_table("race_research_evaluations")
+    decisions = {
+        (str(d["race_id"]), str(d["shadow_model_version"])): d
+        for d in store.fetch_table("shadow_decision_runs")
+    }
+    idx = qualification_index(store)
+    all_evaluations = store.fetch_table("race_research_evaluations")
+    evaluations = [
+        row for row in all_evaluations
+        if (decision := decisions.get(
+            (str(row["race_id"]), str(row["shadow_model_version"]))
+        )) is not None
+        and (not is_new_regime(decision) or qualifies_primary(decision, idx))
+    ]
     by_model: dict[str, list[dict[str, object]]] = {}
     for row in evaluations:
         model = str(row.get("fundamental_model_version") or "UNKNOWN")
@@ -628,6 +669,7 @@ def build_trend_summary(store: SQLiteStore) -> dict[str, object]:
 
     return {
         "all_evaluations_n": len(evaluations),
+        "blocked_unattested_new_evaluations_n": len(all_evaluations) - len(evaluations),
         "by_fundamental_model_version": model_summary,
         "recent_14_reports": recent,
     }

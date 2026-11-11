@@ -8,6 +8,7 @@ from hashlib import sha256
 from .decision import DecisionPolicy
 from .domain import Decision
 from .engine import CombinationPolicy, evaluate_race
+from .prospective_gate import is_new_regime, qualification_index, qualifies_primary
 from .storage import SQLiteStore
 
 
@@ -51,6 +52,16 @@ def evaluate_counterfactual(
     meta = provenance.get(decision_run_id)
     if decision is None:
         raise KeyError(f"unknown decision run {decision_run_id}")
+    if is_new_regime(decision) and not qualifies_primary(
+        decision, qualification_index(store)
+    ):
+        return {
+            "status": "INSUFFICIENT_DATA",
+            "reason": "PRIMARY_PROSPECTIVE_T4_ATTESTATION_MISSING",
+            "research_only": True,
+            "execution_authority": False,
+            "pit_certified": False,
+        }
     if meta is None:
         return {
             "status": "INSUFFICIENT_DATA",

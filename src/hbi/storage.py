@@ -663,6 +663,35 @@ class SQLiteStore:
             ).fetchone()
             return None if row is None else dict(row)
 
+    def insert_shadow_research_signal(self, signal: dict[str, object]) -> bool:
+        """Insert immutable candidate evidence; never a shadow ticket."""
+        columns = (
+            "signal_id", "decision_run_id", "race_id", "selection_id",
+            "horse_id_scope", "shadow_model_name", "shadow_model_version",
+            "fundamental_model_version", "fundamental_probabilities_json",
+            "market_probabilities_json", "combined_probabilities_json",
+            "observed_win_odds", "p_win", "fair_odds", "expected_value",
+            "minimum_acceptable_odds", "signal_calculated_at_utc",
+            "record_requested_at_utc", "source_observed_at_utc",
+            "source_uri", "source_body_sha256", "source_receipts_json",
+            "rejected_candidates_json", "contender_payload_id",
+        )
+        with self.connect() as connection:
+            result = connection.execute(
+                f"INSERT OR IGNORE INTO shadow_research_signals "
+                f"({','.join(columns)}) VALUES ({','.join('?' for _ in columns)})",
+                [signal.get(column) for column in columns],
+            )
+            return result.rowcount == 1
+
+    def get_shadow_research_signal(self, signal_id: str) -> dict[str, object] | None:
+        with self.connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM shadow_research_signals WHERE signal_id=?",
+                (signal_id,),
+            ).fetchone()
+            return dict(row) if row else None
+
     def insert_shadow_decision_run(self, run: dict[str, object]) -> bool:
         columns = (
             "decision_run_id", "race_id", "provider_raceday_key", "product",
@@ -1021,7 +1050,8 @@ class SQLiteStore:
             "provider_market_snapshots", "provider_fetch_audit", "shadow_tickets",
             "shadow_daily_reports", "provider_payloads",
             "runner_fundamental_snapshots", "fundamental_model_runs",
-            "shadow_decision_runs", "race_research_evaluations",
+            "shadow_decision_runs", "shadow_research_signals",
+            "race_research_evaluations",
             "research_daily_reports", "decision_provenance",
             "system_run_manifests", "integrity_audits", "challenger_registry",
             "challenger_forward_events", "counterfactual_runs",
@@ -1040,7 +1070,8 @@ class SQLiteStore:
             "provider_market_snapshots", "provider_fetch_audit", "shadow_tickets",
             "shadow_daily_reports", "provider_payloads",
             "runner_fundamental_snapshots", "fundamental_model_runs",
-            "shadow_decision_runs", "race_research_evaluations",
+            "shadow_decision_runs", "shadow_research_signals",
+            "race_research_evaluations",
             "research_daily_reports", "decision_provenance",
             "system_run_manifests", "integrity_audits", "challenger_registry",
             "challenger_forward_events", "counterfactual_runs",

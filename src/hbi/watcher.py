@@ -9,6 +9,7 @@ from pathlib import Path
 
 from .fundamental import run_and_persist_fundamental
 from .manifest import persist_run_manifest
+from .prospective_gate import qualification_index, qualifies_primary
 from .provenance import record_decision_provenance
 from .rikstoto_collector import RikstotoCollector
 from .shadow import (
@@ -247,6 +248,13 @@ def run_watcher(
             continue
 
         marks: dict[str, datetime] = {}
+        source_receipts = getattr(collector, "source_receipts", {})
+        bound_sources = {
+            label: source_receipts.get((str(race["race_id"]), code), {})
+            for label, code in (
+                ("WIN", "V"), ("STARTS", "STARTS"), ("SCRATCHED", "SCRATCHED"),
+            )
+        }
 
         result = run_win_shadow_decision(
             store,
@@ -259,6 +267,7 @@ def run_watcher(
             # attestation. Live calls explicitly use the absolute deadline.
             t4_cutoff=target if now is None else None,
             milestone=marks.__setitem__,
+            source_receipts=bound_sources,
         )
         # Read back the committed row before taking the independent clock.
         frozen_id = _decision_run_id(
@@ -272,13 +281,6 @@ def run_watcher(
             if now is None and marks.get("DECISION_PERSISTED") is not None
             else None
         )
-        source_receipts = getattr(collector, "source_receipts", {})
-        bound_sources = {
-            label: source_receipts.get((str(race["race_id"]), code), {})
-            for label, code in (
-                ("WIN", "V"), ("STARTS", "STARTS"), ("SCRATCHED", "SCRATCHED"),
-            )
-        }
         receipt = classify_t4_receipt(
             race_id=str(race["race_id"]),
             race_start_utc=race_start.isoformat(),
@@ -303,15 +305,20 @@ def run_watcher(
             ),
             github_sha=os.getenv("GITHUB_SHA"),
         )
-        audit.t4_attempts.append(receipt)
-        record_decision_provenance(
-            store,
-            race_id=str(race["race_id"]),
-            shadow_model_version=policy.model_version,
-            target_minutes_to_start=policy.target_minutes_to_start,
-            policy=asdict(policy),
-            recorded_at=live_now,
+        # Additive state separation: recording a diagnostic BET signal is
+        # never equivalent to a postcommit-qualified decision or a ticket.
+        signal_recorded = marks.get("SIGNAL_RECORDED")
+        receipt["signal_calculated"] = marks.get("DECISION_CALCULATED") is not None
+        receipt["signal_recorded"] = signal_recorded is not None
+        receipt["signal_recorded_at_utc"] = (
+            signal_recorded.isoformat() if signal_recorded is not None else None
         )
+        receipt["t4_attested"] = (
+            receipt["decision_persisted_before_t4"] is True
+            and result.status in {"PASS", "WATCH"}
+        )
+        receipt["shadow_ticket_created"] = result.created > 0
+        audit.t4_attempts.append(receipt)
         if result.status == "SHADOW_BET":
             audit.shadow_bets_created += result.created
         elif result.status in {"NOT_EXECUTABLE", "T4_PENDING_ATTESTATION"}:
@@ -332,6 +339,26 @@ def run_watcher(
         policy=asdict(policy),
         metadata=asdict(audit),
     )
+    # The provenance consumer is called *after* the receipt-bearing manifest
+    # commits, and only on a verified primary prospective decision.
+    index = qualification_index(store)
+    for receipt in audit.t4_attempts:
+        if receipt.get("decision_persisted_before_t4") is not True:
+            continue
+        frozen_id = _decision_run_id(
+            str(receipt["race_id"]), "V", policy.model_version,
+            policy.target_minutes_to_start,
+        )
+        row = store.get_shadow_decision_run(frozen_id)
+        if row is None or not qualifies_primary(row, index):
+            continue
+        record_decision_provenance(
+            store, race_id=str(receipt["race_id"]),
+            shadow_model_version=policy.model_version,
+            target_minutes_to_start=policy.target_minutes_to_start,
+            policy=asdict(policy),
+            recorded_at=datetime.now(UTC),
+        )
     store.checkpoint()
     return audit
 
