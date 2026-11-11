@@ -49,6 +49,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HBI_DB_PATH: data/hbi.sqlite
           HBI_RESTORE_REQUIRED: "1"
+          HBI_RESTORE_VALIDATE_SQLITE: "1"
         run: python -m hbi.state_artifact
 
       - name: Run 5-minute Rikstoto watcher
