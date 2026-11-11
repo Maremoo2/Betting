@@ -35,6 +35,7 @@ class WatcherAudit:
     status: str = "RUNNING"
     discovered: int = 0
     due_races: int = 0
+    frozen_races_skipped: int = 0
     snapshots_inserted: int = 0
     fundamental_snapshots_inserted: int = 0
     fundamental_runs: int = 0
@@ -123,6 +124,7 @@ def run_watcher(
     db_path: str,
     now: datetime | None = None,
     allow_sleep: bool = True,
+    skip_frozen: bool = False,
 ) -> WatcherAudit:
     current = now or datetime.now(UTC)
     audit = WatcherAudit(started_at_utc=current.isoformat())
@@ -138,6 +140,14 @@ def run_watcher(
     audit.discovered = len(races)
     due = collector.due_races(now=current, min_minutes=1.0, max_minutes=8.0)
     audit.due_races = len(due)
+    if skip_frozen:
+        due = [
+            race for race in due
+            if store.get_shadow_decision_run(_decision_run_id(
+                str(race["race_id"]), "V", policy.model_version, policy.target_minutes_to_start,
+            )) is None
+        ]
+    audit.frozen_races_skipped = audit.due_races - len(due)
 
     # Capture an early snapshot first. This creates market-path history even when
     # GitHub starts late and the ideal T-4 decision cannot be hit exactly.

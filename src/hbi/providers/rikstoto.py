@@ -182,8 +182,11 @@ class RikstotoClient:
     def result_racedays(self, start: date, end: date) -> FetchResult:
         return self._fetch(f"/results/racedays/{start.isoformat()}/{end.isoformat()}/list")
 
-    def win_odds(self, raceday_key: str, race_number: int) -> FetchResult:
-        return self._fetch(f"/game/{raceday_key}/betdistribution/winodds/{race_number}")
+    def win_odds(
+        self, raceday_key: str, race_number: int, *, retain_raw_body: bool = False,
+    ) -> FetchResult:
+        path = f"/game/{raceday_key}/betdistribution/winodds/{race_number}"
+        return self._fetch(path, retain_raw_body=True) if retain_raw_body else self._fetch(path)
 
     def place_odds(self, raceday_key: str, race_number: int) -> FetchResult:
         return self._fetch(f"/game/{raceday_key}/betdistribution/placeodds/{race_number}")

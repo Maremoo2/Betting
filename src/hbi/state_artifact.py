@@ -106,14 +106,14 @@ def _inventory_json(url: str, token: str) -> dict:
     raise AssertionError("unreachable inventory retry state")
 
 
-def _verify_canonical_sqlite(path: Path) -> None:
+def _verify_canonical_sqlite(path: Path, *, include_wal: bool = False) -> None:
     """Strict, read-only canonical schema and SQLite integrity validation."""
     with path.open("rb") as stream:
         header = stream.read(16)
     if path.stat().st_size < 100 or header != b"SQLite format 3\x00":
         raise ValueError("STATE_RESTORE_SQLITE_HEADER_INVALID")
     # immutable=1 ignores stray WAL files in a runner and never writes to state.
-    uri = path.resolve().as_uri() + "?mode=ro&immutable=1"
+    uri = path.resolve().as_uri() + ("?mode=ro" if include_wal else "?mode=ro&immutable=1")
     try:
         with closing(sqlite3.connect(uri, uri=True)) as db:
             if db.execute("PRAGMA quick_check(1)").fetchone()[0] != "ok":
