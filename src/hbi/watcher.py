@@ -305,6 +305,19 @@ def run_watcher(
             ),
             github_sha=os.getenv("GITHUB_SHA"),
         )
+        # Additive state separation: recording a diagnostic BET signal is
+        # never equivalent to a postcommit-qualified decision or a ticket.
+        signal_recorded = marks.get("SIGNAL_RECORDED")
+        receipt["signal_calculated"] = marks.get("DECISION_CALCULATED") is not None
+        receipt["signal_recorded"] = signal_recorded is not None
+        receipt["signal_recorded_at_utc"] = (
+            signal_recorded.isoformat() if signal_recorded is not None else None
+        )
+        receipt["t4_attested"] = (
+            receipt["decision_persisted_before_t4"] is True
+            and result.status in {"PASS", "WATCH"}
+        )
+        receipt["shadow_ticket_created"] = result.created > 0
         audit.t4_attempts.append(receipt)
         if result.status == "SHADOW_BET":
             audit.shadow_bets_created += result.created
