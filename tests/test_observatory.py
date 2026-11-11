@@ -1,10 +1,10 @@
 import json
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pytest
 
-from hbi.observatory import build_research_observatory
+from hbi.observatory import build_evaluation_summary, build_research_observatory
 from hbi.providers.rikstoto import FetchResult, RikstotoClient
 from hbi.storage import SQLiteStore
 
@@ -204,6 +204,13 @@ def test_observatory_materializes_outcome_metrics_and_health(tmp_path):
     assert health["settlement_rate"] == pytest.approx(1.0)
 
     evaluation = report["evaluation"]
+    assert evaluation["race_evaluations_n"] == 0
+    assert evaluation["combined_log_loss"] is None
+    assert evaluation["roi"] is None
+    assert evaluation["calibration"]["combined"] == []
+    evaluation = build_evaluation_summary(
+        store, date(2026, 9, 27), population="LEGACY_UNCERTIFIED",
+    )
     assert evaluation["race_evaluations_n"] == 1
     assert evaluation["fundamental_n"] == 1
     assert evaluation["market_n"] == 1

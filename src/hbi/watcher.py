@@ -278,7 +278,13 @@ def run_watcher(
         # Fake clock / mocked shadow calls cannot supply a real commit marker.
         verified_at = (
             datetime.now(UTC)
-            if now is None and marks.get("DECISION_PERSISTED") is not None
+            if (
+                now is None
+                and marks.get("DECISION_PERSISTED") is not None
+                and committed is not None
+                and committed.get("created_at_utc") == live_now.isoformat()
+                and committed.get("decision_status") == result.status
+            )
             else None
         )
         receipt = classify_t4_receipt(

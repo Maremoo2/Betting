@@ -50,15 +50,13 @@ class SQLiteStore:
         directory = Path(migrations_dir)
         applied: list[str] = []
         with self.connect() as connection:
-            known = {
-                row[0]
-                for row in connection.execute(
-                    "SELECT migration_id FROM schema_migrations"
-                )
-            }
             for path in sorted(directory.glob("*.sql")):
                 migration_id = path.name
-                if migration_id in known:
+                connection.execute("BEGIN IMMEDIATE")
+                if connection.execute(
+                    "SELECT 1 FROM schema_migrations WHERE migration_id=?", (migration_id,)
+                ).fetchone():
+                    connection.commit()
                     continue
                 if migration_id == "0006_international_full_field_enrichment.sql":
                     existing_columns = {
@@ -80,12 +78,37 @@ class SQLiteStore:
                                 f"ADD COLUMN {column} {declaration}"
                             )
                 else:
-                    connection.executescript(path.read_text(encoding="utf-8"))
+                    statement = ""
+                    for line in path.read_text(encoding="utf-8").splitlines(keepends=True):
+                        statement += line
+                        if sqlite3.complete_statement(statement):
+                            if migration_id == "0010_release006_signal_integrity.sql":
+                                prefix = "ALTER TABLE shadow_research_signals ADD COLUMN "
+                                ddl = "\n".join(
+                                    line for line in statement.splitlines()
+                                    if not line.lstrip().startswith("--")
+                                ).strip()
+                                if ddl.startswith(prefix):
+                                    column = ddl.removeprefix(prefix).split()[0].rstrip(";")
+                                    if any(
+                                        row[1] == column for row in connection.execute(
+                                            "PRAGMA table_info(shadow_research_signals)"
+                                        )
+                                    ):
+                                        statement = ""
+                                        continue
+                            connection.execute(statement)
+                            statement = ""
+                    if statement.strip() and not all(
+                        line.lstrip().startswith("--") for line in statement.splitlines() if line.strip()
+                    ):
+                        raise ValueError(f"Incomplete SQL migration {migration_id}")
                 connection.execute(
                     "INSERT INTO schema_migrations (migration_id,applied_at_utc) "
                     "VALUES (?,?)",
                     (migration_id, datetime.now().astimezone().isoformat()),
                 )
+                connection.commit()
                 applied.append(migration_id)
         return applied
 
@@ -675,14 +698,35 @@ class SQLiteStore:
             "record_requested_at_utc", "source_observed_at_utc",
             "source_uri", "source_body_sha256", "source_receipts_json",
             "rejected_candidates_json", "contender_payload_id",
+            "horse_id", "horse_id_source", "horse_id_source_version",
+            "horse_identity_status", "horse_identity_reason",
         )
+        payload = {
+            "horse_identity_status": "UNATTESTED",
+            "horse_identity_reason": "PERMANENT_HORSE_ID_UNATTESTED",
+            **signal,
+        }
         with self.connect() as connection:
-            result = connection.execute(
-                f"INSERT OR IGNORE INTO shadow_research_signals "
+            connection.execute("BEGIN IMMEDIATE")
+            stored = connection.execute(
+                "SELECT * FROM shadow_research_signals WHERE signal_id=? "
+                "OR (decision_run_id=? AND selection_id=?)",
+                tuple(payload[key] for key in ("signal_id", "decision_run_id", "selection_id")),
+            ).fetchall()
+            if stored:
+                # Request time belongs to the first commit and can differ on retry.
+                if len(stored) != 1 or any(
+                    stored[0][key] != payload.get(key) for key in columns
+                    if key != "record_requested_at_utc"
+                ):
+                    raise ValueError("RESEARCH_SIGNAL_IDEMPOTENCY_CONFLICT")
+                return False
+            connection.execute(
+                f"INSERT INTO shadow_research_signals "
                 f"({','.join(columns)}) VALUES ({','.join('?' for _ in columns)})",
-                [signal.get(column) for column in columns],
+                [payload.get(column) for column in columns],
             )
-            return result.rowcount == 1
+            return True
 
     def get_shadow_research_signal(self, signal_id: str) -> dict[str, object] | None:
         with self.connect() as connection:

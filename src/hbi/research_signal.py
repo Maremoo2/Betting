@@ -7,8 +7,11 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import sqlite3
 from datetime import UTC, datetime
 from typing import Any
+
+from .horse_identity import AttestedHorseIdentity, identity_fields
 
 SIGNAL_SCHEMA = "RELEASE005_WIN_RESEARCH_SIGNAL_V1"
 
@@ -45,6 +48,7 @@ def record_win_research_signal(
     source_receipts: dict[str, dict[str, Any]] | None,
     rejected_candidates: list[dict[str, Any]],
     contender_payload_id: str,
+    identity_attestations: tuple[AttestedHorseIdentity, ...] = (),
 ) -> datetime:
     """Save a complete winner candidate, verify immutable SQLite readback.
 
@@ -95,6 +99,7 @@ def record_win_research_signal(
         "decision_run_id": decision_run_id,
         "race_id": race_id,
         "selection_id": selection_id,
+        **identity_fields(race_id, selection_id, identity_attestations),
         "horse_id_scope": "RACE_LOCAL_SELECTION_NOT_PERMANENT_HORSE_ID",
         "shadow_model_name": "HBI_WIN_SHADOW",
         "shadow_model_version": model_version,
@@ -116,8 +121,12 @@ def record_win_research_signal(
         "rejected_candidates_json": json.dumps(rejected_candidates, sort_keys=True),
         "contender_payload_id": contender_payload_id,
     }
-    store.insert_shadow_research_signal(record)
-    readback = store.get_shadow_research_signal(signal_id)
+    try:
+        store.insert_shadow_research_signal(record)
+        readback = store.get_shadow_research_signal(signal_id)
+    except sqlite3.Error as exc:
+        # The protected shadow caller already converts this failure to NOT_EXECUTABLE.
+        raise RuntimeError("RESEARCH_SIGNAL_SQLITE_FAILURE") from exc
     verified = datetime.now(UTC)
     if readback is None or any(
         readback.get(k) != v for k, v in record.items()

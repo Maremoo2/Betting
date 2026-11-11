@@ -8,7 +8,16 @@ from statistics import mean, median
 from zoneinfo import ZoneInfo
 
 from .evaluation import calibration_bins, log_loss, multiclass_brier
-from .prospective_gate import is_new_regime, qualification_index, qualifies_primary
+from .prospective_gate import (
+    LEGACY_UNCERTIFIED,
+    PRIMARY_PIT_QUALIFIED,
+    REJECTED_OR_INCOMPLETE,
+    RESEARCH_DIAGNOSTIC_ONLY,
+    is_new_regime,
+    qualification_index,
+    qualifies_primary,
+    qualify_prospective,
+)
 from .providers.rikstoto import RikstotoClient
 from .storage import SQLiteStore
 
@@ -465,6 +474,8 @@ def _aggregate_metric(
 def build_evaluation_summary(
     store: SQLiteStore,
     report_date: date,
+    *,
+    population: str = PRIMARY_PIT_QUALIFIED,
 ) -> dict[str, object]:
     start, end = _day_bounds(report_date)
     races = {
@@ -483,6 +494,14 @@ def build_evaluation_summary(
         for row in decision_runs
     }
     t4_index = qualification_index(store)
+    populations = {
+        str(run["decision_run_id"]): qualify_prospective(run, t4_index)["population"]
+        for run in decision_runs
+    }
+    selected_runs = [
+        run for run in decision_runs
+        if populations[str(run["decision_run_id"])] == population
+    ]
     raw_evaluations = [
         row for row in store.fetch_table("race_research_evaluations")
         if str(row.get("race_id")) in race_ids
@@ -492,7 +511,8 @@ def build_evaluation_summary(
         if (decision := by_key.get(
             (str(row["race_id"]), str(row["shadow_model_version"]))
         )) is not None
-        and (not is_new_regime(decision) or qualifies_primary(decision, t4_index))
+        and populations[str(decision["decision_run_id"])] == population
+        and row.get("decision_time_utc") == decision.get("created_at_utc")
     ]
     outcomes = {
         str(row["race_id"]): str(row["winner_selection_id"])
@@ -507,9 +527,7 @@ def build_evaluation_summary(
         ("combined", "combined_probabilities_json"),
     ):
         observations: list[tuple[float, bool]] = []
-        for run in decision_runs:
-            if is_new_regime(run) and not qualifies_primary(run, t4_index):
-                continue
+        for run in selected_runs:
             winner = outcomes.get(str(run["race_id"]))
             distribution = _loads_distribution(run.get(column))
             if winner is None or distribution is None or winner not in distribution:
@@ -524,11 +542,16 @@ def build_evaluation_summary(
             else []
         )
 
+    legacy_ticket_keys = {
+        (run["race_id"], run["shadow_model_version"], run["created_at_utc"])
+        for run in selected_runs
+    } if population == LEGACY_UNCERTIFIED else set()
     tickets = [
         row
         for row in store.fetch_table("shadow_tickets")
         if _in_window(row.get("decision_time_utc"), start, end)
         and row.get("status") != "NOT_EXECUTABLE"
+        and (row["race_id"], row["model_version"], row["decision_time_utc"]) in legacy_ticket_keys
     ]
     settled = [row for row in tickets if row.get("status") == "SETTLED"]
     settled_stake = sum(float(row.get("stake_nok") or 0) for row in settled)
@@ -554,20 +577,31 @@ def build_evaluation_summary(
     return {
         "report_date": report_date.isoformat(),
         "race_evaluations_n": len(evaluations),
-        "primary_prospective_evaluations_n": sum(
-            is_new_regime(by_key[(str(e["race_id"]), str(e["shadow_model_version"]))])
-            for e in evaluations
-        ),
+        "evaluation_population": population,
+        "primary_prospective_evaluations_n": len(evaluations) if population == PRIMARY_PIT_QUALIFIED else 0,
         "legacy_uncertified_evaluations_n": sum(
-            not is_new_regime(by_key[(str(e["race_id"]), str(e["shadow_model_version"]))])
-            for e in evaluations
+            row.get("decision_time_utc") == decision.get("created_at_utc")
+            and populations[str(decision["decision_run_id"])] == LEGACY_UNCERTIFIED
+            for row in raw_evaluations
+            if (decision := by_key.get((str(row["race_id"]), str(row["shadow_model_version"])))) is not None
         ),
-        "blocked_unattested_new_evaluations_n": len(raw_evaluations) - len(evaluations),
-        "decision_runs_n": len(decision_runs),
-        "evaluation_coverage": (
-            None if not decision_runs else len(evaluations) / len(decision_runs)
+        "decision_population_counts": {
+            name: sum(value == name for value in populations.values())
+            for name in (
+                PRIMARY_PIT_QUALIFIED, LEGACY_UNCERTIFIED,
+                RESEARCH_DIAGNOSTIC_ONLY, REJECTED_OR_INCOMPLETE,
+            )
+        },
+        "blocked_unattested_new_evaluations_n": sum(
+            populations[str(decision["decision_run_id"])] in (
+                RESEARCH_DIAGNOSTIC_ONLY, REJECTED_OR_INCOMPLETE,
+            )
+            for row in raw_evaluations
+            if (decision := by_key.get((str(row["race_id"]), str(row["shadow_model_version"])))) is not None
         ),
-        "outcomes_n": len(outcomes),
+        "decision_runs_n": len(selected_runs),
+        "evaluation_coverage": None if not selected_runs else len(evaluations) / len(selected_runs),
+        "outcomes_n": sum(str(run["race_id"]) in outcomes for run in selected_runs),
         "fundamental_n": len(fundamental_log_values),
         "market_n": len(market_log_values),
         "combined_n": len(combined_log_values),
@@ -617,7 +651,8 @@ def build_trend_summary(store: SQLiteStore) -> dict[str, object]:
         if (decision := decisions.get(
             (str(row["race_id"]), str(row["shadow_model_version"]))
         )) is not None
-        and (not is_new_regime(decision) or qualifies_primary(decision, idx))
+        and qualifies_primary(decision, idx)
+        and row.get("decision_time_utc") == decision.get("created_at_utc")
     ]
     by_model: dict[str, list[dict[str, object]]] = {}
     for row in evaluations:
@@ -651,6 +686,8 @@ def build_trend_summary(store: SQLiteStore) -> dict[str, object]:
             evaluation = json.loads(str(row["evaluation_json"]))
         except (json.JSONDecodeError, KeyError):
             continue
+        if evaluation.get("evaluation_population") != PRIMARY_PIT_QUALIFIED:
+            continue
         recent.append(
             {
                 "report_date": row["report_date"],
@@ -668,6 +705,7 @@ def build_trend_summary(store: SQLiteStore) -> dict[str, object]:
         )
 
     return {
+        "evaluation_population": PRIMARY_PIT_QUALIFIED,
         "all_evaluations_n": len(evaluations),
         "blocked_unattested_new_evaluations_n": len(all_evaluations) - len(evaluations),
         "by_fundamental_model_version": model_summary,

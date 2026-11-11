@@ -10,6 +10,7 @@ from types import SimpleNamespace
 import pytest
 
 from hbi.counterfactual import CounterfactualHypothesis, evaluate_counterfactual
+from hbi.horse_identity import AttestedHorseIdentity
 from hbi.learning import build_learning_rows
 from hbi.nightly import settle_open_shadow_tickets
 from hbi.observatory import materialize_race_evaluations
@@ -99,13 +100,15 @@ def attach(state, decision, *, commit="2026-11-11T13:55:50+00:00", race=None, mo
     return receipt
 
 
-def test_verified_on_time_watch_receipt_qualifies_but_never_pit(tmp_path):
+def test_verified_on_time_watch_receipt_is_diagnostic_without_originals(tmp_path):
     state = store(tmp_path)
     row = frozen(state)
     receipt = attach(state, row)
     assert receipt["decision_persisted_before_t4"] is True
     result = qualify_prospective(row, qualification_index(state))
-    assert result["qualified"] is True
+    assert result["qualified"] is False
+    assert result["population"] == "RESEARCH_DIAGNOSTIC_ONLY"
+    assert "ORIGINAL_WIN_BYTES_UNVERIFIED" in result["reasons"]
     assert result["pit_certified"] is False
     assert result["shadow_executable"] is False
     state.settle_outcome(
@@ -115,7 +118,7 @@ def test_verified_on_time_watch_receipt_qualifies_but_never_pit(tmp_path):
     assert materialize_race_evaluations(
         state, date(2026, 11, 11),
         created_at=datetime(2026, 11, 11, 15, tzinfo=UTC),
-    ) == 1
+    ) == 0
 
 
 @pytest.mark.parametrize("variation", [
@@ -182,7 +185,7 @@ def _assessment(*, p=0.55, odds=3.0):
     )
 
 
-def record(state, assessment=None, full_probabilities=None):
+def record(state, assessment=None, full_probabilities=None, *, attestations=()):
     return record_win_research_signal(
         state, race_id=RACE, decision_run_id="test-r005-decision",
         selection_id="1", model_version=MODEL,
@@ -195,6 +198,7 @@ def record(state, assessment=None, full_probabilities=None):
         source_receipts={"WIN": _source(), "STARTS": _source(), "SCRATCHED": _source()},
         rejected_candidates=[{"selection_id": "2", "decision": "PASS"}],
         contender_payload_id="contender:test-r005-decision",
+        identity_attestations=attestations,
     )
 
 
@@ -206,6 +210,8 @@ def test_signal_recorded_with_complete_fields_and_zero_tickets(tmp_path):
     assert len(signals) == 1
     signal = signals[0]
     assert signal["selection_id"] == "1"
+    assert signal["horse_id"] is None
+    assert signal["horse_identity_status"] == "UNATTESTED"
     assert signal["horse_id_scope"] == "RACE_LOCAL_SELECTION_NOT_PERMANENT_HORSE_ID"
     assert signal["observed_win_odds"] == 3
     assert signal["p_win"] == 0.55
@@ -253,3 +259,67 @@ def test_nightly_ignores_research_signals(tmp_path):
     result = settle_open_shadow_tickets(state, client=NeverFetch())
     assert result.attempted == 0 if hasattr(result, "attempted") else result.settled == 0
     assert not state.fetch_table("shadow_tickets")
+
+
+def test_signal_payload_conflict_and_sql_replacement(tmp_path):
+    state = store(tmp_path)
+    record(state)
+    original = state.fetch_table("shadow_research_signals")
+    with pytest.raises(ValueError, match="RESEARCH_SIGNAL_IDEMPOTENCY_CONFLICT"):
+        record(SQLiteStore(state.path), assessment=_assessment(odds=4))
+    for statement in (
+        "DELETE FROM shadow_research_signals",
+        "INSERT OR REPLACE INTO shadow_research_signals SELECT * FROM shadow_research_signals",
+    ):
+        with pytest.raises(sqlite3.IntegrityError), state.connect() as conn:
+            conn.execute(statement)
+    assert state.fetch_table("shadow_research_signals") == original
+
+
+def test_failed_signal_statement_rolls_back(tmp_path):
+    state = store(tmp_path)
+    with state.connect() as conn:
+        conn.executescript("""
+            CREATE TRIGGER fail_after_signal AFTER INSERT ON shadow_research_signals
+            BEGIN SELECT RAISE(FAIL, 'injected persistence failure'); END;
+        """)
+    with pytest.raises(RuntimeError, match="RESEARCH_SIGNAL_SQLITE_FAILURE"):
+        record(state)
+    assert state.fetch_table("shadow_research_signals") == []
+    assert state.open_shadow_tickets() == []
+
+
+@pytest.mark.parametrize("other,reason", [
+    (AttestedHorseIdentity("different-race", "1", "registry:42", "official", "v1"),
+     "HORSE_IDENTITY_RACE_OR_SELECTION_MISMATCH"),
+    (AttestedHorseIdentity(RACE, "2", "registry:42", "official", "v1"),
+     "HORSE_IDENTITY_RACE_OR_SELECTION_MISMATCH"),
+    (AttestedHorseIdentity(RACE, "1", "registry:43", "second-registry", "v2"),
+     "HORSE_IDENTITY_SOURCE_CONFLICT"),
+])
+def test_wrong_identity_evidence_is_rejected(tmp_path, other, reason):
+    state = store(tmp_path)
+    trusted = AttestedHorseIdentity(RACE, "1", "registry:42", "official", "v1")
+    with pytest.raises(ValueError, match=reason):
+        record(state, attestations=(trusted, other))
+    assert state.fetch_table("shadow_research_signals") == []
+    record(state, attestations=(trusted,))
+    signal = state.fetch_table("shadow_research_signals")[0]
+    assert (signal["horse_id"], signal["horse_id_source_version"]) == ("registry:42", "v1")
+
+
+def test_migration_and_history_write_roll_back_together(tmp_path):
+    state = store(tmp_path)
+    migrations = tmp_path / "migrations"
+    migrations.mkdir()
+    migration = migrations / "0099_injected_failure.sql"
+    migration.write_text("CREATE TABLE rolled_back (id INTEGER);\nINSERT INTO absent VALUES (1);")
+    with pytest.raises(sqlite3.OperationalError, match="no such table"):
+        state.apply_migrations(migrations)
+    with SQLiteStore(state.path).connect() as conn:
+        assert conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE name='rolled_back'"
+        ).fetchone() is None
+        assert conn.execute(
+            "SELECT 1 FROM schema_migrations WHERE migration_id=?", (migration.name,)
+        ).fetchone() is None

@@ -384,6 +384,8 @@ def evaluate_archive(
         "generated_at_utc": current.isoformat(), "source_archive_root": str(models_root),
         "model_originals_verified_by_sha": True,
         "archive_errors": archive_errors, "records": [], "metrics": None,
+        "metrics_population": "RESEARCH_DIAGNOSTIC_ONLY",
+        "primary_pit_qualified": {"physical_races": 0, "metrics": None, "calibration": None},
         "no_model_promotion": True, "pit_certification_performed": False,
         "v33_evaluator_called": False, "bet_authority": False, "stake_nok": None,
         "cumulative_original_inventory": coverage,
@@ -536,6 +538,10 @@ def evaluate_archive(
                 "bet_authority": False,
             })
     output["records"].sort(key=lambda row: row["race_id"])
+    for row in output["records"]:
+        row["evaluation_population"] = (
+            "RESEARCH_DIAGNOSTIC_ONLY" if row["score"] is not None else "REJECTED_OR_INCOMPLETE"
+        )
     paired = [row for row in output["records"] if row["score"] is not None]
     metric_keys = ("champion_log_loss", "champion_multiclass_brier",
                    "core004_log_loss", "core004_multiclass_brier")
