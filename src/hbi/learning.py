@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .prospective_gate import is_new_regime, qualification_index, qualifies_primary
+from .prospective_gate import is_new_regime, qualification_index, qualify_prospective
 from .storage import SQLiteStore
 
 
@@ -49,13 +49,16 @@ def build_learning_rows(store: SQLiteStore) -> list[dict[str, Any]]:
     qualification = qualification_index(store)
     for decision in store.fetch_table("shadow_decision_runs"):
         is_new = is_new_regime(decision)
-        eligible = qualifies_primary(decision, qualification) if is_new else False
+        qualification_result = qualify_prospective(decision, qualification)
+        eligible = qualification_result["qualified"]
         race_id = str(decision["race_id"])
         race = races.get(race_id, {})
         evaluation = evaluations.get(
             (race_id, str(decision["shadow_model_version"])),
             {},
         )
+        if evaluation.get("decision_time_utc") != decision.get("created_at_utc"):
+            evaluation = {}
         fundamental = fundamentals.get(race_id, {})
         outcome = outcomes.get(race_id, {})
         provenance_row = provenance.get(str(decision["decision_run_id"]), {})
@@ -64,6 +67,8 @@ def build_learning_rows(store: SQLiteStore) -> list[dict[str, Any]]:
             for ticket in tickets_by_race.get(race_id, [])
             if str(ticket.get("model_version") or "")
             == str(decision["shadow_model_version"])
+            and not is_new
+            and ticket.get("decision_time_utc") == decision.get("created_at_utc")
             and str(ticket.get("status") or "") != "NOT_EXECUTABLE"
         ]
         settled = [ticket for ticket in tickets if ticket.get("status") == "SETTLED"]
@@ -111,6 +116,8 @@ def build_learning_rows(store: SQLiteStore) -> list[dict[str, Any]]:
                 "decision_status": decision.get("decision_status"),
                 "decision_reason": decision.get("reason"),
                 "evaluation_regime": "PROSPECTIVE_T4_V1" if is_new else "LEGACY_UNCERTIFIED",
+                "evaluation_population": qualification_result["population"],
+                "qualification_reasons": qualification_result["reasons"],
                 "primary_prospective_qualified": eligible,
                 "shadow_model_version": decision.get("shadow_model_version"),
                 "fundamental_model_version": decision.get("fundamental_model_version"),

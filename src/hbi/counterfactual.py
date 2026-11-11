@@ -8,7 +8,7 @@ from hashlib import sha256
 from .decision import DecisionPolicy
 from .domain import Decision
 from .engine import CombinationPolicy, evaluate_race
-from .prospective_gate import is_new_regime, qualification_index, qualifies_primary
+from .prospective_gate import is_new_regime, qualification_index, qualify_prospective
 from .storage import SQLiteStore
 
 
@@ -52,11 +52,11 @@ def evaluate_counterfactual(
     meta = provenance.get(decision_run_id)
     if decision is None:
         raise KeyError(f"unknown decision run {decision_run_id}")
-    if is_new_regime(decision) and not qualifies_primary(
-        decision, qualification_index(store)
-    ):
+    qualification = qualify_prospective(decision, qualification_index(store))
+    if is_new_regime(decision) and not qualification["qualified"]:
         return {
             "status": "INSUFFICIENT_DATA",
+            "evaluation_population": qualification["population"],
             "reason": "PRIMARY_PROSPECTIVE_T4_ATTESTATION_MISSING",
             "research_only": True,
             "execution_authority": False,
@@ -65,6 +65,7 @@ def evaluate_counterfactual(
     if meta is None:
         return {
             "status": "INSUFFICIENT_DATA",
+            "evaluation_population": qualification["population"],
             "reason": "MISSING_DECISION_PROVENANCE",
             "research_only": True,
             "execution_authority": False,
@@ -75,6 +76,7 @@ def evaluate_counterfactual(
     if fundamental is None or odds is None or set(fundamental) != set(odds):
         return {
             "status": "INSUFFICIENT_DATA",
+            "evaluation_population": qualification["population"],
             "reason": "MISSING_OR_MISALIGNED_FROZEN_INPUTS",
             "research_only": True,
             "execution_authority": False,
@@ -120,6 +122,7 @@ def evaluate_counterfactual(
 
     result = {
         "status": "EVALUATED",
+        "evaluation_population": qualification["population"],
         "race_id": decision["race_id"],
         "source_decision_run_id": decision_run_id,
         "hypothesis": asdict(hypothesis),

@@ -10,7 +10,7 @@ from pathlib import Path
 from statistics import median
 from zoneinfo import ZoneInfo
 
-from .prospective_gate import index_from_manifest_rows, is_new_regime, qualifies_primary
+from .prospective_gate import index_from_manifest_rows, is_new_regime, qualify_prospective
 
 COUNTRIES = ("SE", "DK", "NO", "FR")
 OSLO = ZoneInfo("Europe/Oslo")
@@ -91,10 +91,12 @@ def build_operations_report(db_path, start: date, end: date, *, now=None):
         for run in runs:
             actual = (_time(run["race_start_time_utc"]) - _time(run["created_at_utc"])
                       ).total_seconds() / 60
-            qualified = qualifies_primary(run, receipt_index) if is_new_regime(run) else False
+            qualification = qualify_prospective(run, receipt_index)
             timing.append({"decision_run_id": run["decision_run_id"],
                            "status": run["decision_status"], "reason": run["reason"],
-                           "primary_prospective_qualified": qualified,
+                           "primary_prospective_qualified": qualification["qualified"],
+                           "evaluation_population": qualification["population"],
+                           "qualification_reasons": qualification["reasons"],
                            "evaluation_regime": "PROSPECTIVE_T4_V1"
                            if is_new_regime(run) else "LEGACY_UNCERTIFIED",
                            "actual_minutes_to_start": actual,

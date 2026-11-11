@@ -18,6 +18,10 @@ GATE_SCHEMA = "RELEASE005_PRIMARY_PROSPECTIVE_GATE_V1"
 # PR187 merge time: previous materialized historical regime is unchanged.
 # New races require an actual postcommit receipt; old rows are NEVER PIT.
 LEGACY_BOUNDARY_UTC = datetime(2026, 11, 11, 10, 52, 18, tzinfo=UTC)
+PRIMARY_PIT_QUALIFIED = "PRIMARY_PIT_QUALIFIED"
+RESEARCH_DIAGNOSTIC_ONLY = "RESEARCH_DIAGNOSTIC_ONLY"
+LEGACY_UNCERTIFIED = "LEGACY_UNCERTIFIED"
+REJECTED_OR_INCOMPLETE = "REJECTED_OR_INCOMPLETE"
 SUPPORTED_STATUSES = frozenset({"PASS", "WATCH"})
 
 
@@ -76,7 +80,10 @@ def index_from_manifest_rows(
             continue
         if not isinstance(data, dict):
             continue
-        for receipt in data.get("t4_attempts", []):
+        attempts = data.get("t4_attempts")
+        if not isinstance(attempts, list):
+            continue
+        for receipt in attempts:
             if not isinstance(receipt, dict):
                 continue
             digest = receipt.get("readback_row_sha256")
@@ -101,11 +108,15 @@ def qualify_prospective(
         "pit_certified": False,
         "shadow_executable": False,
         "regime": "PROSPECTIVE_T4_V1" if is_new_regime(row) else "LEGACY_UNCERTIFIED",
+        "population": REJECTED_OR_INCOMPLETE,
         "reasons": [],
     }
     if not is_new_regime(row):
+        result["population"] = LEGACY_UNCERTIFIED
         result["reasons"] = ["LEGACY_NOT_RETROACTIVELY_CERTIFIED"]
         return result
+    if row.get("decision_status") == "T4_PENDING_ATTESTATION":
+        result["population"] = RESEARCH_DIAGNOSTIC_ONLY
     if row.get("decision_status") not in SUPPORTED_STATUSES:
         result["reasons"] = ["DECISION_STATUS_NOT_ELIGIBLE"]
         return result
@@ -167,8 +178,13 @@ def qualify_prospective(
             github_sha=code_sha,
         )
         if derived["decision_persisted_before_t4"] and receipt.get("decision_persisted_before_t4") is True:
-            result["qualified"] = True
-            result["reasons"] = []
+            # Watcher receipts attest clocks only. They never retain original WIN
+            # bytes or carry an independently verified full-field identity binding.
+            result["population"] = RESEARCH_DIAGNOSTIC_ONLY
+            result["reasons"] = [
+                "ORIGINAL_WIN_BYTES_UNVERIFIED",
+                "PERMANENT_FULL_FIELD_IDENTITY_UNATTESTED",
+            ]
             result["receipt_sha256"] = hashlib.sha256(
                 json.dumps(receipt, sort_keys=True).encode()
             ).hexdigest()
@@ -181,4 +197,4 @@ def qualify_prospective(
 def qualifies_primary(
     row: dict[str, Any], index: dict[str, list[tuple[dict[str, Any], dict[str, Any]]]],
 ) -> bool:
-    return qualify_prospective(row, index)["qualified"] is True
+    return qualify_prospective(row, index)["population"] == PRIMARY_PIT_QUALIFIED
