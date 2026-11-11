@@ -11,12 +11,19 @@ from .fundamental import run_and_persist_fundamental
 from .manifest import persist_run_manifest
 from .provenance import record_decision_provenance
 from .rikstoto_collector import RikstotoCollector
-from .shadow import ShadowPolicy, run_win_shadow_decision
+from .shadow import (
+    ShadowPolicy,
+    _decision_run_id,
+    _persist_decision_run,
+    run_win_shadow_decision,
+)
 from .storage import SQLiteStore
 
 ROOT = Path(__file__).parents[2]
 SCHEMA = ROOT / "db" / "schema.sql"
 MIGRATIONS = ROOT / "db" / "migrations"
+# Operational buffer only; T-4 cutoff itself is NEVER moved.
+PRE_T4_REFRESH_LEAD = timedelta(seconds=60)
 
 
 @dataclass
@@ -63,6 +70,41 @@ def _policy_from_env() -> ShadowPolicy:
         target_minutes_to_start=float(os.getenv("HBI_SHADOW_TARGET_MINUTES", "4.0")),
         max_win_bets_per_race=int(os.getenv("HBI_SHADOW_MAX_WIN_BETS_PER_RACE", "1")),
     )
+
+
+def _reject_missed_t4(
+    store: SQLiteStore,
+    *,
+    race: dict[str, object],
+    policy: ShadowPolicy,
+    observed_now: datetime,
+) -> bool:
+    """Never promote a late watcher attempt to a qualified T-4 decision.
+
+    Uses the existing immutable shadow decision row and existing NO BET reason.
+    This does not change model probabilities, strategy thresholds or payouts.
+    A previous immutable decision is never overwritten by a later run.
+    """
+    start = datetime.fromisoformat(str(race["start_time_utc"]))
+    cutoff = start - timedelta(minutes=policy.target_minutes_to_start)
+    if observed_now < cutoff:
+        return False
+    frozen_id = _decision_run_id(
+        str(race["race_id"]), "V", policy.model_version,
+        policy.target_minutes_to_start,
+    )
+    if store.get_shadow_decision_run(frozen_id) is None:
+        _persist_decision_run(
+            store,
+            race_id=str(race["race_id"]),
+            raceday_key=str(race["provider_raceday_key"]),
+            race_start_at=start,
+            decision_time=observed_now,
+            policy=policy,
+            status="NOT_EXECUTABLE",
+            reason="T4_CUTOFF_MISSED",
+        )
+    return True
 
 
 def run_watcher(
@@ -128,13 +170,16 @@ def run_watcher(
     for target, race in target_schedule:
         race_start = datetime.fromisoformat(str(race["start_time_utc"]))
         live_now = datetime.now(UTC) if now is None else current
-        wait_seconds = (target - live_now).total_seconds()
+        # Do not wake AT T-4 and only then start network/model work. Plan
+        # the final source refresh before the unchanged T-4 cutoff.
+        wait_seconds = (target - PRE_T4_REFRESH_LEAD - live_now).total_seconds()
         if allow_sleep and now is None and 0 < wait_seconds <= 300:
             time.sleep(wait_seconds)
             live_now = datetime.now(UTC)
 
-        # If started already, do not manufacture a pre-race decision.
-        if live_now >= race_start:
+        # GitHub schedule lag, source latency and earlier races can all push
+        # this attempt beyond T-4. Fail closed before a fresh source request.
+        if _reject_missed_t4(store, race=race, policy=policy, observed_now=live_now):
             audit.not_executable += 1
             continue
 
@@ -171,6 +216,9 @@ def run_watcher(
         # Decisions must occur after provider responses, never at request start.
         if now is None:
             live_now = datetime.now(UTC)
+        if _reject_missed_t4(store, race=race, policy=policy, observed_now=live_now):
+            audit.not_executable += 1
+            continue
         if fundamental_ok:
             fundamental_run = run_and_persist_fundamental(
                 store,
@@ -183,6 +231,14 @@ def run_watcher(
             )
         else:
             audit.fundamental_failures += 1
+
+        # Recheck AFTER model evaluation/persistence. Its pre-calculation
+        # timestamp cannot certify that the computation finished before T-4.
+        if now is None:
+            live_now = datetime.now(UTC)
+        if _reject_missed_t4(store, race=race, policy=policy, observed_now=live_now):
+            audit.not_executable += 1
+            continue
 
         result = run_win_shadow_decision(
             store,
