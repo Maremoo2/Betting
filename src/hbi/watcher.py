@@ -19,6 +19,7 @@ from .shadow import (
 )
 from .storage import SQLiteStore
 from .t4_evidence import classify_t4_receipt
+from .prospective_gate import qualification_index, qualifies_primary
 
 ROOT = Path(__file__).parents[2]
 SCHEMA = ROOT / "db" / "schema.sql"
@@ -247,6 +248,13 @@ def run_watcher(
             continue
 
         marks: dict[str, datetime] = {}
+        source_receipts = getattr(collector, "source_receipts", {})
+        bound_sources = {
+            label: source_receipts.get((str(race["race_id"]), code), {})
+            for label, code in (
+                ("WIN", "V"), ("STARTS", "STARTS"), ("SCRATCHED", "SCRATCHED"),
+            )
+        }
 
         result = run_win_shadow_decision(
             store,
@@ -259,6 +267,7 @@ def run_watcher(
             # attestation. Live calls explicitly use the absolute deadline.
             t4_cutoff=target if now is None else None,
             milestone=marks.__setitem__,
+            source_receipts=bound_sources,
         )
         # Read back the committed row before taking the independent clock.
         frozen_id = _decision_run_id(
@@ -272,13 +281,6 @@ def run_watcher(
             if now is None and marks.get("DECISION_PERSISTED") is not None
             else None
         )
-        source_receipts = getattr(collector, "source_receipts", {})
-        bound_sources = {
-            label: source_receipts.get((str(race["race_id"]), code), {})
-            for label, code in (
-                ("WIN", "V"), ("STARTS", "STARTS"), ("SCRATCHED", "SCRATCHED"),
-            )
-        }
         receipt = classify_t4_receipt(
             race_id=str(race["race_id"]),
             race_start_utc=race_start.isoformat(),
@@ -304,14 +306,6 @@ def run_watcher(
             github_sha=os.getenv("GITHUB_SHA"),
         )
         audit.t4_attempts.append(receipt)
-        record_decision_provenance(
-            store,
-            race_id=str(race["race_id"]),
-            shadow_model_version=policy.model_version,
-            target_minutes_to_start=policy.target_minutes_to_start,
-            policy=asdict(policy),
-            recorded_at=live_now,
-        )
         if result.status == "SHADOW_BET":
             audit.shadow_bets_created += result.created
         elif result.status in {"NOT_EXECUTABLE", "T4_PENDING_ATTESTATION"}:
@@ -332,6 +326,26 @@ def run_watcher(
         policy=asdict(policy),
         metadata=asdict(audit),
     )
+    # The provenance consumer is called *after* the receipt-bearing manifest
+    # commits, and only on a verified primary prospective decision.
+    index = qualification_index(store)
+    for receipt in audit.t4_attempts:
+        if receipt.get("decision_persisted_before_t4") is not True:
+            continue
+        frozen_id = _decision_run_id(
+            str(receipt["race_id"]), "V", policy.model_version,
+            policy.target_minutes_to_start,
+        )
+        row = store.get_shadow_decision_run(frozen_id)
+        if row is None or not qualifies_primary(row, index):
+            continue
+        record_decision_provenance(
+            store, race_id=str(receipt["race_id"]),
+            shadow_model_version=policy.model_version,
+            target_minutes_to_start=policy.target_minutes_to_start,
+            policy=asdict(policy),
+            recorded_at=datetime.now(UTC),
+        )
     store.checkpoint()
     return audit
 

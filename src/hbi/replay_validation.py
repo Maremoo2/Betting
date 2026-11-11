@@ -9,6 +9,7 @@ from hashlib import sha256
 from .decision import DecisionPolicy
 from .engine import CombinationPolicy, evaluate_race
 from .probability import normalize_market_odds
+from .prospective_gate import is_new_regime, qualification_index, qualifies_primary
 from .storage import SQLiteStore
 
 
@@ -45,10 +46,16 @@ def run_runtime_replay_parity(store: SQLiteStore) -> dict[str, object]:
 
     checked = 0
     skipped = 0
+    unqualified_new = 0
+    t4_index = qualification_index(store)
     mismatches: list[dict[str, object]] = []
     provenance_differences: list[dict[str, object]] = []
 
     for decision_id, row in decisions.items():
+        if is_new_regime(row) and not qualifies_primary(row, t4_index):
+            unqualified_new += 1
+            skipped += 1
+            continue
         meta = provenance.get(decision_id)
         fundamental = _loads_map(row.get("fundamental_probabilities_json"))
         stored_combined = _loads_map(row.get("combined_probabilities_json"))
@@ -160,6 +167,7 @@ def run_runtime_replay_parity(store: SQLiteStore) -> dict[str, object]:
         "status": status,
         "checked_decisions": checked,
         "skipped_decisions": skipped,
+        "unqualified_new_regime_decisions": unqualified_new,
         "mismatches": mismatches,
         "provenance_differences": provenance_differences,
         "replay_market_basis": "EXACT_FROZEN_SOURCE_COHORT_NO_LATER_SUBSTITUTION",

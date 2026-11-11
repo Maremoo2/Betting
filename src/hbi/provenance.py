@@ -9,6 +9,7 @@ from typing import Any
 
 from .governance import governance_hash, load_governance
 from .probability import normalize_market_odds
+from .prospective_gate import is_new_regime, qualification_index, qualifies_primary
 from .storage import SQLiteStore
 
 ROOT = Path(__file__).parents[2]
@@ -40,6 +41,11 @@ def record_decision_provenance(
         reverse=True,
     )
     decision = decisions[0]
+    if is_new_regime(decision) and not qualifies_primary(
+        decision, qualification_index(store)
+    ):
+        # Old created_at is never sufficient; diagnostics remain in raw tables.
+        return None
 
     # Freeze the precise source snapshot used by the decision. Never attach
     # a later market quote to an already immutable shadow decision.

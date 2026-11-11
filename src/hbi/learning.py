@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from .prospective_gate import is_new_regime, qualification_index, qualifies_primary
 from .storage import SQLiteStore
 
 
@@ -45,7 +46,10 @@ def build_learning_rows(store: SQLiteStore) -> list[dict[str, Any]]:
         tickets_by_race.setdefault(str(ticket.get("race_id") or ""), []).append(ticket)
 
     rows: list[dict[str, Any]] = []
+    qualification = qualification_index(store)
     for decision in store.fetch_table("shadow_decision_runs"):
+        is_new = is_new_regime(decision)
+        eligible = qualifies_primary(decision, qualification) if is_new else False
         race_id = str(decision["race_id"])
         race = races.get(race_id, {})
         evaluation = evaluations.get(
@@ -106,6 +110,8 @@ def build_learning_rows(store: SQLiteStore) -> list[dict[str, Any]]:
                 "execution_latency_seconds": decision.get("execution_latency_seconds"),
                 "decision_status": decision.get("decision_status"),
                 "decision_reason": decision.get("reason"),
+                "evaluation_regime": "PROSPECTIVE_T4_V1" if is_new else "LEGACY_UNCERTIFIED",
+                "primary_prospective_qualified": eligible,
                 "shadow_model_version": decision.get("shadow_model_version"),
                 "fundamental_model_version": decision.get("fundamental_model_version"),
                 "history_coverage": (
@@ -117,12 +123,24 @@ def build_learning_rows(store: SQLiteStore) -> list[dict[str, Any]]:
                     else bool(fundamental.get("shadow_eligible"))
                 ),
                 "winner_selection_id": outcome.get("winner_selection_id"),
-                "fundamental_log_loss": evaluation.get("fundamental_log_loss"),
-                "market_log_loss": evaluation.get("market_log_loss"),
-                "combined_log_loss": evaluation.get("combined_log_loss"),
-                "fundamental_brier": evaluation.get("fundamental_brier"),
-                "market_brier": evaluation.get("market_brier"),
-                "combined_brier": evaluation.get("combined_brier"),
+                "fundamental_log_loss": (
+                    evaluation.get("fundamental_log_loss") if eligible or not is_new else None
+                ),
+                "market_log_loss": (
+                    evaluation.get("market_log_loss") if eligible or not is_new else None
+                ),
+                "combined_log_loss": (
+                    evaluation.get("combined_log_loss") if eligible or not is_new else None
+                ),
+                "fundamental_brier": (
+                    evaluation.get("fundamental_brier") if eligible or not is_new else None
+                ),
+                "market_brier": (
+                    evaluation.get("market_brier") if eligible or not is_new else None
+                ),
+                "combined_brier": (
+                    evaluation.get("combined_brier") if eligible or not is_new else None
+                ),
                 "model_market_conflict_score": decision.get(
                     "model_market_conflict_score"
                 ),
@@ -160,7 +178,15 @@ def learning_dataset_summary(rows: list[dict[str, Any]]) -> dict[str, object]:
         countries[country] = countries.get(country, 0) + 1
     return {
         "rows": len(rows),
-        "evaluated_rows": len(evaluated),
+        "evaluated_rows": len(evaluated),  # includes explicitly labeled legacy
+        "primary_prospective_evaluated_rows": sum(
+            row.get("primary_prospective_qualified") is True
+            and row.get("combined_log_loss") is not None for row in rows
+        ),
+        "legacy_uncertified_evaluated_rows": sum(
+            row.get("evaluation_regime") == "LEGACY_UNCERTIFIED"
+            and row.get("combined_log_loss") is not None for row in rows
+        ),
         "settled_rows": len(settled),
         "countries": countries,
         "data_quality": {

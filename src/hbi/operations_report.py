@@ -10,6 +10,8 @@ from pathlib import Path
 from statistics import median
 from zoneinfo import ZoneInfo
 
+from .prospective_gate import index_from_manifest_rows, is_new_regime, qualifies_primary
+
 COUNTRIES = ("SE", "DK", "NO", "FR")
 OSLO = ZoneInfo("Europe/Oslo")
 
@@ -45,10 +47,14 @@ def build_operations_report(db_path, start: date, end: date, *, now=None):
             if (t := _time(row["observed_at_utc"])) and t <= now:
                 evidence[row["provider_raceday_key"]].append(
                     (t, row["evidence_order"], row["payload_json"]))
+        manifest_rows = [
+            dict(r) for r in connection.execute("SELECT * FROM system_run_manifests")
+        ]
         tickets = [dict(r) for r in connection.execute("SELECT * FROM shadow_tickets")]
         outcomes = {r["race_id"]: dict(r) for r in connection.execute("SELECT * FROM outcomes")}
     finally:
         connection.close()
+    receipt_index = index_from_manifest_rows(manifest_rows)
     rows = []
     for race in races:
         race_start = _time(race["start_time_utc"])
@@ -85,8 +91,12 @@ def build_operations_report(db_path, start: date, end: date, *, now=None):
         for run in runs:
             actual = (_time(run["race_start_time_utc"]) - _time(run["created_at_utc"])
                       ).total_seconds() / 60
+            qualified = qualifies_primary(run, receipt_index) if is_new_regime(run) else False
             timing.append({"decision_run_id": run["decision_run_id"],
                            "status": run["decision_status"], "reason": run["reason"],
+                           "primary_prospective_qualified": qualified,
+                           "evaluation_regime": "PROSPECTIVE_T4_V1"
+                           if is_new_regime(run) else "LEGACY_UNCERTIFIED",
                            "actual_minutes_to_start": actual,
                            "t4_error_seconds": (4 - actual) * 60,
                            "within_t4_plus_minus_60_seconds": abs(4 - actual) <= 1,
@@ -143,6 +153,8 @@ def build_operations_report(db_path, start: date, end: date, *, now=None):
                               r["missing_decision_after_start"] for r in subset),
                           "t4_within_60_seconds": sum(
                               d["within_t4_plus_minus_60_seconds"] for d in timings),
+                          "primary_prospective_qualified": sum(
+                              d["primary_prospective_qualified"] for d in timings),
                           "t4_error_seconds_median": median(errors) if errors else None,
                           "post_start_decisions": sum(not d["pre_race"] for d in timings)})
             daily[-1].update({

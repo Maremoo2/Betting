@@ -13,6 +13,7 @@ from .domain import Decision
 from .eligibility import evaluate_win_eligibility
 from .engine import CombinationPolicy, evaluate_race
 from .probability import normalize_market_odds
+from .research_signal import record_win_research_signal
 from .provider_capability import full_field_gate
 from .storage import SQLiteStore
 
@@ -139,6 +140,7 @@ def run_win_shadow_decision(
     t4_cutoff: datetime | None = None,
     milestone: Callable[[str, datetime], None] | None = None,
     wall_clock: Callable[[], datetime] | None = None,
+    source_receipts: dict[str, dict[str, object]] | None = None,
 ) -> ShadowRunResult:
     current = decision_time or datetime.now(UTC)
     rules = policy or ShadowPolicy()
@@ -446,15 +448,59 @@ def run_win_shadow_decision(
         )
 
     calculated = observed("DECISION_CALCULATED")
-    if late(calculated):
-        return reject_late(calculated, "T4_DECISION_CALC_LATE")
-    persist_start = observed("PERSIST_STARTED")
-    if late(persist_start):
-        return reject_late(persist_start, "T4_PERSIST_START_LATE")
     if t4_cutoff is not None:
-        # Do not emit an executable SHADOW_BET before a durable, postcommit
-        # attestation. The proposed signal is preserved in the reason; no
-        # paper ticket becomes eligible for automatic settlement.
+        # The frozen BET signal is *not* a ticket. Even a late calculated
+        # signal is valuable diagnostically, but can never be executable.
+        rejected = [
+            {
+                "selection_id": key,
+                "decision": item.decision.value,
+                "observed_win_odds": item.available_price,
+                "expected_value": item.expected_value,
+                "rejection": item.reject_reason,
+            }
+            for key, item in evaluated.assessments.items()
+            if key not in {selection for selection, _ in candidates}
+        ]
+        try:
+            for selection, assessment in candidates:
+                persisted_signal_at = record_win_research_signal(
+                    store,
+                    race_id=race_id,
+                    decision_run_id=frozen_id,
+                    selection_id=selection,
+                    model_version=rules.model_version,
+                    fundamental_model_version=fundamental_model_version,
+                    fundamental=evaluated.fundamental_probabilities,
+                    market=evaluated.market_probabilities,
+                    combined=evaluated.combined_probabilities,
+                    assessment=assessment,
+                    minimum_edge=rules.minimum_edge,
+                    calculated_at=calculated,
+                    source_market_time=source_market_time,
+                    source_receipts=source_receipts,
+                    rejected_candidates=rejected,
+                    contender_payload_id=f"contender:{frozen_id}",
+                )
+                if milestone is not None:
+                    milestone("SIGNAL_RECORDED", persisted_signal_at)
+        except (ValueError, RuntimeError) as exc:
+            # Never fall through to the original SHADOW_BET ticket writer.
+            _persist_decision_run(
+                store, race_id=race_id, raceday_key=provider_raceday_key,
+                race_start_at=race_start_at, decision_time=current, policy=rules,
+                status="NOT_EXECUTABLE", reason=f"RESEARCH_SIGNAL_INVALID:{exc}",
+            )
+            return ShadowRunResult(
+                race_id, 0, "NOT_EXECUTABLE", "RESEARCH_SIGNAL_INVALID",
+            )
+        if late(calculated):
+            return reject_late(calculated, "T4_DECISION_CALC_LATE")
+        persist_start = observed("PERSIST_STARTED")
+        if late(persist_start):
+            return reject_late(persist_start, "T4_PERSIST_START_LATE")
+        # Explicit safety HOLD; immutable signals are in their own table,
+        # with neither a settlement API nor a shadow_tickets row.
         _persist_decision_run(
             store, race_id=race_id, raceday_key=provider_raceday_key,
             race_start_at=race_start_at, decision_time=current, policy=rules,
@@ -474,6 +520,11 @@ def run_win_shadow_decision(
             "SHADOW_BET_SIGNAL_PENDING_END_TO_END_PROOF",
         )
 
+    if late(calculated):
+        return reject_late(calculated, "T4_DECISION_CALC_LATE")
+    persist_start = observed("PERSIST_STARTED")
+    if late(persist_start):
+        return reject_late(persist_start, "T4_PERSIST_START_LATE")
     actual_minutes, latency = _timing(
         race_start_at,
         current,
