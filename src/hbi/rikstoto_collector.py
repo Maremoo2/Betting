@@ -41,9 +41,25 @@ class RikstotoCollector:
         self.capability_probe = capability_probe
         self.letrot_client = letrot_client or LeTrotClient()
         self.last_capability = None
+        # Per-run hash/timestamp receipts only; never archive private raw bodies.
+        self.source_receipts: dict[tuple[str, str], dict[str, object]] = {}
         self.store = store
         self.client = client or RikstotoClient()
         self.atg_client = atg_client or AtgClient()
+
+    def _remember_source(
+        self, race_id: str, category: str, fetch: FetchResult,
+    ) -> None:
+        stamp = fetch.response_completed_at
+        self.source_receipts[(race_id, category)] = {
+            "source_uri": fetch.url,
+            "body_sha256": fetch.response_body_sha256,
+            "response_completed_at_utc": (
+                None if stamp is None else stamp.isoformat()
+            ),
+            "source_status": "HTTP_SUCCESS" if fetch.success else "FETCH_FAILED",
+            "original_body_retained": False,
+        }
 
     def _audit_provider(
         self,
@@ -172,6 +188,7 @@ class RikstotoCollector:
         observed_at: datetime,
     ) -> int:
         self._audit(fetch, observed_at)
+        self._remember_source(race_id, product, fetch)
         if not fetch.success:
             return 0
 
@@ -282,12 +299,14 @@ class RikstotoCollector:
         starts_fetch = self.client.starts(raceday_key)
         observed_at = max(requested_at, self.clock())
         self._audit(starts_fetch, observed_at)
+        self._remember_source(race_id, "STARTS", starts_fetch)
         starts = self._starts_for_race(starts_fetch.payload, race_number)
 
 
         scratched_fetch = self.client.scratched(raceday_key)
         observed_at = max(requested_at, self.clock())
         self._audit(scratched_fetch, observed_at)
+        self._remember_source(race_id, "SCRATCHED", scratched_fetch)
         scratched = (
             self._scratched_for_race(scratched_fetch.payload, race_number)
             if scratched_fetch.success

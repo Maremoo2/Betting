@@ -4,6 +4,7 @@ import json
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from hashlib import sha256
+from typing import Callable
 from uuid import uuid4
 
 from .contender_gate import Contender, Pricing, Quote, review_contenders
@@ -135,9 +136,39 @@ def run_win_shadow_decision(
     race_start_at: datetime,
     decision_time: datetime | None = None,
     policy: ShadowPolicy | None = None,
+    t4_cutoff: datetime | None = None,
+    milestone: Callable[[str, datetime], None] | None = None,
+    wall_clock: Callable[[], datetime] | None = None,
 ) -> ShadowRunResult:
     current = decision_time or datetime.now(UTC)
     rules = policy or ShadowPolicy()
+    actual_clock = wall_clock or (lambda: datetime.now(UTC))
+
+    def observed(phase: str) -> datetime:
+        actual = actual_clock()
+        if milestone is not None:
+            milestone(phase, actual)
+        return actual
+
+    def late(moment: datetime) -> bool:
+        if t4_cutoff is None:
+            return False
+        return (
+            t4_cutoff.tzinfo is None
+            or t4_cutoff.utcoffset() is None
+            or moment.tzinfo is None
+            or moment.utcoffset() is None
+            or moment >= t4_cutoff
+        )
+
+    def reject_late(moment: datetime, reason: str) -> ShadowRunResult:
+        _persist_decision_run(
+            store, race_id=race_id, raceday_key=provider_raceday_key,
+            race_start_at=race_start_at, decision_time=moment, policy=rules,
+            status="NOT_EXECUTABLE", reason=reason,
+        )
+        return ShadowRunResult(race_id, 0, "NOT_EXECUTABLE", reason)
+
     frozen_id = _decision_run_id(
         race_id,
         "V",
@@ -145,6 +176,10 @@ def run_win_shadow_decision(
         rules.target_minutes_to_start,
     )
     existing = store.get_shadow_decision_run(frozen_id)
+    if existing is None and t4_cutoff is not None:
+        checked = observed("DECISION_ENTRY")
+        if late(checked):
+            return reject_late(checked, "T4_DECISION_ENTRY_LATE")
     if existing is not None:
         return ShadowRunResult(
             race_id=race_id,
@@ -380,6 +415,12 @@ def run_win_shadow_decision(
     if not candidates:
         status = "WATCH" if contender_report.winner_status == "WATCH" else "PASS"
         reason = "CONTENDERS_AWAIT_PRICE_OR_REVIEW" if status == "WATCH" else "NO_VALUE_BET"
+        calculated = observed("DECISION_CALCULATED")
+        if late(calculated):
+            return reject_late(calculated, "T4_DECISION_CALC_LATE")
+        started = observed("PERSIST_STARTED")
+        if late(started):
+            return reject_late(started, "T4_PERSIST_START_LATE")
         _persist_decision_run(
             store,
             race_id=race_id,
@@ -396,11 +437,41 @@ def run_win_shadow_decision(
             combined=evaluated.combined_probabilities,
             conflict=evaluated.model_market_conflict_score,
         )
+        observed("DECISION_PERSISTED")
         return ShadowRunResult(
             race_id=race_id,
             created=0,
             status=status,
             reason=reason,
+        )
+
+    calculated = observed("DECISION_CALCULATED")
+    if late(calculated):
+        return reject_late(calculated, "T4_DECISION_CALC_LATE")
+    persist_start = observed("PERSIST_STARTED")
+    if late(persist_start):
+        return reject_late(persist_start, "T4_PERSIST_START_LATE")
+    if t4_cutoff is not None:
+        # Do not emit an executable SHADOW_BET before a durable, postcommit
+        # attestation. The proposed signal is preserved in the reason; no
+        # paper ticket becomes eligible for automatic settlement.
+        _persist_decision_run(
+            store, race_id=race_id, raceday_key=provider_raceday_key,
+            race_start_at=race_start_at, decision_time=current, policy=rules,
+            status="T4_PENDING_ATTESTATION",
+            reason="SHADOW_BET_SIGNAL_PENDING_END_TO_END_PROOF",
+            fundamental_model_version=fundamental_model_version,
+            source_market_observed_at=source_market_time,
+            fundamental=evaluated.fundamental_probabilities,
+            market=evaluated.market_probabilities,
+            combined=evaluated.combined_probabilities,
+            conflict=evaluated.model_market_conflict_score,
+            ticket_count=0,
+        )
+        observed("DECISION_PERSISTED")
+        return ShadowRunResult(
+            race_id, 0, "T4_PENDING_ATTESTATION",
+            "SHADOW_BET_SIGNAL_PENDING_END_TO_END_PROOF",
         )
 
     actual_minutes, latency = _timing(
@@ -464,6 +535,7 @@ def run_win_shadow_decision(
         conflict=evaluated.model_market_conflict_score,
         ticket_count=created,
     )
+    observed("DECISION_PERSISTED")
     return ShadowRunResult(race_id=race_id, created=created, status="SHADOW_BET")
 
 

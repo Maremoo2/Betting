@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -18,6 +18,7 @@ from .shadow import (
     run_win_shadow_decision,
 )
 from .storage import SQLiteStore
+from .t4_evidence import classify_t4_receipt
 
 ROOT = Path(__file__).parents[2]
 SCHEMA = ROOT / "db" / "schema.sql"
@@ -42,6 +43,8 @@ class WatcherAudit:
     shadow_bets_created: int = 0
     not_executable: int = 0
     passes: int = 0
+    # Additive evidence; never a substitute for private original WIN bytes.
+    t4_attempts: list[dict[str, object]] = field(default_factory=list)
 
 
 def _store(path: str) -> SQLiteStore:
@@ -219,6 +222,7 @@ def run_watcher(
         if _reject_missed_t4(store, race=race, policy=policy, observed_now=live_now):
             audit.not_executable += 1
             continue
+        model_finished_at: datetime | None = None
         if fundamental_ok:
             fundamental_run = run_and_persist_fundamental(
                 store,
@@ -229,6 +233,8 @@ def run_watcher(
             audit.fundamental_shadow_eligible += int(
                 fundamental_run.shadow_eligible
             )
+            if now is None and hasattr(fundamental_run, "run_id"):
+                model_finished_at = datetime.now(UTC)
         else:
             audit.fundamental_failures += 1
 
@@ -240,6 +246,11 @@ def run_watcher(
             audit.not_executable += 1
             continue
 
+        marks: dict[str, datetime] = {}
+
+        def milestone(phase: str, instant: datetime) -> None:
+            marks[phase] = instant
+
         result = run_win_shadow_decision(
             store,
             race_id=str(race["race_id"]),
@@ -247,7 +258,55 @@ def run_watcher(
             race_start_at=race_start,
             decision_time=live_now,
             policy=policy,
+            # The synthetic clock-injected test path is never a real T-4
+            # attestation. Live calls explicitly use the absolute deadline.
+            t4_cutoff=target if now is None else None,
+            milestone=milestone,
         )
+        # Read back the committed row before taking the independent clock.
+        frozen_id = _decision_run_id(
+            str(race["race_id"]), "V", policy.model_version,
+            policy.target_minutes_to_start,
+        )
+        committed = store.get_shadow_decision_run(frozen_id)
+        # Fake clock / mocked shadow calls cannot supply a real commit marker.
+        verified_at = (
+            datetime.now(UTC)
+            if now is None and marks.get("DECISION_PERSISTED") is not None
+            else None
+        )
+        source_receipts = getattr(collector, "source_receipts", {})
+        bound_sources = {
+            label: source_receipts.get((str(race["race_id"]), code), {})
+            for label, code in (
+                ("WIN", "V"), ("STARTS", "STARTS"), ("SCRATCHED", "SCRATCHED"),
+            )
+        }
+        receipt = classify_t4_receipt(
+            race_id=str(race["race_id"]),
+            race_start_utc=race_start.isoformat(),
+            target_minutes=policy.target_minutes_to_start,
+            model_version=policy.model_version,
+            decision_row=committed,
+            sources=bound_sources,
+            model_finished_at_utc=(
+                None if model_finished_at is None
+                else model_finished_at.isoformat()
+            ),
+            decision_calculated_at_utc=(
+                None if marks.get("DECISION_CALCULATED") is None
+                else marks["DECISION_CALCULATED"].isoformat()
+            ),
+            persist_started_at_utc=(
+                None if marks.get("PERSIST_STARTED") is None
+                else marks["PERSIST_STARTED"].isoformat()
+            ),
+            persist_confirmed_at_utc=(
+                None if verified_at is None else verified_at.isoformat()
+            ),
+            github_sha=os.getenv("GITHUB_SHA"),
+        )
+        audit.t4_attempts.append(receipt)
         record_decision_provenance(
             store,
             race_id=str(race["race_id"]),
@@ -258,7 +317,7 @@ def run_watcher(
         )
         if result.status == "SHADOW_BET":
             audit.shadow_bets_created += result.created
-        elif result.status == "NOT_EXECUTABLE":
+        elif result.status in {"NOT_EXECUTABLE", "T4_PENDING_ATTESTATION"}:
             audit.not_executable += 1
         else:
             audit.passes += 1

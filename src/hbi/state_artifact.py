@@ -5,7 +5,10 @@ import io
 import json
 import os
 import re
+import sqlite3
 import sys
+import tempfile
+import time
 import urllib.error
 import urllib.request
 import zipfile
@@ -59,6 +62,74 @@ def _report_github_artifact_error(exc: urllib.error.HTTPError, *, stage: str) ->
     )
 
 
+def _bounded_inventory_retry_delay(exc: urllib.error.HTTPError) -> float | None:
+    """Retry only when GitHub explicitly supplies a *nearby* rate reset.
+
+    Installation limits are shared across workflows. Never spin, retry
+    permission failures, or remain blocked beyond a bounded runner budget.
+    """
+    if exc.code not in {403, 429}:
+        return None
+    headers = exc.headers or {}
+    remaining = str(headers.get("X-RateLimit-Remaining", "")).strip()
+    retry_after = str(headers.get("Retry-After", "")).strip()
+    reset = str(headers.get("X-RateLimit-Reset", "")).strip()
+    if remaining != "0" and exc.code != 429 and not retry_after:
+        return None
+    try:
+        delay = float(retry_after) if retry_after else float(reset) - time.time()
+    except ValueError:
+        return None
+    if not 0 <= delay <= 150:
+        return None
+    return max(1.0, delay + 1.0)
+
+
+def _inventory_json(url: str, token: str) -> dict:
+    """One request normally; at most one bounded, server-timed retry."""
+    for attempt in range(2):
+        try:
+            with urllib.request.urlopen(_request(url, token), timeout=30) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            delay = _bounded_inventory_retry_delay(exc) if attempt == 0 else None
+            if delay is None:
+                _report_github_artifact_error(exc, stage="ARTIFACT_INVENTORY")
+                raise
+            print(
+                f"STATE_RESTORE_RATE_LIMIT_WAIT seconds={delay:.3f} "
+                "stage=ARTIFACT_INVENTORY attempts_remaining=1 no_bootstrap=true",
+                file=sys.stderr,
+            )
+            time.sleep(delay)
+    raise AssertionError("unreachable inventory retry state")
+
+
+def _verify_canonical_sqlite(path: Path) -> None:
+    """Strict, read-only canonical schema and SQLite integrity validation."""
+    if path.stat().st_size < 100 or path.open("rb").read(16) != b"SQLite format 3\x00":
+        raise ValueError("STATE_RESTORE_SQLITE_HEADER_INVALID")
+    # immutable=1 ignores stray WAL files in a runner and never writes to state.
+    uri = path.resolve().as_uri() + "?mode=ro&immutable=1"
+    try:
+        with sqlite3.connect(uri, uri=True) as db:
+            if db.execute("PRAGMA quick_check(1)").fetchone()[0] != "ok":
+                raise ValueError("STATE_RESTORE_SQLITE_INTEGRITY_FAILED")
+            required_tables = {
+                "races", "provider_race_refs", "shadow_decision_runs",
+                "shadow_tickets", "schema_migrations",
+            }
+            present = {
+                row[0] for row in db.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                )
+            }
+            if not required_tables.issubset(present):
+                raise ValueError("STATE_RESTORE_REQUIRED_TABLES_MISSING")
+    except sqlite3.DatabaseError as exc:
+        raise ValueError("STATE_RESTORE_SQLITE_INTEGRITY_FAILED") from exc
+
+
 def restore_latest_state(
     *,
     repository: str,
@@ -70,6 +141,7 @@ def restore_latest_state(
     audit_workflow_run_id: int | None = None,
     audit_code_sha: str | None = None,
     required: bool = False,
+    validate_sqlite: bool = False,
 ) -> bool:
     """Restore the newest non-expired HBI SQLite database artifact.
 
@@ -84,12 +156,7 @@ def restore_latest_state(
     ):
         raise ValueError("V1_AUDIT_RUN_AND_CODE_SHA_NOT_ATTESTED")
     url = f"{API}/repos/{repository}/actions/artifacts?name={artifact_name}&per_page=100"
-    try:
-        with urllib.request.urlopen(_request(url, token), timeout=30) as response:
-            payload = json.loads(response.read().decode("utf-8"))
-    except urllib.error.HTTPError as exc:
-        _report_github_artifact_error(exc, stage="ARTIFACT_INVENTORY")
-        raise
+    payload = _inventory_json(url, token)
 
     artifacts = [
         item
@@ -165,19 +232,38 @@ def restore_latest_state(
     target.parent.mkdir(parents=True, exist_ok=True)
     database_sha256 = hashlib.sha256()
     database_size = 0
-    with zipfile.ZipFile(io.BytesIO(archive)) as zf:
-        candidates = [
-            name
-            for name in zf.namelist()
-            if not name.endswith("/") and Path(name).name == target.name
-        ]
-        if len(candidates) != 1:
-            raise RuntimeError("STATE_RESTORE_DATABASE_MEMBER_NOT_UNIQUE")
-        with zf.open(candidates[0]) as source, target.open("wb") as output:
-            for chunk in iter(lambda: source.read(1024 * 1024), b""):
-                database_sha256.update(chunk)
-                database_size += len(chunk)
-                output.write(chunk)
+    temporary = None
+    try:
+        with zipfile.ZipFile(io.BytesIO(archive)) as zf:
+            candidates = [
+                name
+                for name in zf.namelist()
+                if not name.endswith("/") and Path(name).name == target.name
+            ]
+            if len(candidates) != 1:
+                raise RuntimeError("STATE_RESTORE_DATABASE_MEMBER_NOT_UNIQUE")
+            with tempfile.NamedTemporaryFile(
+                mode="w+b", prefix=f".{target.name}.restore-",
+                dir=target.parent, delete=False,
+            ) as output:
+                temporary = Path(output.name)
+                with zf.open(candidates[0]) as source:
+                    for chunk in iter(lambda: source.read(1024 * 1024), b""):
+                        database_sha256.update(chunk)
+                        database_size += len(chunk)
+                        output.write(chunk)
+                output.flush()
+                os.fsync(output.fileno())
+        if hashlib.sha256(temporary.read_bytes()).digest() != database_sha256.digest():
+            raise ValueError("STATE_RESTORE_DATABASE_READBACK_SHA_MISMATCH")
+        if validate_sqlite:
+            _verify_canonical_sqlite(temporary)
+        # The prior database remains byte-identical on every upstream failure.
+        os.replace(temporary, target)
+        temporary = None
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
     if receipt_path is not None:
         source_run = latest["workflow_run"]
         receipt = {
@@ -231,6 +317,8 @@ def main() -> None:
         audit_code_sha=(
             os.environ.get("GITHUB_SHA") if receipt_path is not None else None
         ),
+        required=os.environ.get("HBI_RESTORE_REQUIRED") == "1",
+        validate_sqlite=os.environ.get("HBI_RESTORE_VALIDATE_SQLITE") == "1",
     )
     # A scheduled canonical watcher must never silently begin with a fresh DB
     # when the previous state archive is missing, expired, or not selectable.
