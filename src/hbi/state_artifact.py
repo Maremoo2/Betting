@@ -317,7 +317,9 @@ def main() -> None:
         audit_code_sha=(
             os.environ.get("GITHUB_SHA") if receipt_path is not None else None
         ),
-        required=os.environ.get("HBI_RESTORE_REQUIRED") == "1",
+        # Preserve the canonical SystemExit contract in main(); the caller
+        # refuses any non-restored state immediately below.
+        required=False,
         validate_sqlite=os.environ.get("HBI_RESTORE_VALIDATE_SQLITE") == "1",
     )
     # A scheduled canonical watcher must never silently begin with a fresh DB
