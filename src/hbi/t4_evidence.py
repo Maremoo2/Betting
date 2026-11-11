@@ -8,7 +8,6 @@ import re
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-
 SCHEMA = "RELEASE004_T4_POSTCOMMIT_V1"
 _SHA256 = re.compile(r"[a-f0-9]{64}")
 

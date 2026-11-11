@@ -11,7 +11,6 @@ from hbi.shadow import ShadowPolicy, run_win_shadow_decision
 from hbi.storage import SQLiteStore
 from hbi.t4_evidence import SCHEMA, classify_t4_receipt
 
-
 BASE = datetime(2026, 11, 11, 13, 56, tzinfo=UTC)
 
 
