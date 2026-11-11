@@ -8,8 +8,8 @@ from statistics import mean, median
 from zoneinfo import ZoneInfo
 
 from .evaluation import calibration_bins, log_loss, multiclass_brier
-from .providers.rikstoto import RikstotoClient
 from .prospective_gate import is_new_regime, qualification_index, qualifies_primary
+from .providers.rikstoto import RikstotoClient
 from .storage import SQLiteStore
 
 OSLO = ZoneInfo("Europe/Oslo")

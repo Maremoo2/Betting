@@ -13,8 +13,8 @@ from .domain import Decision
 from .eligibility import evaluate_win_eligibility
 from .engine import CombinationPolicy, evaluate_race
 from .probability import normalize_market_odds
-from .research_signal import record_win_research_signal
 from .provider_capability import full_field_gate
+from .research_signal import record_win_research_signal
 from .storage import SQLiteStore
 
 

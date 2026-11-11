@@ -9,6 +9,7 @@ from pathlib import Path
 
 from .fundamental import run_and_persist_fundamental
 from .manifest import persist_run_manifest
+from .prospective_gate import qualification_index, qualifies_primary
 from .provenance import record_decision_provenance
 from .rikstoto_collector import RikstotoCollector
 from .shadow import (
@@ -19,7 +20,6 @@ from .shadow import (
 )
 from .storage import SQLiteStore
 from .t4_evidence import classify_t4_receipt
-from .prospective_gate import qualification_index, qualifies_primary
 
 ROOT = Path(__file__).parents[2]
 SCHEMA = ROOT / "db" / "schema.sql"

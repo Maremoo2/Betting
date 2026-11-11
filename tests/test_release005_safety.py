@@ -17,7 +17,6 @@ from hbi.operations_report import build_operations_report
 from hbi.prospective_gate import (
     qualification_index,
     qualify_prospective,
-    qualifies_primary,
 )
 from hbi.provenance import record_decision_provenance
 from hbi.replay_validation import run_runtime_replay_parity
@@ -222,11 +221,10 @@ def test_signal_recorded_with_complete_fields_and_zero_tickets(tmp_path):
     # Repeated observer retries are idempotent and do not overwrite any signal.
     record(state)
     assert state.fetch_table("shadow_research_signals") == signals
-    with pytest.raises(sqlite3.DatabaseError):
-        with state.connect() as conn:
-            conn.execute(
-                "UPDATE shadow_research_signals SET shadow_ticket_created=1"
-            )
+    with pytest.raises(sqlite3.DatabaseError), state.connect() as conn:
+        conn.execute(
+            "UPDATE shadow_research_signals SET shadow_ticket_created=1"
+        )
 
 
 @pytest.mark.parametrize("assessment,full", [

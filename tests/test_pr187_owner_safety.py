@@ -16,7 +16,6 @@ from hbi.observatory import materialize_race_evaluations
 from hbi.storage import SQLiteStore
 from hbi.t4_evidence import classify_t4_receipt
 
-
 RACE_ID = "r-pr187-late-commit"
 RACE_START = "2026-11-11T14:00:00+00:00"
 CUTOFF = "2026-11-11T13:56:00+00:00"
