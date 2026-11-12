@@ -78,7 +78,10 @@ def run_once(*, db_path: str, mode: str) -> RunAudit:
         audit.bet_ready_races = 0
         audit.collector_report = result
         if os.environ.get("HBI_COLLECTOR_FUNDAMENTAL_ENRICH") == "1":
-            audit.collector_enrichment_report = enrich_imported(store, result["records"])
+            audit.collector_enrichment_report = enrich_imported(
+                store, result["records"],
+                max_live_races=int(os.environ.get("HBI_COLLECTOR_ENRICH_MAX_LIVE_RACES", "5")),
+            )
         if os.environ.get("HBI_COLLECTOR_MODEL_PREFLIGHT") == "1":
             assessment = assess_and_run(store, result["records"])
             audit.model_ready_races = int(assessment["model_input_complete"])
