@@ -13,6 +13,11 @@ on:
         description: "Optional YYYY-MM-DD, default today in Europe/Oslo"
         type: string
         required: false
+      live_fundamentals:
+        description: "Explicit manual-only real Rikstoto/ATG enrichment; no betting"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -98,7 +103,9 @@ jobs:
           HBI_DB_PATH: cloud-run003/hbi.sqlite
           HBI_RUN_MODE: DYNAMIC_COLLECTOR_RESEARCH
           HBI_COLLECTOR_MODEL_PREFLIGHT: "1"
-          HBI_COLLECTOR_FUNDAMENTAL_ENRICH: "1"
+          # PR CI exercises the source/model gate without re-querying the live providers.
+          # Only a deliberate manual dispatch can perform fresh live enrichment.
+          HBI_COLLECTOR_FUNDAMENTAL_ENRICH: ${{ github.event_name == 'workflow_dispatch' && inputs.live_fundamentals && '1' || '0' }}
           HBI_RUN_AUDIT_PATH: cloud-run003/first.json
         run: python -m hbi.scheduled_run
       - name: Same source, second run and SQLite idempotence / model hardgate
