@@ -10,7 +10,7 @@ import hashlib
 import json
 import re
 from datetime import UTC, datetime, timedelta
-from typing import Callable
+from collections.abc import Callable
 
 from .fundamental import MarketFreeFundamentalChampionV1
 from .rikstoto_collector import RikstotoCollector
