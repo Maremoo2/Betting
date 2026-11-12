@@ -11,6 +11,11 @@ on:
       - ".github/workflows/cloud-run005-live-race.yml"
   workflow_dispatch:
     inputs:
+      confirm_live:
+        description: "Explicit HQ-approved provider network request (research only)"
+        required: true
+        type: boolean
+        default: false
       max_races:
         description: "Upper bound on live genuine Sørlandet/Bollnäs races"
         required: false
@@ -25,8 +30,21 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  safe-pr-validation:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e ".[dev]"
+      - name: Offline timestamp, archive, and identity regression tests
+        run: |
+          python -m pytest -q tests/test_cloud_run005_originals.py tests/test_merge_recovery_win_timing.py
   genuine-live:
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.ref == 'research/cloud-run005-live-originals-20261112'
+    if: github.event_name == 'workflow_dispatch' && inputs.confirm_live == true
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
