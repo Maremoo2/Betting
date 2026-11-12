@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -16,9 +15,9 @@ from zoneinfo import ZoneInfo
 from .cloud_run003_model import assess_and_run
 from .cloud_run005_identity import reconcile_identity_candidates
 from .cloud_run005_originals import OriginalCapture, verify_all
-from .rikstoto_collector import RikstotoCollector
 from .providers.atg import AtgClient
 from .providers.rikstoto import RikstotoClient
+from .rikstoto_collector import RikstotoCollector
 from .storage import SQLiteStore
 
 ROOT = Path(__file__).parents[2]
