@@ -1,0 +1,238 @@
+name: CLOUD-RUN-003 dynamic Collector HBI model research (NO BET)
+
+on:
+  pull_request:
+    paths:
+      - "src/hbi/cloud_run003_*"
+      - "src/hbi/cloud_run004_enrichment.py"
+      - "src/hbi/rikstoto_collector.py"
+      - "src/hbi/providers/atg.py"
+      - "src/hbi/scheduled_run.py"
+      - ".github/workflows/cloud-run003-dynamic-model.yml"
+      - "tests/test_cloud_run003_*"
+  workflow_dispatch:
+    inputs:
+      date_oslo:
+        description: "Optional YYYY-MM-DD, default today in Europe/Oslo"
+        type: string
+        required: false
+      live_fundamentals:
+        description: "Explicit manual-only real Rikstoto/ATG enrichment; no betting"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: cloud-run003-isolated-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  research:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing HBI
+        run: python -m pip install -e ".[dev]"
+      - name: Discover Collector runs from existing official daily workflow
+        env:
+          GH_TOKEN: ${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN || github.token }}
+          DATE_OSLO: ${{ inputs.date_oslo }}
+        run: |
+          set -euo pipefail
+          mkdir -p cloud-run003
+          gh run list --repo Maremoo2/rikstoto-program-collector \
+            --workflow rikstoto-morning.yml --limit 80 \
+            --json databaseId,createdAt,event,headBranch,headSha,status,conclusion \
+            > cloud-run003/collector-inventory.json
+          if [[ -n "$DATE_OSLO" ]]; then
+            python -m hbi.cloud_run003_discovery \
+              --runs-json cloud-run003/collector-inventory.json \
+              --date-oslo "$DATE_OSLO" --output cloud-run003/discovery.json \
+              --github-output "$GITHUB_OUTPUT"
+          else
+            python -m hbi.cloud_run003_discovery \
+              --runs-json cloud-run003/collector-inventory.json \
+              --output cloud-run003/discovery.json --github-output "$GITHUB_OUTPUT"
+          fi
+        id: discovery
+      - name: Fetch exact existing successful Collector original capture
+        env:
+          GH_TOKEN: ${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN || github.token }}
+          RUN_ID: ${{ steps.discovery.outputs.run_id }}
+        run: |
+          set -euo pipefail
+          mkdir -p collector-input
+          gh run download "$RUN_ID" \
+            --repo Maremoo2/rikstoto-program-collector \
+            --name prewatch-bridge-fallback --dir collector-input
+      - name: Select only matching exact-day ZIP/checksum, verify original byte hash
+        env:
+          DAY_OSLO: ${{ steps.discovery.outputs.day_oslo }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          from hbi.cloud_run001_archive import audit_release
+          day=os.environ["DAY_OSLO"]
+          files=sorted(Path("collector-input").rglob(f"rikstoto-{day}-*.zip"))
+          if len(files)!=1:
+              raise SystemExit("COLLECTOR_SAME_DAY_ARCHIVE_MISSING_OR_AMBIGUOUS")
+          archive=files[0]
+          receipt=audit_release(archive,Path(str(archive)+".sha256"))
+          metadata=json.loads(Path("cloud-run003/discovery.json").read_text())
+          if receipt["date_oslo"]!=metadata["day_oslo"] or receipt["run_id"][:8]!=day.replace("-",""):
+              raise SystemExit("COLLECTOR_ARCHIVE_DISCOVERY_DATE_CONFLICT")
+          with Path(os.environ["GITHUB_ENV"]).open("a") as f:
+              f.write(f"HBI_COLLECTOR_ARCHIVE_ZIP={archive}\n")
+              f.write(f"HBI_COLLECTOR_ARCHIVE_SHA256={archive}.sha256\n")
+              f.write(f"HBI_COLLECTOR_DATE_OSLO={day}\n")
+          Path("cloud-run003/archive-receipt.json").write_text(json.dumps(receipt,indent=2))
+          print("COLLECTOR_ORIGINAL_ARCHIVE_VERIFIED",receipt["archive_sha256"])
+          PY
+      - name: Initialize one isolated existing HBI SQLite state (not production)
+        run: hbi --db cloud-run003/hbi.sqlite init-db
+      - name: Collector import and frozen model-input admission, run one
+        env:
+          HBI_DB_PATH: cloud-run003/hbi.sqlite
+          HBI_RUN_MODE: DYNAMIC_COLLECTOR_RESEARCH
+          HBI_COLLECTOR_MODEL_PREFLIGHT: "1"
+          # PR CI exercises the source/model gate without re-querying the live providers.
+          # Only a deliberate manual dispatch can perform fresh live enrichment.
+          HBI_COLLECTOR_FUNDAMENTAL_ENRICH: ${{ github.event_name == 'workflow_dispatch' && inputs.live_fundamentals && '1' || '0' }}
+          HBI_RUN_AUDIT_PATH: cloud-run003/first.json
+        run: python -m hbi.scheduled_run
+      - name: Same source, second run and SQLite idempotence / model hardgate
+        env:
+          HBI_DB_PATH: cloud-run003/hbi.sqlite
+          HBI_RUN_MODE: DYNAMIC_COLLECTOR_RESEARCH
+          HBI_COLLECTOR_MODEL_PREFLIGHT: "1"
+          HBI_COLLECTOR_FUNDAMENTAL_ENRICH: "0"
+          HBI_RUN_AUDIT_PATH: cloud-run003/second.json
+        run: |
+          set -euo pipefail
+          python -m hbi.scheduled_run
+          python - <<'PY'
+          import hashlib,json,sqlite3
+          from pathlib import Path
+          root=Path("cloud-run003")
+          a=json.loads((root/"first.json").read_text())
+          b=json.loads((root/"second.json").read_text())
+          live=a.get("collector_enrichment_report")
+          enrichment=live if live is not None else {
+              "live_fetch_attempts":0,
+              "actual_live_fundamental_snapshots":0,
+              "provisional_cross_provider_identity_matches":0,
+              "permanent_horse_ids_attested":0,
+              "rikstoto_registration_candidates_observed":0,
+              "archive_live_roster_matches":0,
+              "qualified_fundamental_history_rows":0,
+              "candidate_history_rows":0,
+              "full_field_evidence_races":0,
+              "records":[],
+          }
+          for x in (a,b):
+              assert x["provider_status"]=="COLLECTOR_VERIFIED_ARCHIVE_RESEARCH_ONLY", x
+              assert x["race_cards"]>0 and x["source_ready_races"]==x["race_cards"]
+              assert x["collector_model_report"]["evaluated_races"]==x["race_cards"]
+              assert x["collector_model_report"]["bet_ready"]==0
+              assert x["bet_ready_races"]==0
+          conn=sqlite3.connect(root/"hbi.sqlite")
+          before={}
+          for name in ("races","runners","provider_payloads","predictions","shadow_tickets"):
+              before[name]=conn.execute(f"SELECT COUNT(*) FROM {name}").fetchone()[0]
+          assert before["races"]==a["race_cards"],before
+          assert before["runners"]==a["collector_report"]["observed_runners"], before
+          assert before["provider_payloads"]>=a["race_cards"],before
+          assert b["collector_enrichment_report"] is None
+          if live is not None:
+              assert live["races_considered"]==a["race_cards"]
+          assert b["collector_report"]["records"]==a["collector_report"]["records"]
+          assert before["shadow_tickets"]==0
+          assert conn.execute("PRAGMA integrity_check").fetchone()[0]=="ok"
+          conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+          conn.close()
+          db_sha=hashlib.sha256((root/"hbi.sqlite").read_bytes()).hexdigest()
+          (root/"hbi.sqlite.sha256").write_text(f"{db_sha}  hbi.sqlite\n")
+          report={"schema":"CLOUD_RUN003_REAL_E2E_V1","repository_source":"Maremoo2/rikstoto-program-collector",
+             "collector_run":json.loads((root/"discovery.json").read_text()),
+             "source_readback":json.loads((root/"archive-receipt.json").read_text()),
+             "races_imported":a["race_cards"],"runners_imported":before["runners"],
+             "source_ready":a["source_ready_races"],
+             "live_enrichment_attempts":enrichment["live_fetch_attempts"],
+             "live_fundamental_rows":enrichment["actual_live_fundamental_snapshots"],
+             "provisional_cross_provider_matches":enrichment["provisional_cross_provider_identity_matches"],
+             "permanent_identity_attested":enrichment["permanent_horse_ids_attested"],
+             "source_registration_candidates":enrichment["rikstoto_registration_candidates_observed"],
+             "archive_live_roster_matches":enrichment["archive_live_roster_matches"],
+             "qualified_history_rows":enrichment["qualified_fundamental_history_rows"],
+             "candidate_history_rows":enrichment["candidate_history_rows"],
+             "full_field_evidence_races":enrichment["full_field_evidence_races"],
+             "enrichment_reasons":{code:sum(code in rec["reasons"] for rec in enrichment["records"])
+                 for code in sorted({reason for rec in enrichment["records"] for reason in rec["reasons"]})},
+             "model_input_complete":a["collector_model_report"]["model_input_complete"],
+             "p_win_computed":a["collector_model_report"]["p_win_computed"],
+             "reject_reasons":a["collector_model_report"]["model_reject_reasons"],
+             "canonical_counts":before,"db_sha256":db_sha,
+             "second_run_same_counts":True,"bet_authorized":False,"pit_certified":False}
+          (root/"summary.json").write_text(json.dumps(report,sort_keys=True,indent=2))
+          print("CLOUD_RUN003_IMPORT_AND_MODEL_GATE_COMPLETE",json.dumps({
+              k:report[k] for k in ("races_imported","runners_imported","source_ready",
+                                   "live_enrichment_attempts","live_fundamental_rows",
+                                   "candidate_history_rows","provisional_cross_provider_matches",
+                                   "model_input_complete","p_win_computed","reject_reasons")}))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cloud-run003-isolated-state
+          path: |
+            cloud-run003/hbi.sqlite
+            cloud-run003/hbi.sqlite.sha256
+            cloud-run003/summary.json
+            cloud-run003/first.json
+            cloud-run003/second.json
+            cloud-run003/discovery.json
+            cloud-run003/archive-receipt.json
+          retention-days: 7
+          if-no-files-found: error
+
+  restore:
+    needs: research
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: cloud-run003-isolated-state
+          path: recovered
+      - name: Verify independent runner SHA, SQLite and frozen no-bet gates
+        run: |
+          python - <<'PY'
+          import hashlib,json,sqlite3
+          from pathlib import Path
+          root=Path("recovered/cloud-run003")
+          if not root.exists():
+              root=Path("recovered")
+          data=(root/"hbi.sqlite").read_bytes()
+          expected=(root/"hbi.sqlite.sha256").read_text().split("  ",1)[0]
+          actual=hashlib.sha256(data).hexdigest()
+          assert actual==expected,"CLOUD_RUN003_STATE_HASH_MISMATCH"
+          conn=sqlite3.connect(f"file:{(root/'hbi.sqlite').absolute()}?mode=ro",uri=True)
+          assert conn.execute("PRAGMA integrity_check").fetchone()[0]=="ok"
+          summary=json.loads((root/"summary.json").read_text())
+          for name,count in summary["canonical_counts"].items():
+              assert conn.execute(f"SELECT COUNT(*) FROM {name}").fetchone()[0]==count
+          assert summary["db_sha256"]==actual
+          assert summary["bet_authorized"] is False and summary["pit_certified"] is False
+          conn.close()
+          print("CLOUD_RUN003_INDEPENDENT_RUNNER_RESTORE_PASS",summary["races_imported"])
+          PY

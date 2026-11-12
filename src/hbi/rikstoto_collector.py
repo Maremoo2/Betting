@@ -48,7 +48,7 @@ class RikstotoCollector:
         self.atg_client = atg_client or AtgClient()
 
     def _remember_source(
-        self, race_id: str, category: str, fetch: FetchResult,
+        self, race_id: str, category: str, fetch: FetchResult | AtgFetchResult,
     ) -> None:
         stamp = fetch.response_completed_at
         self.source_receipts[(race_id, category)] = {
@@ -290,8 +290,9 @@ class RikstotoCollector:
         race_id: str,
         observed_at: datetime,
         products: list[str] | None = None,
+        persist_canonical_roster: bool = True,
     ) -> tuple[int, bool, str | None]:
-        """Capture canonical field; enrich only an entirely verified pre-race cohort."""
+        """Enrich a verified cohort; optional research mode preserves archived roster."""
         del products  # availability no longer determines the fundamental source
 
         collection_started_at = self.clock()
@@ -341,6 +342,7 @@ class RikstotoCollector:
             try:
                 calendar = self.atg_client.calendar_day(expected_start.astimezone(ZoneInfo("Europe/Stockholm")).date())
                 self._audit_provider(calendar, self.clock(), provider="atg")
+                self._remember_source(race_id, "ATG_CALENDAR", calendar)
                 resolved = self.atg_client.resolve_race(
                     calendar, track_name=track, race_number=race_number,
                     expected_start=expected_start, country=country, discipline=discipline,
@@ -348,6 +350,7 @@ class RikstotoCollector:
                 if resolved is not None:
                     game = self.atg_client.race_game(resolved.race_id)
                     self._audit_provider(game, self.clock(), provider="atg")
+                    self._remember_source(race_id, "ATG_GAME", game)
                     race_payload = self.atg_client.race_payload(game)
                     atg_source = game.url
             except (TypeError, ValueError, KeyError):
@@ -490,17 +493,18 @@ class RikstotoCollector:
             )
             source_uri = atg_source or starts_fetch.url
 
-            self.store.upsert_runner(
-                {
-                    "race_id": race_id,
+            if persist_canonical_roster:
+                self.store.upsert_runner(
+                    {
+                        "race_id": race_id,
                     "selection_id": selection_id,
                     "horse_name": horse_name,
                     "post_position": start_number,
                     "driver_or_jockey": driver_name,
                     "trainer": trainer_name,
-                    "scratched": int(is_scratched),
-                }
-            )
+                        "scratched": int(is_scratched),
+                    }
+                )
 
             sanitized = {
                 "capability_contract": CONTRACT,
