@@ -68,7 +68,8 @@ def run_day(
             "p_win": None, "fair_odds": None,
             "win_market_snapshot_count": 0,
             "win_market_fetch_failures": 0,
-            "win_market_observed_at_utc": None,
+            "win_market_request_started_at_utc": None,
+            "win_market_response_completed_at_utc": None,
             "win_market_source_sha256": None,
             "win_prices": [],
             "reasons": [],
@@ -134,9 +135,10 @@ def run_day(
             )
             status["win_market_snapshot_count"] = market_count
             status["win_market_fetch_failures"] = market_failures
-            status["win_market_observed_at_utc"] = market_started.isoformat()
+            status["win_market_request_started_at_utc"] = market_started.isoformat()
             market_receipt = market_worker.source_receipts.get((race_id, "V"), {})
             status["win_market_source_sha256"] = market_receipt.get("body_sha256")
+            status["win_market_response_completed_at_utc"] = market_receipt.get("response_completed_at_utc")
             if market_failures or market_receipt.get("source_status") != "HTTP_SUCCESS":
                 status["reasons"].append("WIN_SOURCE_UNAVAILABLE")
             with store.connect() as connection:
