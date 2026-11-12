@@ -114,6 +114,7 @@ def enrich_imported(
             "full_field_evidence_passed": False,
             "fresh_rikstoto_scratch_response_sha256": None,
             "live_field_matches_archive": False,
+            "field_differences": [],
             "rikstoto_registration_candidates_observed": 0,
             "source_receipts": {},
             "original_receipts": [],
@@ -213,6 +214,28 @@ def enrich_imported(
                 str(row["selection_id"]): row for row in rows
                 if observed <= datetime.fromisoformat(str(row["observed_at_utc"])) <= finished
             }
+            record["field_differences"] = [
+                {
+                    "selection_id": sid,
+                    "archived_name": archived_by_id.get(sid, {}).get("horse_name"),
+                    "live_name": live_by_id.get(sid, {}).get("horse_name"),
+                    "archived_scratched": archived_by_id.get(sid, {}).get("scratched"),
+                    "live_scratched": live_by_id.get(sid, {}).get("scratched"),
+                    "status": (
+                        "ADDED_LIVE" if sid not in archived_by_id else
+                        "MISSING_LIVE" if sid not in live_by_id else
+                        "CHANGED"
+                    ),
+                }
+                for sid in sorted(set(archived_by_id) | set(live_by_id))
+                if (
+                    sid not in archived_by_id or sid not in live_by_id
+                    or name_key(str(archived_by_id[sid]["horse_name"])) !=
+                    name_key(str(live_by_id[sid]["horse_name"]))
+                    or bool(archived_by_id[sid]["scratched"]) !=
+                    bool(live_by_id[sid]["scratched"])
+                )
+            ]
             matches_archive = (
                 len(live_by_id) == len(archived_by_id)
                 and set(live_by_id) == set(archived_by_id)
