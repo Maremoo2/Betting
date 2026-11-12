@@ -1,0 +1,71 @@
+name: CLOUD-RUN-001 collector source readback (manual, NO BET)
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Existing Collector draft release tag, exact run ID"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  readback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate exact Collector release tag and owner-approved read credentials
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          COLLECTOR_TOKEN: ${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$RELEASE_TAG" =~ ^rikstoto-program-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{8}T[0-9]{12}Z$ ]]; then
+            echo 'BLOCKED: unrecognized Collector release identity'
+            exit 1
+          fi
+          if [[ -z "$COLLECTOR_TOKEN" ]]; then
+            echo 'BLOCKED: no HQ-approved, read-only Collector draft-release credential'
+            exit 1
+          fi
+      - name: Download existing original ZIP and checksum (no source requests)
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          GH_TOKEN: ${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p collector-input
+          gh release download "$RELEASE_TAG" \
+            --repo Maremoo2/rikstoto-program-collector \
+            --pattern 'rikstoto-*.zip*' --dir collector-input
+          zip_name="${RELEASE_TAG#rikstoto-program-}.zip"
+          test -s "collector-input/rikstoto-$zip_name"
+          test -s "collector-input/rikstoto-$zip_name.sha256"
+      - name: Read back original source bytes, fail closed
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          name="rikstoto-${RELEASE_TAG#rikstoto-program-}.zip"
+          python -m pip install -e .
+          python -m hbi.cloud_run001_archive \
+            --archive "collector-input/$name" \
+            --checksum "collector-input/$name.sha256" \
+            --output cloud-run001-source-report.json
+      - name: Preserve diagnostic report, never original source in a public workflow log
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-run001-source-readback-${{ github.run_id }}
+          path: cloud-run001-source-report.json
+          retention-days: 30
+          if-no-files-found: error
