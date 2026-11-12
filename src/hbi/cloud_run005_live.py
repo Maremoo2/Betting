@@ -66,6 +66,11 @@ def run_day(
             "bet_ready": False, "identity_candidates": 0,
             "identity_attested": 0, "full_field_evidence": False,
             "p_win": None, "fair_odds": None,
+            "win_market_snapshot_count": 0,
+            "win_market_fetch_failures": 0,
+            "win_market_observed_at_utc": None,
+            "win_market_source_sha256": None,
+            "win_prices": [],
             "reasons": [],
         }
         try:
@@ -118,6 +123,33 @@ def run_day(
                 and fetcher.last_capability.get("passed") is True
             )
             status["source_originals_sha_verified"] = len(capture.receipts)
+            # Read-only WIN research evidence is recorded independently of
+            # eligibility. Prices alone cannot authorize EV or BET.
+            market_started = datetime.now(UTC)
+            market_worker = RikstotoCollector(store)
+            market_count, market_failures = market_worker.collect_market(
+                raceday_key=race.raceday_key,
+                race_number=race.race_number, race_id=race_id,
+                observed_at=market_started, products={"V"},
+            )
+            status["win_market_snapshot_count"] = market_count
+            status["win_market_fetch_failures"] = market_failures
+            status["win_market_observed_at_utc"] = market_started.isoformat()
+            market_receipt = market_worker.source_receipts.get((race_id, "V"), {})
+            status["win_market_source_sha256"] = market_receipt.get("body_sha256")
+            if market_failures or market_receipt.get("source_status") != "HTTP_SUCCESS":
+                status["reasons"].append("WIN_SOURCE_UNAVAILABLE")
+            with store.connect() as connection:
+                prices = [
+                    dict(row) for row in connection.execute(
+                        "SELECT selection_key,odds_decimal,provider_updated_at_utc "
+                        "FROM provider_market_snapshots WHERE provider='rikstoto' "
+                        "AND race_id=? AND product='V' AND observed_at_utc=? "
+                        "ORDER BY CAST(selection_key AS INTEGER)",
+                        (race_id, market_started.isoformat()),
+                    )
+                ]
+            status["win_prices"] = prices
         except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
             status["run_status"] = "SOURCE_OR_IDENTITY_BLOCKED"
             status["reasons"].append(f"LIVE_RACE_FAILURE_{type(exc).__name__.upper()}")
@@ -159,6 +191,12 @@ def run_day(
         "original_archive_status": archived["status"],
         "identity_candidate_total": sum(int(r["identity_candidates"]) for r in records),
         "permanent_identity_attested": 0,
+        "win_market_snapshots": sum(
+            int(r["win_market_snapshot_count"]) for r in records
+        ),
+        "win_market_races_with_prices": sum(
+            bool(r["win_prices"]) for r in records
+        ),
         "model_ready": model["model_input_complete"],
         "p_win_computed": model["p_win_computed"],
         "model_reasons": model["model_reject_reasons"],
@@ -187,6 +225,8 @@ def main() -> None:
         "remaining_eligible_selected": report["remaining_eligible_selected"],
         "attempted": report["attempted"], "originals_readback": report["originals_readback"],
         "identity_candidate_total": report["identity_candidate_total"],
+        "win_market_snapshots": report["win_market_snapshots"],
+        "win_market_races_with_prices": report["win_market_races_with_prices"],
         "permanent_identity_attested": 0,
         "model_ready": report["model_ready"], "p_win_computed": report["p_win_computed"],
         "bet_authorized": False,
