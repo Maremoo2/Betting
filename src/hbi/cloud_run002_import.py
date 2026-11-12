@@ -41,7 +41,7 @@ def _sha(data: bytes) -> str:
 
 def _when(raw: object) -> datetime:
     if not isinstance(raw, str):
-        raise ValueError("COLLECTOR_SOURCE_CLOCK_MISSING")
+        raise TypeError("COLLECTOR_SOURCE_CLOCK_MISSING")
     stamp = datetime.fromisoformat(raw)
     if stamp.tzinfo is None or stamp.utcoffset() is None:
         raise ValueError("COLLECTOR_SOURCE_CLOCK_NAIVE")
@@ -74,14 +74,14 @@ def prepare_source(
     seen: set[str] = set()
     for meeting in manifest["meetings"]:
         if not isinstance(meeting, dict):
-            raise ValueError("COLLECTOR_INVALID_MEETING")
+            raise TypeError("COLLECTOR_INVALID_MEETING")
         listed = meeting.get("listing_source") or {}
         if listed.get("country") not in COUNTRIES or listed.get("sport_type") != "T":
             continue
         if meeting.get("is_multi_track_product") is not False:
             continue
         mid = meeting.get("meeting_id")
-        if (not isinstance(mid, str) or not re.fullmatch(r"[A-Z0-9_]+-\d{4}-\d{2}-\d{2}", mid)
+        if (not isinstance(mid, str) or not re.fullmatch(r"[A-Z0-9_]+_\d{4}-\d{2}-\d{2}", mid)
                 or mid != listed.get("meeting_id") or meeting.get("source_date") != day):
             raise ValueError("COLLECTOR_MEETING_IDENTITY_MISMATCH")
         qa = meeting.get("startlist_pdf_audit") or {}
@@ -93,7 +93,7 @@ def prepare_source(
         _, pdf_bytes = source.request(mid, "pdf", f"RIKSTOTO:{mid}:1", received)
         starts = json.loads(starts_bytes).get("result")
         if not isinstance(starts, dict):
-            raise ValueError("COLLECTOR_ORIGINAL_STARTS_INVALID")
+            raise TypeError("COLLECTOR_ORIGINAL_STARTS_INVALID")
         structure_path = f"{source.prefix}meetings/{mid}/structured_program.json"
         structured_bytes = source.read(structure_path)
         structured = json.loads(structured_bytes)
@@ -116,7 +116,7 @@ def prepare_source(
             pdf_field = part.get("entrants")
             original_field = starts.get(str(n))
             if not isinstance(pdf_field, list) or not isinstance(original_field, list):
-                raise ValueError("COLLECTOR_RACE_FIELD_UNVERIFIED")
+                raise TypeError("COLLECTOR_RACE_FIELD_UNVERIFIED")
             by_number: dict[str, dict] = {}
             for entrant in original_field:
                 number = entrant.get("startNumber") if isinstance(entrant, dict) else None
