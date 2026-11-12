@@ -8,6 +8,7 @@ from pathlib import Path
 
 from .cloud_run002_import import import_source
 from .cloud_run003_model import assess_and_run
+from .cloud_run004_enrichment import enrich_imported
 from .json_provider import load_market_snapshots, load_race_cards, load_results
 from .manifest import persist_run_manifest
 from .pipeline import HBIPipeline
@@ -35,6 +36,7 @@ class RunAudit:
     bet_ready_races: int = 0
     collector_report: dict[str, object] | None = None
     collector_model_report: dict[str, object] | None = None
+    collector_enrichment_report: dict[str, object] | None = None
 
 
 def _optional_path(name: str) -> Path | None:
@@ -75,6 +77,8 @@ def run_once(*, db_path: str, mode: str) -> RunAudit:
         audit.model_ready_races = 0
         audit.bet_ready_races = 0
         audit.collector_report = result
+        if os.environ.get("HBI_COLLECTOR_FUNDAMENTAL_ENRICH") == "1":
+            audit.collector_enrichment_report = enrich_imported(store, result["records"])
         if os.environ.get("HBI_COLLECTOR_MODEL_PREFLIGHT") == "1":
             assessment = assess_and_run(store, result["records"])
             audit.model_ready_races = int(assessment["model_input_complete"])
