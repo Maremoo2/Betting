@@ -51,6 +51,7 @@ def test_win_uses_completed_http_response_in_both_sqlite_tables():
     assert len(store.market_rows) == len(store.win_rows) == 1
     assert store.market_rows[0]["observed_at"] == DONE
     assert store.win_rows[0].captured_at == DONE
+    assert store.audit_rows[0]["fetched_at"] == DONE
     assert store.market_rows[0]["provider_updated_at"] != DONE  # not receipt clock
 
 
