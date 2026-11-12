@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import math
 import re
 from datetime import UTC, datetime, timedelta
 from typing import Callable
@@ -69,6 +68,7 @@ def enrich_imported(
     collector: RikstotoCollector | None = None,
     clock: Callable[[], datetime] | None = None,
     min_lead: timedelta = timedelta(minutes=4),
+    max_live_races: int = 5,
 ) -> dict[str, object]:
     """Fetch live starts, scratches and ATG history only for future archived races."""
     clock = clock or (lambda: datetime.now(UTC))
@@ -76,7 +76,10 @@ def enrich_imported(
     if worker.store is not store:
         raise ValueError("ENRICHMENT_SQLITE_OWNER_MISMATCH")
     champion = MarketFreeFundamentalChampionV1()
+    if not 1 <= max_live_races <= 30:
+        raise ValueError("ENRICHMENT_BATCH_BOUND_INVALID")
     records: list[dict[str, object]] = []
+    attempted = 0
     for source in imported:
         race_id = str(source.get("race_id"))
         race = store.get_race(race_id)
@@ -113,7 +116,10 @@ def enrich_imported(
             reasons.append("RACE_ALREADY_STARTED_OR_TOO_CLOSE_FOR_LIVE_ENRICHMENT")
         elif race["discipline"] != "trot" or race["country"] not in {"NO", "SE"}:
             reasons.append("OUTSIDE_APPROVED_NO_SE_TROT")
+        elif attempted >= max_live_races:
+            reasons.append("LIVE_RESEARCH_BATCH_LIMIT_DEFERRED")
         else:
+            attempted += 1
             record["fetch_started_at_utc"] = observed.isoformat()
             worker.last_capability = None
             try:
