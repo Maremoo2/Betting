@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from .cloud_run002_import import import_source
 from .json_provider import load_market_snapshots, load_race_cards, load_results
 from .manifest import persist_run_manifest
 from .pipeline import HBIPipeline
@@ -28,6 +29,10 @@ class RunAudit:
     snapshots_inserted: int = 0
     prewatch_events: int = 0
     results_settled: int = 0
+    source_ready_races: int = 0
+    model_ready_races: int = 0
+    bet_ready_races: int = 0
+    collector_report: dict[str, object] | None = None
 
 
 def _optional_path(name: str) -> Path | None:
@@ -50,8 +55,26 @@ def run_once(*, db_path: str, mode: str) -> RunAudit:
     snapshots_path = _optional_path("HBI_MARKET_SNAPSHOTS_JSON")
     results_path = _optional_path("HBI_RESULTS_JSON")
 
-    configured = any((races_path, snapshots_path, results_path))
-    if configured:
+    archive_env = os.environ.get("HBI_COLLECTOR_ARCHIVE_ZIP")
+    checksum_env = os.environ.get("HBI_COLLECTOR_ARCHIVE_SHA256")
+    if bool(archive_env) != bool(checksum_env):
+        raise ValueError("COLLECTOR_ARCHIVE_AND_CHECKSUM_REQUIRED_TOGETHER")
+    collector_source = bool(archive_env)
+    if collector_source:
+        if not Path(archive_env).is_file() or not Path(checksum_env).is_file():
+            raise ValueError("COLLECTOR_CONFIGURED_ORIGINAL_SOURCE_MISSING")
+        result = import_source(
+            store, Path(archive_env), Path(checksum_env),
+            date_oslo=os.environ.get("HBI_COLLECTOR_DATE_OSLO") or None,
+        )
+        audit.provider_status = "COLLECTOR_VERIFIED_ARCHIVE_RESEARCH_ONLY"
+        audit.race_cards = int(result["observed_races"])
+        audit.source_ready_races = int(result["source_ready"])
+        audit.model_ready_races = 0
+        audit.bet_ready_races = 0
+        audit.collector_report = result
+    configured = any((races_path, snapshots_path, results_path)) or collector_source
+    if not collector_source and configured:
         audit.provider_status = "CANONICAL_FILES"
 
     if races_path:
