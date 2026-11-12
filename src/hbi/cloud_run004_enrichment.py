@@ -9,8 +9,8 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from datetime import UTC, datetime, timedelta
 from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
 
 from .fundamental import MarketFreeFundamentalChampionV1
 from .rikstoto_collector import RikstotoCollector
