@@ -138,20 +138,26 @@ def run_day(
             status["win_market_request_started_at_utc"] = market_started.isoformat()
             market_receipt = market_worker.source_receipts.get((race_id, "V"), {})
             status["win_market_source_sha256"] = market_receipt.get("body_sha256")
-            status["win_market_response_completed_at_utc"] = market_receipt.get("response_completed_at_utc")
+            completion = market_receipt.get("response_completed_at_utc")
+            status["win_market_response_completed_at_utc"] = completion
             if market_failures or market_receipt.get("source_status") != "HTTP_SUCCESS":
                 status["reasons"].append("WIN_SOURCE_UNAVAILABLE")
+            if not isinstance(completion, str):
+                status["reasons"].append("WIN_RESPONSE_COMPLETION_UNATTESTED")
             with store.connect() as connection:
                 prices = [
                     dict(row) for row in connection.execute(
                         "SELECT selection_key,odds_decimal,provider_updated_at_utc "
                         "FROM provider_market_snapshots WHERE provider='rikstoto' "
-                        "AND race_id=? AND product='V' AND observed_at_utc=? "
+                        "AND race_id=? AND product='V' "
+                        "AND observed_at_utc>=? "
                         "ORDER BY CAST(selection_key AS INTEGER)",
                         (race_id, market_started.isoformat()),
                     )
                 ]
             status["win_prices"] = prices
+            if prices and not isinstance(completion, str):
+                status["reasons"].append("WIN_PRICE_OBSERVATION_MISSING_HTTP_COMPLETION")
         except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError) as exc:
             status["run_status"] = "SOURCE_OR_IDENTITY_BLOCKED"
             status["reasons"].append(f"LIVE_RACE_FAILURE_{type(exc).__name__.upper()}")
