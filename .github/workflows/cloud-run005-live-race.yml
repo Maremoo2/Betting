@@ -2,7 +2,7 @@ name: CLOUD-RUN-005 LIVE-RACE-001 bounded real pre-race originals (NO BET)
 
 on:
   pull_request:
-    types: [opened]
+    types: [opened, synchronize, reopened]
     paths:
       - "src/hbi/cloud_run005_*"
       - "src/hbi/cloud_run004_enrichment.py"
