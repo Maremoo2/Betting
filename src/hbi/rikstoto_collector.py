@@ -187,9 +187,9 @@ class RikstotoCollector:
         fetch: FetchResult,
         observed_at: datetime,
     ) -> int:
-        self._audit(fetch, observed_at)
-        self._remember_source(race_id, product, fetch)
         if not fetch.success:
+            self._audit(fetch, observed_at)
+            self._remember_source(race_id, product, fetch)
             return 0
 
         # WIN prices must never be backdated to request initiation. A provider
@@ -205,6 +205,10 @@ class RikstotoCollector:
                 raise ValueError("WIN_REQUEST_CLOCK_NAIVE")
             snapshot_at = max(observed_at, completed.astimezone(observed_at.tzinfo))
 
+        # The provider-fetch audit and both WIN price tables share the same
+        # conservative received-data clock; request-start stays in run audit.
+        self._audit(fetch, snapshot_at)
+        self._remember_source(race_id, product, fetch)
         inserted = 0
         for item in self.client.result_list(fetch):
             selection_key = self._selection_key(product, item)
