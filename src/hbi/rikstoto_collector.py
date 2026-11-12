@@ -48,7 +48,7 @@ class RikstotoCollector:
         self.atg_client = atg_client or AtgClient()
 
     def _remember_source(
-        self, race_id: str, category: str, fetch: FetchResult,
+        self, race_id: str, category: str, fetch: FetchResult | AtgFetchResult,
     ) -> None:
         stamp = fetch.response_completed_at
         self.source_receipts[(race_id, category)] = {
@@ -342,6 +342,7 @@ class RikstotoCollector:
             try:
                 calendar = self.atg_client.calendar_day(expected_start.astimezone(ZoneInfo("Europe/Stockholm")).date())
                 self._audit_provider(calendar, self.clock(), provider="atg")
+                self._remember_source(race_id, "ATG_CALENDAR", calendar)
                 resolved = self.atg_client.resolve_race(
                     calendar, track_name=track, race_number=race_number,
                     expected_start=expected_start, country=country, discipline=discipline,
@@ -349,6 +350,7 @@ class RikstotoCollector:
                 if resolved is not None:
                     game = self.atg_client.race_game(resolved.race_id)
                     self._audit_provider(game, self.clock(), provider="atg")
+                    self._remember_source(race_id, "ATG_GAME", game)
                     race_payload = self.atg_client.race_payload(game)
                     atg_source = game.url
             except (TypeError, ValueError, KeyError):
