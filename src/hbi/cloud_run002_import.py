@@ -66,6 +66,24 @@ def prepare_source(
     if date_oslo is not None and day != date_oslo:
         raise ValueError("COLLECTOR_REQUESTED_DATE_MISMATCH")
     source = OriginalArchive(archive)
+    # Collector receipts retain the original Actions workspace prefix, whereas
+    # the immutable release ZIP deliberately omits "output/daily/". Normalize
+    # *lookup paths only* in a separate manifest view; original bytes and their
+    # manifest SHA-256 are never edited or re-created.
+    normalized_requests: list[dict[str, object]] = []
+    for record in source.manifest.get("requests", []):
+        if not isinstance(record, dict):
+            raise TypeError("COLLECTOR_SOURCE_REQUEST_INVALID")
+        view = dict(record)
+        for column in ("path", "raw_path"):
+            original_path = view.get(column)
+            if isinstance(original_path, str) and original_path.startswith("output/daily/"):
+                relative = original_path.removeprefix("output/daily/")
+                if relative not in source.names:
+                    raise ValueError("COLLECTOR_ORIGINAL_RECEIPT_PATH_MISSING")
+                view[column] = relative
+        normalized_requests.append(view)
+    source.manifest = {**source.manifest, "requests": normalized_requests}
     manifest = source.manifest
     if manifest.get("status") != "CAPTURED_UNVERIFIED":
         # Unknown new capture contracts must be reviewed, not assumed valid.
