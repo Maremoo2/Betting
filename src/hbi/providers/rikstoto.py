@@ -5,6 +5,7 @@ import json
 import time
 import urllib.error
 import urllib.request
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from enum import StrEnum
@@ -106,9 +107,16 @@ class RikstotoClient:
         ),
     }
 
-    def __init__(self, *, timeout: float = 15.0, user_agent: str = "HBI-shadow-research/1.0"):
+    def __init__(
+        self, *, timeout: float = 15.0,
+        user_agent: str = "HBI-shadow-research/1.0",
+        archive_hook: Callable[
+            [str, str, bytes, datetime, dict[str, str | None], int], object
+        ] | None = None,
+    ):
         self.timeout = timeout
         self.user_agent = user_agent
+        self.archive_hook = archive_hook
 
     def _fetch(self, path: str, *, retain_raw_body: bool = False) -> FetchResult:
         url = path if path.startswith("http") else f"{self.API}{path}"
@@ -122,6 +130,16 @@ class RikstotoClient:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
                 body_bytes = response.read()
                 response_completed = datetime.now(UTC)
+                # The archive is completed and read back BEFORE deserializing.
+                # A failed write aborts the fetch; never create unarchived PIT claims.
+                if self.archive_hook is not None:
+                    self.archive_hook(
+                        "rikstoto", url, body_bytes, response_completed,
+                        {key: response.headers.get(key) for key in (
+                            "Content-Type", "Date", "ETag", "Last-Modified",
+                            "Content-Length",
+                        )}, response.status,
+                    )
                 payload = json.loads(body_bytes.decode("utf-8"))
                 return (OriginalBytesFetchResult if retain_raw_body else FetchResult)(
                     url=url,
