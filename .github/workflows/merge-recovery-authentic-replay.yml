@@ -64,6 +64,12 @@ jobs:
           path=Path("merge-recovery/source-report.json")
           report=json.loads(path.read_text())
           report["registry_candidate_reconciliation"]=summary
+          # Extra real-horse evidence modifies SQLite; checkpoint and update its
+          # exact SHA in the immutable new-replay report before runner transfer.
+          import hashlib
+          SQLiteStore("merge-recovery/source.sqlite").checkpoint()
+          blob=Path("merge-recovery/source.sqlite")
+          report["sqlite_sha256"]=hashlib.sha256(blob.read_bytes()).hexdigest()
           path.write_text(json.dumps(report,sort_keys=True,indent=2)+"\n")
           print("REAL_REGISTRY_CANDIDATE_SCAN",json.dumps({
               k:summary[k] for k in ("observed_real_horses",
