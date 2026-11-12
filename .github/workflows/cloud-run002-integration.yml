@@ -1,0 +1,140 @@
+name: CLOUD-RUN-002 isolated Collector to HBI E2E (NO BET)
+
+on:
+  pull_request:
+    paths:
+      - "src/hbi/cloud_run002_import.py"
+      - "src/hbi/scheduled_run.py"
+      - "tests/test_cloud_run002_import.py"
+      - ".github/workflows/cloud-run002-integration.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: cloud-run002-research-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  import-original:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install frozen HBI application
+        run: pip install -e ".[dev]"
+      - name: Fetch **existing** original Collector artifact with permitted read-only token
+        env:
+          GH_TOKEN: ${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p collector-input
+          gh run download 43167334463 \
+            --repo Maremoo2/rikstoto-program-collector \
+            --name prewatch-bridge-fallback \
+            --dir collector-input
+          test -s collector-input/release-assets/rikstoto-2026-11-12-20261112T062004681934Z.zip
+          test -s collector-input/release-assets/rikstoto-2026-11-12-20261112T062004681934Z.zip.sha256
+      - name: Initialize isolated research database
+        run: |
+          mkdir -p cloud-run002
+          hbi --db cloud-run002/hbi.sqlite init-db
+      - name: First actual Collector to PRE-WATCH import
+        env:
+          HBI_DB_PATH: cloud-run002/hbi.sqlite
+          HBI_RUN_MODE: MANUAL_COLLECTOR_RESEARCH
+          HBI_COLLECTOR_ARCHIVE_ZIP: collector-input/release-assets/rikstoto-2026-11-12-20261112T062004681934Z.zip
+          HBI_COLLECTOR_ARCHIVE_SHA256: collector-input/release-assets/rikstoto-2026-11-12-20261112T062004681934Z.zip.sha256
+          HBI_COLLECTOR_DATE_OSLO: "2026-11-12"
+          HBI_RUN_AUDIT_PATH: cloud-run002/first-report.json
+        run: python -m hbi.scheduled_run
+      - name: Retry same original and assert zero additional canonical records
+        env:
+          HBI_DB_PATH: cloud-run002/hbi.sqlite
+          HBI_RUN_MODE: MANUAL_COLLECTOR_RESEARCH
+          HBI_COLLECTOR_ARCHIVE_ZIP: collector-input/release-assets/rikstoto-2026-11-12-20261112T062004681934Z.zip
+          HBI_COLLECTOR_ARCHIVE_SHA256: collector-input/release-assets/rikstoto-2026-11-12-20261112T062004681934Z.zip.sha256
+          HBI_COLLECTOR_DATE_OSLO: "2026-11-12"
+          HBI_RUN_AUDIT_PATH: cloud-run002/second-report.json
+        run: |
+          set -euo pipefail
+          python -m hbi.scheduled_run
+          python - <<'PY'
+          import hashlib, json, sqlite3
+          from pathlib import Path
+          root=Path('cloud-run002')
+          a=json.loads((root/'first-report.json').read_text())
+          b=json.loads((root/'second-report.json').read_text())
+          assert (a['race_cards'],a['source_ready_races'],a['model_ready_races'],a['bet_ready_races'])==(30,30,0,0), a
+          assert b['provider_status']==a['provider_status']=='COLLECTOR_VERIFIED_ARCHIVE_RESEARCH_ONLY'
+          assert (b['race_cards'],b['source_ready_races'],b['model_ready_races'],b['bet_ready_races'])==(30,30,0,0)
+          db=sqlite3.connect(root/'hbi.sqlite')
+          counts={}
+          for table in ('races','runners','provider_payloads','predictions','shadow_decision_runs','shadow_tickets'):
+              counts[table]=db.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+          assert counts=={'races':30,'runners':321,'provider_payloads':30,'predictions':0,'shadow_decision_runs':0,'shadow_tickets':0}, counts
+          assert db.execute('PRAGMA integrity_check').fetchone()[0]=='ok'
+          assert db.execute("SELECT COUNT(*) FROM system_run_manifests WHERE run_type='PREWATCH_MANUAL_COLLECTOR_RESEARCH'").fetchone()[0]==2
+          db.execute('PRAGMA wal_checkpoint(TRUNCATE)')
+          db.close()
+          digest=hashlib.sha256((root/'hbi.sqlite').read_bytes()).hexdigest()
+          (root/'hbi.sqlite.sha256').write_text(digest+'  hbi.sqlite\n')
+          (root/'counts.json').write_text(json.dumps({
+              'status':'SOURCE_ONLY','source_ready':30,'model_ready':0,'bet_ready':0,
+              'counts':counts,'db_sha256':digest,'pit_certified':False,'bet_authorized':False,
+              'first_run':a['provider_status'],'second_run':b['provider_status']
+          },indent=2))
+          print('CLOUD_RUN002_SOURCE_IMPORT_OK',json.dumps(counts))
+          PY
+      - name: Preserve real isolated SQLite for second-runner recovery
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-run002-isolated-state
+          path: |
+            cloud-run002/hbi.sqlite
+            cloud-run002/hbi.sqlite.sha256
+            cloud-run002/counts.json
+            cloud-run002/first-report.json
+            cloud-run002/second-report.json
+          if-no-files-found: error
+          retention-days: 7
+
+  verify-new-runner:
+    needs: import-original
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: cloud-run002-isolated-state
+          path: recovered
+      - name: Independently reopen transported SQLite and check original counts
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, json, sqlite3
+          from pathlib import Path
+          p=Path('recovered/cloud-run002')
+          if not p.exists(): p=Path('recovered')
+          dbfile=p/'hbi.sqlite'
+          sidecar=p/'hbi.sqlite.sha256'
+          expected=sidecar.read_text().split('  ',1)[0]
+          actual=hashlib.sha256(dbfile.read_bytes()).hexdigest()
+          assert actual==expected, 'HBI_ISOLATED_STATE_RESTORE_HASH_MISMATCH'
+          db=sqlite3.connect(f'file:{dbfile.absolute()}?mode=ro',uri=True)
+          assert db.execute('PRAGMA integrity_check').fetchone()[0]=='ok'
+          counts={table:db.execute(f'SELECT COUNT(*) FROM {table}').fetchone()[0]
+                  for table in ('races','runners','provider_payloads','predictions','shadow_decision_runs','shadow_tickets')}
+          assert counts=={'races':30,'runners':321,'provider_payloads':30,'predictions':0,'shadow_decision_runs':0,'shadow_tickets':0},counts
+          source=json.loads((p/'counts.json').read_text())
+          assert source['db_sha256']==actual and source['counts']==counts
+          assert source['model_ready']==source['bet_ready']==0
+          db.close()
+          print('CLOUD_RUN002_SEPARATE_RUNNER_RESTORE_OK',json.dumps(counts))
+          PY
