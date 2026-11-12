@@ -13,9 +13,9 @@ from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from .collector_handoff import name_key
 from .cloud_run005_identity import reconcile_identity_candidates
 from .cloud_run005_originals import OriginalCapture, verify_original
+from .collector_handoff import name_key
 from .fundamental import MarketFreeFundamentalChampionV1
 from .providers.atg import AtgClient
 from .providers.rikstoto import RikstotoClient
