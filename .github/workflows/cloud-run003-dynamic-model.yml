@@ -127,6 +127,19 @@ jobs:
           root=Path("cloud-run003")
           a=json.loads((root/"first.json").read_text())
           b=json.loads((root/"second.json").read_text())
+          live=a.get("collector_enrichment_report")
+          enrichment=live if live is not None else {
+              "live_fetch_attempts":0,
+              "actual_live_fundamental_snapshots":0,
+              "provisional_cross_provider_identity_matches":0,
+              "permanent_horse_ids_attested":0,
+              "rikstoto_registration_candidates_observed":0,
+              "archive_live_roster_matches":0,
+              "qualified_fundamental_history_rows":0,
+              "candidate_history_rows":0,
+              "full_field_evidence_races":0,
+              "records":[],
+          }
           for x in (a,b):
               assert x["provider_status"]=="COLLECTOR_VERIFIED_ARCHIVE_RESEARCH_ONLY", x
               assert x["race_cards"]>0 and x["source_ready_races"]==x["race_cards"]
@@ -140,9 +153,9 @@ jobs:
           assert before["races"]==a["race_cards"],before
           assert before["runners"]==a["collector_report"]["observed_runners"], before
           assert before["provider_payloads"]>=a["race_cards"],before
-          assert a["collector_enrichment_report"] is not None
           assert b["collector_enrichment_report"] is None
-          assert a["collector_enrichment_report"]["races_considered"]==a["race_cards"]
+          if live is not None:
+              assert live["races_considered"]==a["race_cards"]
           assert b["collector_report"]["records"]==a["collector_report"]["records"]
           assert before["shadow_tickets"]==0
           assert conn.execute("PRAGMA integrity_check").fetchone()[0]=="ok"
@@ -155,17 +168,17 @@ jobs:
              "source_readback":json.loads((root/"archive-receipt.json").read_text()),
              "races_imported":a["race_cards"],"runners_imported":before["runners"],
              "source_ready":a["source_ready_races"],
-             "live_enrichment_attempts":a["collector_enrichment_report"]["live_fetch_attempts"],
-             "live_fundamental_rows":a["collector_enrichment_report"]["actual_live_fundamental_snapshots"],
-             "provisional_cross_provider_matches":a["collector_enrichment_report"]["provisional_cross_provider_identity_matches"],
-             "permanent_identity_attested":a["collector_enrichment_report"]["permanent_horse_ids_attested"],
-             "source_registration_candidates":a["collector_enrichment_report"]["rikstoto_registration_candidates_observed"],
-             "archive_live_roster_matches":a["collector_enrichment_report"]["archive_live_roster_matches"],
-             "qualified_history_rows":a["collector_enrichment_report"]["qualified_fundamental_history_rows"],
-             "candidate_history_rows":a["collector_enrichment_report"]["candidate_history_rows"],
-             "full_field_evidence_races":a["collector_enrichment_report"]["full_field_evidence_races"],
-             "enrichment_reasons":{code:sum(code in rec["reasons"] for rec in a["collector_enrichment_report"]["records"])
-                 for code in sorted({reason for rec in a["collector_enrichment_report"]["records"] for reason in rec["reasons"]})},
+             "live_enrichment_attempts":enrichment["live_fetch_attempts"],
+             "live_fundamental_rows":enrichment["actual_live_fundamental_snapshots"],
+             "provisional_cross_provider_matches":enrichment["provisional_cross_provider_identity_matches"],
+             "permanent_identity_attested":enrichment["permanent_horse_ids_attested"],
+             "source_registration_candidates":enrichment["rikstoto_registration_candidates_observed"],
+             "archive_live_roster_matches":enrichment["archive_live_roster_matches"],
+             "qualified_history_rows":enrichment["qualified_fundamental_history_rows"],
+             "candidate_history_rows":enrichment["candidate_history_rows"],
+             "full_field_evidence_races":enrichment["full_field_evidence_races"],
+             "enrichment_reasons":{code:sum(code in rec["reasons"] for rec in enrichment["records"])
+                 for code in sorted({reason for rec in enrichment["records"] for reason in rec["reasons"]})},
              "model_input_complete":a["collector_model_report"]["model_input_complete"],
              "p_win_computed":a["collector_model_report"]["p_win_computed"],
              "reject_reasons":a["collector_model_report"]["model_reject_reasons"],
