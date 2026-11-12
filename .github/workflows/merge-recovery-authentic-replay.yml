@@ -1,0 +1,148 @@
+name: MERGE-RECOVERY-001 authentic new replay and independent restore (NO BET)
+
+on:
+  pull_request:
+    paths:
+      - "src/hbi/merge_recovery_replay.py"
+      - "src/hbi/cloud_run006_registry.py"
+      - "tests/test_merge_recovery_win_timing.py"
+      - ".github/workflows/merge-recovery-authentic-replay.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: merge-recovery-original-replay-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  replay-authentic-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e ".[dev]"
+      - name: Retrieve existing genuine Collector bytes (read-only; no provider requests)
+        env:
+          GH_TOKEN: ${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p collector-input
+          gh run download 43167334463 \
+            --repo Maremoo2/rikstoto-program-collector \
+            --name prewatch-bridge-fallback --dir collector-input
+      - name: Replay real PDF/starts source twice into NEW canonical SQLite
+        run: |
+          set -euo pipefail
+          mkdir -p merge-recovery
+          python -m hbi.merge_recovery_replay \
+            --archive collector-input/release-assets/rikstoto-2026-11-12-20261112T062004681934Z.zip \
+            --sha256 collector-input/release-assets/rikstoto-2026-11-12-20261112T062004681934Z.zip.sha256 \
+            --state merge-recovery/source.sqlite \
+            --report merge-recovery/source-report.json \
+            --expected-original-sha256 23871090f75ded32829fbc239ca6f1bae8be7d5784cc0f67c650a9aaeef639f3
+      - name: Join genuine source horse registration numbers to canonical HBI
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from hbi.cloud_run006_registry import reconcile_from_original
+          from hbi.storage import SQLiteStore
+          source=Path("collector-input/release-assets/rikstoto-2026-11-12-20261112T062004681934Z.zip")
+          summary=reconcile_from_original(
+              SQLiteStore("merge-recovery/source.sqlite"),
+              source, Path(str(source)+".sha256")
+          )
+          assert summary["observed_real_horses"]==321,summary
+          assert summary["independently_attested"]==0 and summary["pit_certified"] is False
+          path=Path("merge-recovery/source-report.json")
+          report=json.loads(path.read_text())
+          report["registry_candidate_reconciliation"]=summary
+          # Extra real-horse evidence modifies SQLite; checkpoint and update its
+          # exact SHA in the immutable new-replay report before runner transfer.
+          import hashlib
+          SQLiteStore("merge-recovery/source.sqlite").checkpoint()
+          blob=Path("merge-recovery/source.sqlite")
+          report["sqlite_sha256"]=hashlib.sha256(blob.read_bytes()).hexdigest()
+          path.write_text(json.dumps(report,sort_keys=True,indent=2)+"\n")
+          print("REAL_REGISTRY_CANDIDATE_SCAN",json.dumps({
+              k:summary[k] for k in ("observed_real_horses",
+                 "registry_lookup_candidates","temporary_or_invalid",
+                 "conflicts","independently_attested")
+          }))
+          PY
+      - name: Authenticated state checksum and immutable run manifest
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,json,sqlite3
+          root=Path("merge-recovery")
+          db=root/"source.sqlite"
+          manifest=json.loads((root/"source-report.json").read_text())
+          sha=hashlib.sha256(db.read_bytes()).hexdigest()
+          assert sha==manifest["sqlite_sha256"]
+          sql=sqlite3.connect(db)
+          assert sql.execute("PRAGMA integrity_check").fetchone()[0]=="ok"
+          assert not sql.execute("PRAGMA foreign_key_check").fetchall()
+          sql.close()
+          (root/"source.sqlite.sha256").write_text(sha+"  source.sqlite\n")
+          print("NEW_REPLAY_SOURCE_ORIGINAL_VERIFIED 30 races, 321 entrants, no PIT")
+          PY
+      - name: Retain new research state and manifest (not expired 2-Nov original)
+        uses: actions/upload-artifact@v4
+        with:
+          name: merge-recovery-new-authentic-replay
+          path: |
+            merge-recovery/source.sqlite
+            merge-recovery/source.sqlite.sha256
+            merge-recovery/source-report.json
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 6
+
+  independent-runner-restore:
+    needs: replay-authentic-source
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: merge-recovery-new-authentic-replay
+          path: restored
+      - name: Independent checks on transported SQLite, original manifest and fail-closed gates
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib,json,sqlite3
+          from pathlib import Path
+          root=Path("restored")
+          db=root/"source.sqlite"
+          report=json.loads((root/"source-report.json").read_text())
+          expected=(root/"source.sqlite.sha256").read_text().split("  ",1)[0]
+          digest=hashlib.sha256(db.read_bytes()).hexdigest()
+          assert digest==expected==report["sqlite_sha256"],"REPLAY_RESTORE_SHA_MISMATCH"
+          cx=sqlite3.connect(f"file:{db.absolute()}?mode=ro",uri=True)
+          assert cx.execute("PRAGMA integrity_check").fetchone()[0]=="ok"
+          assert not cx.execute("PRAGMA foreign_key_check").fetchall()
+          for table,count in (("races",30),("runners",321),("provider_payloads",351),
+                              ("predictions",0),("shadow_tickets",0)):
+              assert cx.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]==count
+          for rid,n in report["race_field_counts"].items():
+              assert cx.execute("SELECT COUNT(*) FROM runners WHERE race_id=?",
+                                (rid,)).fetchone()[0]==n
+          assert report["full_field_counts_validated_against_original_pdf_and_starts"]
+          assert report["registry_candidate_reconciliation"]["observed_real_horses"]==321
+          assert report["registry_candidate_reconciliation"]["independently_attested"]==0
+          assert report["model_admission_rejected_retrospective"]
+          assert report["historical_original_2026_11_02_recovered"] is False
+          assert report["p_win_calculated"]==0 and report["pit_certified"] is False
+          cx.close()
+          print("MERGE_RECOVERY_NEW_AUTHENTIC_REPLAY_RESTORE_PASS")
+          PY

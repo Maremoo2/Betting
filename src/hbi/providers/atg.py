@@ -6,6 +6,7 @@ import time
 import unicodedata
 import urllib.error
 import urllib.request
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from typing import Any
@@ -43,8 +44,14 @@ class AtgClient:
     CALENDAR_API = "https://horse-betting-info.prod.c1.atg.cloud/api-public/v0"
     GAME_API = "https://www.atg.se/services/racinginfo/v1/api/games"
 
-    def __init__(self, *, timeout: float = 15.0):
+    def __init__(
+        self, *, timeout: float = 15.0,
+        archive_hook: Callable[
+            [str, str, bytes, datetime, dict[str, str | None], int], object
+        ] | None = None,
+    ):
         self.timeout = timeout
+        self.archive_hook = archive_hook
 
     @staticmethod
     def _headers() -> dict[str, str]:
@@ -66,6 +73,14 @@ class AtgClient:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
                 original_bytes = response.read()
                 response_completed = datetime.now(UTC)
+                if self.archive_hook is not None:
+                    self.archive_hook(
+                        "atg", url, original_bytes, response_completed,
+                        {key: response.headers.get(key) for key in (
+                            "Content-Type", "Date", "ETag", "Last-Modified",
+                            "Content-Length",
+                        )}, response.status,
+                    )
                 payload = json.loads(original_bytes.decode("utf-8"))
                 return AtgFetchResult(
                     url=url,

@@ -11,9 +11,14 @@ import json
 import re
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 
+from .cloud_run005_identity import reconcile_identity_candidates
+from .cloud_run005_originals import OriginalCapture, verify_original
 from .collector_handoff import name_key
 from .fundamental import MarketFreeFundamentalChampionV1
+from .providers.atg import AtgClient
+from .providers.rikstoto import RikstotoClient
 from .rikstoto_collector import RikstotoCollector
 from .storage import SQLiteStore
 
@@ -70,6 +75,8 @@ def enrich_imported(
     clock: Callable[[], datetime] | None = None,
     min_lead: timedelta = timedelta(minutes=4),
     max_live_races: int = 5,
+    archive_root: Path | None = None,
+    raceday_allowlist: frozenset[str] | None = None,
 ) -> dict[str, object]:
     """Fetch live starts, scratches and ATG history only for future archived races."""
     clock = clock or (lambda: datetime.now(UTC))
@@ -107,8 +114,14 @@ def enrich_imported(
             "full_field_evidence_passed": False,
             "fresh_rikstoto_scratch_response_sha256": None,
             "live_field_matches_archive": False,
+            "field_differences": [],
             "rikstoto_registration_candidates_observed": 0,
             "source_receipts": {},
+            "original_receipts": [],
+            "original_readback_passed": 0,
+            "identity_candidates": 0,
+            "identity_unattested": 0,
+            "identity_rejected": 0,
             "model_ready": False, "bet_ready": False, "pit_certified": False,
             "reasons": [],
         }
@@ -119,14 +132,25 @@ def enrich_imported(
             reasons.append("RACE_ALREADY_STARTED_OR_TOO_CLOSE_FOR_LIVE_ENRICHMENT")
         elif race["discipline"] != "trot" or race["country"] not in {"NO", "SE"}:
             reasons.append("OUTSIDE_APPROVED_NO_SE_TROT")
+        elif raceday_allowlist is not None and key not in raceday_allowlist:
+            reasons.append("RACEDAY_NOT_SELECTED_FOR_LIVE_RESEARCH")
         elif attempted >= max_live_races:
             reasons.append("LIVE_RESEARCH_BATCH_LIMIT_DEFERRED")
         else:
             attempted += 1
             record["fetch_started_at_utc"] = observed.isoformat()
-            worker.last_capability = None
+            capture = None
+            scoped_worker = worker
+            if archive_root is not None:
+                capture = OriginalCapture(store, archive_root, race_id)
+                scoped_worker = RikstotoCollector(
+                    store, client=RikstotoClient(archive_hook=capture.capture),
+                    atg_client=AtgClient(archive_hook=capture.capture),
+                    clock=clock,
+                )
+            scoped_worker.last_capability = None
             try:
-                inserted, success, _ = worker.collect_fundamentals(
+                inserted, success, _ = scoped_worker.collect_fundamentals(
                     raceday_key=key, race_number=number, race_id=race_id,
                     observed_at=observed, persist_canonical_roster=False,
                 )
@@ -138,12 +162,34 @@ def enrich_imported(
             finished = _now(clock)
             record["fetch_completed_at_utc"] = finished.isoformat()
             record["live_fundamental_snapshot_rows"] = inserted
-            evidence = worker.last_capability
+            evidence = scoped_worker.last_capability
             receipts = {
-                category: value for (scope_race, category), value in worker.source_receipts.items()
+                category: value for (scope_race, category), value in scoped_worker.source_receipts.items()
                 if scope_race == race_id
             }
             record["source_receipts"] = receipts
+            if capture is not None:
+                verified = [
+                    verify_original(capture.root, str(item["receipt_sha256"]))
+                    for item in capture.receipts
+                ]
+                record["original_receipts"] = capture.receipts
+                record["original_readback_passed"] = len(verified)
+                record["identity_candidate_summary"] = {
+                    k: v for k, v in reconcile_identity_candidates(
+                        store, race_id, observed_at=finished,
+                        original_receipts=tuple(capture.receipts),
+                    ).items() if k != "records"
+                }
+                record["identity_candidates"] = (
+                    record["identity_candidate_summary"]["candidate"]
+                )
+                record["identity_unattested"] = (
+                    record["identity_candidate_summary"]["unattested"]
+                )
+                record["identity_rejected"] = (
+                    record["identity_candidate_summary"]["rejected"]
+                )
             scratch = receipts.get("SCRATCHED", {})
             record["fresh_rikstoto_scratch_response_sha256"] = (
                 scratch.get("body_sha256") if scratch.get("source_status") == "HTTP_SUCCESS"
@@ -168,6 +214,28 @@ def enrich_imported(
                 str(row["selection_id"]): row for row in rows
                 if observed <= datetime.fromisoformat(str(row["observed_at_utc"])) <= finished
             }
+            record["field_differences"] = [
+                {
+                    "selection_id": sid,
+                    "archived_name": archived_by_id.get(sid, {}).get("horse_name"),
+                    "live_name": live_by_id.get(sid, {}).get("horse_name"),
+                    "archived_scratched": archived_by_id.get(sid, {}).get("scratched"),
+                    "live_scratched": live_by_id.get(sid, {}).get("scratched"),
+                    "status": (
+                        "ADDED_LIVE" if sid not in archived_by_id else
+                        "MISSING_LIVE" if sid not in live_by_id else
+                        "CHANGED"
+                    ),
+                }
+                for sid in sorted(set(archived_by_id) | set(live_by_id))
+                if (
+                    sid not in archived_by_id or sid not in live_by_id
+                    or name_key(str(archived_by_id[sid]["horse_name"])) !=
+                    name_key(str(live_by_id[sid]["horse_name"]))
+                    or bool(archived_by_id[sid]["scratched"]) !=
+                    bool(live_by_id[sid]["scratched"])
+                )
+            ]
             matches_archive = (
                 len(live_by_id) == len(archived_by_id)
                 and set(live_by_id) == set(archived_by_id)
@@ -223,7 +291,10 @@ def enrich_imported(
                 reasons.append("CROSS_PROVIDER_MATCH_PROVISIONAL_NOT_PERMANENT_HORSE_ID")
             reasons.append("INDEPENDENT_SCRATCH_CORROBORATION_NOT_ATTESTED")
             reasons.append("PERMANENT_HORSE_ID_UNATTESTED")
-            reasons.append("ORIGINAL_LIVE_RESPONSES_NOT_ARCHIVED")
+            if capture is None or not capture.receipts:
+                reasons.append("ORIGINAL_LIVE_RESPONSES_NOT_ARCHIVED")
+            else:
+                reasons.append("ORIGINALS_ARCHIVED_PILOT_ONLY_NOT_PERMANENT_PIT")
         record["reasons"] = sorted(set(reasons))
         record["status"] = "RESEARCH_ENRICHMENT_ATTEMPTED" if record["fetch_started_at_utc"] else "NOT_FETCHED"
         # Persist a diagnostic receipt for attempted live fetches, never a model
@@ -244,6 +315,10 @@ def enrich_imported(
             int(r["provisional_cross_provider_identity_matches"]) for r in records
         ),
         "permanent_horse_ids_attested": 0,
+        "original_responses_readback": sum(int(r["original_readback_passed"]) for r in records),
+        "identity_candidate_rows": sum(int(r["identity_candidates"]) for r in records),
+        "identity_unattested_rows": sum(int(r["identity_unattested"]) for r in records),
+        "identity_rejected_rows": sum(int(r["identity_rejected"]) for r in records),
         "rikstoto_registration_candidates_observed": sum(
             int(r["rikstoto_registration_candidates_observed"]) for r in records
         ),
