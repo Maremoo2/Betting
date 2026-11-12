@@ -98,6 +98,7 @@ jobs:
           HBI_DB_PATH: cloud-run003/hbi.sqlite
           HBI_RUN_MODE: DYNAMIC_COLLECTOR_RESEARCH
           HBI_COLLECTOR_MODEL_PREFLIGHT: "1"
+          HBI_COLLECTOR_FUNDAMENTAL_ENRICH: "1"
           HBI_RUN_AUDIT_PATH: cloud-run003/first.json
         run: python -m hbi.scheduled_run
       - name: Same source, second run and SQLite idempotence / model hardgate
@@ -105,6 +106,7 @@ jobs:
           HBI_DB_PATH: cloud-run003/hbi.sqlite
           HBI_RUN_MODE: DYNAMIC_COLLECTOR_RESEARCH
           HBI_COLLECTOR_MODEL_PREFLIGHT: "1"
+          HBI_COLLECTOR_FUNDAMENTAL_ENRICH: "0"
           HBI_RUN_AUDIT_PATH: cloud-run003/second.json
         run: |
           set -euo pipefail
@@ -127,7 +129,11 @@ jobs:
               before[name]=conn.execute(f"SELECT COUNT(*) FROM {name}").fetchone()[0]
           assert before["races"]==a["race_cards"],before
           assert before["runners"]==a["collector_report"]["observed_runners"], before
-          assert before["provider_payloads"]==a["race_cards"],before
+          assert before["provider_payloads"]>=a["race_cards"],before
+          assert a["collector_enrichment_report"] is not None
+          assert b["collector_enrichment_report"] is None
+          assert a["collector_enrichment_report"]["races_considered"]==a["race_cards"]
+          assert b["collector_report"]["records"]==a["collector_report"]["records"]
           assert before["shadow_tickets"]==0
           assert conn.execute("PRAGMA integrity_check").fetchone()[0]=="ok"
           conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
@@ -139,6 +145,15 @@ jobs:
              "source_readback":json.loads((root/"archive-receipt.json").read_text()),
              "races_imported":a["race_cards"],"runners_imported":before["runners"],
              "source_ready":a["source_ready_races"],
+             "live_enrichment_attempts":a["collector_enrichment_report"]["live_fetch_attempts"],
+             "live_fundamental_rows":a["collector_enrichment_report"]["actual_live_fundamental_snapshots"],
+             "provisional_cross_provider_matches":a["collector_enrichment_report"]["provisional_cross_provider_identity_matches"],
+             "permanent_identity_attested":a["collector_enrichment_report"]["permanent_horse_ids_attested"],
+             "qualified_history_rows":a["collector_enrichment_report"]["qualified_fundamental_history_rows"],
+             "candidate_history_rows":a["collector_enrichment_report"]["candidate_history_rows"],
+             "full_field_evidence_races":a["collector_enrichment_report"]["full_field_evidence_races"],
+             "enrichment_reasons":{code:sum(code in rec["reasons"] for rec in a["collector_enrichment_report"]["records"])
+                 for code in sorted({reason for rec in a["collector_enrichment_report"]["records"] for reason in rec["reasons"]})},
              "model_input_complete":a["collector_model_report"]["model_input_complete"],
              "p_win_computed":a["collector_model_report"]["p_win_computed"],
              "reject_reasons":a["collector_model_report"]["model_reject_reasons"],
@@ -147,6 +162,8 @@ jobs:
           (root/"summary.json").write_text(json.dumps(report,sort_keys=True,indent=2))
           print("CLOUD_RUN003_IMPORT_AND_MODEL_GATE_COMPLETE",json.dumps({
               k:report[k] for k in ("races_imported","runners_imported","source_ready",
+                                   "live_enrichment_attempts","live_fundamental_rows",
+                                   "candidate_history_rows","provisional_cross_provider_matches",
                                    "model_input_complete","p_win_computed","reject_reasons")}))
           PY
       - uses: actions/upload-artifact@v4
