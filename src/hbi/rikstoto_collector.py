@@ -192,6 +192,19 @@ class RikstotoCollector:
         if not fetch.success:
             return 0
 
+        # WIN prices must never be backdated to request initiation. A provider
+        # timestamp is metadata, not the time our HTTP response became available.
+        # Legacy/mocked clients without completion clocks are conservatively
+        # stamped at processing time, never with the request-start clock.
+        snapshot_at = observed_at
+        if product == "V":
+            completed = fetch.response_completed_at or self.clock()
+            if completed.tzinfo is None or completed.utcoffset() is None:
+                raise ValueError("WIN_RESPONSE_COMPLETION_CLOCK_NAIVE")
+            if observed_at.tzinfo is None or observed_at.utcoffset() is None:
+                raise ValueError("WIN_REQUEST_CLOCK_NAIVE")
+            snapshot_at = max(observed_at, completed.astimezone(observed_at.tzinfo))
+
         inserted = 0
         for item in self.client.result_list(fetch):
             selection_key = self._selection_key(product, item)
@@ -200,7 +213,7 @@ class RikstotoCollector:
             provider_updated_at = self._provider_updated_at(self.client, item)
             digest = hashlib.sha256(
                 (
-                    f"{race_id}|{product}|{selection_key}|{observed_at.isoformat()}|"
+                    f"{race_id}|{product}|{selection_key}|{snapshot_at.isoformat()}|"
                     f"{json.dumps(item, sort_keys=True)}"
                 ).encode()
             ).hexdigest()
@@ -213,7 +226,7 @@ class RikstotoCollector:
                 race_id=race_id,
                 product=product,
                 selection_key=selection_key,
-                observed_at=observed_at,
+                observed_at=snapshot_at,
                 provider_updated_at=provider_updated_at,
                 source_uri=fetch.url,
                 odds_decimal=None if odds is None else float(odds),
@@ -229,7 +242,7 @@ class RikstotoCollector:
                         MarketSnapshot(
                             race_id=race_id,
                             selection_id=selection_key,
-                            captured_at=observed_at,
+                            captured_at=snapshot_at,
                             odds_decimal=float(odds),
                             market_regime="RIKSTOTO_TOTE",
                             information_cutoff_phase="LIVE",
