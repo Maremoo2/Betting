@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import time
 import unicodedata
@@ -19,6 +20,8 @@ class AtgFetchResult:
     status_code: int | None
     latency_ms: float
     error: str | None = None
+    response_body_sha256: str | None = None
+    response_completed_at: datetime | None = None
 
 
 @dataclass(frozen=True)
@@ -61,13 +64,17 @@ class AtgClient:
         started = time.perf_counter()
         try:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:
-                payload = json.loads(response.read().decode("utf-8"))
+                original_bytes = response.read()
+                response_completed = datetime.now(UTC)
+                payload = json.loads(original_bytes.decode("utf-8"))
                 return AtgFetchResult(
                     url=url,
                     payload=payload,
                     success=True,
                     status_code=response.status,
                     latency_ms=(time.perf_counter() - started) * 1000,
+                    response_body_sha256=hashlib.sha256(original_bytes).hexdigest(),
+                    response_completed_at=response_completed,
                 )
         except (
             urllib.error.HTTPError,
