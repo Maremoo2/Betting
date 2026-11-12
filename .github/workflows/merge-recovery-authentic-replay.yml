@@ -46,6 +46,31 @@ jobs:
             --state merge-recovery/source.sqlite \
             --report merge-recovery/source-report.json \
             --expected-original-sha256 23871090f75ded32829fbc239ca6f1bae8be7d5784cc0f67c650a9aaeef639f3
+      - name: Join genuine source horse registration numbers to canonical HBI
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from hbi.cloud_run006_registry import reconcile_from_original
+          from hbi.storage import SQLiteStore
+          source=Path("collector-input/release-assets/rikstoto-2026-11-12-20261112T062004681934Z.zip")
+          summary=reconcile_from_original(
+              SQLiteStore("merge-recovery/source.sqlite"),
+              source, Path(str(source)+".sha256")
+          )
+          assert summary["observed_real_horses"]==321,summary
+          assert summary["independently_attested"]==0 and summary["pit_certified"] is False
+          path=Path("merge-recovery/source-report.json")
+          report=json.loads(path.read_text())
+          report["registry_candidate_reconciliation"]=summary
+          path.write_text(json.dumps(report,sort_keys=True,indent=2)+"\n")
+          print("REAL_REGISTRY_CANDIDATE_SCAN",json.dumps({
+              k:summary[k] for k in ("observed_real_horses",
+                 "registry_lookup_candidates","temporary_or_invalid",
+                 "conflicts","independently_attested")
+          }))
+          PY
       - name: Authenticated state checksum and immutable run manifest
         run: |
           set -euo pipefail
@@ -100,13 +125,15 @@ jobs:
           cx=sqlite3.connect(f"file:{db.absolute()}?mode=ro",uri=True)
           assert cx.execute("PRAGMA integrity_check").fetchone()[0]=="ok"
           assert not cx.execute("PRAGMA foreign_key_check").fetchall()
-          for table,count in (("races",30),("runners",321),("provider_payloads",30),
+          for table,count in (("races",30),("runners",321),("provider_payloads",351),
                               ("predictions",0),("shadow_tickets",0)):
               assert cx.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]==count
           for rid,n in report["race_field_counts"].items():
               assert cx.execute("SELECT COUNT(*) FROM runners WHERE race_id=?",
                                 (rid,)).fetchone()[0]==n
           assert report["full_field_counts_validated_against_original_pdf_and_starts"]
+          assert report["registry_candidate_reconciliation"]["observed_real_horses"]==321
+          assert report["registry_candidate_reconciliation"]["independently_attested"]==0
           assert report["model_admission_rejected_retrospective"]
           assert report["historical_original_2026_11_02_recovered"] is False
           assert report["p_win_calculated"]==0 and report["pit_certified"] is False
