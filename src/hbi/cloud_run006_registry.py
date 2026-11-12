@@ -51,7 +51,7 @@ def reconcile_from_original(
             raw_sha = hashlib.sha256(raw).hexdigest()
             result = json.loads(raw).get("result")
             if not isinstance(result, dict):
-                raise ValueError("REGISTRY_ORIGINAL_STARTS_SCHEMA_INVALID")
+                raise TypeError("REGISTRY_ORIGINAL_STARTS_SCHEMA_INVALID")
             for number, entrants in result.items():
                 if not number.isdecimal() or not isinstance(entrants, list):
                     raise ValueError("REGISTRY_ORIGINAL_RACE_FIELD_INVALID")
