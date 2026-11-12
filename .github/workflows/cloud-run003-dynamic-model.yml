@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - "src/hbi/cloud_run003_*"
+      - "src/hbi/cloud_run004_enrichment.py"
+      - "src/hbi/rikstoto_collector.py"
+      - "src/hbi/providers/atg.py"
       - "src/hbi/scheduled_run.py"
       - ".github/workflows/cloud-run003-dynamic-model.yml"
       - "tests/test_cloud_run003_*"
