@@ -290,8 +290,9 @@ class RikstotoCollector:
         race_id: str,
         observed_at: datetime,
         products: list[str] | None = None,
+        persist_canonical_roster: bool = True,
     ) -> tuple[int, bool, str | None]:
-        """Capture canonical field; enrich only an entirely verified pre-race cohort."""
+        """Enrich a verified cohort; optional research mode preserves archived roster."""
         del products  # availability no longer determines the fundamental source
 
         collection_started_at = self.clock()
@@ -490,17 +491,18 @@ class RikstotoCollector:
             )
             source_uri = atg_source or starts_fetch.url
 
-            self.store.upsert_runner(
-                {
-                    "race_id": race_id,
+            if persist_canonical_roster:
+                self.store.upsert_runner(
+                    {
+                        "race_id": race_id,
                     "selection_id": selection_id,
                     "horse_name": horse_name,
                     "post_position": start_number,
                     "driver_or_jockey": driver_name,
                     "trainer": trainer_name,
-                    "scratched": int(is_scratched),
-                }
-            )
+                        "scratched": int(is_scratched),
+                    }
+                )
 
             sanitized = {
                 "capability_contract": CONTRACT,
