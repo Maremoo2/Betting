@@ -1,0 +1,135 @@
+name: CLOUD-RUN-005 LIVE-RACE-001 bounded real pre-race originals (NO BET)
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - "src/hbi/cloud_run005_*"
+      - "src/hbi/cloud_run004_enrichment.py"
+      - "src/hbi/providers/rikstoto.py"
+      - "src/hbi/providers/atg.py"
+      - ".github/workflows/cloud-run005-live-race.yml"
+  workflow_dispatch:
+    inputs:
+      max_races:
+        description: "Upper bound on live genuine Sørlandet/Bollnäs races"
+        required: false
+        default: "20"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloud-run005-live-research-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  genuine-live:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.ref == 'research/cloud-run005-live-originals-20261112'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing frozen HBI research dependencies
+        run: python -m pip install -e ".[dev]"
+      - name: Pre-start actual Rikstoto discovery → original bytes → HBI → identity → Champion gate
+        env:
+          MAX_RACES: ${{ inputs.max_races || '20' }}
+        run: |
+          set -euo pipefail
+          mkdir -p cloud-run005
+          python -m hbi.cloud_run005_live \
+            --db cloud-run005/research.sqlite \
+            --originals cloud-run005/private-originals \
+            --report cloud-run005/live-report.json \
+            --max-races "$MAX_RACES"
+      - name: Reopen and check original files against SQLite hashes, no raw output
+        if: success()
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,sqlite3
+          from pathlib import Path
+          from hbi.cloud_run005_originals import verify_all,verify_original
+          root=Path('cloud-run005/private-originals')
+          stats=verify_all(root)
+          db=sqlite3.connect('cloud-run005/research.sqlite')
+          db.row_factory=sqlite3.Row
+          count=0
+          for f in (root/'receipts').glob('*.json'):
+              receipt=verify_original(root,f.stem)
+              rows=db.execute('SELECT payload_json FROM provider_payloads WHERE payload_id=?',(f.stem,)).fetchall()
+              assert len(rows)==1
+              stored=json.loads(rows[0]['payload_json'])
+              assert stored==receipt
+              count+=1
+          assert count>0 and count==stats['receipts']
+          assert db.execute('PRAGMA integrity_check').fetchone()[0]=='ok'
+          db.close()
+          print(json.dumps({'status':stats['status'],'original_receipts':count,
+                            'unique_original_bodies':stats['unique_originals'],
+                            'sqlite_provenance_verified':True,'pit_certified':False,
+                            'bet_authorized':False}))
+          PY
+      - name: Preserve diagnostic counts only (no raw responses, no full SQLite)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-run005-diagnostic-${{ github.run_id }}
+          path: cloud-run005/live-report.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Optional explicitly licensed scratch-only original export
+        if: success() && vars.CLOUD_RUN005_SCRATCH_REDISTRIBUTION_APPROVED == 'true'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from hbi.cloud_run005_originals import export_public_scratch_only
+          result=export_public_scratch_only(
+              Path('cloud-run005/private-originals'),
+              Path('cloud-run005/classified-scratch')
+          )
+          print(json.dumps(result))
+          PY
+      - name: Bounded original scratch export, only after explicit provider-rights approval
+        if: success() && vars.CLOUD_RUN005_SCRATCH_REDISTRIBUTION_APPROVED == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-run005-numeric-scratch-originals
+          path: cloud-run005/classified-scratch
+          if-no-files-found: error
+          retention-days: 1
+
+  independent-original-readback:
+    needs: genuine-live
+    if: vars.CLOUD_RUN005_SCRATCH_REDISTRIBUTION_APPROVED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e .
+      - uses: actions/download-artifact@v4
+        with:
+          name: cloud-run005-numeric-scratch-originals
+          path: restored
+      - name: Independent restored runner original response hash readback
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from hbi.cloud_run005_originals import verify_all
+          root=Path('restored')
+          if not (root/'receipts').exists():
+              root=Path('restored/classified-scratch')
+          result=verify_all(root)
+          assert result['receipts']>=1
+          assert result['pit_certified'] is False
+          print(json.dumps(result))
+          PY
