@@ -226,3 +226,62 @@ def verify_all(root: Path) -> dict[str, object]:
         "pit_certified": False, "bet_authorized": False,
         "permanent_external_retention": False,
     }
+
+
+def export_public_scratch_only(root: Path, dest: Path) -> dict[str, object]:
+    """Export ONLY name-free numeric Rikstoto scratch lists, never ATG/starts data.
+
+    This function checks contents, not provider licensing. Caller must separately
+    authorize artifact distribution. A raw full response containing any unrelated
+    field or PII is rejected. Private full original directory remains untouched.
+    """
+    root = Path(root)
+    dest = Path(dest)
+    selected: list[tuple[Path, bytes, Path, bytes]] = []
+    for path in sorted((root / "receipts").glob("*.json")):
+        receipt = verify_original(root, path.stem)
+        if receipt["provider"] != "rikstoto" or receipt["source_type"] != "SCRATCHED":
+            continue
+        blob = root / str(receipt["archive_blob_relative"])
+        body = blob.read_bytes()
+        data = json.loads(body)
+        if (not isinstance(data, dict)
+                or set(data) - {"success", "result"} or data.get("success") is not True
+                or not isinstance(data.get("result"), dict)
+                or any(
+                    not isinstance(key, str) or not key.isdigit()
+                    or not isinstance(values, list)
+                    or any(type(value) is not int or value < 1 for value in values)
+                    for key, values in data["result"].items()
+                )):
+            raise ValueError("PUBLIC_SCRATCH_CONTENT_NOT_CLASSIFIED")
+        selected.append((path, path.read_bytes(), blob, body))
+    if not selected:
+        raise ValueError("PUBLIC_SCRATCH_ORIGINAL_NOT_AVAILABLE")
+    _directory(dest)
+    _directory(dest / "receipts")
+    _directory(dest / "sha256")
+    for path, receipt_bytes, blob, body in selected:
+        receipt = json.loads(receipt_bytes)
+        target_dir = dest / "sha256" / str(receipt["body_sha256"])[:2]
+        _directory(target_dir)
+        for target, original in (
+            (dest / "receipts" / path.name, receipt_bytes),
+            (target_dir / blob.name, body),
+        ):
+            if not target.exists():
+                try:
+                    _write_once(target, original)
+                except FileExistsError:
+                    pass
+            if target.is_symlink() or target.read_bytes() != original:
+                raise ValueError("PUBLIC_SCRATCH_EXPORT_CONFLICT")
+    result = verify_all(dest)
+    return {
+        "classification": "ONLY_PUBLIC_RIKSTOTO_NUMERIC_SCRATCH_STATUS",
+        "exported_receipts": result["receipts"],
+        "unique_originals": result["unique_originals"],
+        "atg_originals_exported": 0, "starts_originals_exported": 0,
+        "provider_redistribution_permission_attested": False,
+        "bet_authorized": False, "pit_certified": False,
+    }
