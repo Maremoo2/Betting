@@ -12,6 +12,7 @@ import re
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 
+from .collector_handoff import name_key
 from .fundamental import MarketFreeFundamentalChampionV1
 from .rikstoto_collector import RikstotoCollector
 from .storage import SQLiteStore
@@ -104,7 +105,9 @@ def enrich_imported(
             "validated_history_rows": 0,
             "candidate_history_rows": 0,
             "full_field_evidence_passed": False,
-            "independent_scratch_receipt_sha256": None,
+            "fresh_rikstoto_scratch_response_sha256": None,
+            "live_field_matches_archive": False,
+            "rikstoto_registration_candidates_observed": 0,
             "source_receipts": {},
             "model_ready": False, "bet_ready": False, "pit_certified": False,
             "reasons": [],
@@ -142,17 +145,44 @@ def enrich_imported(
             }
             record["source_receipts"] = receipts
             scratch = receipts.get("SCRATCHED", {})
-            record["independent_scratch_receipt_sha256"] = (
+            record["fresh_rikstoto_scratch_response_sha256"] = (
                 scratch.get("body_sha256") if scratch.get("source_status") == "HTTP_SUCCESS"
                 else None
             )
             if (not success or receipts.get("STARTS", {}).get("source_status") != "HTTP_SUCCESS"):
                 reasons.append("LIVE_RIKSTOTO_STARTS_UNAVAILABLE")
-            if record["independent_scratch_receipt_sha256"] is None:
+            if record["fresh_rikstoto_scratch_response_sha256"] is None:
                 reasons.append("FRESH_SCRATCH_RESPONSE_NOT_VERIFIED")
             if finished >= start:
                 reasons.append("LIVE_ENRICHMENT_FINISHED_AFTER_START")
-            passed = isinstance(evidence, dict) and evidence.get("passed") is True
+            # Archived roster stays immutable. Any new scratch or identity change
+            # must be documented, not silently substituted for the original.
+            rows = store.latest_runner_fundamentals(race_id, before=finished)
+            with store.connect() as db:
+                archived = [dict(row) for row in db.execute(
+                    "SELECT selection_id,horse_name,scratched FROM runners WHERE race_id=?",
+                    (race_id,),
+                )]
+            archived_by_id = {str(row["selection_id"]): row for row in archived}
+            live_by_id = {
+                str(row["selection_id"]): row for row in rows
+                if observed <= datetime.fromisoformat(str(row["observed_at_utc"])) <= finished
+            }
+            matches_archive = (
+                len(live_by_id) == len(archived_by_id)
+                and set(live_by_id) == set(archived_by_id)
+                and all(
+                    name_key(str(row["horse_name"])) ==
+                    name_key(str(archived_by_id[sid]["horse_name"]))
+                    and bool(row["scratched"]) == bool(archived_by_id[sid]["scratched"])
+                    for sid, row in live_by_id.items()
+                )
+            )
+            record["live_field_matches_archive"] = matches_archive
+            if not matches_archive:
+                reasons.append("ARCHIVED_VS_LIVE_ROSTER_OR_SCRATCH_CONFLICT")
+            passed = (isinstance(evidence, dict) and evidence.get("passed") is True
+                      and matches_archive)
             record["full_field_evidence_passed"] = bool(passed)
             if not passed:
                 for why in (evidence.get("reasons", []) if isinstance(evidence, dict) else []):
@@ -167,10 +197,20 @@ def enrich_imported(
                     and row.get("provider_horse_id") is not None
                     for row in identity_rows
                 )
-            rows = store.latest_runner_fundamentals(race_id, before=finished)
             for row in rows:
+                try:
+                    raw_feature = json.loads(row.get("raw_json") or "{}")
+                except (TypeError, json.JSONDecodeError):
+                    raw_feature = {}
+                registration = (raw_feature.get("rikstoto", {}).get("horseRegistrationNumber")
+                                if isinstance(raw_feature, dict)
+                                and isinstance(raw_feature.get("rikstoto"), dict) else None)
+                if isinstance(registration, str) and registration.strip():
+                    record["rikstoto_registration_candidates_observed"] = (
+                        int(record["rikstoto_registration_candidates_observed"]) + 1
+                    )
                 starts_wins = champion._history(row)
-                if (not row.get("scratched") and starts_wins is not None
+                if (passed and not row.get("scratched") and starts_wins is not None
                         and row.get("data_quality") == "FULL_FIELD_HISTORY_ATG"
                         and row.get("full_field_history_complete") == 1
                         and datetime.fromisoformat(str(row["feature_as_of_utc"])) < start):
@@ -181,8 +221,7 @@ def enrich_imported(
                 reasons.append("ATG_HISTORY_ORIGINAL_BYTES_AND_IDENTITY_UNATTESTED")
             if record["provisional_cross_provider_identity_matches"]:
                 reasons.append("CROSS_PROVIDER_MATCH_PROVISIONAL_NOT_PERMANENT_HORSE_ID")
-            if not record["independent_scratch_receipt_sha256"]:
-                reasons.append("INDEPENDENT_SCRATCH_STATE_MISSING")
+            reasons.append("INDEPENDENT_SCRATCH_CORROBORATION_NOT_ATTESTED")
             reasons.append("PERMANENT_HORSE_ID_UNATTESTED")
             reasons.append("ORIGINAL_LIVE_RESPONSES_NOT_ARCHIVED")
         record["reasons"] = sorted(set(reasons))
@@ -205,6 +244,10 @@ def enrich_imported(
             int(r["provisional_cross_provider_identity_matches"]) for r in records
         ),
         "permanent_horse_ids_attested": 0,
+        "rikstoto_registration_candidates_observed": sum(
+            int(r["rikstoto_registration_candidates_observed"]) for r in records
+        ),
+        "archive_live_roster_matches": sum(bool(r["live_field_matches_archive"]) for r in records),
         "qualified_fundamental_history_rows": 0,
         "candidate_history_rows": sum(int(r["candidate_history_rows"]) for r in records),
         "full_field_evidence_races": sum(bool(r["full_field_evidence_passed"]) for r in records),
