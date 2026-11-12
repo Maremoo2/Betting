@@ -149,6 +149,8 @@ jobs:
              "live_fundamental_rows":a["collector_enrichment_report"]["actual_live_fundamental_snapshots"],
              "provisional_cross_provider_matches":a["collector_enrichment_report"]["provisional_cross_provider_identity_matches"],
              "permanent_identity_attested":a["collector_enrichment_report"]["permanent_horse_ids_attested"],
+             "source_registration_candidates":a["collector_enrichment_report"]["rikstoto_registration_candidates_observed"],
+             "archive_live_roster_matches":a["collector_enrichment_report"]["archive_live_roster_matches"],
              "qualified_history_rows":a["collector_enrichment_report"]["qualified_fundamental_history_rows"],
              "candidate_history_rows":a["collector_enrichment_report"]["candidate_history_rows"],
              "full_field_evidence_races":a["collector_enrichment_report"]["full_field_evidence_races"],
