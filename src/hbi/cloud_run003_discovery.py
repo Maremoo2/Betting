@@ -41,7 +41,7 @@ def resolve_daily_run(
                 or row["databaseId"] < 1):
             continue
         try:
-            created = datetime.fromisoformat(str(row["createdAt"]).replace("Z", "+00:00"))
+            created = datetime.fromisoformat(str(row["createdAt"]))
         except ValueError:
             continue
         if created.tzinfo is None or created.utcoffset() is None:
