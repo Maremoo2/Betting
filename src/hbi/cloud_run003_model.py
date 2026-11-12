@@ -51,6 +51,8 @@ def assess_and_run(
             reasons.append("MODEL_COMPUTATION_NOT_BEFORE_RACE_START")
         if set(by_selection) != expected:
             reasons.append("FULL_FIELD_FUNDAMENTAL_COHORT_MISSING")
+        if any(selection not in by_selection for selection in expected):
+            reasons.append("PERMANENT_HORSE_ID_UNATTESTED")
         gate = full_field_gate(store, race_id, snaps, moment)
         if gate is not None:
             reasons.append(gate)
