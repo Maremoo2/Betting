@@ -221,7 +221,10 @@ def render_daily(args, archive, stage, output, config):
     client = RikstotoClient()
     attachments = []
     results = []
-    now = datetime.now(UTC)
+    now = (
+        clock(args[args.index("--report-at") + 1])
+        if "result_versions" in config else datetime.now(UTC)
+    )
     for race in day["races"]:
         start = clock(race["start"])
         calendar_only = race.get("calendar_only")

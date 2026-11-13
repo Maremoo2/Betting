@@ -72,3 +72,42 @@ def test_daily_result_capture_includes_started_race_without_model(monkeypatch, t
     assert seen == [race_id]
     assert summary["results"][0]["status"] == "LINKED"
     assert summary["model_freezes"] == summary["scored"] == 0
+
+def test_offline_daily_replay_uses_pinned_result_and_no_provider_calls(monkeypatch, tmp_path):
+    import json
+    from pathlib import Path
+
+    from hbi import hq_acceptance as acceptance
+    from hbi import hq_daily_report
+
+    rid = "RIKSTOTO:S2_NR_2026-11-13:1"
+    result_bytes = b"saved result fixture"
+    version = acceptance.digest(json.dumps(
+        {"fixture": acceptance.digest(result_bytes)}, sort_keys=True,
+    ).encode())
+    archive, stage, output = [tmp_path / label for label in ("archive", "stage", "output")]
+    stage.mkdir()
+    target = archive / "results" / version
+    target.mkdir(parents=True)
+    (target / "fixture").write_bytes(result_bytes)
+    race = {"race_id": rid, "start": "2026-11-13T18:00:00+00:00",
+            "analysis": None, "active": 4, "official": None}
+
+    def render(command, **_):
+        destination = Path(command[-1])
+        destination.mkdir(exist_ok=True)
+        (destination / "betting-hq.json").write_text(json.dumps({"races": [race]}))
+
+    def unexpected(*_):
+        pytest.fail("Offline replay must not fetch a live result")
+
+    monkeypatch.setattr(acceptance.subprocess, "run", render)
+    monkeypatch.setattr(acceptance, "capture_result", unexpected)
+    monkeypatch.setattr(hq_daily_report, "official_observation", lambda *args: None)
+    config = {"runs": [], "gaps": [], "result_versions": {rid: version}}
+    args = ["--report-at", "2026-11-13T18:01:00+00:00"]
+    summary = acceptance.render_daily(args, archive, stage, output, config)
+    assert summary["results"] == [{"race_id": rid, "status": "LINKED", "result_version_sha256": version}]
+    (target / "fixture").write_bytes(b"corrupt")
+    with pytest.raises(ValueError, match="Archived result version SHA mismatch"):
+        acceptance.render_daily(args, archive, stage, output, config)

@@ -147,7 +147,21 @@ def main():
     config = inventory(args.date, archive)
     snapshot = json.dumps(config, indent=2, sort_keys=True).encode()
     _put_once(archive / f"day-{digest(snapshot)}.json", snapshot)
-    run(config, archive, args.stage.resolve(), args.output.resolve())
+    output = args.output.resolve()
+    report = run(config, archive, args.stage.resolve(), output)
+    rendered = json.loads((output / "betting-hq.json").read_bytes())
+    at = config["args"].index("--report-at") + 1
+    config["args"][at] = rendered["report_at"]
+    config["result_versions"] = {
+        row["race_id"]: row["result_version_sha256"]
+        for row in report["results"] if row["status"] == "LINKED"
+    }
+    calendar = report.get("calendar_reconciliation") or {}
+    config["compare_atg_calendar"] = False
+    if calendar.get("status") == "VERIFIED_BYTES":
+        config["atg_calendar_sha256"] = calendar["sha256"]
+    replay = json.dumps(config, indent=2, sort_keys=True).encode()
+    _put_once(archive / f"day-replay-{digest(replay)}.json", replay)
 
 
 if __name__ == "__main__":
