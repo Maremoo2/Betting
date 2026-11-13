@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from hbi import admission_originals
+from hbi.cloud_run002_import import CATEGORY
 from hbi.cloud_run003_model import IndependentScratchEvidence, assess_and_run
 from hbi.horse_identity import AttestedHorseIdentity, ModelIdentityEvidence
 from hbi.provider_capability import CONTRACT
@@ -18,7 +19,7 @@ RACE = "RIKSTOTO:S1_NR_2026-11-12:1"
 NOW = datetime(2026, 11, 12, 12, tzinfo=UTC)
 CAPTURE = NOW - timedelta(minutes=1)
 START = NOW + timedelta(minutes=5)
-SOURCE = [{"race_id": RACE, "source_ready": True}]
+SOURCE = [{"race_id": RACE, "source_ready": True, "payload_id": "collector-test"}]
 
 
 @pytest.fixture
@@ -44,6 +45,12 @@ def cohort(tmp_path, monkeypatch):
             "INSERT INTO provider_payloads (payload_id,provider,category,provider_raceday_key,"
             "observed_at_utc,source_uri,payload_json) VALUES (?,?,?,?,?,?,?)",
             ("test-only", "ATG", CONTRACT, RACE, CAPTURE.isoformat(), "https://atg.se/test", dumps(payload)),
+        )
+        db.execute(
+            "INSERT INTO provider_payloads (payload_id,provider,category,provider_raceday_key,"
+            "race_number,observed_at_utc,source_uri,payload_json) VALUES (?,?,?,?,?,?,?,?)",
+            ("collector-test", "collector", CATEGORY, "S1_NR_2026-11-12", 1,
+             CAPTURE.isoformat(), "https://collector.example/test", "{}"),
         )
     proofs = []
     pins = set()
