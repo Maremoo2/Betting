@@ -537,6 +537,34 @@ jobs:
             echo "::error::DEV009_CUMULATIVE_SCORECARD_SKIPPED_SOURCE_UNAVAILABLE"
           fi
 
+      - name: Export research ledger from current and archived originals (NO BET)
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dev009-outcome-scorecards research-ledger
+          args=()
+          if [ -f dev009-outcome-scorecards/index.json ]; then
+            args+=(--index-sha "$(sha256sum dev009-outcome-scorecards/index.json | cut -d' ' -f1)")
+          fi
+          python -m hbi.research_ledger \
+            --originals dev011-scorecard-models \
+            --scorecard dev009-outcome-scorecards "${args[@]}" \
+            --source-report core003-pilot-report.json \
+            --current-cohort bet-mvp-shadow \
+            --collector-handoff collector-handoff.json \
+            --output research-ledger/index.json
+
+      - name: Upload research ledger (NO BET)
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-ledger-${{ github.run_id }}
+          path: research-ledger/index.json
+          if-no-files-found: ignore
+          retention-days: 21
+
       # Join existing original source/model/coverage/scorecard artifacts. This
       # research sidecar can fail without rewriting or blocking CORE-003 state.
       # Its own outcome remains explicit in GitHub step logs and artifact.
