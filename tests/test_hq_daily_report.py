@@ -33,3 +33,10 @@ def test_blocked_model_and_missing_data_render_without_fabrication():
     assert "Programmet og den registrerte starttiden avviker." in text
     assert "COLLECTOR_PDF_START_CLOCK_CONFLICT" not in text
     assert "&lt;Track&gt;" in html and "<Track>" not in html
+
+def test_oslo_time_keeps_seconds_and_handles_dst():
+    from hbi.hq_daily_report import clock_label
+
+    assert clock_label("2026-11-13T11:29:30+00:00") == "13.11.2026 12:29:30"
+    assert clock_label("2026-07-13T11:29:30+00:00") == "13.07.2026 13:29:30"
+    assert clock_label("2026-11-13T11:29:30") == "ukjent"

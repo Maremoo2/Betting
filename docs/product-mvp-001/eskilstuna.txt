@@ -1,65 +1,85 @@
 Betting HQ · Eskilstuna · 2026-11-13
-8 løp i rapporten · 1 med modellestimat · 3 med WIN-priser (3 komplette felt) · 7 uten gyldig modell.
-Research / NO BET. 2026-11-13 11:40:08 UTC
+8 løp i rapporten · 1 med modellestimat · 4 med WIN-priser (4 komplette felt) · 7 uten gyldig modell.
+Research / NO BET. Datagrunnlag 13.11.2026 13:45:29 · Europe/Oslo
 BET: 0 autoriserte · 8 ikke-eksekverbare løpsobservasjoner.
-Verifiserte offisielle resultater, shadow-P/L og CLV er utilgjengelige i rapportgrunnlaget.
+Shadow-P/L og CLV er utilgjengelige i rapportgrunnlaget.
 
 Eskilstuna · SE · løp 1
-Planlagt 2026-11-13 11:29:30 UTC · 11 aktive · 0 strøket · Forskningsestimater.
+Planlagt 13.11.2026 12:29:30 · 11 aktive · 0 strøket · Forskningsestimater.
 Planlagt start passert
-Frys 2026-11-13 10:50:29 UTC · {'champion': 'FUNDAMENTAL_CHAMPION_V1_1', 'core004': 'CORE_004_EXPLORATORY_MULTIFACTOR_V0_NOT_FITTED'} · Forskningsestimater, PIT ikke sertifisert.
+Start ved frys 13.11.2026 12:20:00. Opprinnelig T−4 13.11.2026 12:16:00. Senere kalenderverdi gir T−4 13.11.2026 12:25:30. Fryset vurderes mot den opprinnelige fristen.
+Frys 13.11.2026 11:50:29 · {'champion': 'FUNDAMENTAL_CHAMPION_V1_1', 'core004': 'CORE_004_EXPLORATORY_MULTIFACTOR_V0_NOT_FITTED'} · Forskningsestimater, PIT ikke sertifisert.
 Nr | Hest | Champion | CORE-004 | Fair odds | WIN | EV | Vurdering og grunnlag
-1 | Habanos | 9,58% | 9,08% | 10,43 | 47,01 · 2026-11-13 10:50:17 UTC | 350,51% | WATCH · Historikk 2 starter / 0 seire
-2 | Cochran | 12,78% | 11,84% | 7,83 | 15,59 · 2026-11-13 10:50:17 UTC | 99,20% | WATCH · Historikk 0 starter / 0 seire
-3 | I'm a Bad Boy | 10,95% | 11,62% | 9,13 | 3,85 · 2026-11-13 10:50:17 UTC | -57,83% | PASS · Historikk 1 starter / 0 seire
-4 | Campdemar Pellini | 10,95% | 11,45% | 9,13 | 23,74 · 2026-11-13 10:50:17 UTC | 160,01% | WATCH · Historikk 1 starter / 0 seire
-5 | Ithaka | 12,78% | 11,84% | 7,83 | 6,63 · 2026-11-13 10:50:17 UTC | -15,28% | PASS · Historikk 0 starter / 0 seire
-6 | Global Holy Ground | 12,78% | 11,84% | 7,83 | 4,37 · 2026-11-13 10:50:17 UTC | -44,16% | PASS · Historikk 0 starter / 0 seire
-7 | R.K.Jaguar | 7,67% | 9,54% | 13,04 | 4,75 · 2026-11-13 10:50:17 UTC | -63,58% | PASS · Historikk 4 starter / 0 seire
-8 | Pika Håleryd | 6,39% | 9,19% | 15,65 | 14,11 · 2026-11-13 10:50:17 UTC | -9,85% | PASS · Historikk 6 starter / 0 seire
-9 | Photogenique | 5,48% | 4,11% | 18,26 | 62,98 · 2026-11-13 10:50:17 UTC | 244,89% | WATCH · Historikk 8 starter / 0 seire
-10 | Valkyrie d'Inverne | 6,39% | 5,08% | 15,65 | 13,13 · 2026-11-13 10:50:17 UTC | -16,11% | PASS · Historikk 6 starter / 0 seire
-11 | Pompom | 4,26% | 4,42% | 23,48 | 26,59 · 2026-11-13 10:50:17 UTC | 13,25% | WATCH · Historikk 12 starter / 0 seire
+1 | Habanos | 9,58% | 9,08% | 10,43 | 47,01 · 13.11.2026 11:50:17 | 350,51% | WATCH · Historikk 2 starter / 0 seire
+2 | Cochran | 12,78% | 11,84% | 7,83 | 15,59 · 13.11.2026 11:50:17 | 99,20% | WATCH · Historikk 0 starter / 0 seire
+3 | I'm a Bad Boy | 10,95% | 11,62% | 9,13 | 3,85 · 13.11.2026 11:50:17 | -57,83% | PASS · Historikk 1 starter / 0 seire
+4 | Campdemar Pellini | 10,95% | 11,45% | 9,13 | 23,74 · 13.11.2026 11:50:17 | 160,01% | WATCH · Historikk 1 starter / 0 seire
+5 | Ithaka | 12,78% | 11,84% | 7,83 | 6,63 · 13.11.2026 11:50:17 | -15,28% | PASS · Historikk 0 starter / 0 seire
+6 | Global Holy Ground | 12,78% | 11,84% | 7,83 | 4,37 · 13.11.2026 11:50:17 | -44,16% | PASS · Historikk 0 starter / 0 seire
+7 | R.K.Jaguar | 7,67% | 9,54% | 13,04 | 4,75 · 13.11.2026 11:50:17 | -63,58% | PASS · Historikk 4 starter / 0 seire
+8 | Pika Håleryd | 6,39% | 9,19% | 15,65 | 14,11 · 13.11.2026 11:50:17 | -9,85% | PASS · Historikk 6 starter / 0 seire
+9 | Photogenique | 5,48% | 4,11% | 18,26 | 62,98 · 13.11.2026 11:50:17 | 244,89% | WATCH · Historikk 8 starter / 0 seire
+10 | Valkyrie d'Inverne | 6,39% | 5,08% | 15,65 | 13,13 · 13.11.2026 11:50:17 | -16,11% | PASS · Historikk 6 starter / 0 seire
+11 | Pompom | 4,26% | 4,42% | 23,48 | 26,59 · 13.11.2026 11:50:17 | 13,25% | WATCH · Historikk 12 starter / 0 seire
+Resultatkilden oppgir faktisk start 13.11.2026 12:30:28. Vinner 3 I'm a Bad Boy. Strøket i resultatet: Habanos, Pompom. Skåring blokkert fordi det offisielle feltet avviker fra feltet ved frys.
 
 Eskilstuna · SE · løp 2
-Planlagt 2026-11-13 11:55:00 UTC · 12 aktive · 0 strøket · NO VALID MODEL.
+Planlagt 13.11.2026 12:55:00 · 12 aktive · 0 strøket · NO VALID MODEL.
 Planlagt start passert
 Programmet og den registrerte starttiden avviker.
 Nr | Hest | Status | WIN | Observert
-1 | Havanna's Filur | Aktiv | 32,69 | 2026-11-13 11:40:05 UTC
-2 | Gloria Vendil | Aktiv | 4,89 | 2026-11-13 11:40:05 UTC
-3 | Mama Power | Aktiv | 3,11 | 2026-11-13 11:40:05 UTC
-4 | Al's Wonderwoman | Aktiv | 14,46 | 2026-11-13 11:40:05 UTC
-5 | Perfect Copy | Aktiv | 44,24 | 2026-11-13 11:40:05 UTC
-6 | Viserys Targaryen | Aktiv | 33,65 | 2026-11-13 11:40:05 UTC
-7 | Bianca | Aktiv | 15,01 | 2026-11-13 11:40:05 UTC
-8 | Kind of Penny | Aktiv | 27,08 | 2026-11-13 11:40:05 UTC
-9 | Corniglia Doc | Aktiv | 18,72 | 2026-11-13 11:40:05 UTC
-10 | Marvelous Doc | Aktiv | 55,33 | 2026-11-13 11:40:05 UTC
-11 | Keldana K. | Aktiv | 29,09 | 2026-11-13 11:40:05 UTC
-12 | Feliziore | Aktiv | 3,45 | 2026-11-13 11:40:05 UTC
+1 | Havanna's Filur | Aktiv | 32,69 | 13.11.2026 12:40:05
+2 | Gloria Vendil | Aktiv | 4,89 | 13.11.2026 12:40:05
+3 | Mama Power | Aktiv | 3,11 | 13.11.2026 12:40:05
+4 | Al's Wonderwoman | Aktiv | 14,46 | 13.11.2026 12:40:05
+5 | Perfect Copy | Aktiv | 44,24 | 13.11.2026 12:40:05
+6 | Viserys Targaryen | Aktiv | 33,65 | 13.11.2026 12:40:05
+7 | Bianca | Aktiv | 15,01 | 13.11.2026 12:40:05
+8 | Kind of Penny | Aktiv | 27,08 | 13.11.2026 12:40:05
+9 | Corniglia Doc | Aktiv | 18,72 | 13.11.2026 12:40:05
+10 | Marvelous Doc | Aktiv | 55,33 | 13.11.2026 12:40:05
+11 | Keldana K. | Aktiv | 29,09 | 13.11.2026 12:40:05
+12 | Feliziore | Aktiv | 3,45 | 13.11.2026 12:40:05
 
 Eskilstuna · SE · løp 3
-Planlagt 2026-11-13 12:07:00 UTC · 12 aktive · 0 strøket · NO VALID MODEL.
+Planlagt 13.11.2026 13:15:00 · 12 aktive · 0 strøket · NO VALID MODEL.
 Planlagt start passert
 Det importerte feltet samsvarer ikke med programfeltet. Et samlet modellgrunnlag mangler.
 Nr | Hest | Status | WIN | Observert
-1 | Tooma Tooma | Aktiv | 67,88 | 2026-11-13 11:40:05 UTC
-2 | Lady Power Victory | Aktiv | 34,46 | 2026-11-13 11:40:05 UTC
-3 | Who's America | Aktiv | 3,38 | 2026-11-13 11:40:05 UTC
-4 | Pållenallergi | Aktiv | 2,57 | 2026-11-13 11:40:05 UTC
-5 | Cal the Pal | Aktiv | 9,27 | 2026-11-13 11:40:05 UTC
-6 | Frans Avant | Aktiv | 13,09 | 2026-11-13 11:40:05 UTC
-7 | Qul | Aktiv | 69,45 | 2026-11-13 11:40:05 UTC
-8 | Irwin Fas | Aktiv | 22,63 | 2026-11-13 11:40:05 UTC
-9 | Heart Mentality | Aktiv | 43,77 | 2026-11-13 11:40:05 UTC
-10 | Quite Lovely | Aktiv | 22,26 | 2026-11-13 11:40:05 UTC
-11 | Full Disclosure | Aktiv | 60,75 | 2026-11-13 11:40:05 UTC
-12 | In Deference | Aktiv | 8,17 | 2026-11-13 11:40:05 UTC
+1 | Tooma Tooma | Aktiv | 67,88 | 13.11.2026 12:40:05
+2 | Lady Power Victory | Aktiv | 34,46 | 13.11.2026 12:40:05
+3 | Who's America | Aktiv | 3,38 | 13.11.2026 12:40:05
+4 | Pållenallergi | Aktiv | 2,57 | 13.11.2026 12:40:05
+5 | Cal the Pal | Aktiv | 9,27 | 13.11.2026 12:40:05
+6 | Frans Avant | Aktiv | 13,09 | 13.11.2026 12:40:05
+7 | Qul | Aktiv | 69,45 | 13.11.2026 12:40:05
+8 | Irwin Fas | Aktiv | 22,63 | 13.11.2026 12:40:05
+9 | Heart Mentality | Aktiv | 43,77 | 13.11.2026 12:40:05
+10 | Quite Lovely | Aktiv | 22,26 | 13.11.2026 12:40:05
+11 | Full Disclosure | Aktiv | 60,75 | 13.11.2026 12:40:05
+12 | In Deference | Aktiv | 8,17 | 13.11.2026 12:40:05
+
+Eskilstuna · SE · løp 5
+Planlagt 13.11.2026 13:58:00 · 12 aktive · 0 strøket · NO VALID MODEL.
+Kommende etter registrert plan
+Programmet gir ingen verifisert starttid.
+Nr | Hest | Status | WIN | Observert
+1 | Romulus Diablo | Aktiv | 3,10 | 13.11.2026 13:45:21
+2 | Mogas Jeppe | Aktiv | 26,07 | 13.11.2026 13:45:21
+3 | Thor Tooma | Aktiv | 14,64 | 13.11.2026 13:45:21
+4 | Digital Scream | Aktiv | 141,49 | 13.11.2026 13:45:21
+5 | Grey Market | Aktiv | 9,72 | 13.11.2026 13:45:21
+6 | King | Aktiv | 22,93 | 13.11.2026 13:45:21
+7 | My D.X.One | Aktiv | 4,42 | 13.11.2026 13:45:21
+8 | Humble Malt | Aktiv | 40,78 | 13.11.2026 13:45:21
+9 | Osken | Aktiv | 6,62 | 13.11.2026 13:45:21
+10 | Denaro Diabolik | Aktiv | 6,72 | 13.11.2026 13:45:21
+11 | Elton Vendil | Aktiv | 50,43 | 13.11.2026 13:45:21
+12 | Michel | Aktiv | 41,31 | 13.11.2026 13:45:21
 
 Eskilstuna · SE · løp 4
-Planlagt 2026-11-13 12:29:00 UTC · 12 aktive · 0 strøket · NO VALID MODEL.
-Kommende etter registrert plan
+Planlagt 13.11.2026 13:36:00 · 12 aktive · 0 strøket · NO VALID MODEL.
+Planlagt start passert
 Det importerte feltet samsvarer ikke med programfeltet. Et samlet modellgrunnlag mangler.
 Nr | Hest | Status | WIN | Observert
 1 | This is Sparta | Aktiv | – | ukjent
@@ -75,26 +95,8 @@ Nr | Hest | Status | WIN | Observert
 11 | Occhipinti | Aktiv | – | ukjent
 12 | Barbaresco | Aktiv | – | ukjent
 
-Eskilstuna · SE · løp 5
-Planlagt 2026-11-13 12:50:00 UTC · 12 aktive · 0 strøket · NO VALID MODEL.
-Kommende etter registrert plan
-Programmet gir ingen verifisert starttid.
-Nr | Hest | Status | WIN | Observert
-1 | Romulus Diablo | Aktiv | – | ukjent
-2 | Mogas Jeppe | Aktiv | – | ukjent
-3 | Thor Tooma | Aktiv | – | ukjent
-4 | Digital Scream | Aktiv | – | ukjent
-5 | Grey Market | Aktiv | – | ukjent
-6 | King | Aktiv | – | ukjent
-7 | My D.X.One | Aktiv | – | ukjent
-8 | Humble Malt | Aktiv | – | ukjent
-9 | Osken | Aktiv | – | ukjent
-10 | Denaro Diabolik | Aktiv | – | ukjent
-11 | Elton Vendil | Aktiv | – | ukjent
-12 | Michel | Aktiv | – | ukjent
-
 Eskilstuna · SE · løp 6
-Planlagt 2026-11-13 13:10:00 UTC · 12 aktive · 0 strøket · NO VALID MODEL.
+Planlagt 13.11.2026 14:18:00 · 12 aktive · 0 strøket · NO VALID MODEL.
 Kommende etter registrert plan
 Løpet kan ikke identifiseres entydig i programmet.
 Nr | Hest | Status | WIN | Observert
@@ -112,9 +114,9 @@ Nr | Hest | Status | WIN | Observert
 12 | Scandalous Zon | Aktiv | – | ukjent
 
 Eskilstuna · SE · løp 7
-Planlagt 2026-11-13 13:30:00 UTC · 15 aktive · 0 strøket · NO VALID MODEL.
+Planlagt 13.11.2026 14:38:00 · 15 aktive · 0 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Programmet og den registrerte starttiden avviker.
 Nr | Hest | Status | WIN | Observert
 1 | Panne de Mi B.T.B. | Aktiv | – | ukjent
 2 | Timotejs Obelix | Aktiv | – | ukjent
@@ -133,9 +135,9 @@ Nr | Hest | Status | WIN | Observert
 15 | Steady Countess | Aktiv | – | ukjent
 
 Eskilstuna · SE · løp 8
-Planlagt 2026-11-13 13:49:00 UTC · 12 aktive · 0 strøket · NO VALID MODEL.
+Planlagt 13.11.2026 14:58:00 · 12 aktive · 0 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Programmet og den registrerte starttiden avviker.
 Nr | Hest | Status | WIN | Observert
 1 | Jar Jar Binks | Aktiv | – | ukjent
 2 | Dream From Above | Aktiv | – | ukjent
@@ -151,5 +153,5 @@ Nr | Hest | Status | WIN | Observert
 12 | Do You Wanna Dance | Aktiv | – | ukjent
 
 Originale Actions-artefakter
-https://github.com/Maremoo2/Betting/actions/runs/43417750508
+https://github.com/Maremoo2/Betting/actions/runs/43426741239
 Original modellkjøring · https://github.com/Maremoo2/Betting/actions/runs/43411672945
