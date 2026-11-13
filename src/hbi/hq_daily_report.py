@@ -25,6 +25,7 @@ REASONS = {
     "MODEL_SOURCE_COHORT_NOT_FOUND": "Et samlet modellgrunnlag mangler.",
     "COLLECTOR_PDF_RACE_CLOCK_UNVERIFIED": "Programmet gir ingen verifisert starttid.",
     "COLLECTOR_PDF_PHYSICAL_RACE_AMBIGUOUS": "Løpet kan ikke identifiseres entydig i programmet.",
+    "NOT_IN_INSPECTED_COHORTS": "Løpet ligger utenfor de kontrollerte modellkohortene.",
     "NOT_BEFORE_CONSERVATIVE_T4": "Kjøringen var ved eller etter beslutningsfristen.",
 }
 
@@ -93,6 +94,25 @@ def model_analysis(model, sha):
             "as_of": model["as_of_utc"], "sha256": sha}
 
 
+def read_cohort(path, pin):
+    with ZipFile(path) as archive:
+        index = checked(archive.read("cohort-index.json"), pin)
+        if (index.get("schema") != "BET_MVP_002_FIXED_COHORT_INDEX_V1"
+                or index.get("bet_authority") is not False or index.get("pit_certified") is not False):
+            raise ValueError("Unsafe model cohort")
+        models = {}
+        for item in index["processed"]:
+            if not re.fullmatch(r"bet-mvp-shadow/race-[0-9]{3,}", item["directory"]):
+                raise ValueError("Unexpected model path")
+            name = item["directory"].split("/")[-1]
+            if item["race_id"] in models or item["race_id"] not in index["original_cohort"]:
+                raise ValueError("Duplicate or undeclared model race")
+            models[item["race_id"]] = (
+                checked(archive.read(f"{name}/shadow.json"), item["report_sha256"]), item["report_sha256"]
+            )
+    return index, models
+
+
 def build_report(args):
     with ZipFile(args.ledger) as archive:
         ledger = checked(archive.read("index.json"), args.ledger_sha)
@@ -107,16 +127,15 @@ def build_report(args):
     handoff_by_race = {row["race_id"]: row for row in handoff["records"]}
     with ZipFile(args.core) as archive:
         source = checked(archive.read("core003-pilot-report.json"), current["source_report_sha256"])
-    with ZipFile(args.cohort) as archive:
-        index = checked(archive.read("cohort-index.json"), current["cohort_index_sha256"])
-        models = {}
-        for item in index["processed"]:
-            if not re.fullmatch(r"bet-mvp-shadow/race-[0-9]{3,}", item["directory"]):
-                raise ValueError("Unexpected model path")
-            name = item["directory"].split("/")[-1]
-            models[item["race_id"]] = (
-                checked(archive.read(f"{name}/shadow.json"), item["report_sha256"]), item["report_sha256"]
-            )
+    index, models = read_cohort(args.cohort, current["cohort_index_sha256"])
+    prior_reasons = {}
+    for path, pin in args.prior_cohort:
+        prior, members = read_cohort(Path(path), pin)
+        for rid, member in members.items():
+            if model_analysis(*member):
+                models.setdefault(rid, member)
+        prior_reasons.update({r["race_id"]: r["collector_blockers"] for r in prior["not_processed"]
+                              if "collector_blockers" in r})
     ids = [row["race_id"] for row in current["records"]]
     if (len(ids) != len(set(ids)) or set(ids) != set(source["races_in_fixed_cohort"])
             or set(ids) != set(index["original_cohort"])):
@@ -128,26 +147,37 @@ def build_report(args):
     with sqlite3.connect(args.db.resolve().as_uri() + "?mode=ro&immutable=1", uri=True) as db, ZipFile(
         args.collector
     ) as collector:
-        for row in current["records"]:
-            rid = row["race_id"]
+        observations = {row["race_id"]: row for row in current["records"]}
+        report_ids = list(observations)
+        if args.meeting:
+            manifests = [name for name in collector.namelist() if name.endswith("/manifest.json")]
+            if len(manifests) != 1:
+                raise ValueError("Expected one Collector manifest")
+            manifest = json.loads(collector.read(manifests[0]))
+            meeting = next(row for row in manifest["meetings"] if row["meeting_id"] == args.meeting)
+            report_ids = [f"RIKSTOTO:{args.meeting}:{number}" for number in meeting["race_numbers"]]
+        for rid in report_ids:
             _, meeting, race_no = rid.split(":")
             if not meeting.endswith(args.date.isoformat()):
                 continue
-            track, country, _ = db.execute(
+            row = observations.get(rid, {})
+            track, country, scheduled = db.execute(
                 "SELECT track, country, start_time_utc FROM races WHERE race_id=?", (rid,)
             ).fetchone()
-            ready = readiness[rid]
+            ready = readiness.get(rid, {})
             roster, roster_sha = original_roster(collector, rid)
-            market = market_rows(db, rid, ready["win_market_cohort_at_utc"])
+            market = market_rows(db, rid, ready.get("win_market_cohort_at_utc"))
             roster_pin = handoff_by_race.get(rid, {}).get("model_input_sources", {}).get("collector_starts_sha256")
             if roster_pin and roster_sha != roster_pin:
                 raise ValueError("Collector startlist SHA-256 mismatch")
             model, model_sha = models.get(rid, (None, None))
             analysis = None
-            if model is not None and row["full_field"] and row["model_sha256"]:
-                if model["race"]["race_id"] != rid or model_sha != row["model_sha256"]:
+            if model is not None:
+                if model["race"]["race_id"] != rid:
                     raise ValueError("Model race mismatch")
-                analysis = model_analysis(model, row["model_sha256"])
+                if row.get("full_field") and model_sha != row["model_sha256"]:
+                    raise ValueError("Model SHA mismatch")
+                analysis = model_analysis(model, model_sha)
             runners = [
                 {"number": r["startNumber"], "name": r["horseName"], "scratch": r["isScratched"],
                  "win": market.get(str(r["startNumber"]), (None, None))[0] if not r["isScratched"] else None,
@@ -156,11 +186,13 @@ def build_report(args):
             ]
             races.append({
                 "race_id": rid, "track": track, "country": country, "number": int(race_no),
-                "start": ready["canonical_start_utc"], "active": sum(not r["scratch"] for r in runners)
+                "start": ready.get("canonical_start_utc") or scheduled, "active": sum(not r["scratch"] for r in runners)
                 if runners else None, "scratched": sum(r["scratch"] for r in runners) if runners else None,
-                "verified_history": ready["verified_active_history"], "roster_sha256": roster_sha,
+                "verified_history": ready.get("verified_active_history"), "roster_sha256": roster_sha,
                 "runners": runners, "analysis": analysis,
-                "reasons": [row["primary_stop_reason"], *row["collector_blockers"], *row["model_blockers"]],
+                "reasons": [row.get("primary_stop_reason"), *row.get("collector_blockers", prior_reasons.get(rid, [])),
+                            *row.get("model_blockers", []),
+                            *([] if row or rid in models else ["NOT_IN_INSPECTED_COHORTS"])],
                 "full_market": bool(runners and any(not r["scratch"] for r in runners)
                                     and all(r["scratch"] or r["win"] is not None for r in runners)),
             })
@@ -184,7 +216,7 @@ def build_report(args):
             historical = {"race": model["race"], "analysis": model_analysis(model, pin["source_model_original_sha256"])}
     return {
         "date": args.date.isoformat(), "as_of": index["as_of_utc"], "run": args.run,
-        "ledger_sha256": args.ledger_sha, "races": sorted(
+        "ledger_sha256": args.ledger_sha, "report_at": args.report_at, "meeting": args.meeting, "prior_run": args.prior_run, "races": sorted(
             races, key=lambda r: (not bool(r["analysis"]), not r["full_market"], r["start"] or "", r["race_id"])
         ),
         "historical": historical, "benchmark": benchmark, "archive_run": args.archive_run, "bet_authority": False, "pit_certified": False,
@@ -200,16 +232,21 @@ def clock_label(value):
 
 
 def render(report):
-    title = f"Betting HQ · {report['date']}"
+    track = f" · {report['races'][0]['track']}" if report.get("meeting") and report["races"] else ""
+    title = f"Betting HQ{track} · {report['date']}"
     races = report["races"]
     models = sum(bool(r["analysis"]) for r in races)
-    market = sum(r["full_market"] for r in races)
-    market_any = sum(any(r["win"] is not None for r in race["runners"]) for race in races)
-    summary = (f"{len(races)} løp i CORE-003-kohorten · {models} med modellestimat · "
+    market = sum(r["full_market"] or bool(r["analysis"] and all(
+        h["win"] is not None for h in r["analysis"]["runners"]
+    )) for r in races)
+    market_any = sum(any(r["win"] is not None for r in race["runners"])
+                     or bool(race["analysis"] and any(h["win"] is not None for h in race["analysis"]["runners"]))
+                     for race in races)
+    summary = (f"{len(races)} løp i rapporten · {models} med modellestimat · "
                f"{market_any} med WIN-priser ({market} komplette felt) · {len(races) - models} uten gyldig modell.")
     text = [title, summary, "Research / NO BET. " + clock_label(report["as_of"]),
             f"BET: 0 autoriserte · {len(races)} ikke-eksekverbare løpsobservasjoner.",
-            "Shadow-P/L og CLV er utilgjengelig for denne rapportkilden."]
+            "Verifiserte offisielle resultater, shadow-P/L og CLV er utilgjengelige i rapportgrunnlaget."]
     html = [f"<h1>{escape(title)}</h1>", f"<p><strong>{escape(summary)}</strong></p>",
             *[f"<p>{escape(line)}</p>" for line in text[2:]]]
 
@@ -228,7 +265,7 @@ def render(report):
         html.append("</tbody></table></div>")
 
     def analysis_table(analysis):
-        text.append(f"Frys {clock_label(analysis['as_of'])} · {analysis['versions']}")
+        text.append(f"Frys {clock_label(analysis['as_of'])} · {analysis['versions']} · Forskningsestimater, PIT ikke sertifisert.")
         html.append(f"<p>{escape(text[-1])}</p>")
         table(["Nr", "Hest", "Champion", "CORE-004", "Fair odds", "WIN", "EV", "Vurdering og grunnlag"], [
             [str(r["number"]), r["name"], number(r["p"], 100, "%"), number(r["core"], 100, "%"),
@@ -245,6 +282,12 @@ def render(report):
         status = "Forskningsestimater" if race["analysis"] else "NO VALID MODEL"
         section(f"{race['track']} · {race['country']} · løp {race['number']}",
                 f"Planlagt {clock_label(race['start'])} · {active} aktive · {scratch} strøket · {status}.")
+        report_at = clock(report.get("report_at"))
+        start = clock(race["start"])
+        if report_at and start:
+            state = "Planlagt start passert" if start <= report_at else "Kommende etter registrert plan"
+            text.append(state)
+            html.append(f"<p>{state}</p>")
         if race["analysis"]:
             analysis_table(race["analysis"])
         else:
@@ -277,6 +320,10 @@ def render(report):
     source = f"https://github.com/Maremoo2/Betting/actions/runs/{report['run']}"
     text.extend(["", "Originale Actions-artefakter", source])
     html.append(f'<p><a href="{source}">Originale Actions-artefakter</a></p>')
+    if report.get("prior_run"):
+        link = f"https://github.com/Maremoo2/Betting/actions/runs/{report['prior_run']}"
+        text.append("Original modellkjøring · " + link)
+        html.append(f'<p><a href="{link}">Original modellkjøring</a></p>')
     if report["archive_run"]:
         archive_link = f"https://github.com/Maremoo2/Betting/actions/runs/{report['archive_run']}"
         text.append("Historisk originaleksempel · " + archive_link)
@@ -300,6 +347,10 @@ def main():
     parser.add_argument("--ledger-sha", required=True)
     parser.add_argument("--date", required=True, type=date.fromisoformat)
     parser.add_argument("--run", required=True, type=int)
+    parser.add_argument("--meeting")
+    parser.add_argument("--prior-cohort", nargs=2, action="append", default=[])
+    parser.add_argument("--report-at")
+    parser.add_argument("--prior-run", type=int)
     parser.add_argument("--archive", type=Path)
     parser.add_argument("--archive-sha")
     parser.add_argument("--archive-run", type=int)
