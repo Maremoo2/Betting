@@ -224,7 +224,8 @@ def build_report(args):
         rid: member for rid, member in anchor_models.items()
         if rid not in late and freeze_order(member) is not None
     }
-    timing = {}
+    readiness = {row["race_id"]: row for row in source["race_readiness_after"]}
+    timing = {current["source_report_sha256"]: readiness}
     for path, pin in args.timing_core:
         with ZipFile(path) as archive:
             original_core = checked(archive.read("core003-pilot-report.json"), pin)
@@ -255,7 +256,6 @@ def build_report(args):
     if (len(ids) != len(set(ids)) or set(ids) != set(source["races_in_fixed_cohort"])
             or set(ids) != set(index["original_cohort"])):
         raise ValueError("Original race cohort mismatch")
-    readiness = {row["race_id"]: row for row in source["race_readiness_after"]}
     races = []
     if digest(args.db.read_bytes()) != index["source_database_sha256"]:
         raise ValueError("Archived database SHA-256 mismatch")
