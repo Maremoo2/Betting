@@ -120,8 +120,10 @@ def pdf_field(pdf_bytes: bytes, number: int, runners: dict, date: str) -> str:
             if line.isascii() and line.isdecimal():
                 labels.append(int(line))
             else:
-                label = re.fullmatch(
-                    r"(?:L[oø]p|Lopp)\s+(\d+)", line, re.IGNORECASE
+                # A long printed race title can share its extracted line
+                # with the right-aligned physical label.
+                label = re.search(
+                    r"(?:^|\s)(?:L[oø]p|Lopp)\s+(\d+)$", line, re.IGNORECASE
                 )
                 if label is not None:
                     labels.append(int(label.group(1)))
