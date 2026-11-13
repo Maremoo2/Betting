@@ -539,6 +539,7 @@ jobs:
 
       - name: Export research ledger from current and archived originals (NO BET)
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        id: ledger_export
         continue-on-error: true
         shell: bash
         run: |
@@ -556,13 +557,62 @@ jobs:
             --collector-handoff collector-handoff.json \
             --output research-ledger/index.json
 
+      - name: Record research ledger export status (NO BET)
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
+        env:
+          EXPORT_OUTCOME: ${{ steps.ledger_export.outcome }}
+          RESTORE_OUTCOME: ${{ steps.restore.outcome }}
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          directory = Path("research-ledger")
+          directory.mkdir(exist_ok=True)
+          index = directory / "index.json"
+          outcome = os.environ["EXPORT_OUTCOME"]
+          restore = os.environ["RESTORE_OUTCOME"]
+          index_sha = None
+          if restore != "success":
+              status = "BLOCKED_PILOT_STATE"
+          elif outcome != "success":
+              status = "LEDGER_EXPORT_FAILED"
+          elif not index.is_file() or index.stat().st_size == 0:
+              status = "LEDGER_OUTPUT_MISSING_OR_EMPTY"
+          else:
+              raw = index.read_bytes()
+              try:
+                  document = json.loads(raw)
+                  if (not isinstance(document, dict)
+                          or document.get("schema") != "HBI_RESEARCH_LEDGER_V1"
+                          or document.get("bet_authority") is not False
+                          or document.get("pit_certified") != 0):
+                      raise ValueError("Unexpected ledger contract")
+              except ValueError:
+                  status = "LEDGER_OUTPUT_INVALID"
+              else:
+                  status = "LEDGER_EXPORTED"
+                  index_sha = hashlib.sha256(raw).hexdigest()
+          report = {"status": status, "export_outcome": outcome,
+                    "restore_outcome": restore, "index_sha256": index_sha,
+                    "bet_authority": False, "pit_certified": False}
+          (directory / "status.json").write_text(json.dumps(report) + "\n", encoding="utf-8")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write(f"Research ledger — {status}\n")
+          if status != "LEDGER_EXPORTED":
+              index.unlink(missing_ok=True)
+              print(f"::warning::Research ledger — {status}")
+          PY
+
       - name: Upload research ledger (NO BET)
-        if: steps.gate.outputs.run == 'true' && always()
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
         uses: actions/upload-artifact@v4
         with:
           name: research-ledger-${{ github.run_id }}
-          path: research-ledger/index.json
-          if-no-files-found: ignore
+          path: research-ledger/
+          if-no-files-found: error
           retention-days: 21
 
       # Join existing original source/model/coverage/scorecard artifacts. This
