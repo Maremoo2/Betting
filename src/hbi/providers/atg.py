@@ -108,6 +108,16 @@ class AtgClient:
         ascii_value = "".join(ch for ch in decomposed if not unicodedata.combining(ch))
         return "".join(ch.lower() for ch in ascii_value if ch.isalnum())
 
+    @classmethod
+    def track_key(cls, country: str, name: str) -> str:
+        normalized = cls._normalize_name(name)
+        aliases = {
+            ("FR", "parisvincennes"): "vincennes",
+            ("NO", "øvrevoll"): "ovrevoll",
+            ("NO", "sørlandet"): "sorlandet",
+        }
+        return aliases.get((country, normalized), normalized)
+
     @staticmethod
     def _parse_time(value: object) -> datetime | None:
         if not isinstance(value, str) or not value:
@@ -133,9 +143,7 @@ class AtgClient:
     ) -> AtgRaceRef | None:
         if not calendar.success or not isinstance(calendar.payload, dict):
             return None
-        aliases = {("FR", "parisvincennes"): "vincennes", ("NO", "øvrevoll"): "ovrevoll"}
-        target_track = self._normalize_name(track_name)
-        target_track = aliases.get((country, target_track), target_track)
+        target_track = self.track_key(country, track_name)
         candidates: list[AtgRaceRef] = []
         tracks = calendar.payload.get("tracks")
         if not isinstance(tracks, list):
@@ -146,7 +154,7 @@ class AtgClient:
             if track.get("sport") != discipline:
                 continue
             name = str(track.get("name") or "")
-            if self._normalize_name(name) != target_track:
+            if self.track_key(country, name) != target_track:
                 continue
             races = track.get("races")
             if not isinstance(races, list):

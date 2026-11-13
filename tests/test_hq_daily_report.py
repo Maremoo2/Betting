@@ -156,3 +156,18 @@ def test_atg_result_preserves_atg_identity_and_has_no_score(tmp_path):
     assert result["scores"] is None
     with pytest.raises(ValueError, match="ATG_OFFICIAL_RESULT_ID_MISMATCH"):
         official_atg_observation({**race, "number": 1}, tmp_path)
+
+
+def test_atg_sorlandet_alias_does_not_duplicate_norwegian_programme():
+    from datetime import date
+
+    from hbi.hq_daily_report import calendar_only_races
+
+    day = date(2026, 11, 12)
+    calendar = {"date": day.isoformat(), "tracks": [{
+        "id": 99, "name": "Sörlandet", "countryCode": "NO", "sport": "trot",
+        "races": [{"id": "2026-11-12_99_1", "number": 1}],
+    }]}
+    assert calendar_only_races(calendar, day, [
+        {"track": "Sørlandet", "country": "NO", "number": 1},
+    ]) == []

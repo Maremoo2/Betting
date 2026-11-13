@@ -215,7 +215,12 @@ def calendar_only_races(calendar, day, collector_races):
     """Report extra ATG meetings under their own source identities."""
     if calendar.get("date") != day.isoformat():
         raise ValueError("ATG_CALENDAR_DAY_MISMATCH")
-    programme = {(r["country"], r["track"].casefold().strip(), r["number"]) for r in collector_races}
+    def programme_key(country, name, number):
+        # The ATG label for Norway's Sørlandet is Sörlandet. This alias is
+        # only for counting physical races in the day report.
+        return country, AtgClient.track_key(country, name), number
+
+    programme = {programme_key(r["country"], r["track"], r["number"]) for r in collector_races}
     seen = set()
     records = []
     for track in calendar["tracks"]:
@@ -229,7 +234,7 @@ def calendar_only_races(calendar, day, collector_races):
                     or source_id != f"{day.isoformat()}_{track['id']}_{number}" or source_id in seen):
                 raise ValueError("ATG_CALENDAR_RACE_ID_MISMATCH")
             seen.add(source_id)
-            if (country, name.casefold().strip(), number) in programme:
+            if programme_key(country, name, number) in programme:
                 continue
             start = AtgClient._parse_time(race.get("startTime"))
             status = race.get("status")

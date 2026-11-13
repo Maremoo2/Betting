@@ -283,13 +283,14 @@ def run_pilot(
         raise ValueError("max_tasks must be integer 1..12")
     started = now.astimezone(UTC)
     discovered = collector.discover(now) if discover and execute else []
+    planned_at = max(started, clock().astimezone(UTC)) if discover and execute else started
     with store.connect() as conn:
         plan = plan_prefetch(
-            conn, now=started.isoformat(), horizon_minutes=horizon_minutes,
+            conn, now=planned_at.isoformat(), horizon_minutes=horizon_minutes,
             max_tasks=max_tasks, market_window_minutes=market_window_minutes, nordic_first=True,
         )
-        race_ids = _pilot_race_ids(conn, now=started, horizon=horizon_minutes)
-        before = [_readiness(conn, race_id, started) for race_id in race_ids]
+        race_ids = _pilot_race_ids(conn, now=planned_at, horizon=horizon_minutes)
+        before = [_readiness(conn, race_id, planned_at) for race_id in race_ids]
     events = execute_prefetch(plan, collector, now=started, clock=clock) if execute else []
     finished = clock().astimezone(UTC) if execute else started
     with store.connect() as conn:
@@ -301,6 +302,7 @@ def run_pilot(
         "authority": "SHADOW_RESEARCH_ONLY_NO_MODEL_NO_BET",
         "mode": "FETCH_SOURCES" if execute else "PREVIEW_NO_PROVIDER_CALLS",
         "started_at_utc": started.isoformat(),
+        "planned_at_utc": planned_at.isoformat(),
         "finished_at_utc": finished.isoformat(),
         "discovered_races": len(discovered),
         "races_in_fixed_cohort": race_ids,

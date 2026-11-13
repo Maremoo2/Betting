@@ -459,3 +459,19 @@ def test_prefetch_win_snapshot_uses_response_clock(tmp_path):
     with store.connect() as conn:
         stamps = conn.execute("SELECT DISTINCT observed_at_utc FROM provider_market_snapshots").fetchall()
     assert [row[0] for row in stamps] == [completed.isoformat()]
+
+def test_atg_resolves_sorlandet_source_spelling_without_relaxing_start_or_status():
+    from hbi.providers.atg import AtgClient, AtgFetchResult
+
+    client = AtgClient()
+    day = "2026-11-12"
+    start = datetime(2026, 11, 12, 17, 10, tzinfo=UTC)
+    race = {"id": f"{day}_99_1", "number": 1, "status": "upcoming",
+            "startTime": "2026-11-12T18:10:00"}
+    track = {"id": 99, "name": "Sörlandet", "countryCode": "NO", "sport": "trot",
+             "races": [race]}
+    calendar = AtgFetchResult("example", {"tracks": [track]}, True, 200, 0.0)
+    kwargs = {"track_name": "Sørlandet", "race_number": 1, "country": "NO", "expected_start": start}
+    assert client.resolve_race(calendar, **kwargs).race_id == race["id"]
+    race["status"] = "results"
+    assert client.resolve_race(calendar, **kwargs) is None
