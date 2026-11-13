@@ -115,7 +115,7 @@ def inventory(day, archive):
                 artifact = members[role][0]
                 args.extend([option, f"{artifact}.zip", member_pin(artifact, member)])
     return {"artifacts": pinned, "state_artifact": files["db"][0], "args": args,
-            "runs": [r["id"] for r in runs], "gaps": gaps}
+            "runs": [r["id"] for r in runs], "gaps": gaps, "compare_atg_calendar": True}
 
 
 def main():

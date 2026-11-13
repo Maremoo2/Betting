@@ -420,3 +420,37 @@ def test_nordic_priority_uses_verified_roster_before_time_within_urgency():
     add_race(conn, rid="SE", track="Kalmar", nation="SE")
     plan = plan_prefetch(conn, now=NOW.isoformat(), max_tasks=1, nordic_first=True)
     assert plan["tasks"][0]["race_id"] == "SE"
+
+def test_conservative_queue_deadline_uses_retained_earlier_source_clock():
+    import json
+
+    c = make_db()
+    c.execute("""CREATE TABLE provider_payloads(
+        provider TEXT, category TEXT, provider_raceday_key TEXT,
+        race_number INTEGER, observed_at_utc TEXT, payload_json TEXT)""")
+    for seen, start in ((NOW, NOW + timedelta(minutes=6)),
+                        (NOW + timedelta(seconds=1), NOW + timedelta(minutes=5))):
+        c.execute("INSERT INTO provider_payloads VALUES (?,?,?,?,?,?)", (
+            "atg", "FULL_FIELD_ONLY_V1", RID, 1, seen.isoformat(),
+            json.dumps({"race_start_utc": start.isoformat()}),
+        ))
+    preview = plan_prefetch(c, now=NOW.isoformat())
+    assert preview["tasks"][0]["race_start_utc"] == START
+    assert preview["tasks"][0]["cutoff_at_utc"] == (NOW + timedelta(minutes=2)).isoformat()
+    collector = CollectorStub(c)
+    events = execute_prefetch(preview, collector, now=NOW, clock=lambda: NOW + timedelta(minutes=2))
+    assert [event["status"] for event in events] == ["TOO_LATE_TO_PREFETCH"] * 2
+    assert not collector.calls
+    later = plan_prefetch(c, now=(NOW + timedelta(minutes=1)).isoformat())
+    assert later["tasks"] == []
+    assert later["clock_exclusions"][0]["reason"] == "TOO_LATE_TO_PREFETCH"
+
+
+def test_response_completed_at_cutoff_is_diagnostic_only():
+    c = make_db()
+    plan = plan_prefetch(c, now=NOW.isoformat(), max_tasks=1)
+    cutoff = NOW + timedelta(minutes=4)
+    clock = iter((NOW, cutoff))
+    events = execute_prefetch(plan, CollectorStub(c), now=NOW, clock=lambda: next(clock))
+    assert events[0]["status"] == "COLLECTION_FINISHED_AT_OR_AFTER_CUTOFF"
+    assert events[0]["finished_at_utc"] == events[0]["cutoff_at_utc"] == cutoff.isoformat()

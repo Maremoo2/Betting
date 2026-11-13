@@ -7,6 +7,7 @@ import re
 import shutil
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -149,6 +150,27 @@ def render_daily(args, archive, stage, output, config):
     from datetime import UTC, datetime
 
     from .hq_daily_report import official_observation
+    from .providers.atg import AtgClient
+
+    calendar_status = None
+    if config.get("compare_atg_calendar"):
+        atg = AtgClient().calendar_day(
+            date.fromisoformat(args[args.index("--date") + 1]), retain_raw_body=True,
+        )
+        if (atg.success and atg.status_code == 200 and atg.response_completed_at is not None
+                and atg.raw_body and digest(atg.raw_body) == atg.response_body_sha256):
+            sha = atg.response_body_sha256
+            saved = archive / f"atg-calendar-{sha}.json"
+            _put_once(saved, atg.raw_body)
+            receipt = {"source_uri": atg.url, "http_status": atg.status_code,
+                       "observed_at_utc": atg.response_completed_at.isoformat(), "sha256": sha}
+            _put_once(archive / f"atg-calendar-{sha}.receipt.json",
+                      json.dumps(receipt, sort_keys=True).encode())
+            args = [*args, "--atg-calendar", str(saved), "--atg-calendar-sha", sha]
+            calendar_status = {"status": "VERIFIED_BYTES", **receipt}
+        else:
+            calendar_status = {"status": "BLOCKED_ATG_CALENDAR", "source_uri": atg.url,
+                               "http_status": atg.status_code}
 
     preview = stage / "preview"
     command = [sys.executable, "-m", "hbi.hq_daily_report", *args, "--nordic"]
@@ -160,9 +182,27 @@ def render_daily(args, archive, stage, output, config):
     now = datetime.now(UTC)
     for race in day["races"]:
         start = clock(race["start"])
-        if start is None or now <= start:
+        if race.get("calendar_only") or start is None or now <= start:
             continue
         rid = race["race_id"]
+        saved_version = config.get("result_versions", {}).get(rid)
+        if saved_version is not None:
+            if not re.fullmatch(r"[0-9a-f]{64}", saved_version):
+                raise ValueError("Invalid archived result version")
+            target = archive / "results" / saved_version
+            files = {path.name: path.read_bytes() for path in target.iterdir()}
+            actual_version = digest(json.dumps(
+                {name: digest(body) for name, body in files.items()}, sort_keys=True,
+            ).encode())
+            if actual_version != saved_version:
+                raise ValueError("Archived result version SHA mismatch")
+            official_observation(rid, target, None)
+            attachments.extend(["--official-result", rid, str(target)])
+            results.append({"race_id": rid, "status": "LINKED", "result_version_sha256": saved_version})
+            continue
+        if config.get("result_versions") is not None:
+            results.append({"race_id": rid, "status": "BLOCKED", "reason": "NO_PINNED_OFFICIAL_RESULT"})
+            continue
         folder = stage / rid.replace(":", "-")
         folder.mkdir()
         try:
@@ -179,7 +219,7 @@ def render_daily(args, archive, stage, output, config):
             _put_once(target / name, body)
         attachments.extend(["--official-result", rid, str(target)])
         results.append({"race_id": rid, "status": "LINKED", "result_version_sha256": version})
-    if attachments:
+    if attachments and "result_versions" not in config:
         at = command.index("--report-at") + 1
         command[at] = max(clock(command[at]), datetime.now(UTC)).isoformat()
     subprocess.run([*command, *attachments, "--output", str(output)], check=True)
@@ -188,6 +228,7 @@ def render_daily(args, archive, stage, output, config):
         score = replay_score_example(config, archive, stage / "score-example")
         _put_once(output / "historical-score.json", json.dumps(score, indent=2).encode())
     summary = {"source_runs": config["runs"], "source_gaps": config["gaps"], "results": results,
+               "calendar_reconciliation": calendar_status,
                "observed": len(rendered["races"]),
                "complete_rosters": sum(r["active"] is not None for r in rendered["races"]),
                "model_freezes": sum(bool(r["analysis"]) for r in rendered["races"]),

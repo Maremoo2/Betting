@@ -437,3 +437,25 @@ def test_partial_provider_history_is_hidden_from_entire_active_field(tmp_path):
         row["data_quality"] == "FIELD_ONLY_INCOMPLETE_ENRICHMENT"
         for row in rows
     )
+
+def test_prefetch_win_snapshot_uses_response_clock(tmp_path):
+    from dataclasses import replace
+    from datetime import timedelta
+
+    class DelayedRikstoto(FakeRikstoto):
+        def win_odds(self, *args):
+            return replace(super().win_odds(*args), response_completed_at=completed)
+
+    store = SQLiteStore(tmp_path / "hbi.sqlite")
+    store.initialize(SCHEMA)
+    requested = datetime(2026, 9, 27, 17, 56, tzinfo=UTC)
+    completed = requested + timedelta(seconds=2)
+    collector = RikstotoCollector(store, DelayedRikstoto(), FakeAtg(), clock=lambda: completed)
+    race = collector.discover(requested)[0]
+    assert collector.collect_market(
+        raceday_key=race.raceday_key, race_number=1, race_id=race.race_id,
+        observed_at=requested, products={"V"}, record_response_time=True,
+    ) == (2, 0)
+    with store.connect() as conn:
+        stamps = conn.execute("SELECT DISTINCT observed_at_utc FROM provider_market_snapshots").fetchall()
+    assert [row[0] for row in stamps] == [completed.isoformat()]

@@ -15,6 +15,7 @@ from zipfile import ZipFile
 
 from .evaluation import log_loss, multiclass_brier
 from .prospective_outcome_scorecard import _field, _market, _official_winner, _probs, clock, digest
+from .providers.atg import AtgClient
 from .providers.rikstoto import OSLO, RikstotoClient
 from .research_ledger import checked
 
@@ -28,7 +29,12 @@ REASONS = {
     "MODEL_SOURCE_COHORT_NOT_FOUND": "Et samlet modellgrunnlag mangler.",
     "COLLECTOR_PDF_RACE_CLOCK_UNVERIFIED": "Programmet gir ingen verifisert starttid.",
     "COLLECTOR_PDF_PHYSICAL_RACE_AMBIGUOUS": "Løpet kan ikke identifiseres entydig i programmet.",
+    "NO_ARCHIVED_MODEL_PORT_EVIDENCE": "Ingen bevart modellportobservasjon for dette løpet.",
+    "MODEL_FREEZE_AT_OR_AFTER_T4": "Modellfryset ble fullført ved eller etter beslutningsfristen.",
     "NOT_IN_INSPECTED_COHORTS": "Løpet ligger utenfor de kontrollerte modellkohortene.",
+    "ATG_MEETING_WITHOUT_COLLECTOR_RIKSTOTO_MAPPING": (
+        "Møtet er dokumentert hos ATG. En verifisert Rikstoto-kobling og Collector-original mangler."
+    ),
     "NO_WIN_MARKET_AS_OF": "Komplett WIN fra samme frys mangler.",
     "NOT_BEFORE_CONSERVATIVE_T4": "Kjøringen var ved eller etter beslutningsfristen.",
 }
@@ -205,6 +211,41 @@ def official_observation(rid, directory, model):
     }
 
 
+def calendar_only_races(calendar, day, collector_races):
+    """Report extra ATG meetings under their own source identities."""
+    if calendar.get("date") != day.isoformat():
+        raise ValueError("ATG_CALENDAR_DAY_MISMATCH")
+    programme = {(r["country"], r["track"].casefold().strip(), r["number"]) for r in collector_races}
+    seen = set()
+    records = []
+    for track in calendar["tracks"]:
+        country, name = track.get("countryCode"), track["name"]
+        if country not in {"NO", "SE"} or track.get("sport") != "trot":
+            continue
+        # The calendar comparison never imports any identities or model data.
+        for race in track["races"]:
+            source_id, number = race["id"], race["number"]
+            if (type(number) is not int or number < 1 or type(track["id"]) is not int
+                    or source_id != f"{day.isoformat()}_{track['id']}_{number}" or source_id in seen):
+                raise ValueError("ATG_CALENDAR_RACE_ID_MISMATCH")
+            seen.add(source_id)
+            if (country, name.casefold().strip(), number) in programme:
+                continue
+            start = AtgClient._parse_time(race.get("startTime"))
+            status = race.get("status")
+            records.append({
+                "race_id": f"ATG:{source_id}", "track": name, "country": country, "number": number,
+                "calendar_only": True, "calendar_status": status, "calendar_start_raw": race.get("startTime"),
+                "start": start.isoformat() if start is not None and status == "upcoming" else None,
+                "active": None, "scratched": None, "roster_sha256": None,
+                "runners": [], "analysis": None, "official": None, "full_market": False,
+                "queue_evidence": [], "model_attempts": [],
+                "model_evidence_status": "BLOCKED_SOURCE_MAPPING",
+                "reasons": ["ATG_MEETING_WITHOUT_COLLECTOR_RIKSTOTO_MAPPING"],
+            })
+    return records
+
+
 def build_report(args):
     with ZipFile(args.ledger) as archive:
         ledger = checked(archive.read("index.json"), args.ledger_sha)
@@ -219,23 +260,26 @@ def build_report(args):
     handoff_by_race = {row["race_id"]: row for row in handoff["records"]}
     with ZipFile(args.core) as archive:
         source = checked(archive.read("core003-pilot-report.json"), current["source_report_sha256"])
-    index, anchor_models, late = read_cohort(args.cohort, current["cohort_index_sha256"])
-    models = {
-        rid: member for rid, member in anchor_models.items()
-        if rid not in late and freeze_order(member) is not None
-    }
+    anchor = read_cohort(args.cohort, current["cohort_index_sha256"])
+    index, anchor_models, _ = anchor
+    models = {}
+    late = set()
     readiness = {row["race_id"]: row for row in source["race_readiness_after"]}
     timing = {current["source_report_sha256"]: readiness}
+    source_reports = {current["source_report_sha256"]: source}
     for path, pin in args.timing_core:
         with ZipFile(path) as archive:
             original_core = checked(archive.read("core003-pilot-report.json"), pin)
+        source_reports[pin] = original_core
         timing[pin] = {row["race_id"]: row for row in original_core["race_readiness_after"]}
     result_dirs = {rid: Path(path) for rid, path in args.official_result}
+    model_attempts = {}
     prior_reasons = {}
     prior_readiness = {}
     win_observations = {}
-    for path, pin in args.prior_cohort:
-        prior, members, prior_late = read_cohort(Path(path), pin)
+    cohorts = [(pin, read_cohort(Path(path), pin)) for path, pin in args.prior_cohort]
+    cohorts.append((current["cohort_index_sha256"], anchor))
+    for pin, (prior, members, prior_late) in sorted(cohorts, key=lambda item: clock(item[1][0]["as_of_utc"])):
         late.update(prior_late)
         for rid, ready in timing.get(prior["source_report_sha256"], {}).items():
             prior_readiness[rid] = ready
@@ -247,11 +291,31 @@ def build_report(args):
             order = None if rid in prior_late else freeze_order(member)
             if order is not None and (rid not in models or order < freeze_order(models[rid])):
                 models[rid] = member
-        for disposition in ("not_processed", "errors"):
-            prior_reasons.update({
-                r["race_id"]: [r["reason"], *r.get("collector_blockers", [])]
-                for r in prior[disposition]
-            })
+        for disposition in ("not_processed", "errors", "processed"):
+            for row in prior[disposition]:
+                rid = row["race_id"]
+                model_attempts.setdefault(rid, []).append({
+                    "disposition": disposition, "as_of_utc": prior["as_of_utc"],
+                    "cohort_sha256": pin, "model_sha256": row.get("report_sha256"),
+                    "reason": row.get("reason"), "model_status": row.get("model_status"),
+                    "collector_blockers": row.get("collector_blockers", []),
+                })
+                if disposition != "processed":
+                    prior_reasons[rid] = [row["reason"], *row.get("collector_blockers", [])]
+    queue_events = {}
+    for pin, core in source_reports.items():
+        groups = (
+            ("provider_events", "PROVIDER_EVENT"),
+            ("queue_selected", "SELECTED"),
+            ("queue_deferred_capacity", "DEFERRED_CAPACITY"),
+            ("queue_clock_exclusions", "CLOCK_EXCLUSION"),
+        )
+        for key, status in groups:
+            for item in core.get(key, []):
+                queue_events.setdefault(item["race_id"], []).append({
+                    **item, "evidence": status, "started_at_utc": core["started_at_utc"],
+                    "source_report_sha256": pin,
+                })
     ids = [row["race_id"] for row in current["records"]]
     if (len(ids) != len(set(ids)) or set(ids) != set(source["races_in_fixed_cohort"])
             or set(ids) != set(index["original_cohort"])):
@@ -358,6 +422,12 @@ def build_report(args):
                 if runners else None, "scratched": sum(r["scratch"] for r in runners) if runners else None,
                 "verified_history": ready.get("verified_active_history"), "roster_sha256": roster_sha,
                 "runners": runners, "analysis": analysis, "official": official,
+                "queue_evidence": queue_events.get(rid, []),
+                "model_attempts": model_attempts.get(rid, []),
+                "model_evidence_status": (
+                    "VERIFIED_FREEZE" if analysis else "ARCHIVED_PORT_DISPOSITION"
+                    if model_attempts.get(rid) else "NO_ARCHIVED_MODEL_PORT_EVIDENCE"
+                ),
                 "later_schedule_cutoff_utc": later_cutoff,
                 "schedule_versions": [
                     dict(zip(("uri", "raw", "start_utc", "observed_utc", "sha256", "grade"), event, strict=True))
@@ -367,11 +437,15 @@ def build_report(args):
                     model.get("market_blockers", []) if analysis else
                     ["NOT_BEFORE_CONSERVATIVE_T4"] if rid in late else
                     [row["primary_stop_reason"], *row["collector_blockers"], *row["model_blockers"]]
-                    if row else prior_reasons.get(rid, ["NOT_IN_INSPECTED_COHORTS"])
+                    if row else prior_reasons.get(rid, ["NO_ARCHIVED_MODEL_PORT_EVIDENCE"])
                 ),
                 "full_market": bool(runners and any(not r["scratch"] for r in runners)
                                     and all(r["scratch"] or r["win"] is not None for r in runners)),
             })
+    atg_calendar = getattr(args, "atg_calendar", None)
+    if atg_calendar is not None:
+        calendar = checked(atg_calendar.read_bytes(), args.atg_calendar_sha)
+        races.extend(calendar_only_races(calendar, args.date, races))
     benchmark = historical = None
     if args.archive:
         old = checked(args.archive.read_bytes(), args.archive_sha)
@@ -398,6 +472,7 @@ def build_report(args):
                 ),
             }
     return {
+        "atg_calendar_sha256": args.atg_calendar_sha if atg_calendar else None,
         "date": args.date.isoformat(), "as_of": index["as_of_utc"], "run": args.run,
         "ledger_sha256": args.ledger_sha, "report_at": args.report_at, "meeting": args.meeting, "prior_run": args.prior_run, "races": sorted(
             races, key=lambda r: (not bool(r["analysis"]), not r["full_market"], r["start"] or "", r["race_id"])
@@ -464,6 +539,8 @@ def render(report):
         active = "ukjent" if race["active"] is None else str(race["active"])
         scratch = "ukjent" if race["scratched"] is None else str(race["scratched"])
         status = "Forskningsestimater" if race["analysis"] else "NO VALID MODEL"
+        if race.get("calendar_only"):
+            status = "Kun ATG-kalender · " + str(race.get("calendar_status") or "ukjent status")
         section(f"{race['track']} · {race['country']} · løp {race['number']}",
                 f"Planlagt {clock_label(race['start'])} · {active} aktive · {scratch} strøket · {status}.")
         report_at = clock(report.get("report_at"))
@@ -591,12 +668,16 @@ def main():
     parser.add_argument("--prior-cohort", nargs=2, action="append", default=[])
     parser.add_argument("--report-at")
     parser.add_argument("--prior-run", type=int)
+    parser.add_argument("--atg-calendar", type=Path)
+    parser.add_argument("--atg-calendar-sha")
     parser.add_argument("--archive", type=Path)
     parser.add_argument("--archive-sha")
     parser.add_argument("--archive-run", type=int)
     parser.add_argument("--models", type=Path)
     parser.add_argument("--recipient", help="Optional To header for the local preview. Never sends mail.")
     args = parser.parse_args()
+    if bool(args.atg_calendar) != bool(args.atg_calendar_sha) or (args.atg_calendar and not args.nordic):
+        parser.error("--atg-calendar and --atg-calendar-sha require --nordic and each other")
     if args.report_at and clock(args.report_at) is None:
         parser.error("--report-at requires a timezone-aware timestamp")
     if any((args.archive, args.archive_sha, args.models)) and not all((args.archive, args.archive_sha, args.models)):

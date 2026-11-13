@@ -361,5 +361,6 @@
       "reason": "pending"
     }
   ],
-  "state_artifact": "14060637967"
+  "state_artifact": "14060637967",
+  "compare_atg_calendar": true
 }

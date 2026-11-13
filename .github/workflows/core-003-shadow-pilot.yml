@@ -86,14 +86,6 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         run: hbi --db data/core003-pilot.sqlite init-db
 
-      # PIT-003A is a source-only sidecar, never a replacement for CORE-003.
-      # GitHub cron is best-effort. Late jobs explicitly record MISSED_T4.
-      - name: Capture race-relative original T-4 receipts (research only)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true'
-        run: |
-          python -m hbi.core_t4_receipt capture \
-            --db data/core003-pilot.sqlite --out pit003a-source-receipts
-
       - name: Execute research source capture (no model, no bets)
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true'
         run: |
@@ -217,10 +209,10 @@ jobs:
           import sqlite3
           import subprocess
           import sys
-          from datetime import UTC, datetime
+          from datetime import UTC, datetime, timedelta
           from pathlib import Path
 
-          from hbi.bet_mvp_shadow import select_fixed_cohort_races, sha256
+          from hbi.bet_mvp_shadow import aware, select_fixed_cohort_races, sha256
           from hbi.collector_handoff import write_research_model_report
 
           source_path = Path('core003-pilot-report.json')
@@ -283,6 +275,14 @@ jobs:
           for number, entry in enumerate(selection['eligible'], start=1):
               race_id = entry['race_id']
               destination = folder / f'race-{number:03d}'
+              cutoff = aware(entry['earliest_source_start_utc']) - timedelta(minutes=4)
+              started_at = datetime.now(UTC)
+              if started_at >= cutoff:
+                  index['not_processed'].append({
+                      **entry, 'reason': 'NOT_BEFORE_CONSERVATIVE_T4',
+                      'checked_at_utc': started_at.isoformat(), 'cutoff_at_utc': cutoff.isoformat(),
+                  })
+                  continue
               command = [
                   sys.executable, '-m', 'hbi.bet_mvp_shadow',
                   '--db', str(db_path), '--source-report', str(source_path),
@@ -299,6 +299,17 @@ jobs:
                   })
                   continue
               report = json.loads((destination / 'shadow.json').read_text(encoding='utf-8'))
+              if aware(report['report_created_at_utc']) >= cutoff:
+                  index['errors'].append({
+                      **entry, 'reason': 'MODEL_FREEZE_AT_OR_AFTER_T4',
+                      'cutoff_at_utc': cutoff.isoformat(),
+                      'report_created_at_utc': report['report_created_at_utc'],
+                  })
+                  # Retain only the timing diagnostic. No late probability file is published.
+                  for artifact in destination.iterdir():
+                      artifact.unlink()
+                  destination.rmdir()
+                  continue
               original = handoff_by_id[race_id]
               link_path = destination / 'collector-research-report.json'
               research_link_sha = None
@@ -362,6 +373,62 @@ jobs:
           if index['errors']:
               raise SystemExit('BET_MVP_FIXED_COHORT_INCOMPLETE_REPORTS')
           PY
+
+      # Publish the prospective evidence before waiting for receipts or replaying
+      # historical outcomes. A later sidecar timeout must not erase a freeze.
+      - name: Upload per-run source coverage report
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core003-pilot-report-${{ github.run_id }}
+          path: core003-pilot-report.json
+          if-no-files-found: warn
+          retention-days: 21
+
+      - name: Upload Collector-to-Betting import and model admission evidence
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: collector-handoff-${{ github.run_id }}
+          path: collector-handoff.json
+          if-no-files-found: warn
+          retention-days: 21
+
+      - name: Upload Collector original provenance used for PIT verification
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit003a-collector-evidence-${{ github.run_id }}
+          path: pit003a-collector-archive/
+          if-no-files-found: ignore
+          retention-days: 21
+
+      - name: Upload frozen model research report (not a bet)
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bet-mvp-shadow-${{ github.run_id }}
+          path: bet-mvp-shadow/
+          if-no-files-found: ignore
+          retention-days: 21
+
+      - name: Persist isolated research state for next pilot
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core003-pilot-state
+          path: data/core003-pilot.sqlite
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 6
+
+      # PIT-003A is a source-only sidecar, never a replacement for CORE-003.
+      # GitHub cron is best-effort. Late jobs explicitly record MISSED_T4.
+      - name: Capture race-relative original T-4 receipts (research only)
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true'
+        run: |
+          python -m hbi.core_t4_receipt capture \
+            --db data/core003-pilot.sqlite --out pit003a-source-receipts
 
       # Offline sidecar: reuse already-frozen reports and exact SQLite physical race
       # catalog. No provider reads, model retraining, bets or schedule changes.
@@ -682,30 +749,12 @@ jobs:
           path: mvp019-source-readiness/index.json
           if-no-files-found: warn
           retention-days: 21
-      - name: Upload Collector-to-Betting import and model admission evidence
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: collector-handoff-${{ github.run_id }}
-          path: collector-handoff.json
-          if-no-files-found: warn
-          retention-days: 21
-
       - name: Upload restored immutable prior model evidence
         if: steps.gate.outputs.run == 'true' && always()
         uses: actions/upload-artifact@v4
         with:
           name: pit003a-prior-frozen-models-${{ github.run_id }}
           path: pit003a-prior-models/
-          if-no-files-found: ignore
-          retention-days: 21
-
-      - name: Upload Collector original provenance used for PIT verification
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pit003a-collector-evidence-${{ github.run_id }}
-          path: pit003a-collector-archive/
           if-no-files-found: ignore
           retention-days: 21
 
@@ -751,33 +800,5 @@ jobs:
         with:
           name: dev011-coverage-manifest-${{ github.run_id }}
           path: dev011-coverage/
-          if-no-files-found: warn
-          retention-days: 21
-
-      - name: Upload frozen model research report (not a bet)
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: bet-mvp-shadow-${{ github.run_id }}
-          path: bet-mvp-shadow/
-          if-no-files-found: ignore
-          retention-days: 21
-
-      - name: Persist isolated research state for next pilot
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: core003-pilot-state
-          path: data/core003-pilot.sqlite
-          if-no-files-found: error
-          retention-days: 7
-          compression-level: 6
-
-      - name: Upload per-run source coverage report
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: core003-pilot-report-${{ github.run_id }}
-          path: core003-pilot-report.json
           if-no-files-found: warn
           retention-days: 21

@@ -100,3 +100,29 @@ def test_cohort_requires_creation_strictly_before_conservative_cutoff(tmp_path, 
     _, originals, blocked_races = read_cohort(path, digest(index))
     assert originals[race_id] == (model, digest(raw))
     assert (race_id in blocked_races) is blocked
+
+def test_atg_calendar_keeps_unmatched_physical_race_in_its_own_namespace():
+    from datetime import date
+
+    from hbi.hq_daily_report import calendar_only_races
+
+    day = date(2026, 11, 13)
+    race = {"id": "2026-11-13_11_2", "number": 2,
+            "status": "results", "startTime": "2026-11-13T18:12:44"}
+    calendar = {"date": day.isoformat(), "tracks": [
+        {"id": 11, "name": "Boden", "countryCode": "SE", "sport": "trot", "races": [race]},
+        {"id": 20, "name": "Ponny", "countryCode": "SE", "sport": "pony", "races": [race]},
+    ]}
+    rows = calendar_only_races(calendar, day, [])
+    assert len(rows) == 1
+    assert rows[0]["race_id"] == "ATG:2026-11-13_11_2"
+    assert rows[0]["start"] is None
+    assert rows[0]["calendar_status"] == "results"
+    assert rows[0]["analysis"] is None
+    assert calendar_only_races(calendar, day, [
+        {"track": "Boden", "country": "SE", "number": 2},
+    ]) == []
+    with pytest.raises(ValueError, match="ATG_CALENDAR_RACE_ID_MISMATCH"):
+        calendar_only_races({**calendar, "tracks": [
+            {**calendar["tracks"][0], "races": [{**race, "id": "2026-11-18_11_2"}]},
+        ]}, day, [])

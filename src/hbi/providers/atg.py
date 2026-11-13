@@ -22,6 +22,7 @@ class AtgFetchResult:
     error: str | None = None
     response_body_sha256: str | None = None
     response_completed_at: datetime | None = None
+    raw_body: bytes | None = None
 
 
 @dataclass(frozen=True)
@@ -59,7 +60,7 @@ class AtgClient:
             "Origin": "https://www.atg.se",
         }
 
-    def _fetch(self, url: str) -> AtgFetchResult:
+    def _fetch(self, url: str, *, retain_raw_body: bool = False) -> AtgFetchResult:
         request = urllib.request.Request(url, headers=self._headers(), method="GET")
         started = time.perf_counter()
         try:
@@ -75,6 +76,7 @@ class AtgClient:
                     latency_ms=(time.perf_counter() - started) * 1000,
                     response_body_sha256=hashlib.sha256(original_bytes).hexdigest(),
                     response_completed_at=response_completed,
+                    raw_body=original_bytes if retain_raw_body else None,
                 )
         except (
             urllib.error.HTTPError,
@@ -92,11 +94,9 @@ class AtgClient:
                 error=str(exc),
             )
 
-    def calendar_day(self, race_date: date) -> AtgFetchResult:
-        return self._fetch(
-            f"{self.CALENDAR_API}/calendar/day/{race_date.isoformat()}"
-            "?headToHeadEnabled=true"
-        )
+    def calendar_day(self, race_date: date, *, retain_raw_body: bool = False) -> AtgFetchResult:
+        url = f"{self.CALENDAR_API}/calendar/day/{race_date.isoformat()}?headToHeadEnabled=true"
+        return self._fetch(url, retain_raw_body=True) if retain_raw_body else self._fetch(url)
 
     def race_game(self, race_id: str) -> AtgFetchResult:
         return self._fetch(f"{self.GAME_API}/vinnare_{race_id}")
