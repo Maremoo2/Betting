@@ -29,6 +29,7 @@ REASONS = {
     "COLLECTOR_PDF_RACE_CLOCK_UNVERIFIED": "Programmet gir ingen verifisert starttid.",
     "COLLECTOR_PDF_PHYSICAL_RACE_AMBIGUOUS": "Løpet kan ikke identifiseres entydig i programmet.",
     "NOT_IN_INSPECTED_COHORTS": "Løpet ligger utenfor de kontrollerte modellkohortene.",
+    "NO_WIN_MARKET_AS_OF": "Komplett WIN fra samme frys mangler.",
     "NOT_BEFORE_CONSERVATIVE_T4": "Kjøringen var ved eller etter beslutningsfristen.",
 }
 
@@ -101,6 +102,18 @@ def model_analysis(model, sha):
             "code_sha": model.get("git_sha_of_current_workspace")}
 
 
+def freeze_order(member):
+    model, sha = member
+    active, blockers = _field(model)
+    if blockers:
+        return None
+    return (
+        _market(active, clock(model["as_of_utc"])) is None,
+        clock(model["report_created_at_utc"]),
+        sha,
+    )
+
+
 def read_cohort(path, pin):
     with ZipFile(path) as archive:
         index = checked(archive.read("cohort-index.json"), pin)
@@ -108,16 +121,30 @@ def read_cohort(path, pin):
                 or index.get("bet_authority") is not False or index.get("pit_certified") is not False):
             raise ValueError("Unsafe model cohort")
         models = {}
+        blocked_timing = set()
+        eligibility = {row["race_id"]: row for row in index["eligible_prestart"]}
         for item in index["processed"]:
             if not re.fullmatch(r"bet-mvp-shadow/race-[0-9]{3,}", item["directory"]):
                 raise ValueError("Unexpected model path")
             name = item["directory"].split("/")[-1]
             if item["race_id"] in models or item["race_id"] not in index["original_cohort"]:
                 raise ValueError("Duplicate or undeclared model race")
-            models[item["race_id"]] = (
-                checked(archive.read(f"{name}/shadow.json"), item["report_sha256"]), item["report_sha256"]
-            )
-    return index, models
+            model = checked(archive.read(f"{name}/shadow.json"), item["report_sha256"])
+            if model["race"]["race_id"] != item["race_id"]:
+                raise ValueError("Model race mismatch")
+            models[item["race_id"]] = model, item["report_sha256"]
+            eligible = eligibility[item["race_id"]]
+            start = clock(eligible["start_time_utc"])
+            earliest = clock(eligible["earliest_source_start_utc"])
+            as_of = clock(model.get("as_of_utc"))
+            calculated = clock(model.get("model_calculated_at_utc"))
+            frozen = clock(model.get("report_created_at_utc"))
+            if (all(t is not None for t in (start, earliest, as_of, calculated, frozen))
+                    and earliest <= start == clock(model["race"].get("start_time_utc"))
+                    and as_of <= calculated <= frozen < earliest - timedelta(minutes=4)):
+                continue
+            blocked_timing.add(item["race_id"])
+    return index, models, blocked_timing
 
 
 def official_observation(rid, directory, model):
@@ -190,7 +217,11 @@ def build_report(args):
     handoff_by_race = {row["race_id"]: row for row in handoff["records"]}
     with ZipFile(args.core) as archive:
         source = checked(archive.read("core003-pilot-report.json"), current["source_report_sha256"])
-    index, models = read_cohort(args.cohort, current["cohort_index_sha256"])
+    index, anchor_models, late = read_cohort(args.cohort, current["cohort_index_sha256"])
+    models = {
+        rid: member for rid, member in anchor_models.items()
+        if rid not in late and freeze_order(member) is not None
+    }
     timing = {}
     for path, pin in args.timing_core:
         with ZipFile(path) as archive:
@@ -201,7 +232,8 @@ def build_report(args):
     prior_readiness = {}
     win_observations = {}
     for path, pin in args.prior_cohort:
-        prior, members = read_cohort(Path(path), pin)
+        prior, members, prior_late = read_cohort(Path(path), pin)
+        late.update(prior_late)
         for rid, ready in timing.get(prior["source_report_sha256"], {}).items():
             prior_readiness[rid] = ready
             observed = clock(ready.get("win_market_cohort_at_utc"))
@@ -209,8 +241,9 @@ def build_report(args):
             if observed is not None and (previous is None or observed > previous):
                 win_observations[rid] = ready["win_market_cohort_at_utc"]
         for rid, member in members.items():
-            if model_analysis(*member):
-                models.setdefault(rid, member)
+            order = None if rid in prior_late else freeze_order(member)
+            if order is not None and (rid not in models or order < freeze_order(models[rid])):
+                models[rid] = member
         for disposition in ("not_processed", "errors"):
             prior_reasons.update({
                 r["race_id"]: [r["reason"], *r.get("collector_blockers", [])]
@@ -271,11 +304,9 @@ def build_report(args):
                 raise ValueError("Collector startlist SHA-256 mismatch")
             model, model_sha = models.get(rid, (None, None))
             analysis = None
+            if row.get("full_field") and anchor_models.get(rid, (None, None))[1] != row["model_sha256"]:
+                raise ValueError("Model SHA mismatch")
             if model is not None:
-                if model["race"]["race_id"] != rid:
-                    raise ValueError("Model race mismatch")
-                if row.get("full_field") and model_sha != row["model_sha256"]:
-                    raise ValueError("Model SHA mismatch")
                 analysis = model_analysis(model, model_sha)
                 if analysis:
                     source_pin = model["collector_source_evidence"].get("sha256") if model.get(
@@ -330,8 +361,12 @@ def build_report(args):
                     dict(zip(("uri", "raw", "start_utc", "observed_utc", "sha256", "grade"), event, strict=True))
                     for event in schedule_versions
                 ],
-                "reasons": ([row["primary_stop_reason"], *row["collector_blockers"], *row["model_blockers"]]
-                            if row else prior_reasons.get(rid, [] if analysis else ["NOT_IN_INSPECTED_COHORTS"])),
+                "reasons": (
+                    model.get("market_blockers", []) if analysis else
+                    ["NOT_BEFORE_CONSERVATIVE_T4"] if rid in late else
+                    [row["primary_stop_reason"], *row["collector_blockers"], *row["model_blockers"]]
+                    if row else prior_reasons.get(rid, ["NOT_IN_INSPECTED_COHORTS"])
+                ),
                 "full_market": bool(runners and any(not r["scratch"] for r in runners)
                                     and all(r["scratch"] or r["win"] is not None for r in runners)),
             })
@@ -438,6 +473,10 @@ def render(report):
         analysis = race["analysis"]
         official = race.get("official")
         if analysis:
+            market_note = REASONS["NO_WIN_MARKET_AS_OF"]
+            if not any(r["win"] is not None for r in analysis["runners"]):
+                text.append(market_note)
+                html.append(f"<p>{escape(market_note)}</p>")
             timing_line = f"Start ved frys {clock_label(analysis['start_at_freeze_utc'])}."
             if analysis.get("cutoff_utc"):
                 timing_line += f" Opprinnelig T−4 {clock_label(analysis['cutoff_utc'])}."

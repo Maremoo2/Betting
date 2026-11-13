@@ -156,6 +156,7 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
 
     for r, minutes in selected:
         race_id = str(r['race_id'])
+        start = _utc(str(r['start_time_utc'])).astimezone(UTC)
         eligible_races.add(race_id)
         roster = _rows(conn, 'select selection_id,scratched,horse_name from runners where race_id=?', (race_id,))
         fund, fundamental_at = _cohort(conn, 'runner_fundamental_snapshots', race_id, current.isoformat())
@@ -243,7 +244,8 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
             'races_considered':len(eligible_races),'tasks_available':len(tasks),
             'tasks_returned':len(chosen),'truncated':len(chosen)<len(tasks),
             'reason_counts':dict(sorted(reasons.items())),
-            'tasks':[asdict(t) for t in chosen]}
+            'tasks':[asdict(t) for t in chosen],
+            'deferred_tasks':[asdict(t) for t in tasks[len(chosen):]]}
 
 
 def execute_prefetch(plan: dict[str, Any], collector: Any, *, now: datetime,

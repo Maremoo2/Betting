@@ -207,6 +207,38 @@ def test_dedupe_likely_duplicate():
 def test_max_tasks_truncates():
     p=plan_prefetch(make_db(),now=NOW.isoformat(),max_tasks=1)
     assert p['tasks_returned']==1 and p['tasks_available']==2 and p['truncated']
+    assert actions(p) == ['COLLECT_FUNDAMENTALS']
+    assert [(task['race_id'], task['action']) for task in p['deferred_tasks']] == [
+        (RID, 'COLLECT_WIN_MARKET'),
+    ]
+
+
+def test_each_task_rechecks_its_own_start_time():
+    db = make_db()
+    later_id = "RIKSTOTO:T2_NR_2026-10-30:2"
+    later_start = (NOW + timedelta(minutes=20)).isoformat()
+    add_race(db, rid=later_id, start=later_start, no=2)
+    plan = plan_prefetch(db, now=NOW.isoformat(), market_window_minutes=30)
+    assert {task["race_id"]: task["race_start_utc"] for task in plan["tasks"]} == {
+        RID: START,
+        later_id: later_start,
+    }
+
+    class MarketOnly:
+        def collect_fundamentals(self, **kwargs):
+            assert kwargs["race_id"] == later_id
+            return 3, True, "https://example.test/start"
+
+        def collect_market(self, **kwargs):
+            assert kwargs["race_id"] == later_id
+            return 3, 0
+
+    events = execute_prefetch(plan, MarketOnly(), now=NOW,
+                              clock=lambda: NOW + timedelta(minutes=4))
+    assert {(event["race_id"], event["status"]) for event in events} == {
+        (RID, "TOO_LATE_TO_PREFETCH"),
+        (later_id, "FETCHED_NOT_PROVEN_COMPLETE"),
+    }
 
 
 @pytest.mark.parametrize('kwargs',[{'horizon_minutes':1},{'horizon_minutes':float('nan')},

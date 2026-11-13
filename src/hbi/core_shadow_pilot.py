@@ -457,6 +457,8 @@ def run_pilot(
         "tasks_selected": plan["tasks_returned"],
         "tasks_attempted": len(events),
         "task_reason_counts": plan["reason_counts"],
+        "queue_selected": plan["tasks"],
+        "queue_deferred_capacity": plan["deferred_tasks"],
         "provider_event_statuses": dict(sorted(Counter(e["status"] for e in events).items())),
         "provider_events": events,
         "before": a,
