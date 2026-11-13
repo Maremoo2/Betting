@@ -504,3 +504,20 @@ def test_collector_verified_meeting_path_still_passes_original_qa(tmp_path):
     assert result.full_field_pdf_startlist_reconciled is True
     assert result.version_identical_to_t4 is True
     assert result.race_id == RACE
+
+def test_t4_capacity_prefers_nordic_race_over_earlier_french_race():
+    conn = sqlite3.connect(":memory:")
+    conn.row_factory = sqlite3.Row
+    conn.execute("CREATE TABLE races (race_id, track, country, race_no, start_time_utc, discipline)")
+    conn.execute("CREATE TABLE provider_race_refs (race_id, provider, provider_raceday_key, discovered_at_utc)")
+    for rid, country, start in (
+        ("FR", "FR", START - timedelta(seconds=30)),
+        ("SE", "SE", START),
+        ("NO", "NO", START + timedelta(seconds=30)),
+    ):
+        conn.execute("INSERT INTO races VALUES(?,?,?,?,?,?)", (rid, rid, country, 1, start.isoformat(), "trot"))
+        conn.execute("INSERT INTO provider_race_refs VALUES(?,?,?,?)",
+                     (rid, "rikstoto", rid, (T4 - timedelta(hours=1)).isoformat()))
+    plan = plan_t4_source_receipts(conn, now=T4 - timedelta(minutes=2), max_races=1)
+    assert [r["race_id"] for r in plan["eligible"]] == ["SE"]
+    assert {r["race_id"] for r in plan["excluded"] if r["reason"] == "NOT_PROCESSED_CAPACITY"} == {"NO", "FR"}
