@@ -10,13 +10,17 @@ import json
 import math
 from collections import Counter
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
+from .admission_originals import verified_original
+from .cloud_run002_import import CATEGORY
 from .fundamental import MarketFreeFundamentalChampionV1, run_and_persist_fundamental
 from .horse_identity import ModelIdentityEvidence, resolve_model_identity
 from .probability import fair_odds
-from .provider_capability import full_field_gate
+from .provider_capability import CONTRACT, full_field_gate
+from .shadow import ShadowPolicy
 from .storage import SQLiteStore
+from .t4_evidence import _aware
 
 
 @dataclass(frozen=True)
@@ -69,23 +73,81 @@ def assess_and_run(
         race = store.get_race(race_id)
         if race is None:
             raise ValueError("CLOUD_MODEL_CANONICAL_RACE_MISSING")
-        start = datetime.fromisoformat(str(race["start_time_utc"]))
+        start = _aware(race["start_time_utc"])
+        cutoff = start - timedelta(minutes=ShadowPolicy().target_minutes_to_start) if start else None
+        reasons: list[str] = []
+        timing: list[dict[str, object]] = []
+
+        def reject(reason, source_id, timestamp, *, reasons=reasons, timing=timing, cutoff=cutoff):
+            reasons.append(reason)
+            timing.append({"reason": reason, "source_id": source_id, "timestamp": timestamp,
+                           "cutoff_utc": cutoff.isoformat() if cutoff else None})
+
+        def check_clock(role, source_id, value, *, cutoff=cutoff, reject=reject):
+            stamp = _aware(value)
+            if stamp is None:
+                reject(f"{role}_CLOCK_INVALID", source_id, value)
+            elif cutoff is not None and stamp >= cutoff:
+                reject(f"{role}_AT_OR_AFTER_T4", source_id, value)
+            elif stamp > moment:
+                reject(f"{role}_NOT_YET_AVAILABLE", source_id, value)
+
+        if start is None:
+            reject("CANONICAL_START_CLOCK_INVALID", race_id, race["start_time_utc"])
+        elif moment >= cutoff:
+            reject("MODEL_COMPUTATION_AT_OR_AFTER_T4", race_id, moment.isoformat())
         with store.connect() as db:
             runners = [dict(r) for r in db.execute(
                 "SELECT * FROM runners WHERE race_id=? ORDER BY selection_id", (race_id,)
             )]
+            cohort = db.execute(
+                "SELECT source_uri, observed_at_utc, payload_json FROM provider_payloads "
+                "WHERE category=? AND provider_raceday_key=? AND observed_at_utc<=? "
+                "ORDER BY observed_at_utc DESC,rowid DESC LIMIT 1", (CONTRACT, race_id, moment.isoformat()),
+            ).fetchone()
+            collector = db.execute(
+                "SELECT source_uri, observed_at_utc FROM provider_payloads "
+                "WHERE payload_id=? AND provider_raceday_key=? AND category=? AND race_number=?",
+                (source.get("payload_id"), race_id.removeprefix("RIKSTOTO:").rsplit(":", 1)[0],
+                 CATEGORY, race["race_no"]),
+            ).fetchone()
         roster = {str(row["selection_id"]): bool(row["scratched"]) for row in runners}
         expected = {selection for selection, scratched in roster.items() if not scratched}
         snaps = store.latest_runner_fundamentals(race_id, before=moment)
         by_selection = {str(row["selection_id"]): row for row in snaps if not row["scratched"]}
-        reasons: list[str] = []
+        if cohort is not None:
+            try:
+                cohort_payload = json.loads(cohort["payload_json"])
+                cohort_start = cohort_payload.get("race_start_utc")
+                cohort_observed = cohort_payload.get("observed_at_utc")
+            except (ValueError, AttributeError):
+                cohort_start = cohort_observed = None
+            if _aware(cohort_start) is None or _aware(cohort_start) != start:
+                reject("FUNDAMENTAL_RACE_START_CONFLICT", cohort["source_uri"], cohort_start)
+            check_clock("FULL_FIELD_EVIDENCE", cohort["source_uri"], cohort["observed_at_utc"])
+            if _aware(cohort_observed) != _aware(cohort["observed_at_utc"]):
+                reject("FULL_FIELD_EVIDENCE_CLOCK_CONFLICT", cohort["source_uri"], cohort_observed)
+        if collector is None:
+            reasons.append("COLLECTOR_ORIGINAL_CLOCK_UNATTESTED")
+        else:
+            check_clock("COLLECTOR_ORIGINAL", collector["source_uri"], collector["observed_at_utc"])
+        for item in scratch_evidence:
+            if item.race_id == race_id:
+                check_clock("INDEPENDENT_SCRATCH", item.original_uri, item.observed_at.isoformat()
+                            if isinstance(item.observed_at, datetime) else None)
+        for row in snaps:
+            for field in ("observed_at_utc", "feature_as_of_utc"):
+                check_clock("FUNDAMENTAL_SNAPSHOT", row["snapshot_id"], row.get(field))
         if source.get("source_ready") is not True:
             reasons.append("COLLECTOR_SOURCE_REVISION_OR_INCOMPLETE")
         if len(expected) < 2:
             reasons.append("ACTIVE_FIELD_INCOMPLETE")
-        if moment >= start:
+        if start is not None and moment >= start:
             reasons.append("MODEL_COMPUTATION_NOT_BEFORE_RACE_START")
-        scratches = [item for item in scratch_evidence if item.is_usable(race_id, moment)]
+        scratches = [
+            item for item in scratch_evidence
+            if item.is_usable(race_id, min(moment, cutoff) if cutoff else moment)
+        ]
         if not scratches:
             reasons.append("INDEPENDENT_SCRATCH_CORROBORATION_NOT_ATTESTED")
         elif any(len(item.roster) != len(roster) or dict(item.roster) != roster for item in scratches):
@@ -116,7 +178,15 @@ def assess_and_run(
                 raw = {}
             atg = raw.get("atg_market_free") if isinstance(raw, dict) else None
             proofs = tuple(identity_by_entry.get((race_id, selection), ()))
-            horse_id, identity_reason = resolve_model_identity(race_id, selection, row, atg, proofs, moment)
+            for proof in proofs:
+                for role, uri, stamp in (
+                    ("REGISTRY_ORIGINAL", proof.original_uri, proof.observed_at),
+                    ("ATG_HISTORY_ORIGINAL", proof.history_original_uri, proof.history_completed_at),
+                ):
+                    check_clock(role, uri, stamp.isoformat() if isinstance(stamp, datetime) else None)
+            horse_id, identity_reason = resolve_model_identity(
+                race_id, selection, row, atg, proofs, min(moment, cutoff) if cutoff else moment,
+            )
             if identity_reason:
                 reasons.extend(("PERMANENT_HORSE_ID_UNATTESTED", identity_reason))
             elif horse_id is not None:
@@ -156,6 +226,10 @@ def assess_and_run(
         probabilities: dict[str, float] | None = None
         odds: dict[str, float] | None = None
         model_run_id: str | None = None
+        if not reasons and now is None:
+            actual = datetime.now(UTC)
+            if actual >= cutoff:
+                reject("MODEL_COMPUTATION_AT_OR_AFTER_T4", race_id, actual.isoformat())
         if not reasons:
             run = run_and_persist_fundamental(store, race_id=race_id, created_at=moment)
             if (not run.shadow_eligible or set(run.probabilities) != expected
@@ -180,6 +254,8 @@ def assess_and_run(
                 "original_sha256": item.original_sha256,
                 "observed_at_utc": item.observed_at.astimezone(UTC).isoformat(),
             } for item in scratches],
+            "timing_rejections": timing,
+            "cutoff_utc": cutoff.isoformat() if cutoff else None,
             "model_ready": not reasons,
             "model_version": model.VERSION,
             "feature_set_version": model.FEATURE_SET_VERSION,
@@ -202,4 +278,3 @@ def assess_and_run(
         "records": records,
         "bet_ready": 0, "pit_certified": False, "bet_authorized": False,
     }
-from .admission_originals import verified_original
