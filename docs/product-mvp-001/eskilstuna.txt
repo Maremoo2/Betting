@@ -1,0 +1,155 @@
+Betting HQ · Eskilstuna · 2026-11-13
+8 løp i rapporten · 1 med modellestimat · 3 med WIN-priser (3 komplette felt) · 7 uten gyldig modell.
+Research / NO BET. 2026-11-13 11:40:08 UTC
+BET: 0 autoriserte · 8 ikke-eksekverbare løpsobservasjoner.
+Verifiserte offisielle resultater, shadow-P/L og CLV er utilgjengelige i rapportgrunnlaget.
+
+Eskilstuna · SE · løp 1
+Planlagt 2026-11-13 11:29:30 UTC · 11 aktive · 0 strøket · Forskningsestimater.
+Planlagt start passert
+Frys 2026-11-13 10:50:29 UTC · {'champion': 'FUNDAMENTAL_CHAMPION_V1_1', 'core004': 'CORE_004_EXPLORATORY_MULTIFACTOR_V0_NOT_FITTED'} · Forskningsestimater, PIT ikke sertifisert.
+Nr | Hest | Champion | CORE-004 | Fair odds | WIN | EV | Vurdering og grunnlag
+1 | Habanos | 9,58% | 9,08% | 10,43 | 47,01 · 2026-11-13 10:50:17 UTC | 350,51% | WATCH · Historikk 2 starter / 0 seire
+2 | Cochran | 12,78% | 11,84% | 7,83 | 15,59 · 2026-11-13 10:50:17 UTC | 99,20% | WATCH · Historikk 0 starter / 0 seire
+3 | I'm a Bad Boy | 10,95% | 11,62% | 9,13 | 3,85 · 2026-11-13 10:50:17 UTC | -57,83% | PASS · Historikk 1 starter / 0 seire
+4 | Campdemar Pellini | 10,95% | 11,45% | 9,13 | 23,74 · 2026-11-13 10:50:17 UTC | 160,01% | WATCH · Historikk 1 starter / 0 seire
+5 | Ithaka | 12,78% | 11,84% | 7,83 | 6,63 · 2026-11-13 10:50:17 UTC | -15,28% | PASS · Historikk 0 starter / 0 seire
+6 | Global Holy Ground | 12,78% | 11,84% | 7,83 | 4,37 · 2026-11-13 10:50:17 UTC | -44,16% | PASS · Historikk 0 starter / 0 seire
+7 | R.K.Jaguar | 7,67% | 9,54% | 13,04 | 4,75 · 2026-11-13 10:50:17 UTC | -63,58% | PASS · Historikk 4 starter / 0 seire
+8 | Pika Håleryd | 6,39% | 9,19% | 15,65 | 14,11 · 2026-11-13 10:50:17 UTC | -9,85% | PASS · Historikk 6 starter / 0 seire
+9 | Photogenique | 5,48% | 4,11% | 18,26 | 62,98 · 2026-11-13 10:50:17 UTC | 244,89% | WATCH · Historikk 8 starter / 0 seire
+10 | Valkyrie d'Inverne | 6,39% | 5,08% | 15,65 | 13,13 · 2026-11-13 10:50:17 UTC | -16,11% | PASS · Historikk 6 starter / 0 seire
+11 | Pompom | 4,26% | 4,42% | 23,48 | 26,59 · 2026-11-13 10:50:17 UTC | 13,25% | WATCH · Historikk 12 starter / 0 seire
+
+Eskilstuna · SE · løp 2
+Planlagt 2026-11-13 11:55:00 UTC · 12 aktive · 0 strøket · NO VALID MODEL.
+Planlagt start passert
+Programmet og den registrerte starttiden avviker.
+Nr | Hest | Status | WIN | Observert
+1 | Havanna's Filur | Aktiv | 32,69 | 2026-11-13 11:40:05 UTC
+2 | Gloria Vendil | Aktiv | 4,89 | 2026-11-13 11:40:05 UTC
+3 | Mama Power | Aktiv | 3,11 | 2026-11-13 11:40:05 UTC
+4 | Al's Wonderwoman | Aktiv | 14,46 | 2026-11-13 11:40:05 UTC
+5 | Perfect Copy | Aktiv | 44,24 | 2026-11-13 11:40:05 UTC
+6 | Viserys Targaryen | Aktiv | 33,65 | 2026-11-13 11:40:05 UTC
+7 | Bianca | Aktiv | 15,01 | 2026-11-13 11:40:05 UTC
+8 | Kind of Penny | Aktiv | 27,08 | 2026-11-13 11:40:05 UTC
+9 | Corniglia Doc | Aktiv | 18,72 | 2026-11-13 11:40:05 UTC
+10 | Marvelous Doc | Aktiv | 55,33 | 2026-11-13 11:40:05 UTC
+11 | Keldana K. | Aktiv | 29,09 | 2026-11-13 11:40:05 UTC
+12 | Feliziore | Aktiv | 3,45 | 2026-11-13 11:40:05 UTC
+
+Eskilstuna · SE · løp 3
+Planlagt 2026-11-13 12:07:00 UTC · 12 aktive · 0 strøket · NO VALID MODEL.
+Planlagt start passert
+Det importerte feltet samsvarer ikke med programfeltet. Et samlet modellgrunnlag mangler.
+Nr | Hest | Status | WIN | Observert
+1 | Tooma Tooma | Aktiv | 67,88 | 2026-11-13 11:40:05 UTC
+2 | Lady Power Victory | Aktiv | 34,46 | 2026-11-13 11:40:05 UTC
+3 | Who's America | Aktiv | 3,38 | 2026-11-13 11:40:05 UTC
+4 | Pållenallergi | Aktiv | 2,57 | 2026-11-13 11:40:05 UTC
+5 | Cal the Pal | Aktiv | 9,27 | 2026-11-13 11:40:05 UTC
+6 | Frans Avant | Aktiv | 13,09 | 2026-11-13 11:40:05 UTC
+7 | Qul | Aktiv | 69,45 | 2026-11-13 11:40:05 UTC
+8 | Irwin Fas | Aktiv | 22,63 | 2026-11-13 11:40:05 UTC
+9 | Heart Mentality | Aktiv | 43,77 | 2026-11-13 11:40:05 UTC
+10 | Quite Lovely | Aktiv | 22,26 | 2026-11-13 11:40:05 UTC
+11 | Full Disclosure | Aktiv | 60,75 | 2026-11-13 11:40:05 UTC
+12 | In Deference | Aktiv | 8,17 | 2026-11-13 11:40:05 UTC
+
+Eskilstuna · SE · løp 4
+Planlagt 2026-11-13 12:29:00 UTC · 12 aktive · 0 strøket · NO VALID MODEL.
+Kommende etter registrert plan
+Det importerte feltet samsvarer ikke med programfeltet. Et samlet modellgrunnlag mangler.
+Nr | Hest | Status | WIN | Observert
+1 | This is Sparta | Aktiv | – | ukjent
+2 | Global Gunsmoke | Aktiv | – | ukjent
+3 | Al's Nadine | Aktiv | – | ukjent
+4 | Pacefull | Aktiv | – | ukjent
+5 | Pure Sober | Aktiv | – | ukjent
+6 | Defonte Goldneck | Aktiv | – | ukjent
+7 | Flying Vero | Aktiv | – | ukjent
+8 | Quasar | Aktiv | – | ukjent
+9 | Mademoiselle | Aktiv | – | ukjent
+10 | Neferure | Aktiv | – | ukjent
+11 | Occhipinti | Aktiv | – | ukjent
+12 | Barbaresco | Aktiv | – | ukjent
+
+Eskilstuna · SE · løp 5
+Planlagt 2026-11-13 12:50:00 UTC · 12 aktive · 0 strøket · NO VALID MODEL.
+Kommende etter registrert plan
+Programmet gir ingen verifisert starttid.
+Nr | Hest | Status | WIN | Observert
+1 | Romulus Diablo | Aktiv | – | ukjent
+2 | Mogas Jeppe | Aktiv | – | ukjent
+3 | Thor Tooma | Aktiv | – | ukjent
+4 | Digital Scream | Aktiv | – | ukjent
+5 | Grey Market | Aktiv | – | ukjent
+6 | King | Aktiv | – | ukjent
+7 | My D.X.One | Aktiv | – | ukjent
+8 | Humble Malt | Aktiv | – | ukjent
+9 | Osken | Aktiv | – | ukjent
+10 | Denaro Diabolik | Aktiv | – | ukjent
+11 | Elton Vendil | Aktiv | – | ukjent
+12 | Michel | Aktiv | – | ukjent
+
+Eskilstuna · SE · løp 6
+Planlagt 2026-11-13 13:10:00 UTC · 12 aktive · 0 strøket · NO VALID MODEL.
+Kommende etter registrert plan
+Løpet kan ikke identifiseres entydig i programmet.
+Nr | Hest | Status | WIN | Observert
+1 | Ruth Riddle | Aktiv | – | ukjent
+2 | Prevail'em | Aktiv | – | ukjent
+3 | You to Awsome | Aktiv | – | ukjent
+4 | Tidig Tooma | Aktiv | – | ukjent
+5 | Global Go Bajen Go | Aktiv | – | ukjent
+6 | God Only Knows | Aktiv | – | ukjent
+7 | Little Eva | Aktiv | – | ukjent
+8 | Executive Duchess | Aktiv | – | ukjent
+9 | N.Y.Easy on Me | Aktiv | – | ukjent
+10 | Natalie Coger | Aktiv | – | ukjent
+11 | Paceonearth | Aktiv | – | ukjent
+12 | Scandalous Zon | Aktiv | – | ukjent
+
+Eskilstuna · SE · løp 7
+Planlagt 2026-11-13 13:30:00 UTC · 15 aktive · 0 strøket · NO VALID MODEL.
+Kommende etter registrert plan
+Løpet ligger utenfor de kontrollerte modellkohortene.
+Nr | Hest | Status | WIN | Observert
+1 | Panne de Mi B.T.B. | Aktiv | – | ukjent
+2 | Timotejs Obelix | Aktiv | – | ukjent
+3 | Evenepoel | Aktiv | – | ukjent
+4 | Pelshin Boko | Aktiv | – | ukjent
+5 | Alpha Omega | Aktiv | – | ukjent
+6 | Alastair | Aktiv | – | ukjent
+7 | Cristallo | Aktiv | – | ukjent
+8 | Venome | Aktiv | – | ukjent
+9 | Readly Winner | Aktiv | – | ukjent
+10 | True Identity | Aktiv | – | ukjent
+11 | Prop Line W. | Aktiv | – | ukjent
+12 | Even You | Aktiv | – | ukjent
+13 | Kattbo Hunter | Aktiv | – | ukjent
+14 | Max Montana | Aktiv | – | ukjent
+15 | Steady Countess | Aktiv | – | ukjent
+
+Eskilstuna · SE · løp 8
+Planlagt 2026-11-13 13:49:00 UTC · 12 aktive · 0 strøket · NO VALID MODEL.
+Kommende etter registrert plan
+Løpet ligger utenfor de kontrollerte modellkohortene.
+Nr | Hest | Status | WIN | Observert
+1 | Jar Jar Binks | Aktiv | – | ukjent
+2 | Dream From Above | Aktiv | – | ukjent
+3 | Agnes Robric | Aktiv | – | ukjent
+4 | Alandias Philip | Aktiv | – | ukjent
+5 | Long Leg | Aktiv | – | ukjent
+6 | BeaksReadytorumble | Aktiv | – | ukjent
+7 | Quarci von Celeber | Aktiv | – | ukjent
+8 | Vikens Tenbagger | Aktiv | – | ukjent
+9 | Crazy Frog M.C. | Aktiv | – | ukjent
+10 | Mogas Candy | Aktiv | – | ukjent
+11 | Junior Å. | Aktiv | – | ukjent
+12 | Do You Wanna Dance | Aktiv | – | ukjent
+
+Originale Actions-artefakter
+https://github.com/Maremoo2/Betting/actions/runs/43417750508
+Original modellkjøring · https://github.com/Maremoo2/Betting/actions/runs/43411672945
