@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from .core_prefetch import (
+    RESEARCH_MARKET_PRIORITY,
     _market_complete,
     _verified_fundamentals,
     execute_prefetch,
@@ -388,7 +389,10 @@ def plan_t4_source_receipts(
             "effective_t4_utc": t4.isoformat(), "seconds_to_t4": delta,
             "status": status,
         })
-    selected.sort(key=lambda item: (item["effective_t4_utc"], item["race_id"]))
+    selected.sort(key=lambda item: (
+        RESEARCH_MARKET_PRIORITY.get(str(item["country"]).upper(), 3),
+        item["effective_t4_utc"], item["race_id"],
+    ))
     eligible = [r for r in selected if r["status"] == "DUE"]
     for item in selected:
         if item["status"] == "MISSED_T4":
@@ -431,7 +435,7 @@ def run_pilot(
     with store.connect() as conn:
         plan = plan_prefetch(
             conn, now=started.isoformat(), horizon_minutes=horizon_minutes,
-            max_tasks=max_tasks, market_window_minutes=market_window_minutes,
+            max_tasks=max_tasks, market_window_minutes=market_window_minutes, nordic_first=True,
         )
         race_ids = _pilot_race_ids(conn, now=started, horizon=horizon_minutes)
         before = [_readiness(conn, race_id, started) for race_id in race_ids]

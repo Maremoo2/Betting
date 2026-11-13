@@ -14,7 +14,7 @@ def make_db():
     c=sqlite3.connect(':memory:');c.row_factory=sqlite3.Row
     c.executescript('''
       create table races (race_id text,track text,race_no int,discipline text,
-                          start_time_utc text,race_date text);
+                          start_time_utc text,race_date text,country text default 'UNKNOWN');
       create table provider_race_refs (provider text, race_id text,
                           provider_raceday_key text,race_number int);
       create table runners (race_id text,selection_id text,horse_name text,
@@ -32,9 +32,9 @@ def make_db():
     return c
 
 
-def add_race(c, *, rid=RID, start=START, track='Testbane', no=1, roster=True, country='trot'):
-    c.execute('insert into races values (?,?,?,?,?,?)',
-              (rid,track,no,country,start,'2026-10-30'))
+def add_race(c, *, rid=RID, start=START, track='Testbane', no=1, roster=True, country='trot', nation='UNKNOWN'):
+    c.execute('insert into races values (?,?,?,?,?,?,?)',
+              (rid,track,no,country,start,'2026-10-30',nation))
     c.execute('insert into provider_race_refs values (?,?,?,?)',
               ('rikstoto',rid,'T1_NR_2026-10-30',no))
     if roster:
@@ -366,3 +366,25 @@ def test_prefetch_valid_utc_offset_with_true_past_snapshot_is_accepted():
     plan = plan_prefetch(c, now=NOW.isoformat())
     assert "INCOMPLETE_FULL_FIELD_HISTORY" not in plan["reason_counts"]
     assert "MISSING_OR_INCOMPLETE_WIN_MARKET" not in plan["reason_counts"]
+
+def test_nordic_priority_preserves_capacity_and_has_no_country_bias():
+    conn = make_db()
+    conn.execute("UPDATE races SET country='FR', start_time_utc=?", ((NOW + timedelta(minutes=6)).isoformat(),))
+    add_race(conn, rid="NO", track="Biri", nation="NO", start=(NOW + timedelta(minutes=10)).isoformat())
+    add_race(conn, rid="SE", track="Kalmar", nation="SE")
+    original = plan_prefetch(conn, now=NOW.isoformat(), max_tasks=4)
+    ordered = plan_prefetch(conn, now=NOW.isoformat(), max_tasks=4, nordic_first=True)
+    assert original["tasks"][0]["race_id"] == RID
+    assert [t["race_id"] for t in ordered["tasks"]] == ["SE", "SE", "NO", "NO"]
+    assert ordered["tasks_available"] == original["tasks_available"] == 6
+    fallback = plan_prefetch(conn, now=NOW.isoformat(), max_tasks=5, nordic_first=True)
+    assert fallback["tasks"][-1]["race_id"] == RID
+
+
+def test_nordic_priority_uses_verified_roster_before_time_within_urgency():
+    conn = make_db()
+    conn.execute("UPDATE races SET country='NO', start_time_utc=?", ((NOW + timedelta(minutes=6)).isoformat(),))
+    conn.execute("DELETE FROM runners")
+    add_race(conn, rid="SE", track="Kalmar", nation="SE")
+    plan = plan_prefetch(conn, now=NOW.isoformat(), max_tasks=1, nordic_first=True)
+    assert plan["tasks"][0]["race_id"] == "SE"

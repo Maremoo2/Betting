@@ -22,6 +22,7 @@ from .source_identity import is_generic_horse_identity
 
 SCHEMA = 'CORE_003_PREFETCH_V1'
 REQUIRED_HISTORY_RATIO = 0.8
+RESEARCH_MARKET_PRIORITY = {'NO': 0, 'SE': 0, 'DK': 1, 'FR': 2}
 
 
 @dataclass(frozen=True)
@@ -111,7 +112,7 @@ def _source_observation_as_of(value: str | None, cutoff: datetime) -> bool:
 
 def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float = 90.0,
                   lead_minutes: float = 4.0, market_window_minutes: float = 12.0,
-                  max_tasks: int | None = None) -> dict[str, Any]:
+                  max_tasks: int | None = None, nordic_first: bool = False) -> dict[str, Any]:
     """Create work for missing fundamental/market data for *future* trot races.
 
     Only snapshots observed <= now are considered. No provider call and no DB writes.
@@ -126,8 +127,9 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
         raise ValueError('market_window_minutes must be > lead_minutes and <= horizon_minutes')
     if max_tasks is not None and (type(max_tasks) is not int or max_tasks < 1):
         raise ValueError('max_tasks must be positive integer')
-    refs = _rows(conn, """select r.race_id,r.track,r.race_no,r.start_time_utc,r.discipline,
-                               p.provider_raceday_key,p.provider,p.race_number
+    country_column = ", r.country" if nordic_first else ""
+    refs = _rows(conn, f"""select r.race_id,r.track,r.race_no,r.start_time_utc,r.discipline,
+                               p.provider_raceday_key,p.provider,p.race_number {country_column}
                         from races r join provider_race_refs p on r.race_id=p.race_id
                         where p.provider='rikstoto' order by r.start_time_utc,r.race_id""")
     candidates = []
@@ -142,6 +144,7 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
         candidates.append((row, minutes))
     tasks: list[PrefetchTask] = []
     eligible_races = set()
+    source_priority = {}
     # Avoid probable product duplicates in a single future discovery batch.
     # Same track/number within ten minutes is only a research heuristic.
     selected: list[tuple[dict[str, Any], float]] = []
@@ -157,6 +160,7 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
         roster = _rows(conn, 'select selection_id,scratched,horse_name from runners where race_id=?', (race_id,))
         fund, fundamental_at = _cohort(conn, 'runner_fundamental_snapshots', race_id, current.isoformat())
         market, market_at = _cohort(conn, 'provider_market_snapshots', race_id, current.isoformat(), product='V')
+        roster_ready = _roster_states(roster) is not None
         complete_fund, verified = _verified_fundamentals(fund, roster)
         complete_market = _market_complete(market, roster)
         # _cohort's legacy SQLite text comparison can admit a timestamp
@@ -186,6 +190,12 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
             verified = 0
         if not market_clocks_valid:
             complete_market = False
+        if nordic_first:
+            source_priority[race_id] = (
+                RESEARCH_MARKET_PRIORITY.get(str(r['country']).upper(), 3),
+                not roster_ready,
+                not complete_fund,
+            )
         if not roster:
             why = 'MISSING_STARTLIST'
         elif any(is_generic_horse_identity(row.get('horse_name')) for row in roster):
@@ -218,8 +228,14 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
                 'COLLECT_WIN_MARKET',market_reason,phase,0,
                 len(roster),verified,len(market),current.isoformat()))
     # For near-start races collect missing fundamentals ahead of price capture.
-    tasks.sort(key=lambda t:(t.urgency,t.minutes_to_start,
-                            0 if t.action=='COLLECT_FUNDAMENTALS' else 1,t.race_id))
+    tasks.sort(key=lambda t: (
+        source_priority[t.race_id][0] if nordic_first else 0,
+        t.urgency,
+        source_priority[t.race_id][1:] if nordic_first else (),
+        t.minutes_to_start,
+        0 if t.action == 'COLLECT_FUNDAMENTALS' else 1,
+        t.race_id,
+    ))
     chosen = tasks if max_tasks is None else tasks[:max_tasks]
     return {'schema_version':SCHEMA,'authority':'SHADOW_RESEARCH_ONLY',
             'as_of_utc':current.isoformat(),'horizon_minutes':horizon_minutes,

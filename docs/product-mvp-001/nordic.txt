@@ -1,6 +1,6 @@
 Betting HQ · 2026-11-13
-25 løp i rapporten · 1 med modellestimat · 4 med WIN-priser (4 komplette felt) · 24 uten gyldig modell.
-Research / NO BET. Datagrunnlag 13.11.2026 13:45:29 · Europe/Oslo
+25 løp i rapporten · 1 med modellestimat · 5 med WIN-priser (5 komplette felt) · 24 uten gyldig modell.
+Research / NO BET. Datagrunnlag 13.11.2026 16:12:49 · Europe/Oslo
 BET: 0 autoriserte · 25 ikke-eksekverbare løpsobservasjoner.
 Shadow-P/L og CLV er utilgjengelige i rapportgrunnlaget.
 
@@ -26,7 +26,7 @@ Resultatkilden oppgir faktisk start 13.11.2026 12:30:28. Vinner 3 I'm a Bad Boy.
 Eskilstuna · SE · løp 2
 Planlagt 13.11.2026 12:55:00 · 12 aktive · 0 strøket · NO VALID MODEL.
 Planlagt start passert
-Programmet og den registrerte starttiden avviker.
+Programmet og den registrerte starttiden avviker. CORE-003 verifiserte historikk for 0 aktive hester.
 Nr | Hest | Status | WIN | Observert
 1 | Havanna's Filur | Aktiv | 32,69 | 13.11.2026 12:40:05
 2 | Gloria Vendil | Aktiv | 4,89 | 13.11.2026 12:40:05
@@ -44,7 +44,7 @@ Nr | Hest | Status | WIN | Observert
 Eskilstuna · SE · løp 3
 Planlagt 13.11.2026 13:15:00 · 12 aktive · 0 strøket · NO VALID MODEL.
 Planlagt start passert
-Det importerte feltet samsvarer ikke med programfeltet. Et samlet modellgrunnlag mangler.
+Det importerte feltet samsvarer ikke med programfeltet. Et samlet modellgrunnlag mangler. CORE-003 verifiserte historikk for 0 aktive hester.
 Nr | Hest | Status | WIN | Observert
 1 | Tooma Tooma | Aktiv | 67,88 | 13.11.2026 12:40:05
 2 | Lady Power Victory | Aktiv | 34,46 | 13.11.2026 12:40:05
@@ -61,8 +61,8 @@ Nr | Hest | Status | WIN | Observert
 
 Eskilstuna · SE · løp 5
 Planlagt 13.11.2026 13:58:00 · 12 aktive · 0 strøket · NO VALID MODEL.
-Kommende etter registrert plan
-Programmet gir ingen verifisert starttid.
+Planlagt start passert
+Programmet gir ingen verifisert starttid. CORE-003 verifiserte historikk for 12 aktive hester.
 Nr | Hest | Status | WIN | Observert
 1 | Romulus Diablo | Aktiv | 3,10 | 13.11.2026 13:45:21
 2 | Mogas Jeppe | Aktiv | 26,07 | 13.11.2026 13:45:21
@@ -77,10 +77,28 @@ Nr | Hest | Status | WIN | Observert
 11 | Elton Vendil | Aktiv | 50,43 | 13.11.2026 13:45:21
 12 | Michel | Aktiv | 41,31 | 13.11.2026 13:45:21
 
+Eskilstuna · SE · løp 8
+Planlagt 13.11.2026 14:58:00 · 12 aktive · 0 strøket · NO VALID MODEL.
+Planlagt start passert
+Programmet og den registrerte starttiden avviker. CORE-003 verifiserte historikk for 0 aktive hester.
+Nr | Hest | Status | WIN | Observert
+1 | Jar Jar Binks | Aktiv | 8,90 | 13.11.2026 14:46:56
+2 | Dream From Above | Aktiv | 18,15 | 13.11.2026 14:46:56
+3 | Agnes Robric | Aktiv | 27,63 | 13.11.2026 14:46:56
+4 | Alandias Philip | Aktiv | 26,66 | 13.11.2026 14:46:56
+5 | Long Leg | Aktiv | 4,48 | 13.11.2026 14:46:56
+6 | BeaksReadytorumble | Aktiv | 10,87 | 13.11.2026 14:46:56
+7 | Quarci von Celeber | Aktiv | 8,60 | 13.11.2026 14:46:56
+8 | Vikens Tenbagger | Aktiv | 31,51 | 13.11.2026 14:46:56
+9 | Crazy Frog M.C. | Aktiv | 3,86 | 13.11.2026 14:46:56
+10 | Mogas Candy | Aktiv | 14,13 | 13.11.2026 14:46:56
+11 | Junior Å. | Aktiv | 35,97 | 13.11.2026 14:46:56
+12 | Do You Wanna Dance | Aktiv | 8,67 | 13.11.2026 14:46:56
+
 Eskilstuna · SE · løp 4
 Planlagt 13.11.2026 13:36:00 · 12 aktive · 0 strøket · NO VALID MODEL.
 Planlagt start passert
-Det importerte feltet samsvarer ikke med programfeltet. Et samlet modellgrunnlag mangler.
+Det importerte feltet samsvarer ikke med programfeltet. Et samlet modellgrunnlag mangler. CORE-003 verifiserte historikk for 0 aktive hester.
 Nr | Hest | Status | WIN | Observert
 1 | This is Sparta | Aktiv | – | ukjent
 2 | Global Gunsmoke | Aktiv | – | ukjent
@@ -97,8 +115,8 @@ Nr | Hest | Status | WIN | Observert
 
 Eskilstuna · SE · løp 6
 Planlagt 13.11.2026 14:18:00 · 12 aktive · 0 strøket · NO VALID MODEL.
-Kommende etter registrert plan
-Løpet kan ikke identifiseres entydig i programmet.
+Planlagt start passert
+Løpet kan ikke identifiseres entydig i programmet. CORE-003 verifiserte historikk for 12 aktive hester.
 Nr | Hest | Status | WIN | Observert
 1 | Ruth Riddle | Aktiv | – | ukjent
 2 | Prevail'em | Aktiv | – | ukjent
@@ -115,8 +133,8 @@ Nr | Hest | Status | WIN | Observert
 
 Eskilstuna · SE · løp 7
 Planlagt 13.11.2026 14:38:00 · 15 aktive · 0 strøket · NO VALID MODEL.
-Kommende etter registrert plan
-Programmet og den registrerte starttiden avviker.
+Planlagt start passert
+Programmet og den registrerte starttiden avviker. CORE-003 verifiserte historikk for 15 aktive hester.
 Nr | Hest | Status | WIN | Observert
 1 | Panne de Mi B.T.B. | Aktiv | – | ukjent
 2 | Timotejs Obelix | Aktiv | – | ukjent
@@ -134,28 +152,10 @@ Nr | Hest | Status | WIN | Observert
 14 | Max Montana | Aktiv | – | ukjent
 15 | Steady Countess | Aktiv | – | ukjent
 
-Eskilstuna · SE · løp 8
-Planlagt 13.11.2026 14:58:00 · 12 aktive · 0 strøket · NO VALID MODEL.
-Kommende etter registrert plan
-Programmet og den registrerte starttiden avviker.
-Nr | Hest | Status | WIN | Observert
-1 | Jar Jar Binks | Aktiv | – | ukjent
-2 | Dream From Above | Aktiv | – | ukjent
-3 | Agnes Robric | Aktiv | – | ukjent
-4 | Alandias Philip | Aktiv | – | ukjent
-5 | Long Leg | Aktiv | – | ukjent
-6 | BeaksReadytorumble | Aktiv | – | ukjent
-7 | Quarci von Celeber | Aktiv | – | ukjent
-8 | Vikens Tenbagger | Aktiv | – | ukjent
-9 | Crazy Frog M.C. | Aktiv | – | ukjent
-10 | Mogas Candy | Aktiv | – | ukjent
-11 | Junior Å. | Aktiv | – | ukjent
-12 | Do You Wanna Dance | Aktiv | – | ukjent
-
 Kalmar · SE · løp 1
 Planlagt 13.11.2026 18:20:00 · 11 aktive · 1 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | Onemorenight | Aktiv | – | ukjent
 2 | Seyyid Boko | Aktiv | – | ukjent
@@ -173,7 +173,7 @@ Nr | Hest | Status | WIN | Observert
 Kalmar · SE · løp 2
 Planlagt 13.11.2026 18:42:00 · 12 aktive · 1 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | Quick Escape | Aktiv | – | ukjent
 2 | Ez Zacattack L.A. | Aktiv | – | ukjent
@@ -192,7 +192,7 @@ Nr | Hest | Status | WIN | Observert
 Biri · NO · løp 1
 Planlagt 13.11.2026 18:55:00 · 10 aktive · 1 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | Nytomt Stella* (S) | Aktiv | – | ukjent
 2 | Lannem Viktorria | Aktiv | – | ukjent
@@ -209,7 +209,7 @@ Nr | Hest | Status | WIN | Observert
 Kalmar · SE · løp 3
 Planlagt 13.11.2026 19:05:00 · 10 aktive · 0 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | I Am the Art | Aktiv | – | ukjent
 2 | I Stand by You | Aktiv | – | ukjent
@@ -225,7 +225,7 @@ Nr | Hest | Status | WIN | Observert
 Biri · NO · løp 2
 Planlagt 13.11.2026 19:16:00 · 10 aktive · 0 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | Verdande | Aktiv | – | ukjent
 2 | Helin Prinsen | Aktiv | – | ukjent
@@ -241,7 +241,7 @@ Nr | Hest | Status | WIN | Observert
 Kalmar · SE · løp 4
 Planlagt 13.11.2026 19:30:00 · 12 aktive · 0 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | Le Roi | Aktiv | – | ukjent
 2 | Digital Aircraft | Aktiv | – | ukjent
@@ -259,7 +259,7 @@ Nr | Hest | Status | WIN | Observert
 Biri · NO · løp 3
 Planlagt 13.11.2026 19:40:00 · 11 aktive · 0 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | Nina de la Giro* (FR) | Aktiv | – | ukjent
 2 | Hanhin | Aktiv | – | ukjent
@@ -276,7 +276,7 @@ Nr | Hest | Status | WIN | Observert
 Kalmar · SE · løp 5
 Planlagt 13.11.2026 19:52:00 · 11 aktive · 0 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | Winnie Brodda | Aktiv | – | ukjent
 2 | Spader Tourmaline | Aktiv | – | ukjent
@@ -293,7 +293,7 @@ Nr | Hest | Status | WIN | Observert
 Biri · NO · løp 4
 Planlagt 13.11.2026 20:05:00 · 10 aktive · 0 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | Torderud Snerta | Aktiv | – | ukjent
 2 | Odin E.L. | Aktiv | – | ukjent
@@ -309,7 +309,7 @@ Nr | Hest | Status | WIN | Observert
 Kalmar · SE · løp 6
 Planlagt 13.11.2026 20:14:00 · 14 aktive · 1 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | Quincie Gold | Aktiv | – | ukjent
 2 | Maverick Silver | Aktiv | – | ukjent
@@ -330,7 +330,7 @@ Nr | Hest | Status | WIN | Observert
 Biri · NO · løp 5
 Planlagt 13.11.2026 20:25:00 · 8 aktive · 0 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | Juliette F.T. | Aktiv | – | ukjent
 2 | Zero Pepper | Aktiv | – | ukjent
@@ -344,7 +344,7 @@ Nr | Hest | Status | WIN | Observert
 Kalmar · SE · løp 7
 Planlagt 13.11.2026 20:36:00 · 10 aktive · 0 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | Soldier of Fortune | Aktiv | – | ukjent
 2 | Tvingens Calippo | Aktiv | – | ukjent
@@ -360,7 +360,7 @@ Nr | Hest | Status | WIN | Observert
 Biri · NO · løp 6
 Planlagt 13.11.2026 20:45:00 · 10 aktive · 0 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | Nytomt Amira* (S) | Aktiv | – | ukjent
 2 | Bragevinn | Aktiv | – | ukjent
@@ -376,7 +376,7 @@ Nr | Hest | Status | WIN | Observert
 Kalmar · SE · løp 8
 Planlagt 13.11.2026 20:56:00 · 14 aktive · 0 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | Autumn Shine L.A. | Aktiv | – | ukjent
 2 | Manda Cord | Aktiv | – | ukjent
@@ -396,7 +396,7 @@ Nr | Hest | Status | WIN | Observert
 Biri · NO · løp 7
 Planlagt 13.11.2026 21:05:00 · 6 aktive · 0 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | Ecu De Mieloui (FR) | Aktiv | – | ukjent
 2 | Demon Onthe Hill (US) | Aktiv | – | ukjent
@@ -408,7 +408,7 @@ Nr | Hest | Status | WIN | Observert
 Kalmar · SE · løp 9
 Planlagt 13.11.2026 21:15:00 · 12 aktive · 0 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | Marchus K. | Aktiv | – | ukjent
 2 | Nobby Stiles | Aktiv | – | ukjent
@@ -426,7 +426,7 @@ Nr | Hest | Status | WIN | Observert
 Kalmar · SE · løp 10
 Planlagt 13.11.2026 21:33:00 · 15 aktive · 0 strøket · NO VALID MODEL.
 Kommende etter registrert plan
-Løpet ligger utenfor de kontrollerte modellkohortene.
+Løpet ligger utenfor de kontrollerte modellkohortene. Historikkdekning er ikke målt i de kontrollerte kjøringene.
 Nr | Hest | Status | WIN | Observert
 1 | Elsa Jons | Aktiv | – | ukjent
 2 | Jack G.G. | Aktiv | – | ukjent
@@ -481,6 +481,6 @@ CORE-004 | 2,12 | 0,86
 WIN | 1,94 | 0,82
 
 Originale Actions-artefakter
-https://github.com/Maremoo2/Betting/actions/runs/43426741239
+https://github.com/Maremoo2/Betting/actions/runs/43450228274
 Original modellkjøring · https://github.com/Maremoo2/Betting/actions/runs/43411672945
 Historisk originaleksempel · https://github.com/Maremoo2/Betting/actions/runs/41911371831
