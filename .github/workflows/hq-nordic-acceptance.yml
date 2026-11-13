@@ -1,0 +1,43 @@
+name: Betting HQ Nordic acceptance (research)
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/hq-nordic-acceptance.yml"
+      - "src/hbi/hq_acceptance.py"
+      - "docs/product-mvp-001/v1-acceptance-inputs.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  original-replay:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - name: Verify archived sources and render Nordic report
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python -m hbi.hq_acceptance \
+            --config docs/product-mvp-001/v1-acceptance-inputs.json \
+            --archive "$RUNNER_TEMP/hq-originals" --stage "$RUNNER_TEMP/hq-stage" \
+            --output hq-report --download
+      - name: Upload derived reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: hq-nordic-acceptance-${{ github.run_id }}
+          path: |
+            hq-report/betting-hq.html
+            hq-report/betting-hq.txt
+            hq-report/betting-hq.json
+            hq-report/acceptance.json
+          if-no-files-found: error
+          retention-days: 21

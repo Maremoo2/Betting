@@ -590,3 +590,19 @@ def test_research_only_tmp_may_score_but_never_be_exact_identity(tmp_path):
         assert result["model_input_approved"] is False
         assert result["pit_certified"] is False
         assert result["bet_authority"] is False
+
+def test_long_title_with_physical_label_starts_a_new_pdf_section():
+    from hbi.collector_handoff import pdf_field
+
+    with fitz.open() as pdf:
+        for header, time, name in (
+            ("Lop 5", "13:50", "Alpha"),
+            ("Equi Tours - Daylights Stoserie, Forsok 3 (Final Eskilstuna 13/12) Lop 6", "14:10", "Beta"),
+        ):
+            page = pdf.new_page()
+            page.insert_text((35, 50), f"{header}\nSTART KL. {time}\n1 {name}, Test")
+        body = pdf.tobytes()
+    assert pdf_field(body, 5, {"1": {"name": "Alpha"}}, "2026-11-13") == "2026-11-13T12:50:00+00:00"
+    assert pdf_field(body, 6, {"1": {"name": "Beta"}}, "2026-11-13") == "2026-11-13T13:10:00+00:00"
+    with pytest.raises(ValueError, match="COLLECTOR_PDF_FIELD_MISMATCH"):
+        pdf_field(body, 5, {"1": {"name": "Beta"}}, "2026-11-13")
