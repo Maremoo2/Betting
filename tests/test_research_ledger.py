@@ -61,5 +61,3 @@ def test_offline_ledger_preserves_denominator(tmp_path, fault, status):
         assert not report["bet_authority"] and report["pit_certified"] == 0
     assert {path: path.read_bytes() for path in tmp_path.rglob("*.zip")} == before
     assert not list(tmp_path.rglob("*.sqlite"))
-
-
