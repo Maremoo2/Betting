@@ -145,7 +145,7 @@ def replay_score_example(config, archive, stage):
 
 
 def render_daily(args, archive, stage, output, config):
-    """Find frozen races from the report itself and attach post-race originals."""
+    """Attach official results for all started races in the original programme."""
     from datetime import UTC, datetime
 
     from .hq_daily_report import official_observation
@@ -160,7 +160,7 @@ def render_daily(args, archive, stage, output, config):
     now = datetime.now(UTC)
     for race in day["races"]:
         start = clock(race["start"])
-        if not race["analysis"] or start is None or now <= start:
+        if start is None or now <= start:
             continue
         rid = race["race_id"]
         folder = stage / rid.replace(":", "-")

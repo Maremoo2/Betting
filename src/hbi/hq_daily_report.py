@@ -172,7 +172,9 @@ def official_observation(rid, directory, model):
     if any(clock(receipt["observed_at_utc"]) <= actual for receipt in receipts.values()):
         raise ValueError("Official result receipt predates reported start")
     winners = [row for row in complete["results"] if row["place"] == 1]
-    published = raceday["raceWinners"][race_no]
+    published = raceday.get("raceWinners", {}).get(race_no)
+    if not isinstance(published, list) or not published:
+        raise ValueError("OFFICIAL_RACEDAY_WINNER_NOT_PUBLISHED")
     winner = None
     if len(winners) == len(published) == 1 and winners[0]["startNumber"] == published[0]["startNumber"]:
         winner = {"number": winners[0]["startNumber"], "name": winners[0]["horseName"]}
