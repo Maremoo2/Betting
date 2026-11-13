@@ -25,6 +25,11 @@ class AtgFetchResult:
 
 
 @dataclass(frozen=True)
+class AtgOriginalFetchResult(AtgFetchResult):
+    raw_body: bytes = b""
+
+
+@dataclass(frozen=True)
 class AtgRaceRef:
     race_id: str
     track_name: str
@@ -59,7 +64,7 @@ class AtgClient:
             "Origin": "https://www.atg.se",
         }
 
-    def _fetch(self, url: str) -> AtgFetchResult:
+    def _fetch(self, url: str, *, retain_raw_body: bool = False) -> AtgFetchResult:
         request = urllib.request.Request(url, headers=self._headers(), method="GET")
         started = time.perf_counter()
         try:
@@ -67,20 +72,26 @@ class AtgClient:
                 original_bytes = response.read()
                 response_completed = datetime.now(UTC)
                 payload = json.loads(original_bytes.decode("utf-8"))
-                return AtgFetchResult(
-                    url=url,
-                    payload=payload,
-                    success=True,
-                    status_code=response.status,
-                    latency_ms=(time.perf_counter() - started) * 1000,
-                    response_body_sha256=hashlib.sha256(original_bytes).hexdigest(),
-                    response_completed_at=response_completed,
-                )
+                fields = {
+                    "url": url,
+                    "payload": payload,
+                    "success": True,
+                    "status_code": response.status,
+                    "latency_ms": (time.perf_counter() - started) * 1000,
+                    "response_body_sha256": hashlib.sha256(original_bytes).hexdigest(),
+                    "response_completed_at": response_completed,
+                }
+                if retain_raw_body:
+                    if response.status != 200 or response.geturl() != url:
+                        raise ValueError("ATG_ORIGINAL_SOURCE_MISMATCH")
+                    return AtgOriginalFetchResult(**fields, raw_body=original_bytes)
+                return AtgFetchResult(**fields)
         except (
             urllib.error.HTTPError,
             urllib.error.URLError,
             TimeoutError,
             json.JSONDecodeError,
+            UnicodeDecodeError,
         ) as exc:
             status = exc.code if isinstance(exc, urllib.error.HTTPError) else None
             return AtgFetchResult(
@@ -98,8 +109,9 @@ class AtgClient:
             "?headToHeadEnabled=true"
         )
 
-    def race_game(self, race_id: str) -> AtgFetchResult:
-        return self._fetch(f"{self.GAME_API}/vinnare_{race_id}")
+    def race_game(self, race_id: str, *, retain_raw_body: bool = False) -> AtgFetchResult:
+        url = f"{self.GAME_API}/vinnare_{race_id}"
+        return self._fetch(url, retain_raw_body=True) if retain_raw_body else self._fetch(url)
 
     @staticmethod
     def _normalize_name(value: str) -> str:

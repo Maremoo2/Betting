@@ -3,8 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .admission_originals import verified_original
-from .provider_capability import validate_lifetime
-from .providers.atg import AtgClient
+from .atg_admission_source import verify_history_original
 
 
 @dataclass(frozen=True)
@@ -71,6 +70,10 @@ def resolve_model_identity(
         )
         if registry is None or history is None:
             return None, "IDENTITY_UNRESOLVED"
+        game_id = history.get("id")
+        if not isinstance(game_id, str) or not game_id.startswith("vinnare_"):
+            return None, "HISTORY_ORIGINAL_MISMATCH"
+        provider_race_id = game_id.removeprefix("vinnare_")
         if registry != {
             "schema": "VERIFIED_REGISTRY_BINDING_V1",
             "race_id": race_id,
@@ -81,30 +84,20 @@ def resolve_model_identity(
             "atg_horse_id": item.atg_horse_id,
             "snapshot_id": item.snapshot_id,
             "history_original_sha256": item.history_original_sha256,
-            "atg_race_id": history.get("id"),
+            "atg_race_id": provider_race_id,
         }:
             return None, "REGISTRY_BINDING_MISMATCH"
-        provider_race_id = history.get("id")
-        starts = history.get("starts")
-        if (
-            not isinstance(provider_race_id, str) or not provider_race_id
-            or item.history_original_uri != f"{AtgClient.GAME_API}/vinnare_{provider_race_id}"
-            or item.history_original_uri != row.get("source_uri")
-            or history.get("status") != "upcoming"
-            or not isinstance(starts, list)
-        ):
+        if item.history_original_uri != row.get("source_uri"):
             return None, "HISTORY_ORIGINAL_MISMATCH"
-        horses = [
-            entry.get("horse") for entry in starts if isinstance(entry, dict)
-            and str(entry.get("number")) == selection_id and entry.get("scratched") is not True
-        ]
-        if len(horses) != 1 or not isinstance(horses[0], dict):
+        try:
+            facts = verify_history_original(
+                item.history_original, uri=item.history_original_uri, sha256=item.history_original_sha256,
+                completed_at=item.history_completed_at, cutoff=cutoff, provider_race_id=provider_race_id,
+            )
+            actual = facts.get(int(selection_id))
+        except (ValueError, TypeError):
             return None, "HISTORY_ORIGINAL_MISMATCH"
-        horse = horses[0]
-        if horse.get("id") != item.atg_horse_id or validate_lifetime(horse) is not None:
-            return None, "HISTORY_ORIGINAL_MISMATCH"
-        life = horse["statistics"]["life"]
-        if (life["starts"], life["placement"]["1"]) != (atg.get("lifeStarts"), atg.get("lifeWins")):
+        if actual != (item.atg_horse_id, atg.get("lifeStarts"), atg.get("lifeWins")):
             return None, "HISTORY_ORIGINAL_MISMATCH"
     return identity["horse_id"], None
 
