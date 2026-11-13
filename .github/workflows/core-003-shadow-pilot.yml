@@ -22,12 +22,15 @@ permissions:
   contents: read
   actions: read
 
-concurrency:
-  group: core003-isolated-source-pilot
-  cancel-in-progress: false
-
 jobs:
   source-pilot:
+    concurrency:
+      group: core003-isolated-source-pilot
+      cancel-in-progress: false
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+      execute: ${{ steps.gate.outputs.execute }}
+      restore: ${{ steps.restore.outcome }}
     runs-on: ubuntu-latest
     timeout-minutes: 13
     steps:
@@ -425,6 +428,7 @@ jobs:
       # PIT-003A is a source-only sidecar, never a replacement for CORE-003.
       # GitHub cron is best-effort. Late jobs explicitly record MISSED_T4.
       - name: Capture race-relative original T-4 receipts (research only)
+        timeout-minutes: 7
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true'
         run: |
           python -m hbi.core_t4_receipt capture \
@@ -450,10 +454,53 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Upload original T-4 source receipts
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit003a-source-receipts-${{ github.run_id }}
+          path: pit003a-source-receipts/
+          if-no-files-found: ignore
+          retention-days: 21
+
+  outcome-research:
+    needs: source-pilot
+    if: >-
+      always() && needs.source-pilot.outputs.run == 'true'
+      && needs.source-pilot.outputs.execute == 'true'
+      && needs.source-pilot.outputs.restore == 'success'
+    concurrency:
+      group: core003-isolated-outcome-research
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - name: Recover current-run original evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p bet-mvp-shadow pit003a-source-receipts pit003a-collector-archive
+          download() {
+            if ! gh run download "$GITHUB_RUN_ID" --name "$1-$GITHUB_RUN_ID" --dir "$2"; then
+              echo "::warning::CURRENT_ORIGINAL_UNAVAILABLE:$1"
+            fi
+          }
+          download core003-pilot-report .
+          download collector-handoff .
+          download bet-mvp-shadow bet-mvp-shadow
+          download pit003a-source-receipts pit003a-source-receipts
+          download pit003a-collector-evidence pit003a-collector-archive
+
       # Prior frozen reports are downloaded by original run ID, never recomputed.
       # Any missing artifact remains an explicit model-link blocker.
       - name: Recover prior original prospective models (read only)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -488,7 +535,7 @@ jobs:
           fi
 
       - name: Independently audit T-4 source receipts against frozen reports
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        if: always()
         run: |
           if [ -f pit003a-source-receipts/index.json ]; then
             python -m hbi.core_t4_receipt attest \
@@ -503,19 +550,46 @@ jobs:
       # Emit separate, immutable read-only V3.3 gate diagnostics AFTER attestation.
       # Missing originals and unmatched receipts are recorded as BLOCKED, never PASS.
       - name: Generate MVP-009 read-only decision diagnostics
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        if: always()
         run: |
           python -m hbi.mvp009_auto_decision_audit \
             --cohort-index bet-mvp-shadow/cohort-index.json \
             --attestation-index pit003a-attestations/index.json \
             --output-dir mvp009-decision-audits
 
+      - name: Upload restored immutable prior model evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit003a-prior-frozen-models-${{ github.run_id }}
+          path: pit003a-prior-models/
+          if-no-files-found: ignore
+          retention-days: 21
+
+      - name: Upload PIT T-4 research attestations (NO BET)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit003a-attestations-${{ github.run_id }}
+          path: pit003a-attestations/
+          if-no-files-found: ignore
+          retention-days: 21
+
+      - name: Upload MVP-009 decision diagnostics (RESEARCH ONLY, NO BET)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp009-decision-audits-${{ github.run_id }}
+          path: mvp009-decision-audits/
+          if-no-files-found: warn
+          retention-days: 21
+
       # DEV-011 is strictly separate from PIT-003A's original prior-model recovery.
       # Paginate EVERY existing GitHub artifact page. No latest-N truncation and
       # no model/market/outcome-quality filter. All unavailable originals are
       # explicit blocking entries in an immutable cumulative coverage manifest.
       - name: Recover cumulative DEV-011 originals for scorecard only (NO BET)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -584,7 +658,7 @@ jobs:
       # public GETs are kept in this separate research-only artifact; never
       # feed them into CORE-004, T-4 attestations or betting decisions.
       - name: Generate DEV-009 prospective official outcome scorecard (NO BET)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        if: always()
         run: |
           # A failed source-inventory attempt is NOT a new zero-race benchmark.
           # Instead emit an explicit, distinct source-unavailable research
@@ -605,7 +679,7 @@ jobs:
           fi
 
       - name: Export research ledger from current and archived originals (NO BET)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        if: always()
         id: ledger_export
         continue-on-error: true
         shell: bash
@@ -625,10 +699,10 @@ jobs:
             --output research-ledger/index.json
 
       - name: Record research ledger export status (NO BET)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
+        if: always()
         env:
           EXPORT_OUTCOME: ${{ steps.ledger_export.outcome }}
-          RESTORE_OUTCOME: ${{ steps.restore.outcome }}
+          RESTORE_OUTCOME: ${{ needs.source-pilot.outputs.restore }}
         run: |
           python - <<'PY'
           import hashlib
@@ -674,7 +748,7 @@ jobs:
           PY
 
       - name: Upload research ledger (NO BET)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: research-ledger-${{ github.run_id }}
@@ -686,7 +760,7 @@ jobs:
       # research sidecar can fail without rewriting or blocking CORE-003 state.
       # Its own outcome remains explicit in GitHub step logs and artifact.
       - name: Generate MVP-016 cumulative research status (NO BET)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        if: always()
         continue-on-error: true
         run: |
           set -euo pipefail
@@ -708,7 +782,7 @@ jobs:
             --output-dir mvp016-research-status
 
       - name: Upload MVP-016 cumulative read-only research status (NO BET)
-        if: steps.gate.outputs.run == 'true' && always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp016-research-status-${{ github.run_id }}
@@ -719,7 +793,7 @@ jobs:
       # Read-only source readiness from the four existing immutable research originals.
       # Failures remain explicit, but never block/write the CORE-003 model or PIT state.
       - name: Generate MVP-019 prospective source readiness (NO BET)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        if: always()
         continue-on-error: true
         run: |
           set -euo pipefail
@@ -742,51 +816,16 @@ jobs:
             --output-dir mvp019-source-readiness
 
       - name: Upload MVP-019 prospective source readiness (NO BET)
-        if: steps.gate.outputs.run == 'true' && always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp019-source-readiness-${{ github.run_id }}
           path: mvp019-source-readiness/index.json
           if-no-files-found: warn
           retention-days: 21
-      - name: Upload restored immutable prior model evidence
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pit003a-prior-frozen-models-${{ github.run_id }}
-          path: pit003a-prior-models/
-          if-no-files-found: ignore
-          retention-days: 21
-
-      - name: Upload original T-4 source receipts
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pit003a-source-receipts-${{ github.run_id }}
-          path: pit003a-source-receipts/
-          if-no-files-found: ignore
-          retention-days: 21
-
-      - name: Upload PIT T-4 research attestations (NO BET)
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pit003a-attestations-${{ github.run_id }}
-          path: pit003a-attestations/
-          if-no-files-found: ignore
-          retention-days: 21
-
-      - name: Upload MVP-009 decision diagnostics (RESEARCH ONLY, NO BET)
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mvp009-decision-audits-${{ github.run_id }}
-          path: mvp009-decision-audits/
-          if-no-files-found: warn
-          retention-days: 21
 
       - name: Upload DEV-009 prospective outcome scorecard (RESEARCH NO BET)
-        if: steps.gate.outputs.run == 'true' && always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dev009-outcome-scorecards-${{ github.run_id }}
@@ -795,7 +834,7 @@ jobs:
           retention-days: 21
 
       - name: Upload DEV-011 cumulative original coverage manifest (NO BET)
-        if: steps.gate.outputs.run == 'true' && always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dev011-coverage-manifest-${{ github.run_id }}

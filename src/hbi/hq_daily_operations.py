@@ -84,26 +84,44 @@ def inventory(day, archive):
         if missing:
             gaps.append({"run_id": rid, "missing_roles": sorted(missing)})
         sources.append((rid, matches))
-    complete = [(rid, files) for rid, files in sources if set(files) == {*PREFIXES, "db"}]
+    required = {"core", "cohort", "collector", "handoff", "db"}
+    complete = [(rid, files) for rid, files in sources if required <= files.keys()]
     if not complete:
-        raise ValueError("No completed run with all report inputs")
+        raise ValueError("No completed run with all primary report inputs")
+
+    def member(artifact, name):
+        with ZipFile(archive / f"{artifact}.zip") as z:
+            return z.read(name)
+
     for rid, files in reversed(complete):
-        failed = [role for role, (artifact, pin) in files.items() if not retain(artifact, pin)]
-        if not failed:
-            break
-        gaps.append({"run_id": rid, "missing_roles": failed, "reason": "ORIGINAL_DOWNLOAD_FAILED"})
+        failed = [role for role in required if not retain(*files[role])]
+        if failed:
+            gaps.append({"run_id": rid, "missing_roles": sorted(failed), "reason": "ORIGINAL_DOWNLOAD_FAILED"})
+            continue
+        # The daily view can verify the current observations even if the
+        # cumulative Research Ledger sidecar was cancelled or unavailable.
+        if "ledger" not in files or not retain(*files["ledger"]):
+            gaps.append({"run_id": rid, "role": "ledger", "reason": "DAILY_LEDGER_REBUILT_FROM_PRIMARY_ORIGINALS"})
+            ledger = None
+        else:
+            ledger = files["ledger"][0]
+            with ZipFile(archive / f"{ledger}.zip") as ledger_archive:
+                if "index.json" not in ledger_archive.namelist():
+                    gaps.append({"run_id": rid, "role": "ledger", "reason": "DAILY_LEDGER_REBUILT_FROM_PRIMARY_ORIGINALS"})
+                    ledger = None
+        break
     else:
         raise ValueError("No complete report source could be recovered")
 
     def member_pin(artifact, name):
-        with ZipFile(archive / f"{artifact}.zip") as z:
-            return digest(z.read(name))
+        return digest(member(artifact, name))
 
-    ledger = files["ledger"][0]
     args = ["--date", day.isoformat(), "--run", str(rid), "--report-at", datetime.now(OSLO).isoformat(),
-            "--ledger-sha", member_pin(ledger, "index.json"), "--db", "pilot.sqlite"]
-    for role in PREFIXES:
+            "--db", "pilot.sqlite"]
+    for role in ("core", "cohort", "handoff", "collector"):
         args.extend([f"--{role}", f"{files[role][0]}.zip"])
+    if ledger is not None:
+        args.extend(["--ledger", f"{ledger}.zip", "--ledger-sha", member_pin(ledger, "index.json")])
     for source_run, members in sources:
         if source_run == rid:
             continue

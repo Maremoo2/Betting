@@ -98,8 +98,9 @@ class AtgClient:
         url = f"{self.CALENDAR_API}/calendar/day/{race_date.isoformat()}?headToHeadEnabled=true"
         return self._fetch(url, retain_raw_body=True) if retain_raw_body else self._fetch(url)
 
-    def race_game(self, race_id: str) -> AtgFetchResult:
-        return self._fetch(f"{self.GAME_API}/vinnare_{race_id}")
+    def race_game(self, race_id: str, *, retain_raw_body: bool = False) -> AtgFetchResult:
+        url = f"{self.GAME_API}/vinnare_{race_id}"
+        return self._fetch(url, retain_raw_body=True) if retain_raw_body else self._fetch(url)
 
     @staticmethod
     def _normalize_name(value: str) -> str:

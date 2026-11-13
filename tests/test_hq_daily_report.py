@@ -126,3 +126,33 @@ def test_atg_calendar_keeps_unmatched_physical_race_in_its_own_namespace():
         calendar_only_races({**calendar, "tracks": [
             {**calendar["tracks"][0], "races": [{**race, "id": "2026-11-18_11_2"}]},
         ]}, day, [])
+
+def test_atg_result_preserves_atg_identity_and_has_no_score(tmp_path):
+    from hbi.hq_daily_report import official_atg_observation
+    from hbi.providers.atg import AtgClient
+
+    rid = "2026-11-13_11_2"
+    original = json.dumps({"id": f"vinnare_{rid}", "races": [{
+        "id": rid, "number": "2", "date": "2026-11-13", "sport": "trot",
+        "track": {"id": 11, "name": "Boden", "countryCode": "SE"},
+        "status": "results", "startTime": "2026-11-13T18:13:00",
+        "scheduledStartTime": "2026-11-13T18:08:00", "result": {"scratchings": [2]},
+        "pools": {"vinnare": {"result": {"winners": [{"number": 1}]}}},
+        "starts": [
+            {"id": f"{rid}_1", "number": "1", "horse": {"name": "Runner One"}, "result": {"place": 1}},
+            {"id": f"{rid}_2", "number": "2", "horse": {"name": "Runner Two"}},
+        ],
+    }]}).encode()
+    (tmp_path / "game.raw.json").write_bytes(original)
+    (tmp_path / "game.receipt.json").write_text(json.dumps({
+        "source_uri": f"{AtgClient.GAME_API}/vinnare_{rid}", "http_status": 200,
+        "observed_at_utc": "2026-11-13T17:18:00+00:00", "sha256": digest(original),
+    }))
+    race = {"race_id": f"ATG:{rid}", "track": "Boden", "country": "SE", "number": 2}
+    result = official_atg_observation(race, tmp_path)
+    assert result["winner"] == {"number": 1, "name": "Runner One"}
+    assert result["scratches"] == ["Runner Two"]
+    assert result["score_blocker"] == "NO_FROZEN_MODEL"
+    assert result["scores"] is None
+    with pytest.raises(ValueError, match="ATG_OFFICIAL_RESULT_ID_MISMATCH"):
+        official_atg_observation({**race, "number": 1}, tmp_path)

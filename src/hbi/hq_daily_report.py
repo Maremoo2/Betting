@@ -246,6 +246,58 @@ def calendar_only_races(calendar, day, collector_races):
     return records
 
 
+def official_atg_observation(race, directory):
+    """Verify the post-race result under its original ATG identity."""
+    source_id = race["race_id"].removeprefix("ATG:")
+    receipt = json.loads((directory / "game.receipt.json").read_bytes())
+    if (receipt.get("source_uri") != f"{AtgClient.GAME_API}/vinnare_{source_id}"
+            or receipt.get("http_status") != 200 or clock(receipt.get("observed_at_utc")) is None):
+        raise ValueError("ATG_OFFICIAL_RESULT_RECEIPT_INVALID")
+    game = checked((directory / "game.raw.json").read_bytes(), receipt["sha256"])
+    candidates = game.get("races", [])
+    if game.get("id") != f"vinnare_{source_id}" or len(candidates) != 1:
+        raise ValueError("ATG_OFFICIAL_RESULT_ID_MISMATCH")
+    source = candidates[0]
+    track = source.get("track", {})
+    if (source.get("id") != source_id or str(source.get("number")) != str(race["number"])
+            or source.get("date") != source_id[:10] or source.get("sport") != "trot"
+            or track.get("id") != int(source_id.split("_")[1])
+            or track.get("name") != race["track"] or track.get("countryCode") != race["country"]):
+        raise ValueError("ATG_OFFICIAL_RESULT_ID_MISMATCH")
+    actual = AtgClient._parse_time(source.get("startTime"))
+    if (source.get("status") != "results" or actual is None
+            or clock(receipt["observed_at_utc"]) <= actual):
+        raise ValueError("ATG_OFFICIAL_RESULT_NOT_AVAILABLE")
+    starts = source["starts"]
+    numbers = [str(r["number"]) for r in starts]
+    if (not starts or len(numbers) != len(set(numbers))
+            or any(not n.isascii() or not n.isdecimal() or int(n) <= 0 for n in numbers)
+            or any(r.get("id") != f"{source_id}_{n}" for r, n in zip(starts, numbers, strict=True))):
+        raise ValueError("ATG_OFFICIAL_RESULT_FIELD_MISMATCH")
+    winners = [
+        {"number": int(row["number"]), "name": row["horse"]["name"]}
+        for row in starts if (row.get("result") or {}).get("place") == 1
+    ]
+    pool = source.get("pools", {}).get("vinnare", {}).get("result", {}).get("winners", [])
+    if not winners or {row["number"] for row in winners} != {row["number"] for row in pool}:
+        raise ValueError("ATG_OFFICIAL_RESULT_WINNER_MISMATCH")
+    scratched = set(source.get("result", {}).get("scratchings", []))
+    if not scratched <= {int(n) for n in numbers}:
+        raise ValueError("ATG_OFFICIAL_RESULT_FIELD_MISMATCH")
+    return {
+        "reported_actual_start_raw": source["startTime"], "reported_actual_start_utc": actual.isoformat(),
+        "scheduled_start_raw": source.get("scheduledStartTime"), "receipts": {"atg": receipt},
+        "winner": winners[0] if len(winners) == 1 else None, "winners": winners,
+        "scratches": [r["horse"]["name"] for r in starts if int(r["number"]) in scratched],
+        "result_roster": [
+            {"number": int(r["number"]), "name": r["horse"]["name"],
+             "scratch": int(r["number"]) in scratched, "win": None, "win_at": None}
+            for r in starts
+        ],
+        "score_blocker": "NO_FROZEN_MODEL", "scores": None,
+    }
+
+
 def build_report(args):
     with ZipFile(args.ledger) as archive:
         ledger = checked(archive.read("index.json"), args.ledger_sha)
@@ -445,7 +497,14 @@ def build_report(args):
     atg_calendar = getattr(args, "atg_calendar", None)
     if atg_calendar is not None:
         calendar = checked(atg_calendar.read_bytes(), args.atg_calendar_sha)
-        races.extend(calendar_only_races(calendar, args.date, races))
+        calendar_races = calendar_only_races(calendar, args.date, races)
+        for race in calendar_races:
+            folder = result_dirs.get(race["race_id"])
+            if folder:
+                observation = official_atg_observation(race, folder)
+                race["official"] = observation
+                race["runners"] = observation["result_roster"]
+        races.extend(calendar_races)
     benchmark = historical = None
     if args.archive:
         old = checked(args.archive.read_bytes(), args.archive_sha)
@@ -578,6 +637,10 @@ def render(report):
             text.append(explanation)
             html.append(f"<p>{escape(explanation)}</p>")
             if race["runners"]:
+                if race.get("calendar_only"):
+                    roster_note = "Startfelt fra offisielt ATG-resultat etter løpet."
+                    text.append(roster_note)
+                    html.append(f"<p>{roster_note}</p>")
                 table(["Nr", "Hest", "Status", "WIN", "Observert"], [
                     [str(r["number"]), r["name"], "Strøket" if r["scratch"] else "Aktiv",
                      number(r["win"]), clock_label(r["win_at"])] for r in race["runners"]
@@ -587,6 +650,10 @@ def render(report):
             result = f"Resultatkilden oppgir faktisk start {clock_label(official['reported_actual_start_utc'])}."
             if winner:
                 result += f" Vinner {winner['number']} {winner['name']}."
+            elif official.get("winners"):
+                result += " Delt seier " + ", ".join(
+                    f"{row['number']} {row['name']}" for row in official["winners"]
+                ) + "."
             if official["scratches"]:
                 result += f" Strøket i resultatet: {', '.join(official['scratches'])}."
             if official["score_blocker"] == "OFFICIAL_LATE_SCRATCH_NOT_FROZEN":

@@ -64,6 +64,8 @@ def run(config, archive, stage, output, *, download=False, saved_result=None):
         str(stage / arg) if arg in {"pilot.sqlite", "official"} else arg
         for arg in config["args"]
     ]
+    if "--ledger" not in args:
+        args = [*args, *rebuild_daily_ledger(args, stage)]
     if "result_race_id" not in config:
         return render_daily(args, archive, stage, output, config)
     result = stage / "official"
@@ -111,6 +113,32 @@ def run(config, archive, stage, output, *, download=False, saved_result=None):
     return summary
 
 
+def rebuild_daily_ledger(args, stage):
+    from .research_ledger import attach_current
+
+    source = stage / "core003-pilot-report.json"
+    handoff = stage / "collector-handoff.json"
+    for option, target in (("--core", source), ("--handoff", handoff)):
+        with ZipFile(args[args.index(option) + 1]) as archive:
+            _put_once(target, archive.read(target.name))
+    with ZipFile(args[args.index("--cohort") + 1]) as archive:
+        for name in archive.namelist():
+            if name == "cohort-index.json" or re.fullmatch(r"race-[0-9]{3,}/shadow\.json", name):
+                target = stage / name
+                target.parent.mkdir(exist_ok=True)
+                _put_once(target, archive.read(name))
+    ledger = attach_current(
+        {"schema": "HBI_RESEARCH_LEDGER_V1", "bet_authority": False, "pit_certified": 0,
+         "records": [], "scope": "LOCAL_DAILY_CURRENT_OBSERVATIONS_REPLAY"},
+        source, stage, handoff,
+    )
+    raw = json.dumps(ledger, sort_keys=True).encode()
+    path = stage / "daily-ledger.zip"
+    with ZipFile(path, "x") as archive:
+        archive.writestr("index.json", raw)
+    return ["--ledger", str(path), "--ledger-sha", digest(raw)]
+
+
 def replay_score_example(config, archive, stage):
     from .hq_daily_report import official_observation
 
@@ -149,12 +177,23 @@ def render_daily(args, archive, stage, output, config):
     """Attach official results for all started races in the original programme."""
     from datetime import UTC, datetime
 
-    from .hq_daily_report import official_observation
+    from .hq_daily_report import official_atg_observation, official_observation
     from .providers.atg import AtgClient
 
     calendar_status = None
-    if config.get("compare_atg_calendar"):
-        atg = AtgClient().calendar_day(
+    atg_client = AtgClient()
+    saved_calendar = config.get("atg_calendar_sha256")
+    if saved_calendar:
+        if not re.fullmatch(r"[0-9a-f]{64}", saved_calendar):
+            raise ValueError("Invalid archived ATG calendar SHA")
+        path = archive / f"atg-calendar-{saved_calendar}.json"
+        receipt = json.loads(path.with_suffix(".receipt.json").read_bytes())
+        if digest(path.read_bytes()) != saved_calendar or receipt.get("sha256") != saved_calendar:
+            raise ValueError("Archived ATG calendar SHA mismatch")
+        args = [*args, "--atg-calendar", str(path), "--atg-calendar-sha", saved_calendar]
+        calendar_status = {"status": "VERIFIED_BYTES", **receipt}
+    elif config.get("compare_atg_calendar"):
+        atg = atg_client.calendar_day(
             date.fromisoformat(args[args.index("--date") + 1]), retain_raw_body=True,
         )
         if (atg.success and atg.status_code == 200 and atg.response_completed_at is not None
@@ -164,8 +203,11 @@ def render_daily(args, archive, stage, output, config):
             _put_once(saved, atg.raw_body)
             receipt = {"source_uri": atg.url, "http_status": atg.status_code,
                        "observed_at_utc": atg.response_completed_at.isoformat(), "sha256": sha}
-            _put_once(archive / f"atg-calendar-{sha}.receipt.json",
-                      json.dumps(receipt, sort_keys=True).encode())
+            receipt_path = saved.with_suffix(".receipt.json")
+            if receipt_path.exists():
+                receipt = json.loads(receipt_path.read_bytes())
+            else:
+                _put_once(receipt_path, json.dumps(receipt, sort_keys=True).encode())
             args = [*args, "--atg-calendar", str(saved), "--atg-calendar-sha", sha]
             calendar_status = {"status": "VERIFIED_BYTES", **receipt}
         else:
@@ -182,7 +224,11 @@ def render_daily(args, archive, stage, output, config):
     now = datetime.now(UTC)
     for race in day["races"]:
         start = clock(race["start"])
-        if race.get("calendar_only") or start is None or now <= start:
+        calendar_only = race.get("calendar_only")
+        if calendar_only:
+            if race["calendar_status"] != "results":
+                continue
+        elif start is None or now <= start:
             continue
         rid = race["race_id"]
         saved_version = config.get("result_versions", {}).get(rid)
@@ -196,7 +242,10 @@ def render_daily(args, archive, stage, output, config):
             ).encode())
             if actual_version != saved_version:
                 raise ValueError("Archived result version SHA mismatch")
-            official_observation(rid, target, None)
+            if calendar_only:
+                official_atg_observation(race, target)
+            else:
+                official_observation(rid, target, None)
             attachments.extend(["--official-result", rid, str(target)])
             results.append({"race_id": rid, "status": "LINKED", "result_version_sha256": saved_version})
             continue
@@ -206,8 +255,22 @@ def render_daily(args, archive, stage, output, config):
         folder = stage / rid.replace(":", "-")
         folder.mkdir()
         try:
-            capture_result(folder, rid, client)
-            official_observation(rid, folder, None)
+            if calendar_only:
+                atg_result = atg_client.race_game(rid.removeprefix("ATG:"), retain_raw_body=True)
+                if (not atg_result.success or atg_result.status_code != 200
+                        or atg_result.response_completed_at is None or not atg_result.raw_body
+                        or digest(atg_result.raw_body) != atg_result.response_body_sha256):
+                    raise ValueError("ATG_OFFICIAL_RESULT_ORIGINAL_UNAVAILABLE")
+                _put_once(folder / "game.raw.json", atg_result.raw_body)
+                _put_once(folder / "game.receipt.json", json.dumps({
+                    "source_uri": atg_result.url, "http_status": atg_result.status_code,
+                    "observed_at_utc": atg_result.response_completed_at.isoformat(),
+                    "sha256": atg_result.response_body_sha256,
+                }, sort_keys=True).encode())
+                official_atg_observation(race, folder)
+            else:
+                capture_result(folder, rid, client)
+                official_observation(rid, folder, None)
         except (ValueError, KeyError, TypeError) as exc:
             results.append({"race_id": rid, "status": "BLOCKED", "reason": str(exc)})
             continue
