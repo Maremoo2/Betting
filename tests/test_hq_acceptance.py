@@ -39,8 +39,6 @@ def test_daily_result_capture_includes_started_race_without_model(monkeypatch, t
     import json
 
     from hbi import hq_acceptance as acceptance
-    from hbi import hq_daily_report
-
     race_id = "RIKSTOTO:S2_NR_2026-11-13:2"
     future_id = "RIKSTOTO:S2_NR_2026-11-13:3"
     seen = []
@@ -62,7 +60,7 @@ def test_daily_result_capture_includes_started_race_without_model(monkeypatch, t
 
     monkeypatch.setattr(acceptance.subprocess, "run", render)
     monkeypatch.setattr(acceptance, "capture_result", capture)
-    monkeypatch.setattr(hq_daily_report, "official_observation", lambda *args: None)
+    monkeypatch.setattr(acceptance, "official_observation", lambda *args: None)
     out, stage, archive = [tmp_path / name for name in ("out", "stage", "archive")]
     out.mkdir()
     stage.mkdir()
@@ -78,8 +76,6 @@ def test_offline_daily_replay_uses_pinned_result_and_no_provider_calls(monkeypat
     from pathlib import Path
 
     from hbi import hq_acceptance as acceptance
-    from hbi import hq_daily_report
-
     rid = "RIKSTOTO:S2_NR_2026-11-13:1"
     result_bytes = b"saved result fixture"
     version = acceptance.digest(json.dumps(
@@ -103,7 +99,7 @@ def test_offline_daily_replay_uses_pinned_result_and_no_provider_calls(monkeypat
 
     monkeypatch.setattr(acceptance.subprocess, "run", render)
     monkeypatch.setattr(acceptance, "capture_result", unexpected)
-    monkeypatch.setattr(hq_daily_report, "official_observation", lambda *args: None)
+    monkeypatch.setattr(acceptance, "official_observation", lambda *args: None)
     config = {"runs": [], "gaps": [], "result_versions": {rid: version}}
     args = ["--report-at", "2026-11-13T18:01:00+00:00"]
     summary = acceptance.render_daily(args, archive, stage, output, config)
@@ -111,3 +107,45 @@ def test_offline_daily_replay_uses_pinned_result_and_no_provider_calls(monkeypat
     (target / "fixture").write_bytes(b"corrupt")
     with pytest.raises(ValueError, match="Archived result version SHA mismatch"):
         acceptance.render_daily(args, archive, stage, output, config)
+
+def test_live_result_falls_back_to_verified_archive_only_for_unavailable_source(monkeypatch, tmp_path):
+    import json
+
+    from hbi import hq_acceptance as acceptance
+
+    rid = "RIKSTOTO:S2_NR_2026-11-13:1"
+    race = {"race_id": rid, "start": "2026-11-12T18:00:00+00:00", "analysis": None,
+            "active": 4, "official": None}
+    observation = {"receipts": {"complete": {"observed_at_utc": "2026-11-12T18:30:00+00:00"}}}
+    files = {"fixture": b"saved result fixture"}
+    version = acceptance.result_version(files)
+    archive = tmp_path / "archive"
+    target = archive / "results" / version
+    target.mkdir(parents=True)
+    (target / "fixture").write_bytes(files["fixture"])
+    acceptance.remember_result(archive, rid, version, observation)
+
+    def render(command, **_):
+        destination = acceptance.Path(command[-1])
+        destination.mkdir(exist_ok=True)
+        (destination / "betting-hq.json").write_text(json.dumps({"races": [race]}))
+
+    def capture(*_):
+        raise capture.error
+
+    monkeypatch.setattr(acceptance.subprocess, "run", render)
+    monkeypatch.setattr(acceptance, "capture_result", capture)
+    monkeypatch.setattr(acceptance, "official_observation", lambda *args: observation)
+    for index, error, status in (
+        (1, acceptance.OfficialResultUnavailable("Source incomplete"), "LINKED"),
+        (2, ValueError("Source race ID mismatch"), "BLOCKED"),
+    ):
+        capture.error = error
+        stage, output = [tmp_path / f"{label}-{index}" for label in ("stage", "output")]
+        stage.mkdir()
+        args = ["--report-at", "2026-11-13T18:01:00+00:00"]
+        summary = acceptance.render_daily(args, archive, stage, output, {"runs": [], "gaps": []})
+        assert summary["results"][0]["status"] == status
+        if status == "LINKED":
+            assert summary["results"][0]["result_version_sha256"] == version
+            assert summary["results"][0]["retrieval"] == "ARCHIVED_AFTER_SOURCE_UNAVAILABLE"

@@ -153,6 +153,10 @@ def read_cohort(path, pin):
     return index, models, blocked_timing
 
 
+class OfficialResultUnavailable(ValueError):
+    """A verified result is temporarily unavailable from the provider."""
+
+
 def official_observation(rid, directory, model):
     _, meeting, race_no = rid.split(":")
     paths = {
@@ -172,18 +176,21 @@ def official_observation(rid, directory, model):
             raise ValueError("Official result source failed")
         receipts[role], bodies[role] = receipt, body["result"]
     complete, raceday = bodies["complete"], bodies["raceday"]
-    if raceday.get("raceDay") != meeting or complete.get("isComplete") is not True:
-        raise ValueError("Incomplete or mismatched official result")
+    if raceday.get("raceDay") != meeting:
+        raise ValueError("OFFICIAL_RACEDAY_ID_MISMATCH")
+    if complete.get("isComplete") is not True:
+        raise OfficialResultUnavailable("OFFICIAL_COMPLETE_RESULT_NOT_AVAILABLE")
     actual = RikstotoClient.parse_timestamp(complete["startTime"])
     if any(clock(receipt["observed_at_utc"]) <= actual for receipt in receipts.values()):
         raise ValueError("Official result receipt predates reported start")
     winners = [row for row in complete["results"] if row["place"] == 1]
     published = raceday.get("raceWinners", {}).get(race_no)
     if not isinstance(published, list) or not published:
-        raise ValueError("OFFICIAL_RACEDAY_WINNER_NOT_PUBLISHED")
-    winner = None
-    if len(winners) == len(published) == 1 and winners[0]["startNumber"] == published[0]["startNumber"]:
-        winner = {"number": winners[0]["startNumber"], "name": winners[0]["horseName"]}
+        raise OfficialResultUnavailable("OFFICIAL_RACEDAY_WINNER_NOT_PUBLISHED")
+    if not winners or {row["startNumber"] for row in winners} != {row["startNumber"] for row in published}:
+        raise ValueError("OFFICIAL_WINNER_CONFLICT")
+    winners = [{"number": row["startNumber"], "name": row["horseName"]} for row in winners]
+    winner = winners[0] if len(winners) == 1 else None
     status = "NO_FROZEN_MODEL"
     scores = None
     if model:
@@ -206,7 +213,7 @@ def official_observation(rid, directory, model):
             status = blockers[0]
     return {
         "reported_actual_start_raw": complete["startTime"], "reported_actual_start_utc": actual.isoformat(),
-        "receipts": receipts, "winner": winner, "score_blocker": status, "scores": scores,
+        "receipts": receipts, "winner": winner, "winners": winners, "score_blocker": status, "scores": scores,
         "scratches": [row["horseName"] for row in complete["results"] if row.get("kmTime") == "Str"],
     }
 
@@ -272,7 +279,7 @@ def official_atg_observation(race, directory):
     actual = AtgClient._parse_time(source.get("startTime"))
     if (source.get("status") != "results" or actual is None
             or clock(receipt["observed_at_utc"]) <= actual):
-        raise ValueError("ATG_OFFICIAL_RESULT_NOT_AVAILABLE")
+        raise OfficialResultUnavailable("ATG_OFFICIAL_RESULT_NOT_AVAILABLE")
     starts = source["starts"]
     numbers = [str(r["number"]) for r in starts]
     if (not starts or len(numbers) != len(set(numbers))

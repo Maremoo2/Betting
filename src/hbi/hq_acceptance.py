@@ -11,6 +11,11 @@ from datetime import date
 from pathlib import Path
 from zipfile import ZipFile
 
+from .hq_daily_report import (
+    OfficialResultUnavailable,
+    official_atg_observation,
+    official_observation,
+)
 from .private_win_archive import _put_once
 from .prospective_outcome_scorecard import _capture, clock, digest
 from .providers.rikstoto import RikstotoClient
@@ -46,7 +51,9 @@ def capture_result(root, race_id, client):
         receipt.pop("raw_path")
         _put_once(root / f"{role}.receipt.json", json.dumps(receipt, sort_keys=True).encode())
         if receipt["error_kind"]:
-            raise ValueError(f"Official source unavailable: {role}")
+            if receipt["error_kind"] == "OFFICIAL_GET_OR_RAW_HASH_FAILED" and receipt.get("http_status") != 200:
+                raise OfficialResultUnavailable(f"Official source unavailable: {role}")
+            raise ValueError(f"Official result failed validation: {role}")
 
 
 def run(config, archive, stage, output, *, download=False, saved_result=None):
@@ -140,8 +147,6 @@ def rebuild_daily_ledger(args, stage):
 
 
 def replay_score_example(config, archive, stage):
-    from .hq_daily_report import official_observation
-
     example = config["score_example"]
     rid = example["race_id"]
     stage.mkdir()
@@ -173,11 +178,59 @@ def replay_score_example(config, archive, stage):
     return {"race_id": rid, "model_sha256": digest(raw), **result}
 
 
+def result_version(files):
+    return digest(json.dumps({name: digest(body) for name, body in files.items()}, sort_keys=True).encode())
+
+
+def checked_result_version(archive, race, version):
+    if not re.fullmatch(r"[0-9a-f]{64}", version):
+        raise ValueError("Invalid archived result version")
+    target = archive / "results" / version
+    files = {path.name: path.read_bytes() for path in target.iterdir()}
+    if result_version(files) != version:
+        raise ValueError("Archived result version SHA mismatch")
+    observation = (official_atg_observation(race, target) if race.get("calendar_only")
+                   else official_observation(race["race_id"], target, None))
+    return target, observation
+
+
+def result_references(archive, race_id):
+    return archive / "result-refs" / race_id.replace(":", "-")
+
+
+def remember_result(archive, race_id, version, observation):
+    directory = result_references(archive, race_id)
+    directory.mkdir(parents=True, exist_ok=True)
+    receipt_at = max(clock(r["observed_at_utc"]) for r in observation["receipts"].values())
+    _put_once(directory / f"{version}.json", json.dumps({
+        "race_id": race_id, "version": version, "observed_at_utc": receipt_at.isoformat(),
+    }, sort_keys=True).encode())
+
+
+def latest_saved_result(archive, race):
+    directory = result_references(archive, race["race_id"])
+    pins = [json.loads(path.read_bytes()) for path in directory.glob("*.json")]
+    if not pins:
+        return None
+    for pin in pins:
+        if pin["race_id"] != race["race_id"] or clock(pin["observed_at_utc"]) is None:
+            raise ValueError("Archived result reference mismatch")
+    latest = max(clock(pin["observed_at_utc"]) for pin in pins)
+    versions = {pin["version"] for pin in pins if clock(pin["observed_at_utc"]) == latest}
+    if len(versions) != 1:
+        raise ValueError("Conflicting archived result references at same time")
+    version = versions.pop()
+    target, observation = checked_result_version(archive, race, version)
+    observed = max(clock(r["observed_at_utc"]) for r in observation["receipts"].values())
+    if observed != latest:
+        raise ValueError("Archived result reference clock mismatch")
+    return target, version
+
+
 def render_daily(args, archive, stage, output, config):
     """Attach official results for all started races in the original programme."""
     from datetime import UTC, datetime
 
-    from .hq_daily_report import official_atg_observation, official_observation
     from .providers.atg import AtgClient
 
     calendar_status = None
@@ -236,19 +289,7 @@ def render_daily(args, archive, stage, output, config):
         rid = race["race_id"]
         saved_version = config.get("result_versions", {}).get(rid)
         if saved_version is not None:
-            if not re.fullmatch(r"[0-9a-f]{64}", saved_version):
-                raise ValueError("Invalid archived result version")
-            target = archive / "results" / saved_version
-            files = {path.name: path.read_bytes() for path in target.iterdir()}
-            actual_version = digest(json.dumps(
-                {name: digest(body) for name, body in files.items()}, sort_keys=True,
-            ).encode())
-            if actual_version != saved_version:
-                raise ValueError("Archived result version SHA mismatch")
-            if calendar_only:
-                official_atg_observation(race, target)
-            else:
-                official_observation(rid, target, None)
+            target, _ = checked_result_version(archive, race, saved_version)
             attachments.extend(["--official-result", rid, str(target)])
             results.append({"race_id": rid, "status": "LINKED", "result_version_sha256": saved_version})
             continue
@@ -260,29 +301,42 @@ def render_daily(args, archive, stage, output, config):
         try:
             if calendar_only:
                 atg_result = atg_client.race_game(rid.removeprefix("ATG:"), retain_raw_body=True)
-                if (not atg_result.success or atg_result.status_code != 200
-                        or atg_result.response_completed_at is None or not atg_result.raw_body
-                        or digest(atg_result.raw_body) != atg_result.response_body_sha256):
-                    raise ValueError("ATG_OFFICIAL_RESULT_ORIGINAL_UNAVAILABLE")
+                if atg_result.status_code != 200:
+                    raise OfficialResultUnavailable("ATG_OFFICIAL_RESULT_ORIGINAL_UNAVAILABLE")
+                if (not atg_result.success or atg_result.response_completed_at is None
+                        or not atg_result.raw_body or digest(atg_result.raw_body) != atg_result.response_body_sha256):
+                    raise ValueError("ATG_OFFICIAL_RESULT_ORIGINAL_INVALID")
                 _put_once(folder / "game.raw.json", atg_result.raw_body)
                 _put_once(folder / "game.receipt.json", json.dumps({
                     "source_uri": atg_result.url, "http_status": atg_result.status_code,
                     "observed_at_utc": atg_result.response_completed_at.isoformat(),
                     "sha256": atg_result.response_body_sha256,
                 }, sort_keys=True).encode())
-                official_atg_observation(race, folder)
+                observation = official_atg_observation(race, folder)
             else:
                 capture_result(folder, rid, client)
-                official_observation(rid, folder, None)
+                observation = official_observation(rid, folder, None)
+        except OfficialResultUnavailable as exc:
+            previous = latest_saved_result(archive, race)
+            if previous is None:
+                results.append({"race_id": rid, "status": "BLOCKED", "reason": str(exc)})
+            else:
+                target, version = previous
+                attachments.extend(["--official-result", rid, str(target)])
+                results.append({"race_id": rid, "status": "LINKED", "result_version_sha256": version,
+                                "retrieval": "ARCHIVED_AFTER_SOURCE_UNAVAILABLE", "source_failure": str(exc)})
+            continue
         except (ValueError, KeyError, TypeError) as exc:
             results.append({"race_id": rid, "status": "BLOCKED", "reason": str(exc)})
             continue
         files = {path.name: path.read_bytes() for path in folder.iterdir()}
-        version = digest(json.dumps({name: digest(body) for name, body in files.items()}, sort_keys=True).encode())
+        version = result_version(files)
         target = archive / "results" / version
         target.mkdir(parents=True, exist_ok=True)
         for name, body in files.items():
             _put_once(target / name, body)
+        if observation is not None:
+            remember_result(archive, rid, version, observation)
         attachments.extend(["--official-result", rid, str(target)])
         results.append({"race_id": rid, "status": "LINKED", "result_version_sha256": version})
     if attachments and "result_versions" not in config:
