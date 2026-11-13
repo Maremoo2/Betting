@@ -5,14 +5,17 @@ import json
 import math
 import re
 import sqlite3
-from datetime import date
+from collections import Counter
+from datetime import date, timedelta
 from email import policy
 from email.message import EmailMessage
 from html import escape
 from pathlib import Path
 from zipfile import ZipFile
 
-from .prospective_outcome_scorecard import _field, _market, clock, digest
+from .evaluation import log_loss, multiclass_brier
+from .prospective_outcome_scorecard import _field, _market, _official_winner, _probs, clock, digest
+from .providers.rikstoto import OSLO, RikstotoClient
 from .research_ledger import checked
 
 REASONS = {
@@ -91,7 +94,11 @@ def model_analysis(model, sha):
     if not runners:
         return None
     return {"runners": runners, "versions": model["model_versions"],
-            "as_of": model["as_of_utc"], "sha256": sha}
+            "as_of": model["as_of_utc"], "sha256": sha,
+            "created_at_utc": model["report_created_at_utc"],
+            "calculated_at_utc": model.get("model_calculated_at_utc"),
+            "start_at_freeze_utc": model["race"]["start_time_utc"],
+            "code_sha": model.get("git_sha_of_current_workspace")}
 
 
 def read_cohort(path, pin):
@@ -113,6 +120,62 @@ def read_cohort(path, pin):
     return index, models
 
 
+def official_observation(rid, directory, model):
+    _, meeting, race_no = rid.split(":")
+    paths = {
+        "complete": f"raceDays/{meeting}/{race_no}/completeresults",
+        "raceday": f"racedays/{meeting}/raceresults",
+    }
+    receipts = {}
+    bodies = {}
+    for role, path in paths.items():
+        receipt = json.loads((directory / f"{role}.receipt.json").read_bytes())
+        if (receipt.get("http_status") != 200 or receipt.get("role") != role
+                or receipt.get("source_uri") != f"https://www.rikstoto.no/api/results/{path}"
+                or clock(receipt.get("observed_at_utc")) is None):
+            raise ValueError("Invalid official result receipt")
+        body = checked((directory / f"{role}.raw.json").read_bytes(), receipt["raw_sha256"])
+        if body.get("success") is not True:
+            raise ValueError("Official result source failed")
+        receipts[role], bodies[role] = receipt, body["result"]
+    complete, raceday = bodies["complete"], bodies["raceday"]
+    if raceday.get("raceDay") != meeting or complete.get("isComplete") is not True:
+        raise ValueError("Incomplete or mismatched official result")
+    actual = RikstotoClient.parse_timestamp(complete["startTime"])
+    if any(clock(receipt["observed_at_utc"]) <= actual for receipt in receipts.values()):
+        raise ValueError("Official result receipt predates reported start")
+    winners = [row for row in complete["results"] if row["place"] == 1]
+    published = raceday["raceWinners"][race_no]
+    winner = None
+    if len(winners) == len(published) == 1 and winners[0]["startNumber"] == published[0]["startNumber"]:
+        winner = {"number": winners[0]["startNumber"], "name": winners[0]["horseName"]}
+    status = "NO_FROZEN_MODEL"
+    scores = None
+    if model:
+        active, blockers = _field(model)
+        if not blockers:
+            winner_id, status = _official_winner(
+                complete, raceday, active=active, frozen_roster=model["runners"], race_no=int(race_no),
+            )
+            if status is None and (winner is None or winner_id is None):
+                status = "OFFICIAL_WINNER_CONFLICT"
+            if status is None:
+                vectors = {
+                    "Champion": _probs(active, "champion_p_win"), "CORE-004": _probs(active, "core004_p_win"),
+                    "WIN": _market(active, clock(model["as_of_utc"])),
+                }
+                scores = {name: {"log_loss": log_loss(vector, winner_id),
+                                 "brier": multiclass_brier(vector, winner_id)}
+                          for name, vector in vectors.items() if vector is not None}
+        else:
+            status = blockers[0]
+    return {
+        "reported_actual_start_raw": complete["startTime"], "reported_actual_start_utc": actual.isoformat(),
+        "receipts": receipts, "winner": winner, "score_blocker": status, "scores": scores,
+        "scratches": [row["horseName"] for row in complete["results"] if row.get("kmTime") == "Str"],
+    }
+
+
 def build_report(args):
     with ZipFile(args.ledger) as archive:
         ledger = checked(archive.read("index.json"), args.ledger_sha)
@@ -128,9 +191,17 @@ def build_report(args):
     with ZipFile(args.core) as archive:
         source = checked(archive.read("core003-pilot-report.json"), current["source_report_sha256"])
     index, models = read_cohort(args.cohort, current["cohort_index_sha256"])
+    timing = {}
+    for path, pin in args.timing_core:
+        with ZipFile(path) as archive:
+            original_core = checked(archive.read("core003-pilot-report.json"), pin)
+        timing[pin] = {row["race_id"]: row for row in original_core["race_readiness_after"]}
+    result_dirs = {rid: Path(path) for rid, path in args.official_result}
     prior_reasons = {}
+    prior_readiness = {}
     for path, pin in args.prior_cohort:
         prior, members = read_cohort(Path(path), pin)
+        prior_readiness.update(timing.get(prior["source_report_sha256"], {}))
         for rid, member in members.items():
             if model_analysis(*member):
                 models.setdefault(rid, member)
@@ -149,22 +220,37 @@ def build_report(args):
     ) as collector:
         observations = {row["race_id"]: row for row in current["records"]}
         report_ids = list(observations)
-        if args.meeting:
+        listings = {}
+        if args.meeting or args.nordic:
             manifests = [name for name in collector.namelist() if name.endswith("/manifest.json")]
             if len(manifests) != 1:
                 raise ValueError("Expected one Collector manifest")
             manifest = json.loads(collector.read(manifests[0]))
-            meeting = next(row for row in manifest["meetings"] if row["meeting_id"] == args.meeting)
-            report_ids = [f"RIKSTOTO:{args.meeting}:{number}" for number in meeting["race_numbers"]]
+            meetings = [
+                m for m in manifest["meetings"]
+                if (m["meeting_id"] == args.meeting if args.meeting else
+                    m.get("listing_source", {}).get("country") in {"NO", "SE"}
+                    and m.get("listing_source", {}).get("sport_type") == "T")
+            ]
+            if args.meeting and not meetings:
+                raise ValueError("Collector meeting not found")
+            listings = {m["meeting_id"]: m["listing_source"] for m in meetings}
+            report_ids = [
+                f"RIKSTOTO:{m['meeting_id']}:{number}" for m in meetings for number in m["race_numbers"]
+            ]
         for rid in report_ids:
             _, meeting, race_no = rid.split(":")
             if not meeting.endswith(args.date.isoformat()):
                 continue
             row = observations.get(rid, {})
-            track, country, scheduled = db.execute(
+            metadata = db.execute(
                 "SELECT track, country, start_time_utc FROM races WHERE race_id=?", (rid,)
             ).fetchone()
-            ready = readiness.get(rid, {})
+            if metadata is None:
+                listing = listings[meeting]
+                metadata = listing["track"], listing["country"], None
+            track, country, scheduled = metadata
+            ready = readiness.get(rid, prior_readiness.get(rid, {}))
             roster, roster_sha = original_roster(collector, rid)
             market = market_rows(db, rid, ready.get("win_market_cohort_at_utc"))
             roster_pin = handoff_by_race.get(rid, {}).get("model_input_sources", {}).get("collector_starts_sha256")
@@ -178,6 +264,42 @@ def build_report(args):
                 if row.get("full_field") and model_sha != row["model_sha256"]:
                     raise ValueError("Model SHA mismatch")
                 analysis = model_analysis(model, model_sha)
+                if analysis:
+                    source_pin = model["collector_source_evidence"].get("sha256") if model.get(
+                        "collector_source_evidence"
+                    ) else None
+                    original_timing = timing.get(source_pin, {}).get(rid)
+                    if original_timing:
+                        cutoff = original_timing["t4_cutoff_utc"]
+                        if (original_timing["canonical_start_utc"] != analysis["start_at_freeze_utc"]
+                                or not clock(analysis["as_of"]) <= clock(analysis["created_at_utc"])
+                                < clock(cutoff)):
+                            raise ValueError("Model freeze conflicts with original CORE-003 timing")
+                        analysis["cutoff_utc"] = cutoff
+                        analysis["timing_source_sha256"] = source_pin
+            schedule_versions = []
+            later_cutoff = None
+            if analysis:
+                at_freeze = analysis["start_at_freeze_utc"]
+                schedules = [(at_freeze, analysis["as_of"])]
+                if clock(scheduled) != clock(at_freeze):
+                    schedules.append((scheduled, index["as_of_utc"]))
+                for schedule, observed_before in schedules:
+                    order = "DESC" if schedule == at_freeze else "ASC"
+                    event = db.execute(
+                        f"""SELECT source_uri, source_schedule_raw, normalized_start_utc,
+                                  observed_at_utc, source_body_sha256, source_grade
+                           FROM race_schedule_observations WHERE race_id=? AND normalized_start_utc=?
+                             AND julianday(observed_at_utc) <= julianday(?)
+                           ORDER BY julianday(observed_at_utc) {order} LIMIT 1""",
+                        (rid, schedule, observed_before),
+                    ).fetchone()
+                    if (event and schedule == scheduled
+                            and clock(scheduled) != clock(analysis["start_at_freeze_utc"])):
+                        later_cutoff = (clock(scheduled) - timedelta(minutes=4)).isoformat()
+                    if event and event not in schedule_versions:
+                        schedule_versions.append(event)
+            official = official_observation(rid, result_dirs[rid], model) if rid in result_dirs else None
             runners = [
                 {"number": r["startNumber"], "name": r["horseName"], "scratch": r["isScratched"],
                  "win": market.get(str(r["startNumber"]), (None, None))[0] if not r["isScratched"] else None,
@@ -186,13 +308,18 @@ def build_report(args):
             ]
             races.append({
                 "race_id": rid, "track": track, "country": country, "number": int(race_no),
-                "start": ready.get("canonical_start_utc") or scheduled, "active": sum(not r["scratch"] for r in runners)
+                "start": readiness.get(rid, {}).get("canonical_start_utc") or scheduled, "active": sum(not r["scratch"] for r in runners)
                 if runners else None, "scratched": sum(r["scratch"] for r in runners) if runners else None,
                 "verified_history": ready.get("verified_active_history"), "roster_sha256": roster_sha,
-                "runners": runners, "analysis": analysis,
+                "runners": runners, "analysis": analysis, "official": official,
+                "later_schedule_cutoff_utc": later_cutoff,
+                "schedule_versions": [
+                    dict(zip(("uri", "raw", "start_utc", "observed_utc", "sha256", "grade"), event, strict=True))
+                    for event in schedule_versions
+                ],
                 "reasons": [row.get("primary_stop_reason"), *row.get("collector_blockers", prior_reasons.get(rid, [])),
                             *row.get("model_blockers", []),
-                            *([] if row or rid in models else ["NOT_IN_INSPECTED_COHORTS"])],
+                            *([] if row or rid in models or rid in prior_reasons else ["NOT_IN_INSPECTED_COHORTS"])],
                 "full_market": bool(runners and any(not r["scratch"] for r in runners)
                                     and all(r["scratch"] or r["win"] is not None for r in runners)),
             })
@@ -213,7 +340,14 @@ def build_report(args):
             model = checked((args.models / member).read_bytes(), pin["source_model_original_sha256"])
             if model["race"]["race_id"] != row["race_id"]:
                 raise ValueError("Historical model race mismatch")
-            historical = {"race": model["race"], "analysis": model_analysis(model, pin["source_model_original_sha256"])}
+            historical = {
+                "race": model["race"], "analysis": model_analysis(model, pin["source_model_original_sha256"]),
+                "scores": row["scores"], "winner_selection_id": row["winner_selection_id"],
+                "winner_name": next(
+                    runner["horse_name"] for runner in model["runners"]
+                    if runner["selection_id"] == row["winner_selection_id"]
+                ),
+            }
     return {
         "date": args.date.isoformat(), "as_of": index["as_of_utc"], "run": args.run,
         "ledger_sha256": args.ledger_sha, "report_at": args.report_at, "meeting": args.meeting, "prior_run": args.prior_run, "races": sorted(
@@ -228,7 +362,8 @@ def number(value, scale=1, suffix=""):
 
 
 def clock_label(value):
-    return "ukjent" if not value else value.replace("T", " ").split("+")[0].split(".")[0] + " UTC"
+    instant = clock(value)
+    return "ukjent" if instant is None else instant.astimezone(OSLO).strftime("%d.%m.%Y %H:%M:%S")
 
 
 def render(report):
@@ -244,9 +379,9 @@ def render(report):
                      for race in races)
     summary = (f"{len(races)} løp i rapporten · {models} med modellestimat · "
                f"{market_any} med WIN-priser ({market} komplette felt) · {len(races) - models} uten gyldig modell.")
-    text = [title, summary, "Research / NO BET. " + clock_label(report["as_of"]),
+    text = [title, summary, "Research / NO BET. Datagrunnlag " + clock_label(report["as_of"]) + " · Europe/Oslo",
             f"BET: 0 autoriserte · {len(races)} ikke-eksekverbare løpsobservasjoner.",
-            "Verifiserte offisielle resultater, shadow-P/L og CLV er utilgjengelige i rapportgrunnlaget."]
+            "Shadow-P/L og CLV er utilgjengelige i rapportgrunnlaget."]
     html = [f"<h1>{escape(title)}</h1>", f"<p><strong>{escape(summary)}</strong></p>",
             *[f"<p>{escape(line)}</p>" for line in text[2:]]]
 
@@ -265,7 +400,7 @@ def render(report):
         html.append("</tbody></table></div>")
 
     def analysis_table(analysis):
-        text.append(f"Frys {clock_label(analysis['as_of'])} · {analysis['versions']} · Forskningsestimater, PIT ikke sertifisert.")
+        text.append(f"Frys {clock_label(analysis['created_at_utc'])} · {analysis['versions']} · Forskningsestimater, PIT ikke sertifisert.")
         html.append(f"<p>{escape(text[-1])}</p>")
         table(["Nr", "Hest", "Champion", "CORE-004", "Fair odds", "WIN", "EV", "Vurdering og grunnlag"], [
             [str(r["number"]), r["name"], number(r["p"], 100, "%"), number(r["core"], 100, "%"),
@@ -288,8 +423,20 @@ def render(report):
             state = "Planlagt start passert" if start <= report_at else "Kommende etter registrert plan"
             text.append(state)
             html.append(f"<p>{state}</p>")
-        if race["analysis"]:
-            analysis_table(race["analysis"])
+        analysis = race["analysis"]
+        official = race.get("official")
+        if analysis:
+            timing_line = f"Start ved frys {clock_label(analysis['start_at_freeze_utc'])}."
+            if analysis.get("cutoff_utc"):
+                timing_line += f" Opprinnelig T−4 {clock_label(analysis['cutoff_utc'])}."
+            if race.get("later_schedule_cutoff_utc"):
+                timing_line += (
+                    f" Senere kalenderverdi gir T−4 {clock_label(race['later_schedule_cutoff_utc'])}."
+                    " Fryset vurderes mot den opprinnelige fristen."
+                )
+            text.append(timing_line)
+            html.append(f"<p>{escape(timing_line)}</p>")
+            analysis_table(analysis)
         else:
             reasons = " ".join(REASONS[code] for code in dict.fromkeys(race["reasons"]) if code in REASONS)
             explanation = reasons or "Verifisert fullfeltmodell mangler i denne kjøringen."
@@ -300,6 +447,24 @@ def render(report):
                     [str(r["number"]), r["name"], "Strøket" if r["scratch"] else "Aktiv",
                      number(r["win"]), clock_label(r["win_at"])] for r in race["runners"]
                 ])
+        if official:
+            winner = official["winner"]
+            result = f"Resultatkilden oppgir faktisk start {clock_label(official['reported_actual_start_utc'])}."
+            if winner:
+                result += f" Vinner {winner['number']} {winner['name']}."
+            if official["scratches"]:
+                result += f" Strøket i resultatet: {', '.join(official['scratches'])}."
+            if official["score_blocker"] == "OFFICIAL_LATE_SCRATCH_NOT_FROZEN":
+                result += " Skåring blokkert fordi det offisielle feltet avviker fra feltet ved frys."
+            elif official["score_blocker"]:
+                result += " Skåring mangler verifisert grunnlag."
+            text.append(result)
+            html.append(f"<p>{escape(result)}</p>")
+            if official["scores"]:
+                table(["Grunnlag", "Log loss", "Multiclass Brier"], [
+                    [name, number(score["log_loss"]), number(score["brier"])]
+                    for name, score in official["scores"].items()
+                ])
     if report["historical"] and report["historical"]["analysis"]:
         example = report["historical"]
         race = example["race"]
@@ -307,6 +472,19 @@ def render(report):
                 f"{race['track']} · løp {race['race_no']} · {race['race_date']}. Arkivert før start. "
                 "Forskningsestimater og teoretisk EV. WATCH/PASS er arkiverte forskningsvurderinger.")
         analysis_table(example["analysis"])
+        result = f"Arkivert offisiell vinner {example['winner_selection_id']} {example['winner_name']}."
+        text.append(result)
+        html.append(f"<p>{escape(result)}</p>")
+        table(["Grunnlag", "Log loss", "Multiclass Brier"], [
+            [label, number(example["scores"][key]["log_loss"]),
+             number(example["scores"][key]["multiclass_brier"])]
+            for key, label in (("champion", "Champion"), ("core004", "CORE-004"), ("market", "WIN"))
+        ])
+    if report.get("meeting") is None and report["races"]:
+        meetings = Counter((r["track"], r["country"]) for r in races)
+        section("Møter i rapporten", "Fysiske løp i det arkiverte programmet.")
+        table(["Bane", "Land", "Løp"], [[track, country, str(count)]
+                                        for (track, country), count in sorted(meetings.items())])
     if report["benchmark"]:
         metrics = report["benchmark"]["triple"]
         section("Historisk modellkvalitet",
@@ -347,7 +525,11 @@ def main():
     parser.add_argument("--ledger-sha", required=True)
     parser.add_argument("--date", required=True, type=date.fromisoformat)
     parser.add_argument("--run", required=True, type=int)
-    parser.add_argument("--meeting")
+    scope = parser.add_mutually_exclusive_group()
+    scope.add_argument("--meeting")
+    scope.add_argument("--nordic", action="store_true")
+    parser.add_argument("--timing-core", nargs=2, action="append", default=[])
+    parser.add_argument("--official-result", nargs=2, action="append", default=[])
     parser.add_argument("--prior-cohort", nargs=2, action="append", default=[])
     parser.add_argument("--report-at")
     parser.add_argument("--prior-run", type=int)
@@ -357,6 +539,8 @@ def main():
     parser.add_argument("--models", type=Path)
     parser.add_argument("--recipient", help="Optional To header for the local preview. Never sends mail.")
     args = parser.parse_args()
+    if args.report_at and clock(args.report_at) is None:
+        parser.error("--report-at requires a timezone-aware timestamp")
     if any((args.archive, args.archive_sha, args.models)) and not all((args.archive, args.archive_sha, args.models)):
         parser.error("--archive, --archive-sha and --models must be supplied together")
     report = build_report(args)
