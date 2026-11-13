@@ -153,13 +153,21 @@ def test_core003_workflow_skips_downstream_api_reads_on_restore_failure():
     assert "id: restore" in source
     assert "required=True" in source
     assert "steps.restore.outcome == 'success'" in source
+    source_job, outcome_job = source.split("\n  outcome-research:", 1)
+    collector = source_job.split("- name: Recover authenticated Collector originals (read only)", 1)[1]
+    assert "steps.restore.outcome == 'success'" in collector.splitlines()[1]
+    assert "restore: ${{ steps.restore.outcome }}" in source_job
+    outcome_gate = outcome_job.split("    steps:", 1)[0]
+    assert "needs: source-pilot" in outcome_gate
+    assert "needs.source-pilot.outputs.restore == 'success'" in outcome_gate
+    assert "needs.source-pilot.outputs.execute == 'true'" in outcome_gate
     for heading in (
-        "Recover authenticated Collector originals (read only)",
+        "Recover current-run original evidence",
         "Recover prior original prospective models (read only)",
         "Recover cumulative DEV-011 originals for scorecard only (NO BET)",
     ):
-        tail = source.split("- name: " + heading, 1)[1]
-        assert "steps.restore.outcome == 'success'" in tail.split("\n", 2)[1]
+        assert "- name: " + heading in outcome_job
+        assert "- name: " + heading not in source_job
     assert 'cron: "*/5 7-21 * * *"' in source
     assert "bet_authority: true" not in source
 
