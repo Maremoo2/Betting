@@ -199,10 +199,15 @@ def build_report(args):
     result_dirs = {rid: Path(path) for rid, path in args.official_result}
     prior_reasons = {}
     prior_readiness = {}
+    win_observations = {}
     for path, pin in args.prior_cohort:
         prior, members = read_cohort(Path(path), pin)
         for rid, ready in timing.get(prior["source_report_sha256"], {}).items():
-            prior_readiness.setdefault(rid, ready)
+            prior_readiness[rid] = ready
+            observed = clock(ready.get("win_market_cohort_at_utc"))
+            previous = clock(win_observations.get(rid))
+            if observed is not None and (previous is None or observed > previous):
+                win_observations[rid] = ready["win_market_cohort_at_utc"]
         for rid, member in members.items():
             if model_analysis(*member):
                 models.setdefault(rid, member)
@@ -256,7 +261,11 @@ def build_report(args):
             track, country, scheduled = metadata
             ready = readiness.get(rid, prior_readiness.get(rid, {}))
             roster, roster_sha = original_roster(collector, rid)
-            market = market_rows(db, rid, ready.get("win_market_cohort_at_utc"))
+            win_at = max(
+                filter(None, (ready.get("win_market_cohort_at_utc"), win_observations.get(rid))),
+                key=clock, default=None,
+            )
+            market = market_rows(db, rid, win_at)
             roster_pin = handoff_by_race.get(rid, {}).get("model_input_sources", {}).get("collector_starts_sha256")
             if roster_pin and roster_sha != roster_pin:
                 raise ValueError("Collector startlist SHA-256 mismatch")
