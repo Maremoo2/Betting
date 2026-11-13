@@ -207,8 +207,10 @@ def build_report(args):
             if model_analysis(*member):
                 models.setdefault(rid, member)
         for disposition in ("not_processed", "errors"):
-            for row in prior[disposition]:
-                prior_reasons.setdefault(row["race_id"], [row["reason"], *row.get("collector_blockers", [])])
+            prior_reasons.update({
+                r["race_id"]: [r["reason"], *r.get("collector_blockers", [])]
+                for r in prior[disposition]
+            })
     ids = [row["race_id"] for row in current["records"]]
     if (len(ids) != len(set(ids)) or set(ids) != set(source["races_in_fixed_cohort"])
             or set(ids) != set(index["original_cohort"])):
@@ -441,9 +443,11 @@ def render(report):
         else:
             reasons = " ".join(REASONS[code] for code in dict.fromkeys(race["reasons"]) if code in REASONS)
             explanation = reasons or "Verifisert fullfeltmodell mangler i denne kjøringen."
-            history = race.get("verified_history")
-            if history is not None:
-                explanation += f" CORE-003 verifiserte historikk for {history} aktive hester."
+            history_count = race.get("verified_history")
+            if history_count is not None:
+                explanation += f" CORE-003 verifiserte historikk for {history_count} aktive hester."
+            else:
+                explanation += " Historikkdekning er ikke målt i de kontrollerte kjøringene."
             text.append(explanation)
             html.append(f"<p>{escape(explanation)}</p>")
             if race["runners"]:

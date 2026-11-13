@@ -104,7 +104,7 @@ def inventory(day, archive):
             "--ledger-sha", member_pin(ledger, "index.json"), "--db", "pilot.sqlite"]
     for role in PREFIXES:
         args.extend([f"--{role}", f"{files[role][0]}.zip"])
-    for source_run, members in reversed(sources):
+    for source_run, members in sources:
         if source_run == rid:
             continue
         for role, option, member in (
