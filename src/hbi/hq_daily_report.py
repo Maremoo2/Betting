@@ -201,7 +201,8 @@ def build_report(args):
     prior_readiness = {}
     for path, pin in args.prior_cohort:
         prior, members = read_cohort(Path(path), pin)
-        prior_readiness.update(timing.get(prior["source_report_sha256"], {}))
+        for rid, ready in timing.get(prior["source_report_sha256"], {}).items():
+            prior_readiness.setdefault(rid, ready)
         for rid, member in members.items():
             if model_analysis(*member):
                 models.setdefault(rid, member)
