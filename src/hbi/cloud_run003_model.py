@@ -8,11 +8,9 @@ from __future__ import annotations
 
 import json
 import math
-import re
 from collections import Counter
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from urllib.parse import urlsplit
 
 from .fundamental import MarketFreeFundamentalChampionV1, run_and_persist_fundamental
 from .horse_identity import ModelIdentityEvidence, resolve_model_identity
@@ -30,21 +28,20 @@ class IndependentScratchEvidence:
     observed_at: datetime
     original_sha256: str
     original_uri: str
+    original: bytes | None = None
 
     def is_usable(self, race_id: str, moment: datetime) -> bool:
-        try:
-            uri = urlsplit(self.original_uri)
-            host = uri.hostname
-        except ValueError:
+        if self.race_id != race_id or any(type(flag) is not bool for _, flag in self.roster):
             return False
-        return bool(
-            self.race_id == race_id
-            and self.observed_at.utcoffset() is not None
-            and self.observed_at <= moment
-            and re.fullmatch(r"[0-9a-f]{64}", self.original_sha256)
-            and uri.scheme == "https" and host
-            and host != "rikstoto.no" and not host.endswith(".rikstoto.no")
+        doc = verified_original(
+            "INDEPENDENT_SCRATCH", self.original_uri, self.original_sha256,
+            self.observed_at, self.original, moment,
         )
+        return doc == {
+            "schema": "VERIFIED_INDEPENDENT_SCRATCH_V1",
+            "race_id": race_id,
+            "roster": [[selection, flag] for selection, flag in self.roster],
+        }
 
 
 def assess_and_run(
@@ -205,3 +202,4 @@ def assess_and_run(
         "records": records,
         "bet_ready": 0, "pit_certified": False, "bet_authorized": False,
     }
+from .admission_originals import verified_original

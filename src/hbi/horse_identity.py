@@ -1,7 +1,10 @@
 """Permanent horse identity supplied by an independently verified source adapter."""
-import re
 from dataclasses import dataclass
 from datetime import datetime
+
+from .admission_originals import verified_original
+from .provider_capability import validate_lifetime
+from .providers.atg import AtgClient
 
 
 @dataclass(frozen=True)
@@ -28,6 +31,8 @@ class ModelIdentityEvidence:
     history_original_uri: str
     history_original_sha256: str
     history_completed_at: datetime
+    original: bytes | None = None
+    history_original: bytes | None = None
 
 
 def resolve_model_identity(
@@ -47,18 +52,6 @@ def resolve_model_identity(
         return None, str(exc)
     if len({item.atg_horse_id for item in evidence}) != 1:
         return None, "HORSE_IDENTITY_SOURCE_CONFLICT"
-    if any(
-        item.observed_at.utcoffset() is None
-        or item.observed_at > cutoff
-        or not item.original_uri.strip()
-        or re.fullmatch(r"[0-9a-f]{64}", item.original_sha256) is None
-        or not item.history_original_uri.strip()
-        or re.fullmatch(r"[0-9a-f]{64}", item.history_original_sha256) is None
-        or item.history_completed_at.utcoffset() is None
-        or item.history_completed_at > cutoff
-        for item in evidence
-    ):
-        return None, "IDENTITY_UNRESOLVED"
     if not isinstance(atg, dict) or type(atg.get("horseId")) is not int or any(
         type(item.atg_horse_id) is not int
         or item.atg_horse_id <= 0
@@ -68,6 +61,51 @@ def resolve_model_identity(
         for item in evidence
     ):
         return None, "HISTORY_HORSE_IDENTITY_MISMATCH"
+    for item in evidence:
+        registry = verified_original(
+            "REGISTRY_BINDING", item.original_uri, item.original_sha256, item.observed_at, item.original, cutoff,
+        )
+        history = verified_original(
+            "ATG_HISTORY", item.history_original_uri, item.history_original_sha256,
+            item.history_completed_at, item.history_original, cutoff,
+        )
+        if registry is None or history is None:
+            return None, "IDENTITY_UNRESOLVED"
+        if registry != {
+            "schema": "VERIFIED_REGISTRY_BINDING_V1",
+            "race_id": race_id,
+            "selection_id": selection_id,
+            "horse_id": item.identity.horse_id,
+            "source": item.identity.source,
+            "source_version": item.identity.source_version,
+            "atg_horse_id": item.atg_horse_id,
+            "snapshot_id": item.snapshot_id,
+            "history_original_sha256": item.history_original_sha256,
+            "atg_race_id": history.get("id"),
+        }:
+            return None, "REGISTRY_BINDING_MISMATCH"
+        provider_race_id = history.get("id")
+        starts = history.get("starts")
+        if (
+            not isinstance(provider_race_id, str) or not provider_race_id
+            or item.history_original_uri != f"{AtgClient.GAME_API}/vinnare_{provider_race_id}"
+            or item.history_original_uri != row.get("source_uri")
+            or history.get("status") != "upcoming"
+            or not isinstance(starts, list)
+        ):
+            return None, "HISTORY_ORIGINAL_MISMATCH"
+        horses = [
+            entry.get("horse") for entry in starts if isinstance(entry, dict)
+            and str(entry.get("number")) == selection_id and entry.get("scratched") is not True
+        ]
+        if len(horses) != 1 or not isinstance(horses[0], dict):
+            return None, "HISTORY_ORIGINAL_MISMATCH"
+        horse = horses[0]
+        if horse.get("id") != item.atg_horse_id or validate_lifetime(horse) is not None:
+            return None, "HISTORY_ORIGINAL_MISMATCH"
+        life = horse["statistics"]["life"]
+        if (life["starts"], life["placement"]["1"]) != (atg.get("lifeStarts"), atg.get("lifeWins")):
+            return None, "HISTORY_ORIGINAL_MISMATCH"
     return identity["horse_id"], None
 
 
