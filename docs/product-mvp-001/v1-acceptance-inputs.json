@@ -13,7 +13,9 @@
     "14037149226": "efa3a70224b82376bad8dc7cd2e7a8353ea13628213dbd424f3aa07cfd9783d8",
     "14042994376": "971e2751c8f811ddd0a5ab25d9ec911a53f281b565cd178c43bcb0bcb531efd6",
     "14043174413": "df138ad33ebf60090b1659460d3b53833d8ed4217dfb6b8a61b406f0c1b4c952",
-    "14049074959": "5211606f5aa0ce7a37c37cf75164f6bad9de4b8480b0e8caaf9e87fcdafefc02"
+    "14049074959": "5211606f5aa0ce7a37c37cf75164f6bad9de4b8480b0e8caaf9e87fcdafefc02",
+    "13364215238": "28a07b305aaa15ba2e5a1fc188d2cdc339f3efe370743436b57a7e8e0e2c2897",
+    "13362286136": "37ea0ec28b6f281ef8908960b965239280ef4c69ff7ff2daa865ceeb6de381ab"
   },
   "state_artifact": "14049074959",
   "args": [
@@ -45,9 +47,6 @@
     "--timing-core",
     "14030522773.zip",
     "26c6eba80b9dd3796bfbbd575850161e89f74b0a7b542bbb34f40a19f7168746",
-    "--official-result",
-    "RIKSTOTO:S1_NR_2026-11-13:1",
-    "official",
     "--prior-cohort",
     "14033416787.zip",
     "d04d6769702849216ce75e07dbef48fb27ad0641294d03178610f5046ee7b7c5",
@@ -67,5 +66,17 @@
     "14043174413.zip",
     "22bd0681189773464422bfe3d99a1bea3311983e65b555fea6d51beb6371bc99"
   ],
-  "result_race_id": "RIKSTOTO:S1_NR_2026-11-13:1"
+  "score_example": {
+    "scorecard": "13364215238",
+    "cohort": "13362286136",
+    "race_id": "RIKSTOTO:S2_NR_2026-11-04:10"
+  },
+  "runs": [
+    43411672945,
+    43417750508,
+    43426741239,
+    43435566988,
+    43450228274
+  ],
+  "gaps": []
 }

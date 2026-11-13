@@ -201,12 +201,14 @@ def build_report(args):
     prior_readiness = {}
     for path, pin in args.prior_cohort:
         prior, members = read_cohort(Path(path), pin)
-        prior_readiness.update(timing.get(prior["source_report_sha256"], {}))
+        for rid, ready in timing.get(prior["source_report_sha256"], {}).items():
+            prior_readiness.setdefault(rid, ready)
         for rid, member in members.items():
             if model_analysis(*member):
                 models.setdefault(rid, member)
-        prior_reasons.update({r["race_id"]: r["collector_blockers"] for r in prior["not_processed"]
-                              if "collector_blockers" in r})
+        for disposition in ("not_processed", "errors"):
+            for row in prior[disposition]:
+                prior_reasons.setdefault(row["race_id"], [row["reason"], *row.get("collector_blockers", [])])
     ids = [row["race_id"] for row in current["records"]]
     if (len(ids) != len(set(ids)) or set(ids) != set(source["races_in_fixed_cohort"])
             or set(ids) != set(index["original_cohort"])):
@@ -317,9 +319,8 @@ def build_report(args):
                     dict(zip(("uri", "raw", "start_utc", "observed_utc", "sha256", "grade"), event, strict=True))
                     for event in schedule_versions
                 ],
-                "reasons": [row.get("primary_stop_reason"), *row.get("collector_blockers", prior_reasons.get(rid, [])),
-                            *row.get("model_blockers", []),
-                            *([] if row or rid in models or rid in prior_reasons else ["NOT_IN_INSPECTED_COHORTS"])],
+                "reasons": ([row["primary_stop_reason"], *row["collector_blockers"], *row["model_blockers"]]
+                            if row else prior_reasons.get(rid, [] if analysis else ["NOT_IN_INSPECTED_COHORTS"])),
                 "full_market": bool(runners and any(not r["scratch"] for r in runners)
                                     and all(r["scratch"] or r["win"] is not None for r in runners)),
             })
@@ -440,6 +441,9 @@ def render(report):
         else:
             reasons = " ".join(REASONS[code] for code in dict.fromkeys(race["reasons"]) if code in REASONS)
             explanation = reasons or "Verifisert fullfeltmodell mangler i denne kjøringen."
+            history = race.get("verified_history")
+            if history is not None:
+                explanation += f" CORE-003 verifiserte historikk for {history} aktive hester."
             text.append(explanation)
             html.append(f"<p>{escape(explanation)}</p>")
             if race["runners"]:
