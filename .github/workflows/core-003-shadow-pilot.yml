@@ -303,7 +303,7 @@ jobs:
                   continue
               report = json.loads((destination / 'shadow.json').read_text(encoding='utf-8'))
               if aware(report['report_created_at_utc']) >= cutoff:
-                  index['errors'].append({
+                  index['not_processed'].append({
                       **entry, 'reason': 'MODEL_FREEZE_AT_OR_AFTER_T4',
                       'cutoff_at_utc': cutoff.isoformat(),
                       'report_created_at_utc': report['report_created_at_utc'],
