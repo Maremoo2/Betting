@@ -4,8 +4,18 @@ on:
     paths:
       - ".github/workflows/hq-nordic-acceptance.yml"
       - "src/hbi/hq_acceptance.py"
+      - "src/hbi/hq_daily_operations.py"
+      - "src/hbi/hq_daily_report.py"
       - "docs/product-mvp-001/v1-acceptance-inputs.json"
   workflow_dispatch:
+    inputs:
+      date:
+        description: "Oslo date for daily inventory (blank replays pinned originals)"
+        required: false
+        type: string
+  # Proposed after owner approval and private archive verification:
+  # schedule:
+  #   - cron: "30 3 * * *"  # Report previous Oslo date after overnight results.
 
 permissions:
   contents: read
@@ -15,7 +25,7 @@ jobs:
   original-replay:
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -24,8 +34,15 @@ jobs:
       - run: pip install -e .
       - name: Verify archived sources and render Nordic report
         env:
+          REPORT_DATE: ${{ inputs.date }}
           GH_TOKEN: ${{ github.token }}
         run: |
+          if [ -n "$REPORT_DATE" ]; then
+            python -m hbi.hq_daily_operations --date "$REPORT_DATE" \
+              --archive "$RUNNER_TEMP/hq-originals" --stage "$RUNNER_TEMP/hq-stage" \
+              --output hq-report
+            exit
+          fi
           python -m hbi.hq_acceptance \
             --config docs/product-mvp-001/v1-acceptance-inputs.json \
             --archive "$RUNNER_TEMP/hq-originals" --stage "$RUNNER_TEMP/hq-stage" \
@@ -38,6 +55,7 @@ jobs:
             hq-report/betting-hq.html
             hq-report/betting-hq.txt
             hq-report/betting-hq.json
-            hq-report/acceptance.json
+            hq-report/daily-status.json
+            hq-report/historical-score.json
           if-no-files-found: error
           retention-days: 21
