@@ -31,7 +31,7 @@ jobs:
       run: ${{ steps.gate.outputs.run }}
       execute: ${{ steps.gate.outputs.execute }}
       restore: ${{ steps.restore.outcome }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.ref == 'refs/heads/main' && github.event.repository.private && vars.HQ_PRIVATE_ARCHIVE_ROOT != '' && fromJSON('["self-hosted","linux","hq-private-archive"]') || 'ubuntu-latest' }}
     timeout-minutes: 13
     steps:
       - uses: actions/checkout@v4
@@ -70,7 +70,8 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          HQ_PRIVATE_ARCHIVE_ROOT: ${{ vars.HQ_PRIVATE_ARCHIVE_ROOT }}
+          HQ_PRIVATE_ARCHIVE_ROOT: ${{ github.ref == 'refs/heads/main' && vars.HQ_PRIVATE_ARCHIVE_ROOT || '' }}
+          PRIVATE_REPOSITORY: ${{ github.event.repository.private }}
         run: |
           python - <<'PY'
           import os
@@ -79,6 +80,8 @@ jobs:
           target = Path("data/core003-pilot.sqlite")
           private_root = os.environ.get("HQ_PRIVATE_ARCHIVE_ROOT")
           if private_root:
+              if os.environ.get("PRIVATE_REPOSITORY") != "true":
+                  raise SystemExit("CORE003_PRIVATE_ARCHIVE_REQUIRES_PRIVATE_REPOSITORY")
               sha = private_pilot_state(Path(private_root), target)
               print(f"PILOT_STATE_RESTORE=PRIVATE_ARCHIVE sha256={sha}")
           else:
@@ -123,7 +126,7 @@ jobs:
       - name: Recover authenticated Collector originals (read only)
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN || github.token }}
         run: |
           if [ ! -f core003-pilot-report.json ]; then
             echo "CORE003_SOURCE_REPORT_NOT_AVAILABLE"; exit 0
@@ -131,7 +134,8 @@ jobs:
           mkdir -p pit003a-collector-archive
           if ! gh run list --repo Maremoo2/rikstoto-program-collector \
               --workflow rikstoto-morning.yml --limit 15 \
-              --json databaseId,createdAt,event,conclusion,workflowName \
+              --status success --event schedule --branch main \
+              --json databaseId,createdAt,event,conclusion,workflowName,headSha \
               > "$RUNNER_TEMP/pit003a-collector-runs.json"; then
             echo "COLLECTOR_RUN_LIST_UNAVAILABLE"; exit 0
           fi
@@ -159,19 +163,17 @@ jobs:
                   .astimezone(ZoneInfo("Europe/Oslo")).date().isoformat() in dates
           ]
           matches.sort(key=lambda run: run["createdAt"], reverse=True)
-          if len(matches) == 1:
+          if len(matches) == 1 and matches[0].get("headSha"):
               print(matches[0]["databaseId"])
+              (Path(os.environ["RUNNER_TEMP"]) / "pit003a-collector-run.json").write_text(
+                  json.dumps(matches[0]), encoding="utf-8",
+              )
           PY
           selected="$(cat "$RUNNER_TEMP/pit003a-collector-selected.txt")"
           if [ -z "$selected" ]; then echo "COLLECTOR_ORIGINAL_NOT_UNAMBIGUOUS"; exit 0; fi
           if ! gh run download "$selected" --repo Maremoo2/rikstoto-program-collector \
                --name rikstoto-morning-programs --dir pit003a-collector-archive; then
             echo "COLLECTOR_ARCHIVE_DOWNLOAD_UNAVAILABLE"; exit 0
-          fi
-          if ! gh run view "$selected" --repo Maremoo2/rikstoto-program-collector \
-              --json databaseId,createdAt,event,conclusion,workflowName,headSha \
-              > "$RUNNER_TEMP/pit003a-collector-run.json"; then
-            echo "COLLECTOR_GITHUB_PROVENANCE_UNAVAILABLE"; exit 0
           fi
           python - <<'PY'
           import json
@@ -446,7 +448,7 @@ jobs:
           compression-level: 6
 
       - name: Persist pilot state on authorized private archive
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && vars.HQ_PRIVATE_ARCHIVE_ROOT != '' && success()
+        if: github.ref == 'refs/heads/main' && steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && vars.HQ_PRIVATE_ARCHIVE_ROOT != '' && success()
         env:
           HQ_PRIVATE_ARCHIVE_ROOT: ${{ vars.HQ_PRIVATE_ARCHIVE_ROOT }}
         run: |

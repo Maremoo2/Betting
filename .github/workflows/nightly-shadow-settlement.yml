@@ -190,7 +190,7 @@ jobs:
   nordic-daily-report:
     needs: settle
     if: >-
-      !cancelled() && github.event_name == 'schedule'
+      !cancelled() && github.event_name == 'schedule' && github.ref == 'refs/heads/main'
       && needs.settle.outputs.oslo_window == 'true'
       && vars.HQ_NORDIC_DAILY_ENABLED == 'true'
     uses: ./.github/workflows/hq-nordic-acceptance.yml

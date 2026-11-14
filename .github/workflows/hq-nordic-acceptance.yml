@@ -26,7 +26,7 @@ permissions:
 jobs:
   original-replay:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.previous_oslo_day && github.event.repository.private && fromJSON('["self-hosted","linux","hq-private-archive"]') || 'ubuntu-latest' }}
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
@@ -38,11 +38,16 @@ jobs:
         env:
           REPORT_DATE: ${{ inputs.date }}
           PREVIOUS_OSLO_DAY: ${{ inputs.previous_oslo_day }}
+          PRIVATE_REPOSITORY: ${{ github.event.repository.private }}
           HQ_PRIVATE_ARCHIVE_ROOT: ${{ vars.HQ_PRIVATE_ARCHIVE_ROOT }}
           GH_TOKEN: ${{ github.token }}
         run: |
           archive="$RUNNER_TEMP/hq-originals"
           if [ "$PREVIOUS_OSLO_DAY" = true ]; then
+            if [ "$PRIVATE_REPOSITORY" != true ]; then
+              echo "::error::HQ_PRIVATE_ARCHIVE_REQUIRES_PRIVATE_REPOSITORY"
+              exit 1
+            fi
             if [ -z "$HQ_PRIVATE_ARCHIVE_ROOT" ] || [ ! -d "$HQ_PRIVATE_ARCHIVE_ROOT" ]; then
               echo "::error::HQ_PRIVATE_ARCHIVE_ROOT_UNAVAILABLE"
               exit 1
