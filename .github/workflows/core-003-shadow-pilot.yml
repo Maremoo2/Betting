@@ -4,7 +4,7 @@ on:
   # Pilot only: source acquisition in a dedicated SQLite artifact. Never writes hbi-state.
   schedule:
     - cron: "*/5 7-21 * * *"
-  # One bootstrap run on MAIN when this pilot workflow itself changes.
+  # Preview on MAIN when this pilot workflow itself changes.
   # Unrelated code pushes do not trigger extra provider calls.
   push:
     branches: [main]
@@ -57,7 +57,7 @@ jobs:
           if os.environ["EVENT_NAME"] in {"schedule", "push"}:
               decision = evaluate_schedule()
               print(f"run={'true' if decision.should_run else 'false'}")
-              print("execute=true")
+              print(f"execute={'true' if os.environ['EVENT_NAME'] == 'schedule' else 'false'}")
               print(f"reason={decision.reason}")
           else:
               print("run=true")
