@@ -158,16 +158,20 @@ def test_atg_result_preserves_atg_identity_and_has_no_score(tmp_path):
         official_atg_observation({**race, "number": 1}, tmp_path)
 
 
-def test_atg_sorlandet_alias_does_not_duplicate_norwegian_programme():
+@pytest.mark.parametrize(("rikstoto_track", "atg_track"), [
+    ("Sørlandet", "Sörlandet"),
+    ("Varig Orkla", "Orkla"),
+])
+def test_atg_alias_does_not_duplicate_norwegian_programme(rikstoto_track, atg_track):
     from datetime import date
 
     from hbi.hq_daily_report import calendar_only_races
 
     day = date(2026, 11, 12)
     calendar = {"date": day.isoformat(), "tracks": [{
-        "id": 99, "name": "Sörlandet", "countryCode": "NO", "sport": "trot",
+        "id": 99, "name": atg_track, "countryCode": "NO", "sport": "trot",
         "races": [{"id": "2026-11-12_99_1", "number": 1}],
     }]}
     assert calendar_only_races(calendar, day, [
-        {"track": "Sørlandet", "country": "NO", "number": 1},
+        {"track": rikstoto_track, "country": "NO", "number": 1},
     ]) == []

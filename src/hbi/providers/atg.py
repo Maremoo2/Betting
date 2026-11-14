@@ -115,6 +115,7 @@ class AtgClient:
             ("FR", "parisvincennes"): "vincennes",
             ("NO", "øvrevoll"): "ovrevoll",
             ("NO", "sørlandet"): "sorlandet",
+            ("NO", "varigorkla"): "orkla",
         }
         return aliases.get((country, normalized), normalized)
 
