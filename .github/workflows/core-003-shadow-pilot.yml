@@ -360,7 +360,7 @@ jobs:
                   research_link_sha = sha256(link_path)
               index['processed'].append({
                   'race_id': race_id,
-                  'directory': str(destination),
+                  'directory': destination.as_posix(),
                   'analysis_status': report['analysis_status'],
                   'model_status': report['model_status'],
                   'market_status': report['market_status'],
