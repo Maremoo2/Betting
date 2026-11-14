@@ -310,7 +310,7 @@ def main(argv: list[str] | None = None) -> int:
         with args.manifest.open("x", encoding="utf-8") as file:
             json.dump(report, file, indent=2, sort_keys=True)
             file.write("\n")
-        with args.downloads_tsv.open("x", encoding="utf-8") as file:
+        with args.downloads_tsv.open("x", encoding="utf-8", newline="\n") as file:
             for row in report["selected_artifacts"]:
                 if not row["expired"]:
                     file.write(f'{row["source_run_id"]}\t{row["name"]}\t{row["kind"]}'

@@ -45,6 +45,7 @@ def test_download_plan_pins_the_artifact_id_and_available_zip_digest(tmp_path):
             "--manifest", str(manifest), "--downloads-tsv", str(downloads)]
     pages.write_text(json.dumps([{"total_count": 2, "artifacts": [first, second]}]))
     assert main(args) == 0
+    assert b"\r" not in downloads.read_bytes()
     assert downloads.read_text().splitlines() == [
         f"10\tbet-mvp-shadow-10\tmodel\t100\t{pin}",
         "11\tbet-mvp-shadow-11\tmodel\t101\t-",
