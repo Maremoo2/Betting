@@ -1,5 +1,10 @@
 name: Betting HQ Nordic acceptance (research)
 on:
+  workflow_call:
+    inputs:
+      previous_oslo_day:
+        type: boolean
+        required: true
   pull_request:
     paths:
       - ".github/workflows/hq-nordic-acceptance.yml"
@@ -13,9 +18,6 @@ on:
         description: "Oslo date for daily inventory (blank replays pinned originals)"
         required: false
         type: string
-  # Proposed after owner approval and private archive verification:
-  # schedule:
-  #   - cron: "30 3 * * *"  # Report previous Oslo date after overnight results.
 
 permissions:
   contents: read
@@ -23,8 +25,8 @@ permissions:
 
 jobs:
   original-replay:
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ${{ inputs.previous_oslo_day && github.event.repository.private && fromJSON('["self-hosted","linux","hq-private-archive"]') || 'ubuntu-latest' }}
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
@@ -35,11 +37,27 @@ jobs:
       - name: Verify archived sources and render Nordic report
         env:
           REPORT_DATE: ${{ inputs.date }}
+          PREVIOUS_OSLO_DAY: ${{ inputs.previous_oslo_day }}
+          PRIVATE_REPOSITORY: ${{ github.event.repository.private }}
+          HQ_PRIVATE_ARCHIVE_ROOT: ${{ vars.HQ_PRIVATE_ARCHIVE_ROOT }}
           GH_TOKEN: ${{ github.token }}
         run: |
+          archive="$RUNNER_TEMP/hq-originals"
+          if [ "$PREVIOUS_OSLO_DAY" = true ]; then
+            if [ "$PRIVATE_REPOSITORY" != true ]; then
+              echo "::error::HQ_PRIVATE_ARCHIVE_REQUIRES_PRIVATE_REPOSITORY"
+              exit 1
+            fi
+            if [ -z "$HQ_PRIVATE_ARCHIVE_ROOT" ] || [ ! -d "$HQ_PRIVATE_ARCHIVE_ROOT" ]; then
+              echo "::error::HQ_PRIVATE_ARCHIVE_ROOT_UNAVAILABLE"
+              exit 1
+            fi
+            archive="$HQ_PRIVATE_ARCHIVE_ROOT"
+            REPORT_DATE="$(python -c 'from datetime import datetime, timedelta; from hbi.providers.rikstoto import OSLO; print(datetime.now(OSLO).date() - timedelta(days=1))')"
+          fi
           if [ -n "$REPORT_DATE" ]; then
             python -m hbi.hq_daily_operations --date "$REPORT_DATE" \
-              --archive "$RUNNER_TEMP/hq-originals" --stage "$RUNNER_TEMP/hq-stage" \
+              --archive "$archive" --stage "$RUNNER_TEMP/hq-stage" \
               --output hq-report
             exit
           fi

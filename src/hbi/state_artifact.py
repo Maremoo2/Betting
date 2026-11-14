@@ -299,6 +299,67 @@ def restore_latest_state(
     return True
 
 
+def private_pilot_state(root: Path, target: Path, *, publish: bool = False) -> str:
+    """Exchange the single-writer pilot state through an authorized private mount."""
+    if not root.is_absolute() or not root.is_dir() or root.is_symlink():
+        raise ValueError("CORE003_PRIVATE_ARCHIVE_ROOT_UNAVAILABLE")
+    archive = root / "core003-current-state.zip"
+    if archive.is_symlink():
+        raise ValueError("CORE003_PRIVATE_STATE_PATH_INVALID")
+    if publish:
+        # CORE-003 runs as one writer. Refuse a WAL sidecar with unmerged data.
+        wal = target.with_name(target.name + "-wal")
+        if wal.exists() and wal.stat().st_size:
+            raise ValueError("CORE003_PRIVATE_STATE_WAL_NOT_CHECKPOINTED")
+        _verify_canonical_sqlite(target)
+        body = target.read_bytes()
+        checksum = hashlib.sha256(body).hexdigest()
+        destination = archive
+    else:
+        checksum, body = _read_private_pilot_state(archive)
+        destination = target
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if any(destination.with_name(destination.name + suffix).exists()
+               for suffix in ("-wal", "-shm", "-journal")):
+            raise ValueError("CORE003_PRIVATE_RESTORE_TARGET_BUSY")
+
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=destination.parent, delete=False) as staging:
+            temporary = Path(staging.name)
+            if publish:
+                with zipfile.ZipFile(staging, "w", compression=zipfile.ZIP_DEFLATED,
+                                     compresslevel=1) as bundle:
+                    bundle.writestr("core003-pilot.sqlite", body)
+                    bundle.writestr("state.sha256", checksum)
+            else:
+                staging.write(body)
+            staging.flush()
+            os.fsync(staging.fileno())
+        if publish:
+            _read_private_pilot_state(temporary)
+        else:
+            if hashlib.sha256(temporary.read_bytes()).hexdigest() != checksum:
+                raise ValueError("CORE003_PRIVATE_STATE_SHA_MISMATCH")
+            _verify_canonical_sqlite(temporary)
+        os.replace(temporary, destination)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+    return checksum
+
+
+def _read_private_pilot_state(archive: Path) -> tuple[str, bytes]:
+    with zipfile.ZipFile(archive) as bundle:
+        if sorted(bundle.namelist()) != ["core003-pilot.sqlite", "state.sha256"]:
+            raise ValueError("CORE003_PRIVATE_STATE_MEMBERS_INVALID")
+        checksum = bundle.read("state.sha256").decode("ascii")
+        body = bundle.read("core003-pilot.sqlite")
+    if hashlib.sha256(body).hexdigest() != checksum:
+        raise ValueError("CORE003_PRIVATE_STATE_SHA_MISMATCH")
+    return checksum, body
+
+
 def main() -> None:
     repository = os.environ.get("GITHUB_REPOSITORY")
     token = os.environ.get("GITHUB_TOKEN")

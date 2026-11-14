@@ -1,6 +1,8 @@
 from datetime import UTC, datetime
 from pathlib import Path
 
+import pytest
+
 from hbi.providers.atg import AtgClient, AtgFetchResult
 from hbi.providers.rikstoto import FetchResult, RikstotoClient
 from hbi.rikstoto_collector import RikstotoCollector
@@ -437,3 +439,47 @@ def test_partial_provider_history_is_hidden_from_entire_active_field(tmp_path):
         row["data_quality"] == "FIELD_ONLY_INCOMPLETE_ENRICHMENT"
         for row in rows
     )
+
+def test_prefetch_win_snapshot_uses_response_clock(tmp_path):
+    from dataclasses import replace
+    from datetime import timedelta
+
+    class DelayedRikstoto(FakeRikstoto):
+        def win_odds(self, *args):
+            return replace(super().win_odds(*args), response_completed_at=completed)
+
+    store = SQLiteStore(tmp_path / "hbi.sqlite")
+    store.initialize(SCHEMA)
+    requested = datetime(2026, 9, 27, 17, 56, tzinfo=UTC)
+    completed = requested + timedelta(seconds=2)
+    collector = RikstotoCollector(store, DelayedRikstoto(), FakeAtg(), clock=lambda: completed)
+    race = collector.discover(requested)[0]
+    assert collector.collect_market(
+        raceday_key=race.raceday_key, race_number=1, race_id=race.race_id,
+        observed_at=requested, products={"V"}, record_response_time=True,
+    ) == (2, 0)
+    with store.connect() as conn:
+        stamps = conn.execute("SELECT DISTINCT observed_at_utc FROM provider_market_snapshots").fetchall()
+    assert [row[0] for row in stamps] == [completed.isoformat()]
+
+@pytest.mark.parametrize(("rikstoto_track", "atg_track"), [
+    ("Sørlandet", "Sörlandet"),
+    ("Varig Orkla", "Orkla"),
+])
+def test_atg_resolves_documented_track_alias_without_relaxing_start_or_status(
+    rikstoto_track, atg_track,
+):
+    from hbi.providers.atg import AtgClient, AtgFetchResult
+
+    client = AtgClient()
+    day = "2026-11-12"
+    start = datetime(2026, 11, 12, 17, 10, tzinfo=UTC)
+    race = {"id": f"{day}_99_1", "number": 1, "status": "upcoming",
+            "startTime": "2026-11-12T18:10:00"}
+    track = {"id": 99, "name": atg_track, "countryCode": "NO", "sport": "trot",
+             "races": [race]}
+    calendar = AtgFetchResult("example", {"tracks": [track]}, True, 200, 0.0)
+    kwargs = {"track_name": rikstoto_track, "race_number": 1, "country": "NO", "expected_start": start}
+    assert client.resolve_race(calendar, **kwargs).race_id == race["id"]
+    race["status"] = "results"
+    assert client.resolve_race(calendar, **kwargs) is None

@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 from test_prospective_outcome_scorecard import FakeOfficial, archive
 
-from hbi.dev011_coverage import finalize, pinned_official, plan
+from hbi.dev011_coverage import finalize, main, pinned_official, plan
 from hbi.prospective_outcome_scorecard import evaluate_archive
 
 RACE = "RIKSTOTO:S1_NR_2026-11-03:8"
@@ -32,6 +32,28 @@ def _empty(root, number):
         "original_cohort": [f"RIKSTOTO:TEST_NR_2026-11-04:{number}"],
     }))
     return folder
+
+
+def test_download_plan_pins_the_artifact_id_and_available_zip_digest(tmp_path):
+    pages = tmp_path / "pages.json"
+    downloads = tmp_path / "downloads.tsv"
+    manifest = tmp_path / "manifest.json"
+    pin = "sha256:" + "a" * 64
+    first = {**_artifact(10, 100, "bet-mvp-shadow-10"), "digest": pin}
+    second = _artifact(11, 101, "bet-mvp-shadow-11")
+    args = ["plan", "--pages", str(pages), "--current-run-id", "99",
+            "--manifest", str(manifest), "--downloads-tsv", str(downloads)]
+    pages.write_text(json.dumps([{"total_count": 2, "artifacts": [first, second]}]))
+    assert main(args) == 0
+    assert b"\r" not in downloads.read_bytes()
+    assert downloads.read_text().splitlines() == [
+        f"10\tbet-mvp-shadow-10\tmodel\t100\t{pin}",
+        "11\tbet-mvp-shadow-11\tmodel\t101\t-",
+    ]
+    first["digest"] = "sha256:invalid"
+    with pytest.raises(ValueError, match="ORIGINAL_ARTIFACT_DIGEST_INVALID"):
+        plan([{"total_count": 2, "artifacts": [first, second]}],
+             current_run_id=99, inventory_sha="b" * 64)
 
 
 def _seed(tmp_path):

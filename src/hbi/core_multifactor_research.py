@@ -16,7 +16,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from .core_shadow_pilot import _atg_history_source_diagnostic
+from .core_prefetch import _atg_history_source_diagnostic
 from .race_core_review import _rows, _utc, historical_win_prior
 
 MODEL_ID = "CORE_004_EXPLORATORY_MULTIFACTOR_V0_NOT_FITTED"

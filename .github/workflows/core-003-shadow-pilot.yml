@@ -4,7 +4,7 @@ on:
   # Pilot only: source acquisition in a dedicated SQLite artifact. Never writes hbi-state.
   schedule:
     - cron: "*/5 7-21 * * *"
-  # One bootstrap run on MAIN when this pilot workflow itself changes.
+  # Preview on MAIN when this pilot workflow itself changes.
   # Unrelated code pushes do not trigger extra provider calls.
   push:
     branches: [main]
@@ -22,13 +22,16 @@ permissions:
   contents: read
   actions: read
 
-concurrency:
-  group: core003-isolated-source-pilot
-  cancel-in-progress: false
-
 jobs:
   source-pilot:
-    runs-on: ubuntu-latest
+    concurrency:
+      group: core003-isolated-source-pilot
+      cancel-in-progress: false
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+      execute: ${{ steps.gate.outputs.execute }}
+      restore: ${{ steps.restore.outcome }}
+    runs-on: ${{ github.ref == 'refs/heads/main' && github.event.repository.private && vars.HQ_PRIVATE_ARCHIVE_ROOT != '' && fromJSON('["self-hosted","linux","hq-private-archive"]') || 'ubuntu-latest' }}
     timeout-minutes: 13
     steps:
       - uses: actions/checkout@v4
@@ -54,7 +57,7 @@ jobs:
           if os.environ["EVENT_NAME"] in {"schedule", "push"}:
               decision = evaluate_schedule()
               print(f"run={'true' if decision.should_run else 'false'}")
-              print("execute=true")
+              print(f"execute={'true' if os.environ['EVENT_NAME'] == 'schedule' else 'false'}")
               print(f"reason={decision.reason}")
           else:
               print("run=true")
@@ -67,32 +70,35 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HQ_PRIVATE_ARCHIVE_ROOT: ${{ github.ref == 'refs/heads/main' && vars.HQ_PRIVATE_ARCHIVE_ROOT || '' }}
+          PRIVATE_REPOSITORY: ${{ github.event.repository.private }}
         run: |
           python - <<'PY'
           import os
-          from hbi.state_artifact import restore_latest_state
-          found = restore_latest_state(
-              repository=os.environ["GITHUB_REPOSITORY"],
-              token=os.environ["GITHUB_TOKEN"],
-              target_path="data/core003-pilot.sqlite",
-              artifact_name="core003-pilot-state",
-              branch="main",
-              required=True,
-          )
-          print("PILOT_STATE_RESTORE=RESTORED")
+          from pathlib import Path
+          from hbi.state_artifact import private_pilot_state, restore_latest_state
+          target = Path("data/core003-pilot.sqlite")
+          private_root = os.environ.get("HQ_PRIVATE_ARCHIVE_ROOT")
+          if private_root:
+              if os.environ.get("PRIVATE_REPOSITORY") != "true":
+                  raise SystemExit("CORE003_PRIVATE_ARCHIVE_REQUIRES_PRIVATE_REPOSITORY")
+              sha = private_pilot_state(Path(private_root), target)
+              print(f"PILOT_STATE_RESTORE=PRIVATE_ARCHIVE sha256={sha}")
+          else:
+              restore_latest_state(
+                  repository=os.environ["GITHUB_REPOSITORY"],
+                  token=os.environ["GITHUB_TOKEN"],
+                  target_path=target,
+                  artifact_name="core003-pilot-state",
+                  branch="main",
+                  required=True,
+              )
+              print("PILOT_STATE_RESTORE=RESTORED")
           PY
 
       - name: Initialize isolated research database
         if: steps.gate.outputs.run == 'true'
         run: hbi --db data/core003-pilot.sqlite init-db
-
-      # PIT-003A is a source-only sidecar, never a replacement for CORE-003.
-      # GitHub cron is best-effort. Late jobs explicitly record MISSED_T4.
-      - name: Capture race-relative original T-4 receipts (research only)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true'
-        run: |
-          python -m hbi.core_t4_receipt capture \
-            --db data/core003-pilot.sqlite --out pit003a-source-receipts
 
       - name: Execute research source capture (no model, no bets)
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true'
@@ -120,7 +126,7 @@ jobs:
       - name: Recover authenticated Collector originals (read only)
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN || github.token }}
         run: |
           if [ ! -f core003-pilot-report.json ]; then
             echo "CORE003_SOURCE_REPORT_NOT_AVAILABLE"; exit 0
@@ -128,7 +134,8 @@ jobs:
           mkdir -p pit003a-collector-archive
           if ! gh run list --repo Maremoo2/rikstoto-program-collector \
               --workflow rikstoto-morning.yml --limit 15 \
-              --json databaseId,createdAt,event,conclusion,workflowName \
+              --status success --event schedule --branch main \
+              --json databaseId,createdAt,event,conclusion,workflowName,headSha \
               > "$RUNNER_TEMP/pit003a-collector-runs.json"; then
             echo "COLLECTOR_RUN_LIST_UNAVAILABLE"; exit 0
           fi
@@ -156,19 +163,17 @@ jobs:
                   .astimezone(ZoneInfo("Europe/Oslo")).date().isoformat() in dates
           ]
           matches.sort(key=lambda run: run["createdAt"], reverse=True)
-          if len(matches) == 1:
+          if len(matches) == 1 and matches[0].get("headSha"):
               print(matches[0]["databaseId"])
+              (Path(os.environ["RUNNER_TEMP"]) / "pit003a-collector-run.json").write_text(
+                  json.dumps(matches[0]), encoding="utf-8",
+              )
           PY
           selected="$(cat "$RUNNER_TEMP/pit003a-collector-selected.txt")"
           if [ -z "$selected" ]; then echo "COLLECTOR_ORIGINAL_NOT_UNAMBIGUOUS"; exit 0; fi
           if ! gh run download "$selected" --repo Maremoo2/rikstoto-program-collector \
                --name rikstoto-morning-programs --dir pit003a-collector-archive; then
             echo "COLLECTOR_ARCHIVE_DOWNLOAD_UNAVAILABLE"; exit 0
-          fi
-          if ! gh run view "$selected" --repo Maremoo2/rikstoto-program-collector \
-              --json databaseId,createdAt,event,conclusion,workflowName,headSha \
-              > "$RUNNER_TEMP/pit003a-collector-run.json"; then
-            echo "COLLECTOR_GITHUB_PROVENANCE_UNAVAILABLE"; exit 0
           fi
           python - <<'PY'
           import json
@@ -217,10 +222,10 @@ jobs:
           import sqlite3
           import subprocess
           import sys
-          from datetime import UTC, datetime
+          from datetime import UTC, datetime, timedelta
           from pathlib import Path
 
-          from hbi.bet_mvp_shadow import select_fixed_cohort_races, sha256
+          from hbi.bet_mvp_shadow import aware, select_fixed_cohort_races, sha256
           from hbi.collector_handoff import write_research_model_report
 
           source_path = Path('core003-pilot-report.json')
@@ -283,13 +288,35 @@ jobs:
           for number, entry in enumerate(selection['eligible'], start=1):
               race_id = entry['race_id']
               destination = folder / f'race-{number:03d}'
+              cutoff = aware(entry['earliest_source_start_utc']) - timedelta(minutes=4)
+              started_at = datetime.now(UTC)
+              if started_at >= cutoff:
+                  index['not_processed'].append({
+                      **entry, 'reason': 'NOT_BEFORE_CONSERVATIVE_T4',
+                      'checked_at_utc': started_at.isoformat(), 'cutoff_at_utc': cutoff.isoformat(),
+                  })
+                  continue
               command = [
                   sys.executable, '-m', 'hbi.bet_mvp_shadow',
                   '--db', str(db_path), '--source-report', str(source_path),
                   '--race-id', race_id, '--as-of', as_of.isoformat(),
                   '--run-kind', 'PROSPECTIVE_ATTEMPT', '--out', str(destination),
               ]
-              run = subprocess.run(command, capture_output=True, text=True, check=False)
+              try:
+                  run = subprocess.run(
+                      command, capture_output=True, text=True, check=False,
+                      timeout=min(30.0, (cutoff - started_at).total_seconds()),
+                  )
+              except subprocess.TimeoutExpired:
+                  index['errors'].append({
+                      'race_id': race_id, 'reason': 'MODEL_REPORT_EXECUTION_TIMEOUT',
+                      'cutoff_at_utc': cutoff.isoformat(),
+                  })
+                  if destination.is_dir():
+                      for artifact in destination.iterdir():
+                          artifact.unlink()
+                      destination.rmdir()
+                  continue
               if run.returncode != 0 or not (destination / 'shadow.json').is_file():
                   index['errors'].append({
                       'race_id': race_id,
@@ -299,6 +326,17 @@ jobs:
                   })
                   continue
               report = json.loads((destination / 'shadow.json').read_text(encoding='utf-8'))
+              if aware(report['report_created_at_utc']) >= cutoff:
+                  index['not_processed'].append({
+                      **entry, 'reason': 'MODEL_FREEZE_AT_OR_AFTER_T4',
+                      'cutoff_at_utc': cutoff.isoformat(),
+                      'report_created_at_utc': report['report_created_at_utc'],
+                  })
+                  # Retain only the timing diagnostic. No late probability file is published.
+                  for artifact in destination.iterdir():
+                      artifact.unlink()
+                  destination.rmdir()
+                  continue
               original = handoff_by_id[race_id]
               link_path = destination / 'collector-research-report.json'
               research_link_sha = None
@@ -324,7 +362,7 @@ jobs:
                   research_link_sha = sha256(link_path)
               index['processed'].append({
                   'race_id': race_id,
-                  'directory': str(destination),
+                  'directory': destination.as_posix(),
                   'analysis_status': report['analysis_status'],
                   'model_status': report['model_status'],
                   'market_status': report['market_status'],
@@ -359,9 +397,91 @@ jobs:
               'errors': len(index['errors']),
               'bet_authority': False,
           }, ensure_ascii=False))
-          if index['errors']:
-              raise SystemExit('BET_MVP_FIXED_COHORT_INCOMPLETE_REPORTS')
           PY
+
+      # Publish the prospective evidence before waiting for receipts or replaying
+      # historical outcomes. A later sidecar timeout must not erase a freeze.
+      - name: Upload per-run source coverage report
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core003-pilot-report-${{ github.run_id }}
+          path: core003-pilot-report.json
+          if-no-files-found: warn
+          retention-days: 21
+
+      - name: Upload Collector-to-Betting import and model admission evidence
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: collector-handoff-${{ github.run_id }}
+          path: collector-handoff.json
+          if-no-files-found: warn
+          retention-days: 21
+
+      - name: Upload Collector original provenance used for PIT verification
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit003a-collector-evidence-${{ github.run_id }}
+          path: pit003a-collector-archive/
+          if-no-files-found: ignore
+          retention-days: 21
+
+      - name: Upload frozen model research report (not a bet)
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bet-mvp-shadow-${{ github.run_id }}
+          path: bet-mvp-shadow/
+          if-no-files-found: ignore
+          retention-days: 21
+
+      - name: Persist isolated research state for next pilot
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core003-pilot-state
+          path: data/core003-pilot.sqlite
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 6
+
+      - name: Persist pilot state on authorized private archive
+        if: github.ref == 'refs/heads/main' && steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && vars.HQ_PRIVATE_ARCHIVE_ROOT != '' && success()
+        env:
+          HQ_PRIVATE_ARCHIVE_ROOT: ${{ vars.HQ_PRIVATE_ARCHIVE_ROOT }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from hbi.state_artifact import private_pilot_state
+          sha = private_pilot_state(
+              Path(os.environ["HQ_PRIVATE_ARCHIVE_ROOT"]), Path("data/core003-pilot.sqlite"),
+              publish=True,
+          )
+          print(f"PILOT_PRIVATE_STATE=VERIFIED sha256={sha}")
+          PY
+
+      - name: Surface incomplete cohort after publishing originals
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && success()
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          index = json.loads(Path("bet-mvp-shadow/cohort-index.json").read_bytes())
+          if index["errors"]:
+              raise SystemExit("BET_MVP_FIXED_COHORT_INCOMPLETE_REPORTS")
+          PY
+
+      # PIT-003A is a source-only sidecar, never a replacement for CORE-003.
+      # GitHub cron is best-effort. Late jobs explicitly record MISSED_T4.
+      - name: Capture race-relative original T-4 receipts (research only)
+        timeout-minutes: 7
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true'
+        run: |
+          python -m hbi.core_t4_receipt capture \
+            --db data/core003-pilot.sqlite --out pit003a-source-receipts
 
       # Offline sidecar: reuse already-frozen reports and exact SQLite physical race
       # catalog. No provider reads, model retraining, bets or schedule changes.
@@ -383,10 +503,62 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Upload original T-4 source receipts
+        if: steps.gate.outputs.run == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit003a-source-receipts-${{ github.run_id }}
+          path: pit003a-source-receipts/
+          if-no-files-found: ignore
+          retention-days: 21
+
+  outcome-research:
+    needs: source-pilot
+    if: >-
+      always() && needs.source-pilot.outputs.run == 'true'
+      && needs.source-pilot.outputs.execute == 'true'
+      && needs.source-pilot.outputs.restore == 'success'
+    concurrency:
+      group: core003-isolated-outcome-research
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - name: Recover current-run original evidence
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-${{ github.run_id }}"
+          path: current-run-originals
+          merge-multiple: false
+
+      - name: Stage current-run evidence and report missing roles
+        if: always()
+        run: |
+          stage() {
+            local original="current-run-originals/$1-$GITHUB_RUN_ID"
+            mkdir -p "$2"
+            if [ -d "$original" ]; then
+              cp -R "$original/." "$2/"
+            else
+              echo "::warning::CURRENT_ORIGINAL_UNAVAILABLE:$1"
+            fi
+          }
+          stage core003-pilot-report .
+          stage collector-handoff .
+          stage bet-mvp-shadow bet-mvp-shadow
+          stage pit003a-source-receipts pit003a-source-receipts
+          stage pit003a-collector-evidence pit003a-collector-archive
+
       # Prior frozen reports are downloaded by original run ID, never recomputed.
       # Any missing artifact remains an explicit model-link blocker.
       - name: Recover prior original prospective models (read only)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -421,7 +593,7 @@ jobs:
           fi
 
       - name: Independently audit T-4 source receipts against frozen reports
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        if: always()
         run: |
           if [ -f pit003a-source-receipts/index.json ]; then
             python -m hbi.core_t4_receipt attest \
@@ -436,19 +608,46 @@ jobs:
       # Emit separate, immutable read-only V3.3 gate diagnostics AFTER attestation.
       # Missing originals and unmatched receipts are recorded as BLOCKED, never PASS.
       - name: Generate MVP-009 read-only decision diagnostics
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        if: always()
         run: |
           python -m hbi.mvp009_auto_decision_audit \
             --cohort-index bet-mvp-shadow/cohort-index.json \
             --attestation-index pit003a-attestations/index.json \
             --output-dir mvp009-decision-audits
 
+      - name: Upload restored immutable prior model evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit003a-prior-frozen-models-${{ github.run_id }}
+          path: pit003a-prior-models/
+          if-no-files-found: ignore
+          retention-days: 21
+
+      - name: Upload PIT T-4 research attestations (NO BET)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pit003a-attestations-${{ github.run_id }}
+          path: pit003a-attestations/
+          if-no-files-found: ignore
+          retention-days: 21
+
+      - name: Upload MVP-009 decision diagnostics (RESEARCH ONLY, NO BET)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp009-decision-audits-${{ github.run_id }}
+          path: mvp009-decision-audits/
+          if-no-files-found: warn
+          retention-days: 21
+
       # DEV-011 is strictly separate from PIT-003A's original prior-model recovery.
       # Paginate EVERY existing GitHub artifact page. No latest-N truncation and
       # no model/market/outcome-quality filter. All unavailable originals are
       # explicit blocking entries in an immutable cumulative coverage manifest.
       - name: Recover cumulative DEV-011 originals for scorecard only (NO BET)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -476,16 +675,20 @@ jobs:
             echo "::warning::DEV011_INVENTORY_RETRY_FULL_PAGINATION:$attempt"
           done
           if [ "$inventory_ready" = true ]; then
-            while IFS="$(printf '\t')" read -r prior_run artifact_name kind; do
+            while IFS="$(printf '\t')" read -r prior_run artifact_name kind artifact_id archive_digest; do
               test -n "$prior_run" || continue
               if [ "$kind" = model ]; then
                 dest="dev011-scorecard-models/$prior_run"
               else
                 dest="dev011-scorecard-results/$prior_run"
               fi
-              mkdir -p "$dest"
-              if ! gh run download "$prior_run" --repo "$GITHUB_REPOSITORY" \
-                  --name "$artifact_name" --dir "$dest"; then
+              archive="$RUNNER_TEMP/dev011-$artifact_id.zip"
+              if [ -e "$dest" ] ||
+                  ! gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" > "$archive" ||
+                  { [ "$archive_digest" != "-" ] &&
+                    ! printf '%s  %s\n' "${archive_digest#sha256:}" "$archive" | sha256sum --check -; } ||
+                  ! python -m zipfile -e "$archive" "$dest.partial" ||
+                  ! mv -T -- "$dest.partial" "$dest"; then
                 echo "DEV011_ORIGINAL_ARCHIVE_DOWNLOAD_BLOCKED:$artifact_name"
                 printf '%s\t%s\t%s\n' "$prior_run" "$artifact_name" "$kind" \
                   >> dev011-coverage/download-failures.tsv
@@ -517,7 +720,7 @@ jobs:
       # public GETs are kept in this separate research-only artifact; never
       # feed them into CORE-004, T-4 attestations or betting decisions.
       - name: Generate DEV-009 prospective official outcome scorecard (NO BET)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        if: always()
         run: |
           # A failed source-inventory attempt is NOT a new zero-race benchmark.
           # Instead emit an explicit, distinct source-unavailable research
@@ -538,7 +741,7 @@ jobs:
           fi
 
       - name: Export research ledger from current and archived originals (NO BET)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        if: always()
         id: ledger_export
         continue-on-error: true
         shell: bash
@@ -558,10 +761,10 @@ jobs:
             --output research-ledger/index.json
 
       - name: Record research ledger export status (NO BET)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
+        if: always()
         env:
           EXPORT_OUTCOME: ${{ steps.ledger_export.outcome }}
-          RESTORE_OUTCOME: ${{ steps.restore.outcome }}
+          RESTORE_OUTCOME: ${{ needs.source-pilot.outputs.restore }}
         run: |
           python - <<'PY'
           import hashlib
@@ -607,7 +810,7 @@ jobs:
           PY
 
       - name: Upload research ledger (NO BET)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: research-ledger-${{ github.run_id }}
@@ -619,7 +822,7 @@ jobs:
       # research sidecar can fail without rewriting or blocking CORE-003 state.
       # Its own outcome remains explicit in GitHub step logs and artifact.
       - name: Generate MVP-016 cumulative research status (NO BET)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        if: always()
         continue-on-error: true
         run: |
           set -euo pipefail
@@ -641,7 +844,7 @@ jobs:
             --output-dir mvp016-research-status
 
       - name: Upload MVP-016 cumulative read-only research status (NO BET)
-        if: steps.gate.outputs.run == 'true' && always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp016-research-status-${{ github.run_id }}
@@ -652,7 +855,7 @@ jobs:
       # Read-only source readiness from the four existing immutable research originals.
       # Failures remain explicit, but never block/write the CORE-003 model or PIT state.
       - name: Generate MVP-019 prospective source readiness (NO BET)
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
+        if: always()
         continue-on-error: true
         run: |
           set -euo pipefail
@@ -675,69 +878,16 @@ jobs:
             --output-dir mvp019-source-readiness
 
       - name: Upload MVP-019 prospective source readiness (NO BET)
-        if: steps.gate.outputs.run == 'true' && always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp019-source-readiness-${{ github.run_id }}
           path: mvp019-source-readiness/index.json
           if-no-files-found: warn
           retention-days: 21
-      - name: Upload Collector-to-Betting import and model admission evidence
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: collector-handoff-${{ github.run_id }}
-          path: collector-handoff.json
-          if-no-files-found: warn
-          retention-days: 21
-
-      - name: Upload restored immutable prior model evidence
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pit003a-prior-frozen-models-${{ github.run_id }}
-          path: pit003a-prior-models/
-          if-no-files-found: ignore
-          retention-days: 21
-
-      - name: Upload Collector original provenance used for PIT verification
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pit003a-collector-evidence-${{ github.run_id }}
-          path: pit003a-collector-archive/
-          if-no-files-found: ignore
-          retention-days: 21
-
-      - name: Upload original T-4 source receipts
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pit003a-source-receipts-${{ github.run_id }}
-          path: pit003a-source-receipts/
-          if-no-files-found: ignore
-          retention-days: 21
-
-      - name: Upload PIT T-4 research attestations (NO BET)
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pit003a-attestations-${{ github.run_id }}
-          path: pit003a-attestations/
-          if-no-files-found: ignore
-          retention-days: 21
-
-      - name: Upload MVP-009 decision diagnostics (RESEARCH ONLY, NO BET)
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mvp009-decision-audits-${{ github.run_id }}
-          path: mvp009-decision-audits/
-          if-no-files-found: warn
-          retention-days: 21
 
       - name: Upload DEV-009 prospective outcome scorecard (RESEARCH NO BET)
-        if: steps.gate.outputs.run == 'true' && always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dev009-outcome-scorecards-${{ github.run_id }}
@@ -746,38 +896,10 @@ jobs:
           retention-days: 21
 
       - name: Upload DEV-011 cumulative original coverage manifest (NO BET)
-        if: steps.gate.outputs.run == 'true' && always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dev011-coverage-manifest-${{ github.run_id }}
           path: dev011-coverage/
-          if-no-files-found: warn
-          retention-days: 21
-
-      - name: Upload frozen model research report (not a bet)
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: bet-mvp-shadow-${{ github.run_id }}
-          path: bet-mvp-shadow/
-          if-no-files-found: ignore
-          retention-days: 21
-
-      - name: Persist isolated research state for next pilot
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: core003-pilot-state
-          path: data/core003-pilot.sqlite
-          if-no-files-found: error
-          retention-days: 7
-          compression-level: 6
-
-      - name: Upload per-run source coverage report
-        if: steps.gate.outputs.run == 'true' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: core003-pilot-report-${{ github.run_id }}
-          path: core003-pilot-report.json
           if-no-files-found: warn
           retention-days: 21
