@@ -675,16 +675,20 @@ jobs:
             echo "::warning::DEV011_INVENTORY_RETRY_FULL_PAGINATION:$attempt"
           done
           if [ "$inventory_ready" = true ]; then
-            while IFS="$(printf '\t')" read -r prior_run artifact_name kind; do
+            while IFS="$(printf '\t')" read -r prior_run artifact_name kind artifact_id archive_digest; do
               test -n "$prior_run" || continue
               if [ "$kind" = model ]; then
                 dest="dev011-scorecard-models/$prior_run"
               else
                 dest="dev011-scorecard-results/$prior_run"
               fi
-              mkdir -p "$dest"
-              if ! gh run download "$prior_run" --repo "$GITHUB_REPOSITORY" \
-                  --name "$artifact_name" --dir "$dest"; then
+              archive="$RUNNER_TEMP/dev011-$artifact_id.zip"
+              if [ -e "$dest" ] ||
+                  ! gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" > "$archive" ||
+                  { [ "$archive_digest" != "-" ] &&
+                    ! printf '%s  %s\n' "${archive_digest#sha256:}" "$archive" | sha256sum --check -; } ||
+                  ! python -m zipfile -e "$archive" "$dest.partial" ||
+                  ! mv -T -- "$dest.partial" "$dest"; then
                 echo "DEV011_ORIGINAL_ARCHIVE_DOWNLOAD_BLOCKED:$artifact_name"
                 printf '%s\t%s\t%s\n' "$prior_run" "$artifact_name" "$kind" \
                   >> dev011-coverage/download-failures.tsv

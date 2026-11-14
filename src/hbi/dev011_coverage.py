@@ -60,11 +60,18 @@ def plan(pages: list[dict], *, current_run_id: int, inventory_sha: str) -> dict:
             if (type(run_id) is not int or run_id != int(matched.group(2))
                     or parent.get("head_branch") != "main" or run_id == current_run_id):
                 continue
+            pin = item.get("digest")
+            if pin is not None and (
+                not isinstance(pin, str) or not pin.startswith("sha256:")
+                or not SHA256.fullmatch(pin.removeprefix("sha256:"))
+            ):
+                raise ValueError("ORIGINAL_ARTIFACT_DIGEST_INVALID")
             selected.append({
                 "artifact_id": aid, "source_run_id": run_id,
                 "name": str(item["name"]),
                 "kind": "model" if matched.group(1) == "bet-mvp-shadow" else "result",
                 "created_at": item.get("created_at"),
+                "archive_digest": pin,
                 "expired": item.get("expired") is True,
                 "status": "EXPIRED_ORIGINAL_ARTIFACT" if item.get("expired") is True
                           else "PENDING_ORIGINAL_DOWNLOAD",
@@ -306,7 +313,8 @@ def main(argv: list[str] | None = None) -> int:
         with args.downloads_tsv.open("x", encoding="utf-8") as file:
             for row in report["selected_artifacts"]:
                 if not row["expired"]:
-                    file.write(f'{row["source_run_id"]}\t{row["name"]}\t{row["kind"]}\n')
+                    file.write(f'{row["source_run_id"]}\t{row["name"]}\t{row["kind"]}'
+                               f'\t{row["artifact_id"]}\t{row["archive_digest"] or "-"}\n')
     else:
         report = finalize(_json_original(args.manifest),
                           models_root=args.models_root, results_root=args.results_root)
