@@ -1,5 +1,10 @@
 name: Betting HQ Nordic acceptance (research)
 on:
+  workflow_call:
+    inputs:
+      previous_oslo_day:
+        type: boolean
+        required: true
   pull_request:
     paths:
       - ".github/workflows/hq-nordic-acceptance.yml"
@@ -13,10 +18,6 @@ on:
         description: "Oslo date for daily inventory (blank replays pinned originals)"
         required: false
         type: string
-  # Before owner-approved activation, bind the job to an authorized runner
-  # with HQ_PRIVATE_ARCHIVE_ROOT mounted. Then enable:
-  # schedule:
-  #   - cron: "30 3 * * *"  # Report previous Oslo date after overnight results.
 
 permissions:
   contents: read
@@ -36,11 +37,12 @@ jobs:
       - name: Verify archived sources and render Nordic report
         env:
           REPORT_DATE: ${{ inputs.date }}
+          PREVIOUS_OSLO_DAY: ${{ inputs.previous_oslo_day }}
           HQ_PRIVATE_ARCHIVE_ROOT: ${{ vars.HQ_PRIVATE_ARCHIVE_ROOT }}
           GH_TOKEN: ${{ github.token }}
         run: |
           archive="$RUNNER_TEMP/hq-originals"
-          if [ "$GITHUB_EVENT_NAME" = schedule ]; then
+          if [ "$PREVIOUS_OSLO_DAY" = true ]; then
             if [ -z "$HQ_PRIVATE_ARCHIVE_ROOT" ] || [ ! -d "$HQ_PRIVATE_ARCHIVE_ROOT" ]; then
               echo "::error::HQ_PRIVATE_ARCHIVE_ROOT_UNAVAILABLE"
               exit 1
