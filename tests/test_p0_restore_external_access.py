@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import sqlite3
 import urllib.error
 import zipfile
 from pathlib import Path
@@ -170,6 +171,41 @@ def test_core003_workflow_skips_downstream_api_reads_on_restore_failure():
         assert "- name: " + heading not in source_job
     assert 'cron: "*/5 7-21 * * *"' in source
     assert "bet_authority: true" not in source
+    current = outcome_job.split("- name: Recover current-run original evidence", 1)[1]
+    current = current.split("- name: Stage current-run evidence", 1)[0]
+    assert "uses: actions/download-artifact@v4" in current
+    assert "GH_TOKEN" not in current
+
+
+def test_private_pilot_state_restores_without_inventory_and_rejects_corruption(
+    monkeypatch, tmp_path,
+):
+    source = tmp_path / "source.sqlite"
+    with sqlite3.connect(source) as db:
+        for table in ("races", "provider_race_refs", "shadow_decision_runs",
+                      "shadow_tickets", "schema_migrations"):
+            db.execute(f"CREATE TABLE {table} (id INTEGER PRIMARY KEY)")
+        db.execute("INSERT INTO races VALUES (42)")
+    target = tmp_path / "new-run" / "core003-pilot.sqlite"
+    monkeypatch.setattr(
+        state_artifact, "_inventory_json", lambda *_: pytest.fail("GitHub inventory called"),
+    )
+    checksum = state_artifact.private_pilot_state(tmp_path, source, publish=True)
+    assert state_artifact.private_pilot_state(tmp_path, target) == checksum
+    assert target.read_bytes() == source.read_bytes()
+
+    with zipfile.ZipFile(tmp_path / "core003-current-state.zip", "w") as archive:
+        archive.writestr("core003-pilot.sqlite", b"corrupt")
+        archive.writestr("state.sha256", checksum)
+    with pytest.raises(ValueError, match="CORE003_PRIVATE_STATE_SHA_MISMATCH"):
+        state_artifact.private_pilot_state(tmp_path, target)
+    assert target.read_bytes() == source.read_bytes()
+    with pytest.raises(FileNotFoundError):
+        state_artifact.private_pilot_state(target.parent, target)
+
+    source.with_name(source.name + "-wal").write_bytes(b"uncheckpointed")
+    with pytest.raises(ValueError, match="WAL_NOT_CHECKPOINTED"):
+        state_artifact.private_pilot_state(tmp_path, source, publish=True)
 
 
 def test_missing_head_branch_never_becomes_main_state(monkeypatch, tmp_path):

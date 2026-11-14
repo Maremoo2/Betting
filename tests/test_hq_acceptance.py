@@ -35,6 +35,45 @@ def test_daily_inventory_uses_oslo_day_and_sorts(monkeypatch):
     monkeypatch.setattr(daily, "pages", lambda _: [{"workflow_runs": rows}])
     assert [r["id"] for r in daily.day_runs(date(2026, 11, 13))] == [1, 2]
 
+
+def test_daily_inventory_preserves_cancelled_run_originals(monkeypatch, tmp_path):
+    from datetime import date
+    from zipfile import ZipFile
+
+    from hbi import hq_daily_operations as daily
+
+    runs = [
+        {"id": 10, "status": "completed", "conclusion": "cancelled"},
+        {"id": 11, "status": "completed", "conclusion": "success"},
+    ]
+    listings = {}
+    for run in runs:
+        rid = run["id"]
+        artifacts = []
+        for number, (name, member) in enumerate((
+            (f"core003-pilot-report-{rid}", "core003-pilot-report.json"),
+            (f"bet-mvp-shadow-{rid}", "cohort-index.json"),
+            (f"collector-handoff-{rid}", "collector-handoff.json"),
+            (f"pit003a-collector-evidence-{rid}", "manifest.json"),
+            ("core003-pilot-state", "core003-pilot.sqlite"),
+        ), 1):
+            artifact_id = rid * 10 + number
+            archive = tmp_path / f"{artifact_id}.zip"
+            with ZipFile(archive, "w") as output:
+                output.writestr(member, b"isolated inventory fixture")
+            artifacts.append({
+                "name": name, "id": artifact_id, "expired": False,
+                "digest": "sha256:" + hashlib.sha256(archive.read_bytes()).hexdigest(),
+            })
+        listings[rid] = [{"artifacts": artifacts}]
+    monkeypatch.setattr(daily, "day_runs", lambda _: runs)
+    monkeypatch.setattr(daily, "pages", lambda url: listings[int(url.split("/")[5])])
+    config = daily.inventory(date(2026, 11, 13), tmp_path)
+    assert config["state_artifact"] == "115"
+    assert config["args"][config["args"].index("--prior-cohort") + 1] == "102.zip"
+    assert {"run_id": 10, "reason": "cancelled"} in config["gaps"]
+
+
 def test_daily_result_capture_includes_started_race_without_model(monkeypatch, tmp_path):
     import json
 

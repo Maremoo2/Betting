@@ -70,19 +70,27 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HQ_PRIVATE_ARCHIVE_ROOT: ${{ vars.HQ_PRIVATE_ARCHIVE_ROOT }}
         run: |
           python - <<'PY'
           import os
-          from hbi.state_artifact import restore_latest_state
-          found = restore_latest_state(
-              repository=os.environ["GITHUB_REPOSITORY"],
-              token=os.environ["GITHUB_TOKEN"],
-              target_path="data/core003-pilot.sqlite",
-              artifact_name="core003-pilot-state",
-              branch="main",
-              required=True,
-          )
-          print("PILOT_STATE_RESTORE=RESTORED")
+          from pathlib import Path
+          from hbi.state_artifact import private_pilot_state, restore_latest_state
+          target = Path("data/core003-pilot.sqlite")
+          private_root = os.environ.get("HQ_PRIVATE_ARCHIVE_ROOT")
+          if private_root:
+              sha = private_pilot_state(Path(private_root), target)
+              print(f"PILOT_STATE_RESTORE=PRIVATE_ARCHIVE sha256={sha}")
+          else:
+              restore_latest_state(
+                  repository=os.environ["GITHUB_REPOSITORY"],
+                  token=os.environ["GITHUB_TOKEN"],
+                  target_path=target,
+                  artifact_name="core003-pilot-state",
+                  branch="main",
+                  required=True,
+              )
+              print("PILOT_STATE_RESTORE=RESTORED")
           PY
 
       - name: Initialize isolated research database
@@ -292,7 +300,21 @@ jobs:
                   '--race-id', race_id, '--as-of', as_of.isoformat(),
                   '--run-kind', 'PROSPECTIVE_ATTEMPT', '--out', str(destination),
               ]
-              run = subprocess.run(command, capture_output=True, text=True, check=False)
+              try:
+                  run = subprocess.run(
+                      command, capture_output=True, text=True, check=False,
+                      timeout=min(30.0, (cutoff - started_at).total_seconds()),
+                  )
+              except subprocess.TimeoutExpired:
+                  index['errors'].append({
+                      'race_id': race_id, 'reason': 'MODEL_REPORT_EXECUTION_TIMEOUT',
+                      'cutoff_at_utc': cutoff.isoformat(),
+                  })
+                  if destination.is_dir():
+                      for artifact in destination.iterdir():
+                          artifact.unlink()
+                      destination.rmdir()
+                  continue
               if run.returncode != 0 or not (destination / 'shadow.json').is_file():
                   index['errors'].append({
                       'race_id': race_id,
@@ -373,8 +395,6 @@ jobs:
               'errors': len(index['errors']),
               'bet_authority': False,
           }, ensure_ascii=False))
-          if index['errors']:
-              raise SystemExit('BET_MVP_FIXED_COHORT_INCOMPLETE_REPORTS')
           PY
 
       # Publish the prospective evidence before waiting for receipts or replaying
@@ -416,7 +436,7 @@ jobs:
           retention-days: 21
 
       - name: Persist isolated research state for next pilot
-        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && success()
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && success()
         uses: actions/upload-artifact@v4
         with:
           name: core003-pilot-state
@@ -424,6 +444,33 @@ jobs:
           if-no-files-found: error
           retention-days: 7
           compression-level: 6
+
+      - name: Persist pilot state on authorized private archive
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && vars.HQ_PRIVATE_ARCHIVE_ROOT != '' && success()
+        env:
+          HQ_PRIVATE_ARCHIVE_ROOT: ${{ vars.HQ_PRIVATE_ARCHIVE_ROOT }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from hbi.state_artifact import private_pilot_state
+          sha = private_pilot_state(
+              Path(os.environ["HQ_PRIVATE_ARCHIVE_ROOT"]), Path("data/core003-pilot.sqlite"),
+              publish=True,
+          )
+          print(f"PILOT_PRIVATE_STATE=VERIFIED sha256={sha}")
+          PY
+
+      - name: Surface incomplete cohort after publishing originals
+        if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && success()
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          index = json.loads(Path("bet-mvp-shadow/cohort-index.json").read_bytes())
+          if index["errors"]:
+              raise SystemExit("BET_MVP_FIXED_COHORT_INCOMPLETE_REPORTS")
+          PY
 
       # PIT-003A is a source-only sidecar, never a replacement for CORE-003.
       # GitHub cron is best-effort. Late jobs explicitly record MISSED_T4.
@@ -482,20 +529,29 @@ jobs:
           cache: pip
       - run: pip install -e ".[dev]"
       - name: Recover current-run original evidence
-        env:
-          GH_TOKEN: ${{ github.token }}
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-${{ github.run_id }}"
+          path: current-run-originals
+          merge-multiple: false
+
+      - name: Stage current-run evidence and report missing roles
+        if: always()
         run: |
-          mkdir -p bet-mvp-shadow pit003a-source-receipts pit003a-collector-archive
-          download() {
-            if ! gh run download "$GITHUB_RUN_ID" --name "$1-$GITHUB_RUN_ID" --dir "$2"; then
+          stage() {
+            local original="current-run-originals/$1-$GITHUB_RUN_ID"
+            mkdir -p "$2"
+            if [ -d "$original" ]; then
+              cp -R "$original/." "$2/"
+            else
               echo "::warning::CURRENT_ORIGINAL_UNAVAILABLE:$1"
             fi
           }
-          download core003-pilot-report .
-          download collector-handoff .
-          download bet-mvp-shadow bet-mvp-shadow
-          download pit003a-source-receipts pit003a-source-receipts
-          download pit003a-collector-evidence pit003a-collector-archive
+          stage core003-pilot-report .
+          stage collector-handoff .
+          stage bet-mvp-shadow bet-mvp-shadow
+          stage pit003a-source-receipts pit003a-source-receipts
+          stage pit003a-collector-evidence pit003a-collector-archive
 
       # Prior frozen reports are downloaded by original run ID, never recomputed.
       # Any missing artifact remains an explicit model-link blocker.

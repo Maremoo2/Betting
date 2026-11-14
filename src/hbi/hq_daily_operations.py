@@ -1,4 +1,4 @@
-"""Assemble a Nordic research day from existing, completed CORE-003 artifacts."""
+"""Assemble a Nordic research day from published CORE-003 originals."""
 
 import argparse
 import json
@@ -63,10 +63,17 @@ def inventory(day, archive):
             continue
         if entry["conclusion"] != "success":
             gaps.append({"run_id": rid, "reason": entry["conclusion"]})
+        # A later sidecar failure or cancellation cannot revoke an original
+        # published by the source job. Inspect artifacts for every terminal run.
         names = {f"{prefix}-{rid}": key for key, prefix in PREFIXES.items()}
         names["core003-pilot-state"] = "db"
         matches = {}
-        for page in pages(f"repos/{REPO}/actions/runs/{rid}/artifacts?per_page=100"):
+        try:
+            listing = pages(f"repos/{REPO}/actions/runs/{rid}/artifacts?per_page=100")
+        except subprocess.CalledProcessError:
+            gaps.append({"run_id": rid, "reason": "ARTIFACT_INVENTORY_UNAVAILABLE"})
+            continue
+        for page in listing:
             for artifact in page["artifacts"]:
                 key = names.get(artifact["name"])
                 pin = artifact.get("digest") or ""
@@ -89,9 +96,9 @@ def inventory(day, archive):
     if not complete:
         raise ValueError("No completed run with all primary report inputs")
 
-    def member(artifact, name):
+    def member_pin(artifact, name):
         with ZipFile(archive / f"{artifact}.zip") as z:
-            return z.read(name)
+            return digest(z.read(name))
 
     for rid, files in reversed(complete):
         failed = [role for role in required if not retain(*files[role])]
@@ -112,9 +119,6 @@ def inventory(day, archive):
         break
     else:
         raise ValueError("No complete report source could be recovered")
-
-    def member_pin(artifact, name):
-        return digest(member(artifact, name))
 
     args = ["--date", day.isoformat(), "--run", str(rid), "--report-at", datetime.now(OSLO).isoformat(),
             "--db", "pilot.sqlite"]
