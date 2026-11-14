@@ -13,7 +13,8 @@ on:
         description: "Oslo date for daily inventory (blank replays pinned originals)"
         required: false
         type: string
-  # Proposed after owner approval and private archive verification:
+  # Before owner-approved activation, bind the job to an authorized runner
+  # with HQ_PRIVATE_ARCHIVE_ROOT mounted. Then enable:
   # schedule:
   #   - cron: "30 3 * * *"  # Report previous Oslo date after overnight results.
 
@@ -23,7 +24,7 @@ permissions:
 
 jobs:
   original-replay:
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -35,11 +36,21 @@ jobs:
       - name: Verify archived sources and render Nordic report
         env:
           REPORT_DATE: ${{ inputs.date }}
+          HQ_PRIVATE_ARCHIVE_ROOT: ${{ vars.HQ_PRIVATE_ARCHIVE_ROOT }}
           GH_TOKEN: ${{ github.token }}
         run: |
+          archive="$RUNNER_TEMP/hq-originals"
+          if [ "$GITHUB_EVENT_NAME" = schedule ]; then
+            if [ -z "$HQ_PRIVATE_ARCHIVE_ROOT" ] || [ ! -d "$HQ_PRIVATE_ARCHIVE_ROOT" ]; then
+              echo "::error::HQ_PRIVATE_ARCHIVE_ROOT_UNAVAILABLE"
+              exit 1
+            fi
+            archive="$HQ_PRIVATE_ARCHIVE_ROOT"
+            REPORT_DATE="$(python -c 'from datetime import datetime, timedelta; from hbi.providers.rikstoto import OSLO; print(datetime.now(OSLO).date() - timedelta(days=1))')"
+          fi
           if [ -n "$REPORT_DATE" ]; then
             python -m hbi.hq_daily_operations --date "$REPORT_DATE" \
-              --archive "$RUNNER_TEMP/hq-originals" --stage "$RUNNER_TEMP/hq-stage" \
+              --archive "$archive" --stage "$RUNNER_TEMP/hq-stage" \
               --output hq-report
             exit
           fi

@@ -84,26 +84,44 @@ def inventory(day, archive):
         if missing:
             gaps.append({"run_id": rid, "missing_roles": sorted(missing)})
         sources.append((rid, matches))
-    complete = [(rid, files) for rid, files in sources if set(files) == {*PREFIXES, "db"}]
+    required = {"core", "cohort", "collector", "handoff", "db"}
+    complete = [(rid, files) for rid, files in sources if required <= files.keys()]
     if not complete:
-        raise ValueError("No completed run with all report inputs")
+        raise ValueError("No completed run with all primary report inputs")
+
+    def member(artifact, name):
+        with ZipFile(archive / f"{artifact}.zip") as z:
+            return z.read(name)
+
     for rid, files in reversed(complete):
-        failed = [role for role, (artifact, pin) in files.items() if not retain(artifact, pin)]
-        if not failed:
-            break
-        gaps.append({"run_id": rid, "missing_roles": failed, "reason": "ORIGINAL_DOWNLOAD_FAILED"})
+        failed = [role for role in required if not retain(*files[role])]
+        if failed:
+            gaps.append({"run_id": rid, "missing_roles": sorted(failed), "reason": "ORIGINAL_DOWNLOAD_FAILED"})
+            continue
+        # The daily view can verify the current observations even if the
+        # cumulative Research Ledger sidecar was cancelled or unavailable.
+        if "ledger" not in files or not retain(*files["ledger"]):
+            gaps.append({"run_id": rid, "role": "ledger", "reason": "DAILY_LEDGER_REBUILT_FROM_PRIMARY_ORIGINALS"})
+            ledger = None
+        else:
+            ledger = files["ledger"][0]
+            with ZipFile(archive / f"{ledger}.zip") as ledger_archive:
+                if "index.json" not in ledger_archive.namelist():
+                    gaps.append({"run_id": rid, "role": "ledger", "reason": "DAILY_LEDGER_REBUILT_FROM_PRIMARY_ORIGINALS"})
+                    ledger = None
+        break
     else:
         raise ValueError("No complete report source could be recovered")
 
     def member_pin(artifact, name):
-        with ZipFile(archive / f"{artifact}.zip") as z:
-            return digest(z.read(name))
+        return digest(member(artifact, name))
 
-    ledger = files["ledger"][0]
     args = ["--date", day.isoformat(), "--run", str(rid), "--report-at", datetime.now(OSLO).isoformat(),
-            "--ledger-sha", member_pin(ledger, "index.json"), "--db", "pilot.sqlite"]
-    for role in PREFIXES:
+            "--db", "pilot.sqlite"]
+    for role in ("core", "cohort", "handoff", "collector"):
         args.extend([f"--{role}", f"{files[role][0]}.zip"])
+    if ledger is not None:
+        args.extend(["--ledger", f"{ledger}.zip", "--ledger-sha", member_pin(ledger, "index.json")])
     for source_run, members in sources:
         if source_run == rid:
             continue
@@ -115,7 +133,7 @@ def inventory(day, archive):
                 artifact = members[role][0]
                 args.extend([option, f"{artifact}.zip", member_pin(artifact, member)])
     return {"artifacts": pinned, "state_artifact": files["db"][0], "args": args,
-            "runs": [r["id"] for r in runs], "gaps": gaps}
+            "runs": [r["id"] for r in runs], "gaps": gaps, "compare_atg_calendar": True}
 
 
 def main():
@@ -129,7 +147,21 @@ def main():
     config = inventory(args.date, archive)
     snapshot = json.dumps(config, indent=2, sort_keys=True).encode()
     _put_once(archive / f"day-{digest(snapshot)}.json", snapshot)
-    run(config, archive, args.stage.resolve(), args.output.resolve())
+    output = args.output.resolve()
+    report = run(config, archive, args.stage.resolve(), output)
+    rendered = json.loads((output / "betting-hq.json").read_bytes())
+    at = config["args"].index("--report-at") + 1
+    config["args"][at] = rendered["report_at"]
+    config["result_versions"] = {
+        row["race_id"]: row["result_version_sha256"]
+        for row in report["results"] if row["status"] == "LINKED"
+    }
+    calendar = report.get("calendar_reconciliation") or {}
+    config["compare_atg_calendar"] = False
+    if calendar.get("status") == "VERIFIED_BYTES":
+        config["atg_calendar_sha256"] = calendar["sha256"]
+    replay = json.dumps(config, indent=2, sort_keys=True).encode()
+    _put_once(archive / f"day-replay-{digest(replay)}.json", replay)
 
 
 if __name__ == "__main__":
