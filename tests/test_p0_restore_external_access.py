@@ -228,3 +228,39 @@ def test_http_429_rate_limit_preserved_and_fails_closed(monkeypatch, tmp_path, c
     assert err.value.code == 429
     assert "classification=INSTALLATION_RATE_LIMIT" in capsys.readouterr().err
     assert not (tmp_path / "hbi.sqlite").exists()
+
+
+def test_short_server_rate_limit_on_zip_retried_and_verified(monkeypatch, tmp_path, capsys):
+    body = b"isolated test database"
+    archive = _zip(body)
+    _fake_inventory(monkeypatch, [_artifact(archive, digest="sha256:" + hashlib.sha256(archive).hexdigest())])
+    requests, waits = [], []
+
+    class Opener:
+        def open(self, request, timeout):
+            requests.append(request.full_url)
+            if len(requests) == 1:
+                raise urllib.error.HTTPError(
+                    request.full_url, 403, "Forbidden", {"X-RateLimit-Remaining": "0", "Retry-After": "2"},
+                    io.BytesIO(b'{"message":"API rate limit exceeded for installation"}'),
+                )
+            return io.BytesIO(archive)
+
+    monkeypatch.setattr(state_artifact.urllib.request, "build_opener", lambda *args: Opener())
+    monkeypatch.setattr(state_artifact.time, "sleep", waits.append)
+    target = tmp_path / "hbi.sqlite"
+    target.write_bytes(b"older state")
+    assert _restore(tmp_path, required=True)
+    assert target.read_bytes() == body
+    assert requests == [requests[0], requests[0]] and waits == [3]
+    assert "stage=ARTIFACT_ZIP attempts_remaining=1" in capsys.readouterr().err
+
+
+def test_prior_freeze_download_uses_pinned_zip_without_repeat_inventory():
+    workflow = Path(__file__).resolve().parents[1] / ".github/workflows/core-003-shadow-pilot.yml"
+    step = workflow.read_text(encoding="utf-8").split("      - name: Recover prior original prospective models", 1)[1]
+    step = step.split("      - name: Independently audit", 1)[0]
+    assert step.count("actions/artifacts?per_page=100") == 1
+    assert 'actions/artifacts/$artifact_id/zip' in step and "sha256sum --check" in step
+    assert "gh run download" not in step
+    assert 'mv -T -- "$stage" "$dest"' in step

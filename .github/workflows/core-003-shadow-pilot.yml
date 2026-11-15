@@ -92,6 +92,7 @@ jobs:
                   artifact_name="core003-pilot-state",
                   branch="main",
                   required=True,
+                  validate_sqlite=True,
               )
               print("PILOT_STATE_RESTORE=RESTORED")
           PY
@@ -581,14 +582,25 @@ jobs:
           ]
           filtered.sort(key=lambda item: (item.get("created_at", ""), item.get("id", 0)), reverse=True)
           for item in filtered[:20]:
-              print(str(item["workflow_run"]["id"]) + " " + item["name"])
+              print(item["workflow_run"]["id"], item["name"], item["id"], item.get("digest") or "-", sep="\t")
           PY
-            while read -r prior_run artifact_name; do
+            while IFS="$(printf '\t')" read -r prior_run artifact_name artifact_id archive_digest; do
               test -n "$prior_run" || continue
-              mkdir -p "pit003a-prior-models/$prior_run"
-              gh run download "$prior_run" --repo "$GITHUB_REPOSITORY" \
-                --name "$artifact_name" --dir "pit003a-prior-models/$prior_run" \
-                || echo "PRIOR_FROZEN_REPORT_DOWNLOAD_BLOCKED:$prior_run"
+              if [[ ! "$prior_run" =~ ^[1-9][0-9]*$ || "$artifact_name" != "bet-mvp-shadow-$prior_run" ||
+                    ! "$artifact_id" =~ ^[1-9][0-9]*$ || ! "$archive_digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+                echo "PRIOR_FROZEN_ORIGINAL_PROVENANCE_BLOCKED:$prior_run"
+                continue
+              fi
+              archive="$RUNNER_TEMP/prior-frozen-$artifact_id.zip"
+              dest="pit003a-prior-models/$prior_run"
+              stage="$RUNNER_TEMP/prior-frozen-$artifact_id.partial"
+              if [ -e "$dest" ] || [ -e "$stage" ] ||
+                  ! gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" > "$archive" ||
+                  ! printf '%s  %s\n' "${archive_digest#sha256:}" "$archive" | sha256sum --check - ||
+                  ! python -m zipfile -e "$archive" "$stage" ||
+                  ! mv -T -- "$stage" "$dest"; then
+                echo "PRIOR_FROZEN_REPORT_DOWNLOAD_BLOCKED:$prior_run"
+              fi
             done < "$RUNNER_TEMP/pit003a-prior.tsv"
           fi
 

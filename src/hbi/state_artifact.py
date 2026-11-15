@@ -63,7 +63,7 @@ def _report_github_artifact_error(exc: urllib.error.HTTPError, *, stage: str) ->
     )
 
 
-def _bounded_inventory_retry_delay(exc: urllib.error.HTTPError) -> float | None:
+def _bounded_github_retry_delay(exc: urllib.error.HTTPError) -> float | None:
     """Retry only when GitHub explicitly supplies a *nearby* rate reset.
 
     Installation limits are shared across workflows. Never spin, retry
@@ -86,24 +86,32 @@ def _bounded_inventory_retry_delay(exc: urllib.error.HTTPError) -> float | None:
     return max(1.0, delay + 1.0)
 
 
-def _inventory_json(url: str, token: str) -> dict:
+def _read_github(open_response, *, stage: str) -> bytes:
     """One request normally; at most one bounded, server-timed retry."""
     for attempt in range(2):
         try:
-            with urllib.request.urlopen(_request(url, token), timeout=30) as response:
-                return json.loads(response.read().decode("utf-8"))
+            with open_response() as response:
+                return response.read()
         except urllib.error.HTTPError as exc:
-            delay = _bounded_inventory_retry_delay(exc) if attempt == 0 else None
+            delay = _bounded_github_retry_delay(exc) if attempt == 0 else None
             if delay is None:
-                _report_github_artifact_error(exc, stage="ARTIFACT_INVENTORY")
+                _report_github_artifact_error(exc, stage=stage)
                 raise
             print(
                 f"STATE_RESTORE_RATE_LIMIT_WAIT seconds={delay:.3f} "
-                "stage=ARTIFACT_INVENTORY attempts_remaining=1 no_bootstrap=true",
+                f"stage={stage} attempts_remaining=1 no_bootstrap=true",
                 file=sys.stderr,
             )
             time.sleep(delay)
-    raise AssertionError("unreachable inventory retry state")
+    raise AssertionError("unreachable GitHub retry state")
+
+
+def _inventory_json(url: str, token: str) -> dict:
+    body = _read_github(
+        lambda: urllib.request.urlopen(_request(url, token), timeout=30),
+        stage="ARTIFACT_INVENTORY",
+    )
+    return json.loads(body.decode("utf-8"))
 
 
 def _verify_canonical_sqlite(path: Path, *, include_wal: bool = False) -> None:
@@ -196,11 +204,11 @@ def restore_latest_state(
 
     opener = urllib.request.build_opener(_NoRedirect)
     try:
-        with opener.open(archive_request, timeout=60) as response:
-            archive = response.read()
+        archive = _read_github(
+            lambda: opener.open(archive_request, timeout=60), stage="ARTIFACT_ZIP",
+        )
     except urllib.error.HTTPError as exc:
         if exc.code not in {301, 302, 303, 307, 308}:
-            _report_github_artifact_error(exc, stage="ARTIFACT_ZIP")
             raise
         location = exc.headers.get("Location")
         if not location:
