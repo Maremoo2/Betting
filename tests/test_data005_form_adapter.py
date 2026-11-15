@@ -159,3 +159,9 @@ def test_each_original_history_line_requires_source_sha():
     result_rows[0]["original_line_sha256"]="MISSING"
     with pytest.raises(ValueError,match="DATA005_ORIGINAL_HISTORY_LINE_SHA_MISSING"):
         research(original_entries=result_rows)
+
+
+def test_exact_cutoff_source_cannot_be_promoted():
+    result = research(source_observed_at_utc="2026-11-07T13:56:00+00:00")
+    assert result["status"] == "NOT_AVAILABLE_AT_PIT"
+    assert result["last_5_full_verified"] is False

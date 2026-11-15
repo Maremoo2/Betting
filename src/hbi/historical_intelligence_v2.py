@@ -8,8 +8,12 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import UTC, datetime
+import re
+from datetime import UTC, date, datetime
 from typing import Any
+from zoneinfo import ZoneInfo
+
+from .providers.atg import AtgClient
 
 SCHEMA = "HISTORICAL_INTELLIGENCE_V2_ORIGINAL_PIT_V1"
 MISSING = "MISSING"
@@ -53,8 +57,9 @@ def verified_past_race(
     """
     if _sha(raw_original) != claimed_sha256:
         raise ValueError("HISTORIC_RAW_SHA_MISMATCH")
-    if (not isinstance(source_uri,str)
-            or not source_uri.endswith("/vinnare_" + claimed_atg_race_id)):
+    race_key = (re.fullmatch(r"(\d{4}-\d{2}-\d{2})_([1-9]\d*)_([1-9]\d*)", claimed_atg_race_id)
+                if isinstance(claimed_atg_race_id, str) else None)
+    if not race_key or source_uri != f"{AtgClient.GAME_API}/vinnare_{claimed_atg_race_id}":
         raise ValueError("HISTORIC_SOURCE_URI_RACE_ID_CONFLICT")
     if type(horse_id) is not int or horse_id <= 0:
         return {
@@ -82,15 +87,41 @@ def verified_past_race(
         "opponents":[],"opponent_prior_strength_at_that_race":MISSING,
         "complete_prior_horse_history_index_attested":False,
     }
-    if observed > cutoff or (published is not None and published > cutoff):
+    if observed >= cutoff or (published is not None and published >= cutoff):
         evidence["status"]="NOT_AVAILABLE_AT_PIT"
         return evidence
     payload = json.loads(raw_original)
     races = payload.get("races") if isinstance(payload,dict) else None
-    if (not isinstance(races,list) or len(races)!=1
-            or races[0].get("id")!=claimed_atg_race_id):
+    if (not isinstance(races, list) or len(races) != 1
+            or not isinstance(races[0], dict) or races[0].get("id") != claimed_atg_race_id):
         raise ValueError("HISTORIC_ATG_RACE_NOT_UNIQUE")
     race=races[0]
+    day, track_id, race_number = race_key.groups()
+    track = race.get("track")
+    if (race.get("date") != day or type(race.get("number")) is not int
+            or race["number"] != int(race_number) or not isinstance(track, dict)
+            or type(track.get("id")) is not int or track["id"] != int(track_id)
+            or track.get("countryCode") not in {"NO", "SE"} or race.get("sport") != "trot"):
+        raise ValueError("HISTORIC_ATG_RACE_METADATA_CONFLICT")
+    if published is not None and published > observed:
+        raise ValueError("HISTORIC_PUBLICATION_AFTER_OBSERVATION")
+    available = published if published is not None else observed
+    stockholm = ZoneInfo("Europe/Stockholm")
+    event_clock = race.get("startTime")
+    if event_clock is None:
+        precedes_source = date.fromisoformat(day) < available.astimezone(stockholm).date()
+    else:
+        from .history_feasibility import local_instant
+
+        event = datetime.fromisoformat(event_clock)
+        if event.utcoffset() is None:
+            event = _instant(local_instant(event_clock, stockholm.key))
+        if event.astimezone(stockholm).date().isoformat() != day:
+            raise ValueError("HISTORIC_EVENT_CLOCK_DATE_CONFLICT")
+        precedes_source = event < available
+    if not precedes_source:
+        evidence.update(status="NOT_AVAILABLE_AT_PIT", reason="HISTORIC_EVENT_NOT_BEFORE_SOURCE")
+        return evidence
     if race.get("status")!="results":
         evidence["status"]="PARTIAL"
         evidence["reason"]="OFFICIAL_PAST_RESULT_NOT_FINAL"
@@ -107,43 +138,52 @@ def verified_past_race(
         return evidence
     row=matches[0]
     result=row.get("result")
-    if not isinstance(result,dict):
-        evidence["status"]="PARTIAL"
-        evidence["reason"]="INDIVIDUAL_RESULT_NOT_IN_SOURCE"
+    if row.get("scratched") is True or not isinstance(result, dict) or not result:
+        evidence.update(status="PARTIAL", reason="INDIVIDUAL_RESULT_NOT_IN_SOURCE")
         return evidence
-    contenders=[]
+    if "startNumber" in result and (
+        type(result["startNumber"]) is not int or type(row.get("number")) is not int
+        or result["startNumber"] != row["number"]
+    ):
+        raise ValueError("HISTORIC_RESULT_START_NUMBER_CONFLICT")
+    contenders = []
+    field_ids, field_numbers = set(), set()
     for other in starts:
-        if not isinstance(other,dict) or not isinstance(other.get("horse"),dict):
+        if not isinstance(other, dict) or not isinstance(other.get("horse"), dict):
             continue
-        id_value=other["horse"].get("id")
+        other_id = other["horse"].get("id")
+        number = other.get("number")
+        if type(other_id) is not int or other_id <= 0 or type(number) is not int or number <= 0:
+            continue
+        if other_id in field_ids or number in field_numbers:
+            raise ValueError("HISTORIC_ATG_FIELD_IDENTITY_CONFLICT")
+        field_ids.add(other_id)
+        field_numbers.add(number)
         contenders.append({
-            "horse_id":id_value if type(id_value) is int and id_value>0 else None,
-            "name_at_original":other["horse"].get("name"),
-            "number":other.get("number"),
-            "result_raw":other.get("result"),
-            "status":"VERIFIED_RESULT_ROW" if isinstance(other.get("result"),dict)
-                     else "PARTIAL",
+            "horse_id": other_id,
+            "name_at_original": other["horse"].get("name"),
+            "number": number,
+            "result_raw": other.get("result"),
+            "status": "VERIFIED_RESULT_ROW" if isinstance(other.get("result"), dict) else "PARTIAL",
         })
-    if len(contenders)!=len(starts):
-        evidence["status"]="PARTIAL"
-        evidence["reason"]="PREVIOUS_FIELD_HAS_MISSING_HORSE_IDENTITIES"
+    if len(contenders) != len(starts):
+        evidence.update(status="PARTIAL", reason="PREVIOUS_FIELD_HAS_MISSING_HORSE_IDENTITIES")
     else:
-        evidence["status"]="VERIFIED"
-    track=race.get("track") or {}
+        evidence["status"] = "VERIFIED"
     evidence["fields"]={
         "race_date":race.get("date",MISSING),
         "track":track.get("name",MISSING),
-        "distance_m":race.get("distance",MISSING),
+        "distance_m":row.get("distance", race.get("distance", MISSING)),
         "start_method":race.get("startMethod",MISSING),
         "post_position":row.get("postPosition",MISSING),
         "placing":result.get("place",MISSING),
         "finish_time":result.get("time",MISSING),
-        "kilometre_time":result.get("kilometreTime",MISSING),
+        "kilometre_time":result.get("kmTime", result.get("kilometreTime", MISSING)),
         "margin":result.get("margin",MISSING),
-        "prize_earned":result.get("prize",MISSING),
+        "prize_earned":result.get("prizeMoney", result.get("prize", MISSING)),
         "race_class":race.get("terms",MISSING),
         "race_prize":race.get("prize",MISSING),
-        "gallop":result.get("gallop",MISSING),
+        "gallop":result.get("galloped", result.get("gallop", MISSING)),
         "disqualified":result.get("disqualified",MISSING),
         "not_finished":result.get("notFinished",MISSING),
         "driver":row.get("driver",MISSING),
@@ -182,7 +222,7 @@ def history_coverage(
             raise ValueError("HISTORICAL_ORIGINAL_DUPLICATE_RACE")
         seen.add(key)
         if (item.get("status")=="VERIFIED"
-                and _instant(item["source_observed_at_utc"])<=cutoff):
+                and _instant(item["source_observed_at_utc"]) < cutoff):
             useful.append(item)
     # The complete history index needs separate independent attestation
     # (a collection of cherry-picked races cannot be called 'last 10').

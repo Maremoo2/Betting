@@ -4,6 +4,8 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import zipfile
+from pathlib import Path
 
 import pytest
 
@@ -18,6 +20,7 @@ from hbi.historical_intelligence_v2 import (
 )
 
 START = "2026-11-07T14:00:00+00:00"
+ROOT = Path(__file__).resolve().parents[1]
 NOW = "2026-11-07T07:05:00+00:00"
 OBS = "2026-11-06T18:25:00+00:00"
 SHA = "f" * 64
@@ -126,7 +129,8 @@ def test_frozen_fixed_illustrative_weights_reject_invalid():
 def _past_payload() -> bytes:
     return json.dumps({"races":[{
         "id":"2026-06-06_5_8","status":"results",
-        "date":"2026-06-06","track":{"name":"Mantorp"},
+        "date":"2026-06-06","number":8,"sport":"trot",
+        "track":{"id":5,"name":"Mantorp","countryCode":"SE"},
         "distance":2140,"startMethod":"auto","terms":"Gulddivisionen",
         "prize":{"1":500000},
         "starts":[
@@ -202,3 +206,96 @@ def test_missing_permanent_horse_id_blocks_history():
     assert history_coverage(
         [],current_horse_id=None,current_model_cutoff_utc=NOW,
     )["status"]=="IDENTITY_UNRESOLVED"
+
+
+def _verify_fixture(raw, **changes):
+    params = {
+        "claimed_sha256": hashlib.sha256(raw).hexdigest(),
+        "claimed_atg_race_id": "2026-06-06_5_8",
+        "source_uri": "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_2026-06-06_5_8",
+        "observed_at_utc": OBS,
+        "source_published_at_utc": None,
+        "model_cutoff_utc": NOW,
+        "current_race_start_utc": START,
+        "horse_id": 767446,
+    }
+    return verified_past_race(raw, **(params | changes))
+
+
+def test_original_atg_history_uses_provider_fields():
+    archive = ROOT / "tests/fixtures/m7b1b-official-sources-v1.zip"
+    assert hashlib.sha256(archive.read_bytes()).hexdigest() == (
+        "f362a51b18c7cde53c826838011526a9b3aeb6ad1ebd4f7df73af8cbaf58c335"
+    )
+    member = "atg-2026-04-11_27_6.json"
+    with zipfile.ZipFile(archive) as original:
+        raw = original.read(member)
+        ref = json.loads(original.read("manifest.json"))["sources"][member]
+    row = _verify_fixture(
+        raw, claimed_sha256=ref["sha256"], claimed_atg_race_id="2026-04-11_27_6",
+        source_uri=ref["url"], observed_at_utc=ref["observed_at"],
+        model_cutoff_utc="2026-10-24T11:26:00+00:00",
+        current_race_start_utc="2026-10-24T11:30:00+00:00", horse_id=773330,
+    )
+    assert row["status"] == "VERIFIED"
+    assert row["fields"]["kilometre_time"] == {"minutes": 1, "seconds": 19, "tenths": 1}
+    assert row["fields"]["gallop"] is True
+    assert row["fields"]["prize_earned"] == 3000
+    assert row["fields"]["disqualified"] == "MISSING"
+    assert not row["pit_certified"]
+
+
+@pytest.mark.parametrize("changes", [
+    {"observed_at_utc": NOW},
+    {"observed_at_utc": NOW, "source_published_at_utc": NOW},
+])
+def test_historical_original_exact_cutoff_rejected(changes):
+    evidence = _verify_fixture(_past_payload(), **changes)
+    assert evidence["status"] == "NOT_AVAILABLE_AT_PIT"
+    assert evidence["fields"]["placing"] == "MISSING"
+
+
+def test_historical_aggregate_exact_cutoff_excluded():
+    evidence = {"horse_id": 767446, "source_uri": "fixture", "status": "VERIFIED",
+                "source_observed_at_utc": NOW}
+    assert history_coverage(
+        [evidence], current_horse_id=767446, current_model_cutoff_utc=NOW,
+    )["usable_as_pit"] == 0
+
+
+def test_history_rejects_unrelated_origin_with_matching_suffix():
+    with pytest.raises(ValueError, match="HISTORIC_SOURCE_URI_RACE_ID_CONFLICT"):
+        _verify_fixture(_past_payload(), source_uri="https://example.test/vinnare_2026-06-06_5_8")
+
+
+def test_historical_future_race_cannot_be_a_prior_result():
+    payload = json.loads(_past_payload())
+    future_id = "2026-11-10_5_8"
+    payload["races"][0].update(id=future_id, date="2026-11-10")
+    evidence = _verify_fixture(
+        json.dumps(payload).encode(), claimed_atg_race_id=future_id,
+        source_uri=f"https://www.atg.se/services/racinginfo/v1/api/games/vinnare_{future_id}",
+    )
+    assert evidence["status"] == "NOT_AVAILABLE_AT_PIT"
+    assert evidence["fields"]["placing"] == "MISSING"
+
+
+def test_historical_result_cannot_belong_to_another_runner():
+    payload = json.loads(_past_payload())
+    payload["races"][0]["starts"][0]["result"]["startNumber"] = 10
+    with pytest.raises(ValueError, match="HISTORIC_RESULT_START_NUMBER_CONFLICT"):
+        _verify_fixture(json.dumps(payload).encode())
+
+
+def test_historical_original_field_with_duplicate_number_rejected():
+    payload = json.loads(_past_payload())
+    payload["races"][0]["starts"][1]["number"] = 7
+    with pytest.raises(ValueError, match="HISTORIC_ATG_FIELD_IDENTITY_CONFLICT"):
+        _verify_fixture(json.dumps(payload).encode())
+
+
+def test_stockholm_target_day_is_checked_with_real_offset():
+    payload = json.loads(_past_payload())
+    payload["races"][0]["startTime"] = "2026-06-06T23:58:00+02:00"
+    evidence = _verify_fixture(json.dumps(payload).encode(), observed_at_utc="2026-06-06T21:59:00+00:00")
+    assert evidence["status"] == "VERIFIED"

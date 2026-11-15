@@ -112,3 +112,30 @@ def test_test_only_duplicate_races_rejected(tmp_path):
     manifest_path.write_text(json.dumps(manifest))
     with pytest.raises(ValueError, match="DUPLICATE_RACE"):
         audit(output, ROOT / "examples/model-protocol.json")
+
+
+@pytest.mark.parametrize("observed, expected", [
+    ("2026-11-14T11:55:59+00:00", True),
+    ("2026-11-14T11:56:00+00:00", False),
+    ("2026-11-14T11:56:01+00:00", False),
+    ("2026-11-14T11:55:59", False),
+])
+def test_test_only_source_ref_is_checked_against_t4(observed, expected):
+    from hbi.model_dataset import candidate
+
+    ref = {"url": "https://www.rikstoto.no/api/racedays/BJ_NR_2026-11-14/starts",
+           "body_sha256": "a" * 64, "fetched_at": observed}
+    driver = {"source_url": ref["url"], "source_body_sha256": ref["body_sha256"],
+              "source_observed_at": observed, "status": "PIT_VERIFIED", "value": "Driver"}
+    row = {
+        "race_id": "RIKSTOTO:BJ_NR_2026-11-14:1", "raceday_key": "BJ_NR_2026-11-14",
+        "country": "NO", "track": "Bjerke", "discipline": "trot",
+        "event_time": "2026-11-14T12:00:00+00:00", "source_refs": [ref],
+        "status": "UNRESOLVED", "full_field_identity_verified": False,
+        "authoritative_result_verified": False, "labels": [],
+        "roster": [{"scratched": False, "selection_id": "1", "registration_observed": "1",
+                    "identity_status": "UNRESOLVED", "name": "Horse", "features": {"driver": driver}}],
+    }
+    view = candidate(row)
+    assert view["inputs"][0]["features"]["driver"]["pit_verified"] is expected
+    assert not view["data_ready"]

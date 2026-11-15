@@ -52,7 +52,7 @@ def form_candidate(
         raise TypeError("DATA005_HISTORY_ROWS_MUST_BE_LIST")
     status = "PARTIAL"
     blockers = []
-    if observed > cutoff or (published is not None and published > cutoff):
+    if observed >= cutoff or (published is not None and published >= cutoff):
         status = "NOT_AVAILABLE_AT_PIT"
         blockers.append("HISTORICAL_SOURCE_OBSERVED_AFTER_FEATURE_CUTOFF")
     if not independent_identity_attested:
