@@ -1,5 +1,8 @@
 """Research candidate view within M5 records. No probability or model admission."""
-from .date_overview import timestamp
+from datetime import timedelta
+
+from .shadow import ShadowPolicy
+from .t4_evidence import _aware
 
 REQUIRED_FEATURES = ("driver", "trainer", "distance_m", "start_method", "history")
 
@@ -13,17 +16,19 @@ def candidate(row):
         reasons.append("FULL_FIELD_IDENTITY_UNVERIFIED")
     if row["country"] not in {"NO", "SE"} or row["discipline"] != "trot":
         reasons.append("OUTSIDE_NO_SE_TROT")
-    cutoff = timestamp(row["event_time"]) if row.get("event_time") else None
-    if not cutoff:
+    start = _aware(row.get("event_time"))
+    cutoff = start - timedelta(minutes=ShadowPolicy().target_minutes_to_start) if start else None
+    if not start:
         reasons.append("RACE_TIME_MISSING")
     refs = {(r["url"], r["body_sha256"], r["fetched_at"]) for r in row["source_refs"]}
     for horse in active:
         features = {}
         for key in REQUIRED_FEATURES:
             fact = horse.get("features", {}).get(key)
-            valid = bool(fact and fact.get("value") is not None and cutoff
+            observed = _aware(fact.get("source_observed_at")) if fact else None
+            valid = bool(fact and fact.get("value") is not None and cutoff and observed
                 and (fact.get("source_url"), fact.get("source_body_sha256"), fact.get("source_observed_at")) in refs
-                and timestamp(fact["source_observed_at"]) < cutoff
+                and observed < cutoff
                 and fact.get("status") == "PIT_VERIFIED")
             # History needs a separately validated historical feature contract;
             # arbitrary lists (including retrospective labels) never qualify.
@@ -51,6 +56,7 @@ def candidate(row):
     reasons.append("HISTORY_FEATURE_CONTRACT_NOT_VALIDATED")
     return {"schema": "HBI_RACE_MODEL_CANDIDATE_V1", "race_id": row["race_id"],
         "country": row["country"], "track": row["track"], "event_time": row["event_time"],
+        "candidate_cutoff_utc": cutoff.isoformat() if cutoff else None,
         "inputs": inputs, "label_role": "RETROSPECTIVE_LABEL_ONLY_SEPARATE_FROM_INPUTS",
         "data_ready": False, "exclusion_reasons": sorted(set(reasons)),
         "model_eligible": False}
