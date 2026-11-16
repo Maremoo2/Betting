@@ -1,5 +1,40 @@
 # Betting HQ – master-roadmap og gjennomføringsstatus
 
+## Gjeldende roadmap fra 15. november 2026
+
+Betting HQ skal selvstendig følge hele det norske og svenske travprogrammet, analysere kvalifiserte løp før T−4 og varsle om dokumenterte forskningskandidater. Bruk den eksisterende kjeden Collector → CORE-003 → Champion/CORE-004 → Research Ledger → HQ. Rekkefølgen er **V1 → V1.1 → V2 → V2.1 → V3**.
+
+| Milepæl | Prioritet | Leveranse og akseptanse | Gjeldende status |
+| --- | --- | --- | --- |
+| **V1 · Automatisk NO/SE-analyse** | P0 | Avstem fysiske løp mot kildenes dagsprogram. Regnskapsfør hvert løp med et gyldig, originalverifisert fullfeltfrys før konservativ T−4 eller en dokumentert avvisning. Bevar WIN-originaler og tidspunkt. Koble offisielle resultater til riktig løp og frys, og publiser én dagsrapport med sporbare tall. | Mandagens private heldagstest er aktivert. To planlagte SQLite-kjøringer har bestått gjenoppretting med identisk SHA-256. Faktisk heldagsdrift avventer løpsdagen. |
+| **V1.1 · Forskningsvarsling** | P0 | Koble eksisterende førstartfrys og dagsrapport til varsling om nye WATCH-kandidater, vesentlige endringer og én dagsoppsummering. Verifiser originalrapporten, gjenopprett privat varslingsstate og lagre utsendingskrav før SMTP. Kandidatvarsler utløper ved T−4. Ekstern levering krever godkjent SMTP og mottaker. | Arbeidet fortsetter i privat [Draft PR #1](https://github.com/Maremoo2/betting-hq-private-research/pull/1). Lokal SMTP-test og duplikatkontroll bestod. Kobling til rapportutgiver og ekstern levering avventer godkjenning og konfigurasjon. |
+| **V2 · Historisk trening og modellvalidering** | P1, etter V1.1 | Bygg en kildeverifisert kohort med identitet, historikk kjent før cutoff og separat offisiell resultatfasit. Bruk kronologisk trening og validering, og behold urørt test og lukket 2025-lockbox etter gjeldende regler. Sammenlign Champion, CORE-004, kandidater og samtidig normalisert WIN på identiske løp med log loss, Brier og kalibrering. | Senere milepæl. Trenings- og evalueringsakseptanse dokumenteres separat fra driftsdekning. |
+| **V2.1 · V75/V4/V85-kuponganalyse** | P1, etter V2 | Knytt frosne løpsanalyser til offisielle, ordnede avdelinger og vis dokumenterte verdiindikasjoner per løp. Positiv kupong-EV krever en separat, validert modell for kombinasjonssannsynlighet og utbetaling. | Senere milepæl. Eksisterende arbeid med fysisk avdelingsmapping fra Draft PR #1 er teknisk grunnlag. |
+| **V3 · Kalibrerte BET-signaler** | P1, etter V2.1 | Dokumenter kalibrert og prospektiv verdi på urørte data under gjeldende PIT-, fullfelt- og beslutningskrav. Eieren må godkjenne eventuell autoritet separat. | Senere milepæl. Gjeldende modus er RESEARCH / NO BET. |
+
+### V1 · Oppfølging av den automatiske heldagstesten
+
+- **Omfang:** Mandag 16. november har 27 planlagte fysiske NO/SE-travløp i det avstemte forhåndsprogrammet. Halmstad har 8, Färjestad 9 og Romme 10. Avstem kalenderen igjen ved teststart og journalfør endringer. Første planlagte T−4 er 12.16 Europe/Oslo.
+- **Verifisert før start:** Den private [løpsvakten](https://github.com/Maremoo2/betting-hq-private-research/actions/workflows/core-003-shadow-pilot.yml) og [dagsrapporten](https://github.com/Maremoo2/betting-hq-private-research/actions/workflows/hq-nordic-acceptance.yml) står som aktive på privat `main` `c66b74bf97969b3cebe7d19ea9b6aa9dad61fef6`. Per 15. november hadde ingen av dem kjørt mandagens test. Planlagte jobber og forhåndsdekning teller derfor ikke som utførte løp. Planlagt første kjøring er 11.03 og dagsrapport 22.43 Europe/Oslo.
+- **SQLite-bevis:** Separate planlagte kjøringer [43703560952](https://github.com/Maremoo2/betting-hq-private-research/actions/runs/43703560952) og [43704826931](https://github.com/Maremoo2/betting-hq-private-research/actions/runs/43704826931) brukte artefaktene 14156954968 og 14157746744. Gjenleste SQLite-filer var byteidentiske med SHA-256 `d31dc88c13e667bf2a27118e751b5370b1ca4b2e68d1831ec59ebb6ff8691643`. Dette dokumenterer gjenoppretting mellom runnerne.
+- **Kildeprioritet:** Dokumenter permanent identitet og de fem siste faktiske startene for hver aktiv hest med individuelle originaler, kildeversjon og tidsbevis før T−4. I 19 autentiske søndagsoriginaler inneholdt `statistics.lastFiveStarts` kun gjennomsnittsodds for 199 av 201 aktive hester. Ingen hadde fem individuelle starter i feltet. PDF-formrader og ATG-ID-er alene gir ikke modellopptak. Rett dokumenterte parser-, import- og koblingsfeil der originalene gir grunnlag for forbedring.
+- **Akseptansebevis:** Rapporter planlagt og faktisk oppdaget løpsnevner, løp med fullfeltanalyse, antall hester med attestert siste-fem-historikk, nye prospektive før-T−4-frys og hester med p(win), komplette WIN-felt, verifiserte resultater, WATCH/PASS, skårbare løp og blokkering per løp. Oppgi run-ID, artefakt-ID, SHA-256 og relevante tider. Bevar skillet mellom nye frys, gjenfunne frys og replay. Modellopptak, PIT-sertifisering og BET-autoritet krever hver sine bevis.
+
+**Neste oppgave:** Verifiser første faktiske planlagte mandagskjøring i GitHub Actions og følg de samme løps-ID-ene gjennom publisert dagsrapport, fra kalenderen til hvert løps modellstatus, WIN og offisielle resultat.
+
+### Styring og leveranser
+
+- Champion, CORE-004, V3.3.12, PRE-WATCH, PIT-/T−4-hardgates og bettingreglene er frosset. `AUTO_BET=false`, `BET_AUTHORITY=false`, `AUTO_MERGE=false`. Merge, deploy og produksjonsendringer krever eksplisitt eiergodkjenning.
+- Arbeid innenfor milepælene og bruk eksisterende innsamling, modell, journal, rapportgenerator og varslingsdraft.
+- Hver leveranse oppgir roadmap-milepæl, implementerte endringer, autentiske før/etter-tall, beståtte tester, gjenværende blokkeringer og én konkret neste oppgave. Der før/etter-data mangler, oppgis det eksplisitt.
+
+## Historiske revisjonsbevis
+
+<details>
+<summary>Åpne tidligere statusbilder, milepælsnavn og originale revisjonsreferanser</summary>
+
+Oppføringene nedenfor er datert dokumentasjon av tidligere kjøringer, SHA-verdier, resultater og beslutninger. Gjeldende prioritering, status og neste oppgave står i roadmapen ovenfor.
+
 ## MVP-021 FINAL ACCEPTANCE / MVP-022 READINESS | 5 November 2026
 
 **Current real main (verified):** `2238a9b891b16cd74ced7eaa581c630dd572f4b9`, 5 Nov 07:13:25 UTC. PR [#143](https://github.com/Maremoo2/Betting/pull/143), [#145](https://github.com/Maremoo2/Betting/pull/145), [#146](https://github.com/Maremoo2/Betting/pull/146), [#147](https://github.com/Maremoo2/Betting/pull/147), [#148](https://github.com/Maremoo2/Betting/pull/148) all **MERGED by owner**. Exact-main [CI 41985709967](https://github.com/Maremoo2/Betting/actions/runs/41985709967) `CI_PASS`, **1,639 passed, 106 skipped**. No new DEV main merge, no prod betting, `bet_authority=false`.
@@ -589,3 +624,5 @@ Champion/CORE-004/V3.3.12 or betting hardgates without a separate mandate.
 **Full original details, immutable source SHA and next-authority actions:** [MVP-021 P0 closure independent QA](MVP021_P0_CLOSURE_ORIGINAL_QA_20261105.md). **Overall MVP-021 acceptance `LIMITED_RESEARCH / PARTIAL`**, not `FULL_ACCEPTED`; `bet_authority=false`. User deadline **13.11.2026 18:00 Oslo**. Never merge without explicit owner approval.
 
 **Later genuine original checkpoint, 5 Nov 09:04 UTC:** ordinary [CORE003 41999339887](https://github.com/Maremoo2/Betting/actions/runs/41999339887) produced DEV009 artifact **13401279417** SHA `14ac6c767b3fe9a70ec74ecaa27078e0a40238c8bf76bac732aba9fd6cba224b` unchanged **89/39/34/33/0 PIT**; DEV011 artifact **13401179916** SHA `a2c76a2463911cad5a17b780ef00e0ea18289b2ebeea48653e60f31fdc73899e` 329/341 recovered, 13 older blockers, no download failures; readiness artifact **13401199734** SHA `66916b20f3179cd6e7b4f15d71cd088d000b739c1d0243d92e5f8872d05a470b` four-source join verified; source report **13401383936** SHA `e2908d63a541a40d598bfed55ff750f2742368bdc6bfcfb2666cf1ce43111efd` 0 eligible at 09:04Z (next Bollnäs 11:20Z still 136 min away, fixed horizon 90), PIT capture **13401653248** SHA `545c761632de74347168e995d5f37af5c4c26faddee1c311dc58ed47ccd54207` `eligible=[]`; 0 PIT attested. No retro source/score reconstruction; 360s actual capture **not** exercised. [Full original-source annotation](MVP021_P0_CLOSURE_ORIGINAL_QA_20261105.md).
+
+</details>
