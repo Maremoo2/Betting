@@ -1,70 +1,115 @@
 {
   "artifacts": {
-    "14051850287": "c5edbd63c8bbddb4b4774703f459d33b495361d26bcb3eafbc690fd857af6e56",
-    "14050426542": "cf5454e817c302c13d44ceb9aeae4b607fab2beb6f1adff9fb57d5855142412f",
-    "14050426535": "1df559fc70190562e0390362128758220019b0f9976d66623e65697962f7bfdf",
-    "14050566207": "d7ca5df2956b6175eadac7058343bb457507541491906c8fe86cf4839e4ed4be",
-    "14050576199": "7c2a9c7718a39a04e19af1529ad46480d239b12cc95299261b1a0d944d33cd65",
-    "14030497831": "cba9895405532ea35d7572655ed2d7d59138bfec9b2234918390d09c65bbacfb",
+    "14061332453": "c09ab5f64049f6293ef1c5d7e64777213c949915bb1dd79ed9a19b3741ce6097",
+    "14060019130": "4c18dcb94ef9554e35b533a04d31edd440b98ef12baaf2a1e9faf3388d2c03b8",
+    "14060483716": "e6a3d20a6381fbda9063f174114b9de6213cf4337356993f386ecb0899576b77",
+    "14061287401": "bd61b752cbd7cb157b8c74f366aeaa10a706b427bcf1c724ab3b341d92747fec",
+    "14061042652": "0ba59232a4a256f9579b9740c5ff31d7f857e71a8929fac4c203cd6e8950facf",
+    "14060637967": "d853625c1f70e66b821e8055965250e91ffb2952b64f33e19f282e3831a372eb",
     "14030522773": "628092937e7e5bce606698ddbf4bd75246645c5c86dfa3cf9a7d71b954a84859",
-    "14033416787": "2860b2fd5df04175781e176aa56cab4f2389ecb07152c94325f9d62b1e49ebda",
+    "14030497831": "cba9895405532ea35d7572655ed2d7d59138bfec9b2234918390d09c65bbacfb",
+    "14031488069": "aa906cb66aca1a9d9221ed5ab8cb7cb5f50ed709288f8414dbb7ac8f494f5f3c",
+    "14031732078": "de2d3514a5f0cbcbf9d0be73b387fdd003dfa4fa89ac82ec150f0aec07b71c48",
     "14032618909": "e4145939099becb285620f2d7beeef30a60b2f1caab20fa27bf6761fbdea3d1f",
-    "14037124320": "edc8c2831959b6e245d87a3ddd5a4473c66936c7f1de49976bc0a8058621d46d",
+    "14033416787": "2860b2fd5df04175781e176aa56cab4f2389ecb07152c94325f9d62b1e49ebda",
+    "14035353980": "1f2446ac92acc65b235714e344e04a3a935d027561ff1cbca24e17d82a9fda4a",
+    "14036555531": "f29275354238d124acfa89be77d2ec750ef9e097b41f44e65f3d2601348e55d0",
     "14037149226": "efa3a70224b82376bad8dc7cd2e7a8353ea13628213dbd424f3aa07cfd9783d8",
-    "14042994376": "971e2751c8f811ddd0a5ab25d9ec911a53f281b565cd178c43bcb0bcb531efd6",
+    "14037124320": "edc8c2831959b6e245d87a3ddd5a4473c66936c7f1de49976bc0a8058621d46d",
+    "14042560963": "9d9d900a5de3fd39d35cfdf3ceba1a6b376aa0c32708929a62636294850f6706",
+    "14042361189": "17272cf9a17a40affb711f92ef386af015f7f2fedbb964b6da2c590d293f3c7a",
     "14043174413": "df138ad33ebf60090b1659460d3b53833d8ed4217dfb6b8a61b406f0c1b4c952",
-    "14049074959": "5211606f5aa0ce7a37c37cf75164f6bad9de4b8480b0e8caaf9e87fcdafefc02",
+    "14042994376": "971e2751c8f811ddd0a5ab25d9ec911a53f281b565cd178c43bcb0bcb531efd6",
+    "14056625589": "0fb63d194c6638c14f3d4a7a892809f9e0179a34c7ddaecbf28403fd540da45e",
+    "14056410836": "11d4c5e1d0d711e63d7217d4e9cdeb5b964d48a26c755d0acb9eb76837c02855",
+    "14058383217": "185263f25ec9a284f558a00850d897807aa0b8456aee1187b469974f0ecd6872",
+    "14058183301": "aaa3598be4db49b69298bd80cf26da7174866c209f9d657f8c235813ba5f9ded",
+    "14060505222": "e4dbc7fbef41ccda8b949dd78cb26a7c91895d4bba2a7a406a55954618948aaa",
+    "14060440336": "8d7513656aa30725c68ac703f1706f47d32d06a155c9ef88520e4ff7512ccd78",
     "13364215238": "28a07b305aaa15ba2e5a1fc188d2cdc339f3efe370743436b57a7e8e0e2c2897",
     "13362286136": "37ea0ec28b6f281ef8908960b965239280ef4c69ff7ff2daa865ceeb6de381ab"
   },
-  "state_artifact": "14049074959",
   "args": [
-    "--ledger",
-    "14051850287.zip",
-    "--ledger-sha",
-    "91b6e7cbf3dfeffa4c19b73ee146cd43b565164b8faef622008c6736aae2cc3b",
-    "--core",
-    "14050426542.zip",
-    "--cohort",
-    "14050426535.zip",
-    "--handoff",
-    "14050566207.zip",
-    "--collector",
-    "14050576199.zip",
-    "--db",
-    "pilot.sqlite",
     "--date",
     "2026-11-13",
     "--run",
-    "43450228274",
+    "43470299224",
     "--report-at",
-    "2026-11-13T15:26:58.2056267Z",
-    "--prior-cohort",
-    "14030497831.zip",
-    "29f54a5d659ab8b7224e64f954bcf8111cc6cbd88744d1ab2b0e1c62f84b455d",
-    "--prior-run",
-    "43411672945",
+    "2026-11-13T18:29:03.966626+01:00",
+    "--db",
+    "pilot.sqlite",
+    "--ledger",
+    "14061332453.zip",
+    "--ledger-sha",
+    "4f8f33cd198ac9cd0aa4d42a1964d5515f1bc497a8e77cf5d391d15a46d67cf2",
+    "--core",
+    "14060019130.zip",
+    "--cohort",
+    "14060483716.zip",
+    "--handoff",
+    "14061287401.zip",
+    "--collector",
+    "14061042652.zip",
     "--timing-core",
     "14030522773.zip",
     "26c6eba80b9dd3796bfbbd575850161e89f74b0a7b542bbb34f40a19f7168746",
     "--prior-cohort",
-    "14033416787.zip",
-    "d04d6769702849216ce75e07dbef48fb27ad0641294d03178610f5046ee7b7c5",
+    "14030497831.zip",
+    "29f54a5d659ab8b7224e64f954bcf8111cc6cbd88744d1ab2b0e1c62f84b455d",
+    "--timing-core",
+    "14031488069.zip",
+    "267e75b16605c09ff5458e00198ac5cad2fd66d48c27fd9d004610dc660f2db1",
+    "--prior-cohort",
+    "14031732078.zip",
+    "0b00a4446f53894345ecba0e4a20ec5b19314fa77844e3c9d3c88b117411c411",
     "--timing-core",
     "14032618909.zip",
     "aae5aee8559cd8fb2165a1397e2ba7449373f6ef217d7970ed607862598e5e76",
     "--prior-cohort",
-    "14037124320.zip",
-    "b0091e11c40500d1958306d9fbe43fe40758fcc89ef8065d5bcd73d5eaa5a3ec",
+    "14033416787.zip",
+    "d04d6769702849216ce75e07dbef48fb27ad0641294d03178610f5046ee7b7c5",
+    "--timing-core",
+    "14035353980.zip",
+    "8fdef776f71e8d009c822e4201a8c93d115c0922f17e98ba410469ee7426325b",
+    "--prior-cohort",
+    "14036555531.zip",
+    "1b89bad1eb9a568922f4d97aad326085fddb792291c6d35c62dd046f2cd68a51",
     "--timing-core",
     "14037149226.zip",
     "853d069d44467258299deecf95cf345187a3ee49a615e320a8116552a67de285",
     "--prior-cohort",
+    "14037124320.zip",
+    "b0091e11c40500d1958306d9fbe43fe40758fcc89ef8065d5bcd73d5eaa5a3ec",
+    "--timing-core",
+    "14042560963.zip",
+    "0bc22c7459a0c93bd7a68a05482372f1650761145f125f7fe8d208bd9baeec40",
+    "--prior-cohort",
+    "14042361189.zip",
+    "88a5c75b88ab3d695b13cd03e9d5d2279ab77f47b804766408d6da1eab883b68",
+    "--timing-core",
+    "14043174413.zip",
+    "22bd0681189773464422bfe3d99a1bea3311983e65b555fea6d51beb6371bc99",
+    "--prior-cohort",
     "14042994376.zip",
     "75de64951d1a851339ca4276c3f8c94e7243b4569f0c2ea4eeb0c7271f73a6bf",
     "--timing-core",
-    "14043174413.zip",
-    "22bd0681189773464422bfe3d99a1bea3311983e65b555fea6d51beb6371bc99"
+    "14056625589.zip",
+    "0f9277119a727a09102ee1bdfe8f987710c500379e50bfedab45a29dafdc342d",
+    "--prior-cohort",
+    "14056410836.zip",
+    "4f8258e2188af8e9f68fd002bd8c04033f8f1751398b55c4942309fb4d7fbbba",
+    "--timing-core",
+    "14058383217.zip",
+    "e378911cf23d99e921498af99fce7fccf40a88c71ec131697c10d20cac18e3f7",
+    "--prior-cohort",
+    "14058183301.zip",
+    "35bed299d2e6e3d060453f49173988be3b4596550dfeb00de0680dfd1726aaa9",
+    "--timing-core",
+    "14060505222.zip",
+    "2e4db4cb5d6ada1571b5b8d2731026d643ed9260b977e1705eadf5ecddba163b",
+    "--prior-cohort",
+    "14060440336.zip",
+    "41ff25131026b2389f047cefb51659edb80524202bea39d2d777a777cf6a2ac7"
   ],
   "score_example": {
     "scorecard": "13364215238",
@@ -72,11 +117,250 @@
     "race_id": "RIKSTOTO:S2_NR_2026-11-04:10"
   },
   "runs": [
+    43383490401,
+    43384699114,
+    43385700392,
+    43386878140,
+    43387856869,
+    43388855225,
+    43389764480,
+    43392102362,
+    43393447156,
+    43394677313,
+    43395667692,
+    43396695435,
+    43397744138,
+    43399693986,
+    43399955518,
+    43401294832,
+    43402613638,
+    43403694674,
+    43404695606,
+    43405562229,
+    43407552302,
+    43408585266,
+    43409502091,
+    43410585339,
     43411672945,
+    43412669624,
+    43413954905,
+    43415450006,
+    43416640504,
     43417750508,
+    43418781741,
+    43419857445,
+    43420927353,
+    43423196479,
+    43424007825,
+    43425244675,
     43426741239,
+    43427853864,
+    43428894937,
+    43429946973,
+    43431849322,
+    43433178032,
+    43434381057,
     43435566988,
-    43450228274
+    43436801671,
+    43437929138,
+    43439904735,
+    43441375658,
+    43442695398,
+    43444247158,
+    43445551728,
+    43446779083,
+    43447984553,
+    43450228274,
+    43451686551,
+    43452962822,
+    43454411790,
+    43455781599,
+    43457124263,
+    43458604198,
+    43460978237,
+    43462483455,
+    43463965323,
+    43465357828,
+    43466651996,
+    43467892447,
+    43470299224,
+    43471730649,
+    43472969052
   ],
-  "gaps": []
+  "gaps": [
+    {
+      "run_id": 43389764480,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43392102362,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43394677313,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43395667692,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43396695435,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43397744138,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43399693986,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43402613638,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43403694674,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43404695606,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43405562229,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43407552302,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43408585266,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43409502091,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43410585339,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43412669624,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43413954905,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43415450006,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43416640504,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43418781741,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43419857445,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43420927353,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43423196479,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43424007825,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43425244675,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43427853864,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43428894937,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43429946973,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43431849322,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43433178032,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43434381057,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43436801671,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43437929138,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43441375658,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43446779083,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43447984553,
+      "reason": "failure"
+    },
+    {
+      "run_id": 43457124263,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43460978237,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43462483455,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43463965323,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43465357828,
+      "reason": "cancelled"
+    },
+    {
+      "run_id": 43471730649,
+      "reason": "in_progress"
+    },
+    {
+      "run_id": 43472969052,
+      "reason": "pending"
+    }
+  ],
+  "state_artifact": "14060637967",
+  "compare_atg_calendar": true
 }

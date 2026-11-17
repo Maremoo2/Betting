@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import sqlite3
 import urllib.error
 import zipfile
 from pathlib import Path
@@ -153,15 +154,58 @@ def test_core003_workflow_skips_downstream_api_reads_on_restore_failure():
     assert "id: restore" in source
     assert "required=True" in source
     assert "steps.restore.outcome == 'success'" in source
+    source_job, outcome_job = source.split("\n  outcome-research:", 1)
+    collector = source_job.split("- name: Recover authenticated Collector originals (read only)", 1)[1]
+    assert "steps.restore.outcome == 'success'" in collector.splitlines()[1]
+    assert "restore: ${{ steps.restore.outcome }}" in source_job
+    outcome_gate = outcome_job.split("    steps:", 1)[0]
+    assert "needs: source-pilot" in outcome_gate
+    assert "needs.source-pilot.outputs.restore == 'success'" in outcome_gate
+    assert "needs.source-pilot.outputs.execute == 'true'" in outcome_gate
     for heading in (
-        "Recover authenticated Collector originals (read only)",
+        "Recover current-run original evidence",
         "Recover prior original prospective models (read only)",
         "Recover cumulative DEV-011 originals for scorecard only (NO BET)",
     ):
-        tail = source.split("- name: " + heading, 1)[1]
-        assert "steps.restore.outcome == 'success'" in tail.split("\n", 2)[1]
+        assert "- name: " + heading in outcome_job
+        assert "- name: " + heading not in source_job
     assert 'cron: "*/5 7-21 * * *"' in source
     assert "bet_authority: true" not in source
+    current = outcome_job.split("- name: Recover current-run original evidence", 1)[1]
+    current = current.split("- name: Stage current-run evidence", 1)[0]
+    assert "uses: actions/download-artifact@v4" in current
+    assert "GH_TOKEN" not in current
+
+
+def test_private_pilot_state_restores_without_inventory_and_rejects_corruption(
+    monkeypatch, tmp_path,
+):
+    source = tmp_path / "source.sqlite"
+    with sqlite3.connect(source) as db:
+        for table in ("races", "provider_race_refs", "shadow_decision_runs",
+                      "shadow_tickets", "schema_migrations"):
+            db.execute(f"CREATE TABLE {table} (id INTEGER PRIMARY KEY)")
+        db.execute("INSERT INTO races VALUES (42)")
+    target = tmp_path / "new-run" / "core003-pilot.sqlite"
+    monkeypatch.setattr(
+        state_artifact, "_inventory_json", lambda *_: pytest.fail("GitHub inventory called"),
+    )
+    checksum = state_artifact.private_pilot_state(tmp_path, source, publish=True)
+    assert state_artifact.private_pilot_state(tmp_path, target) == checksum
+    assert target.read_bytes() == source.read_bytes()
+
+    with zipfile.ZipFile(tmp_path / "core003-current-state.zip", "w") as archive:
+        archive.writestr("core003-pilot.sqlite", b"corrupt")
+        archive.writestr("state.sha256", checksum)
+    with pytest.raises(ValueError, match="CORE003_PRIVATE_STATE_SHA_MISMATCH"):
+        state_artifact.private_pilot_state(tmp_path, target)
+    assert target.read_bytes() == source.read_bytes()
+    with pytest.raises(FileNotFoundError):
+        state_artifact.private_pilot_state(target.parent, target)
+
+    source.with_name(source.name + "-wal").write_bytes(b"uncheckpointed")
+    with pytest.raises(ValueError, match="WAL_NOT_CHECKPOINTED"):
+        state_artifact.private_pilot_state(tmp_path, source, publish=True)
 
 
 def test_missing_head_branch_never_becomes_main_state(monkeypatch, tmp_path):
@@ -184,3 +228,39 @@ def test_http_429_rate_limit_preserved_and_fails_closed(monkeypatch, tmp_path, c
     assert err.value.code == 429
     assert "classification=INSTALLATION_RATE_LIMIT" in capsys.readouterr().err
     assert not (tmp_path / "hbi.sqlite").exists()
+
+
+def test_short_server_rate_limit_on_zip_retried_and_verified(monkeypatch, tmp_path, capsys):
+    body = b"isolated test database"
+    archive = _zip(body)
+    _fake_inventory(monkeypatch, [_artifact(archive, digest="sha256:" + hashlib.sha256(archive).hexdigest())])
+    requests, waits = [], []
+
+    class Opener:
+        def open(self, request, timeout):
+            requests.append(request.full_url)
+            if len(requests) == 1:
+                raise urllib.error.HTTPError(
+                    request.full_url, 403, "Forbidden", {"X-RateLimit-Remaining": "0", "Retry-After": "2"},
+                    io.BytesIO(b'{"message":"API rate limit exceeded for installation"}'),
+                )
+            return io.BytesIO(archive)
+
+    monkeypatch.setattr(state_artifact.urllib.request, "build_opener", lambda *args: Opener())
+    monkeypatch.setattr(state_artifact.time, "sleep", waits.append)
+    target = tmp_path / "hbi.sqlite"
+    target.write_bytes(b"older state")
+    assert _restore(tmp_path, required=True)
+    assert target.read_bytes() == body
+    assert requests == [requests[0], requests[0]] and waits == [3]
+    assert "stage=ARTIFACT_ZIP attempts_remaining=1" in capsys.readouterr().err
+
+
+def test_prior_freeze_download_uses_pinned_zip_without_repeat_inventory():
+    workflow = Path(__file__).resolve().parents[1] / ".github/workflows/core-003-shadow-pilot.yml"
+    step = workflow.read_text(encoding="utf-8").split("      - name: Recover prior original prospective models", 1)[1]
+    step = step.split("      - name: Independently audit", 1)[0]
+    assert step.count("actions/artifacts?per_page=100") == 1
+    assert 'actions/artifacts/$artifact_id/zip' in step and "sha256sum --check" in step
+    assert "gh run download" not in step
+    assert 'mv -T -- "$stage" "$dest"' in step

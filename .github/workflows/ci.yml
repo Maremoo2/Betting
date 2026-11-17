@@ -31,13 +31,17 @@ jobs:
       - name: Replay MVP-014 4 Nov genuine PDF race headers (NO PIT/BET)
         if: github.event_name == 'pull_request'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN || github.token }}
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/mvp014-nov04"
-          gh run download 41784797103 --repo Maremoo2/rikstoto-program-collector \
-            --name rikstoto-morning-programs --dir "$RUNNER_TEMP/mvp014-nov04"
+          archive="$RUNNER_TEMP/mvp014-nov04.zip"
+          gh api repos/Maremoo2/rikstoto-program-collector/actions/artifacts/13300048964/zip > "$archive"
+          printf '%s  %s\n' \
+            9d045fe402348a9465734198bb56dd9a415d6b135141ac6b16c294a053a10dab \
+            "$archive" | sha256sum --check -
+          python -m zipfile -e "$archive" "$RUNNER_TEMP/mvp014-nov04"
           MVP014_NOV04_COLLECTOR_ORIGINAL_ROOT="$RUNNER_TEMP/mvp014-nov04" \
             pytest -q tests/test_mvp014_pdf_header_clock.py
           python - <<'PY'

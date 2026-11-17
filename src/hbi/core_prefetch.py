@@ -32,6 +32,7 @@ class PrefetchTask:
     race_no: int
     provider_raceday_key: str
     race_start_utc: str
+    cutoff_at_utc: str
     minutes_to_start: float
     action: str
     reason: str
@@ -100,6 +101,163 @@ def _market_complete(market: list[dict[str, Any]], roster: list[dict[str, Any]])
     return True
 
 
+def _atg_history_source_diagnostic(
+    conn: sqlite3.Connection, *, race_id: str, cutoff: datetime,
+) -> dict[str, Any] | None:
+    """Latest observed ATG full-field evidence, with explicit runner blockers.
+
+    Read-only optional diagnostic: source evidence is not guaranteed to exist in
+    synthetic fixtures or historical databases. Never infer validity from a
+    mutable roster or from an ATG payload recorded after the decision cutoff.
+    """
+    has_payloads = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='provider_payloads'"
+    ).fetchone()
+    if has_payloads is None:
+        return None
+    rows = _rows(conn, """
+        SELECT p.payload_json, p.observed_at_utc
+        FROM provider_payloads p
+        WHERE p.provider='atg' AND p.category='FULL_FIELD_ONLY_V1'
+          AND p.race_number = (SELECT race_no FROM races WHERE race_id = ?)
+          AND (p.provider_raceday_key = ? OR p.provider_raceday_key IN (
+              SELECT provider_raceday_key FROM provider_race_refs WHERE race_id = ?
+          ))
+        ORDER BY p.observed_at_utc DESC
+    """, (race_id, race_id, race_id))
+    eligible_rows = []
+    invalid_observation_clock = False
+    for row in rows:
+        try:
+            observed = _utc(str(row["observed_at_utc"])).astimezone(UTC)
+        except (TypeError, ValueError, AttributeError):
+            # A malformed clock cannot prove a source was available before
+            # cutoff. Do not choose a convenient later revision instead.
+            invalid_observation_clock = True
+            continue
+        if observed <= cutoff:
+            eligible_rows.append((observed, row))
+    if not eligible_rows and not invalid_observation_clock:
+        return None
+    # SQL's TEXT ordering of timestamps is not chronological for different
+    # offset spellings. Normalize to aware UTC instants before comparing.
+    if eligible_rows:
+        latest = max(observed for observed, _ in eligible_rows)
+        newest = [row for observed, row in eligible_rows if observed == latest]
+        eligible = min(newest, key=lambda row: str(row["payload_json"]))
+    else:
+        eligible = None
+    payloads_at_time = {}
+    for observed, row in eligible_rows:
+        payloads_at_time.setdefault(observed, set()).add(
+            str(row["payload_json"])
+        )
+    # A collision at ANY previously observed instant cannot be resolved by
+    # choosing a revised later source, even when the latest row is unique.
+    source_cohort_ambiguous = any(
+        len(bodies) > 1 for bodies in payloads_at_time.values()
+    )
+    try:
+        evidence = json.loads(str(eligible["payload_json"])) if eligible is not None else {}
+    except (ValueError, TypeError):
+        evidence = {}
+        source_cohort_ambiguous = True
+    if not isinstance(evidence, dict):
+        evidence = {}
+        source_cohort_ambiguous = True
+    # Earliest archived source-stated off-time is a conservative bound, never
+    # a certification of the actual off-time or source publication instant.
+    source_clocks = []
+    invalid_clock = False
+    for _, archived in eligible_rows:
+        try:
+            payload = json.loads(str(archived['payload_json']))
+            candidate = payload.get('race_start_utc')
+            if candidate is None:
+                continue
+            source_clocks.append(_utc(str(candidate)).astimezone(UTC))
+        except (ValueError, TypeError, AttributeError):
+            invalid_clock = True
+    source_runners = evidence.get("runners", [])
+    runner_list_invalid = not isinstance(source_runners, list)
+    runner_issues = []
+    for runner in source_runners if isinstance(source_runners, list) else []:
+        if not isinstance(runner, dict):
+            runner_list_invalid = True
+            continue
+        if runner.get('reason') or runner.get('schema_ok') is False:
+            runner_issues.append({
+                'selection_id': str(runner.get('selection_id')),
+                'horse_name': runner.get('horse_name'),
+                'reason': runner.get('reason') or 'UNVERIFIED_RUNNER_SCHEMA',
+            })
+    declared_reasons = evidence.get("reasons", [])
+    declared_reasons_valid = (
+        isinstance(declared_reasons, list)
+        and all(isinstance(reason, str) for reason in declared_reasons)
+    )
+    matched = evidence.get("matched_complete_runners")
+    active = evidence.get("active_runners")
+    totals_invalid = (
+        type(matched) is not int or type(active) is not int
+        or active < 2 or matched < 0 or matched > active
+    )
+    totals_conflict = (
+        type(matched) is int and type(active) is int and matched != active
+    )
+    full_field_reasons = (
+        (["ATG_FULL_FIELD_GATE_NOT_PASSED"] if evidence.get("passed") is not True else [])
+        + (["ATG_FULL_FIELD_RUNNER_TOTALS_INVALID"] if totals_invalid else [])
+        + (["ATG_FULL_FIELD_RUNNER_COUNT_CONFLICT"] if totals_conflict else [])
+        + (["ATG_FULL_FIELD_RUNNER_SCHEMA_REJECTED"] if runner_issues else [])
+        + (["ATG_FULL_FIELD_RUNNER_LIST_INVALID"] if runner_list_invalid else [])
+        + (["ATG_FULL_FIELD_PROVIDER_REASONS_PRESENT"]
+           if declared_reasons_valid and declared_reasons else [])
+        + (["ATG_FULL_FIELD_PROVIDER_REASONS_INVALID"]
+           if not declared_reasons_valid else [])
+    )
+    return {
+        'observed_at_utc': eligible['observed_at_utc'] if eligible is not None else None,
+        'full_field_gate_passed': (
+            not full_field_reasons
+            and not source_cohort_ambiguous
+            and not invalid_observation_clock
+            and not invalid_clock
+        ),
+        'full_field_rejection_reasons': full_field_reasons,
+        'source_cohort_ambiguous': source_cohort_ambiguous,
+        'invalid_observation_clock': invalid_observation_clock,
+        'matched_complete_runners': evidence.get('matched_complete_runners'),
+        'active_runners': evidence.get('active_runners'),
+        'source_reasons': (
+            (declared_reasons if declared_reasons_valid else [])
+            + full_field_reasons
+            + (['CONFLICTING_SAME_INSTANT_ATG_FULL_FIELD_SOURCES']
+               if source_cohort_ambiguous else [])
+            + (['ATG_SOURCE_OBSERVATION_CLOCK_INVALID']
+               if invalid_observation_clock else [])
+        ),
+        'source_race_start_utc': evidence.get('race_start_utc'),
+        'earliest_retained_source_start_utc': (
+            min(source_clocks).isoformat() if source_clocks else None
+        ),
+        'source_clock_invalid': invalid_clock,
+        'source_published_at_utc': evidence.get('source_published_at_utc'),
+        'runner_issues': runner_issues,
+    }
+
+
+def _prefetch_source_clock(conn, race_id, canonical_start, now, *, lead_minutes=4.0):
+    """Use only the retained CORE-003 source clocks available by canonical T−4."""
+    diagnostic = _atg_history_source_diagnostic(
+        conn, race_id=race_id, cutoff=min(now, canonical_start - timedelta(minutes=4)),
+    )
+    earliest = diagnostic.get("earliest_retained_source_start_utc") if diagnostic else None
+    source_start = _utc(earliest).astimezone(UTC) if earliest else canonical_start
+    cutoff = min(canonical_start, source_start) - timedelta(minutes=lead_minutes)
+    return cutoff, diagnostic
+
+
 def _source_observation_as_of(value: str | None, cutoff: datetime) -> bool:
     """Never treat a malformed or UTC-future selected cohort as available."""
     if not isinstance(value, str):
@@ -154,9 +312,29 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
             continue
         selected.append((r, minutes))
 
+    clock_exclusions = []
     for r, minutes in selected:
         race_id = str(r['race_id'])
+        start = _utc(str(r['start_time_utc'])).astimezone(UTC)
+        cutoff, diagnostic = _prefetch_source_clock(
+            conn, race_id, start, current, lead_minutes=lead_minutes,
+        )
+        if diagnostic and any(diagnostic[k] for k in (
+            "source_clock_invalid", "invalid_observation_clock", "source_cohort_ambiguous",
+        )):
+            reason = "SOURCE_START_CLOCK_CONFLICT"
+        elif current >= cutoff:
+            reason = "TOO_LATE_TO_PREFETCH"
+        else:
+            reason = None
+        if reason:
+            clock_exclusions.append({
+                "race_id": race_id, "race_start_utc": start.isoformat(),
+                "cutoff_at_utc": cutoff.isoformat(), "reason": reason,
+            })
+            continue
         eligible_races.add(race_id)
+        minutes = (cutoff + timedelta(minutes=lead_minutes) - current).total_seconds() / 60
         roster = _rows(conn, 'select selection_id,scratched,horse_name from runners where race_id=?', (race_id,))
         fund, fundamental_at = _cohort(conn, 'runner_fundamental_snapshots', race_id, current.isoformat())
         market, market_at = _cohort(conn, 'provider_market_snapshots', race_id, current.isoformat(), product='V')
@@ -214,7 +392,7 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
         if why:
             reasons[why] = reasons.get(why, 0) + 1
             tasks.append(PrefetchTask(race_id,str(r['track']),int(r['race_no']),
-                str(r['provider_raceday_key']),start.isoformat(),round(minutes,3),
+                str(r['provider_raceday_key']),start.isoformat(),cutoff.isoformat(),round(minutes,3),
                 'COLLECT_FUNDAMENTALS',why,phase,0 if minutes <= 12 else 1,
                 len(roster),verified,len(market),current.isoformat()))
         market_stale = (complete_market and market_at is not None and minutes <= 8 and
@@ -224,7 +402,7 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
                              'MISSING_OR_INCOMPLETE_WIN_MARKET')
             reasons[market_reason] = reasons.get(market_reason,0)+1
             tasks.append(PrefetchTask(race_id,str(r['track']),int(r['race_no']),
-                str(r['provider_raceday_key']),start.isoformat(),round(minutes,3),
+                str(r['provider_raceday_key']),start.isoformat(),cutoff.isoformat(),round(minutes,3),
                 'COLLECT_WIN_MARKET',market_reason,phase,0,
                 len(roster),verified,len(market),current.isoformat()))
     # For near-start races collect missing fundamentals ahead of price capture.
@@ -243,7 +421,9 @@ def plan_prefetch(conn: sqlite3.Connection, *, now: str, horizon_minutes: float 
             'races_considered':len(eligible_races),'tasks_available':len(tasks),
             'tasks_returned':len(chosen),'truncated':len(chosen)<len(tasks),
             'reason_counts':dict(sorted(reasons.items())),
-            'tasks':[asdict(t) for t in chosen]}
+            'clock_exclusions':clock_exclusions,
+            'tasks':[asdict(t) for t in chosen],
+            'deferred_tasks':[asdict(t) for t in tasks[len(chosen):]]}
 
 
 def execute_prefetch(plan: dict[str, Any], collector: Any, *, now: datetime,
@@ -260,9 +440,13 @@ def execute_prefetch(plan: dict[str, Any], collector: Any, *, now: datetime,
         raise ValueError('wrong or untrusted prefetch plan')
     for task in plan['tasks']:
         stamp = _utc(str(task['race_start_utc'])).astimezone(UTC)
+        canonical_cutoff = stamp - timedelta(minutes=float(plan['lead_minutes']))
+        cutoff = min(_utc(task.get('cutoff_at_utc', canonical_cutoff.isoformat())), canonical_cutoff)
         actual = _utc(clock().isoformat()).astimezone(UTC)
-        if actual >= stamp - timedelta(minutes=float(plan['lead_minutes'])):
-            events.append({'race_id':task['race_id'],'action':task['action'],'status':'TOO_LATE_TO_PREFETCH'})
+        details = {'race_id': task['race_id'], 'action': task['action'],
+                   'cutoff_at_utc': cutoff.isoformat(), 'checked_at_utc': actual.isoformat()}
+        if actual >= cutoff:
+            events.append({**details, 'status': 'TOO_LATE_TO_PREFETCH'})
             continue
         if task['action']=='COLLECT_FUNDAMENTALS':
             try:
@@ -270,24 +454,28 @@ def execute_prefetch(plan: dict[str, Any], collector: Any, *, now: datetime,
                     raceday_key=task['provider_raceday_key'], race_number=task['race_no'],
                     race_id=task['race_id'], observed_at=actual)
                 status='FETCHED_NOT_PROVEN_COMPLETE' if fetched else 'SOURCE_UNAVAILABLE'
-                events.append({'race_id':task['race_id'],'action':task['action'],
+                events.append({**details,
                                'status':status,'rows_inserted':inserted,'source_uri':uri})
             except Exception as exc:  # noqa: BLE001 - isolate provider failures
-                events.append({'race_id':task['race_id'],'action':task['action'],
+                events.append({**details,
                                'status':'PROVIDER_EXCEPTION','exception_type':type(exc).__name__})
         elif task['action']=='COLLECT_WIN_MARKET':
             try:
                 inserted, failures = collector.collect_market(
                     raceday_key=task['provider_raceday_key'], race_number=task['race_no'],
-                    race_id=task['race_id'],observed_at=actual,products={'V'})
-                events.append({'race_id':task['race_id'],'action':task['action'],
+                    race_id=task['race_id'],observed_at=actual,products={'V'}, record_response_time=True)
+                events.append({**details,
                                'status':'FETCHED_NOT_PROVEN_COMPLETE' if failures==0 else 'SOURCE_UNAVAILABLE',
                                'rows_inserted':inserted,'fetch_failures':failures})
             except Exception as exc:  # noqa: BLE001 - isolate provider failures
-                events.append({'race_id':task['race_id'],'action':task['action'],
+                events.append({**details,
                                'status':'PROVIDER_EXCEPTION','exception_type':type(exc).__name__})
         else:
             raise ValueError('unexpected action')
+        finished = _utc(clock().isoformat()).astimezone(UTC)
+        events[-1]["finished_at_utc"] = finished.isoformat()
+        if finished >= cutoff and events[-1]["status"] == "FETCHED_NOT_PROVEN_COMPLETE":
+            events[-1]["status"] = "COLLECTION_FINISHED_AT_OR_AFTER_CUTOFF"
     return events
 
 

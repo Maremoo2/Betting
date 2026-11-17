@@ -516,3 +516,19 @@ def test_timezone_encoded_genuinely_past_source_stays_provisional_only():
     assert row["selected_snapshot_timestamp_problems"] == []
     assert row["selected_source_clock_guard_passed"] is True
     assert _pilot(c, execute=False)["prospective_t4_success_proven"] is False
+
+def test_pilot_plans_with_clock_after_discovery():
+    c = make_db()
+    scheduled_cutoff = NOW + timedelta(minutes=4)
+
+    class SlowDiscovery(CollectorStub):
+        def discover(self, *_):
+            return []
+
+    collector = SlowDiscovery(c)
+    report = run_pilot(store=StoreStub(c), collector=collector, now=NOW,
+                       clock=lambda: scheduled_cutoff, execute=True, discover=True)
+    assert report["started_at_utc"] == NOW.isoformat()
+    assert report["planned_at_utc"] == scheduled_cutoff.isoformat()
+    assert not collector.calls
+    assert report["tasks_selected"] == 0

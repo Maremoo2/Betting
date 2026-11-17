@@ -690,6 +690,7 @@ class RikstotoCollector:
         race_id: str,
         observed_at: datetime | None = None,
         products: set[str] | None = None,
+        record_response_time: bool = False,
     ) -> tuple[int, int]:
         observed = observed_at or datetime.now(UTC)
         enabled = products or {"V", "P", "TV", "T"}
@@ -708,11 +709,15 @@ class RikstotoCollector:
         for product, fetch in calls:
             if not fetch.success:
                 failures += 1
+            # Prefetch must not timestamp a WIN response with its request clock.
+            snapshot_at = observed
+            if record_response_time:
+                snapshot_at = max(observed, fetch.response_completed_at or self.clock())
             inserted += self._store_fetch_rows(
                 race_id=race_id,
                 product=product,
                 fetch=fetch,
-                observed_at=observed,
+                observed_at=snapshot_at,
             )
         return inserted, failures
 

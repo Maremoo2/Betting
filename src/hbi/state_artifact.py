@@ -63,7 +63,7 @@ def _report_github_artifact_error(exc: urllib.error.HTTPError, *, stage: str) ->
     )
 
 
-def _bounded_inventory_retry_delay(exc: urllib.error.HTTPError) -> float | None:
+def _bounded_github_retry_delay(exc: urllib.error.HTTPError) -> float | None:
     """Retry only when GitHub explicitly supplies a *nearby* rate reset.
 
     Installation limits are shared across workflows. Never spin, retry
@@ -86,24 +86,32 @@ def _bounded_inventory_retry_delay(exc: urllib.error.HTTPError) -> float | None:
     return max(1.0, delay + 1.0)
 
 
-def _inventory_json(url: str, token: str) -> dict:
+def _read_github(open_response, *, stage: str) -> bytes:
     """One request normally; at most one bounded, server-timed retry."""
     for attempt in range(2):
         try:
-            with urllib.request.urlopen(_request(url, token), timeout=30) as response:
-                return json.loads(response.read().decode("utf-8"))
+            with open_response() as response:
+                return response.read()
         except urllib.error.HTTPError as exc:
-            delay = _bounded_inventory_retry_delay(exc) if attempt == 0 else None
+            delay = _bounded_github_retry_delay(exc) if attempt == 0 else None
             if delay is None:
-                _report_github_artifact_error(exc, stage="ARTIFACT_INVENTORY")
+                _report_github_artifact_error(exc, stage=stage)
                 raise
             print(
                 f"STATE_RESTORE_RATE_LIMIT_WAIT seconds={delay:.3f} "
-                "stage=ARTIFACT_INVENTORY attempts_remaining=1 no_bootstrap=true",
+                f"stage={stage} attempts_remaining=1 no_bootstrap=true",
                 file=sys.stderr,
             )
             time.sleep(delay)
-    raise AssertionError("unreachable inventory retry state")
+    raise AssertionError("unreachable GitHub retry state")
+
+
+def _inventory_json(url: str, token: str) -> dict:
+    body = _read_github(
+        lambda: urllib.request.urlopen(_request(url, token), timeout=30),
+        stage="ARTIFACT_INVENTORY",
+    )
+    return json.loads(body.decode("utf-8"))
 
 
 def _verify_canonical_sqlite(path: Path, *, include_wal: bool = False) -> None:
@@ -196,11 +204,11 @@ def restore_latest_state(
 
     opener = urllib.request.build_opener(_NoRedirect)
     try:
-        with opener.open(archive_request, timeout=60) as response:
-            archive = response.read()
+        archive = _read_github(
+            lambda: opener.open(archive_request, timeout=60), stage="ARTIFACT_ZIP",
+        )
     except urllib.error.HTTPError as exc:
         if exc.code not in {301, 302, 303, 307, 308}:
-            _report_github_artifact_error(exc, stage="ARTIFACT_ZIP")
             raise
         location = exc.headers.get("Location")
         if not location:
@@ -297,6 +305,67 @@ def restore_latest_state(
             json.dumps(receipt, sort_keys=True, indent=2) + "\n", encoding="utf-8"
         )
     return True
+
+
+def private_pilot_state(root: Path, target: Path, *, publish: bool = False) -> str:
+    """Exchange the single-writer pilot state through an authorized private mount."""
+    if not root.is_absolute() or not root.is_dir() or root.is_symlink():
+        raise ValueError("CORE003_PRIVATE_ARCHIVE_ROOT_UNAVAILABLE")
+    archive = root / "core003-current-state.zip"
+    if archive.is_symlink():
+        raise ValueError("CORE003_PRIVATE_STATE_PATH_INVALID")
+    if publish:
+        # CORE-003 runs as one writer. Refuse a WAL sidecar with unmerged data.
+        wal = target.with_name(target.name + "-wal")
+        if wal.exists() and wal.stat().st_size:
+            raise ValueError("CORE003_PRIVATE_STATE_WAL_NOT_CHECKPOINTED")
+        _verify_canonical_sqlite(target)
+        body = target.read_bytes()
+        checksum = hashlib.sha256(body).hexdigest()
+        destination = archive
+    else:
+        checksum, body = _read_private_pilot_state(archive)
+        destination = target
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if any(destination.with_name(destination.name + suffix).exists()
+               for suffix in ("-wal", "-shm", "-journal")):
+            raise ValueError("CORE003_PRIVATE_RESTORE_TARGET_BUSY")
+
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=destination.parent, delete=False) as staging:
+            temporary = Path(staging.name)
+            if publish:
+                with zipfile.ZipFile(staging, "w", compression=zipfile.ZIP_DEFLATED,
+                                     compresslevel=1) as bundle:
+                    bundle.writestr("core003-pilot.sqlite", body)
+                    bundle.writestr("state.sha256", checksum)
+            else:
+                staging.write(body)
+            staging.flush()
+            os.fsync(staging.fileno())
+        if publish:
+            _read_private_pilot_state(temporary)
+        else:
+            if hashlib.sha256(temporary.read_bytes()).hexdigest() != checksum:
+                raise ValueError("CORE003_PRIVATE_STATE_SHA_MISMATCH")
+            _verify_canonical_sqlite(temporary)
+        os.replace(temporary, destination)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+    return checksum
+
+
+def _read_private_pilot_state(archive: Path) -> tuple[str, bytes]:
+    with zipfile.ZipFile(archive) as bundle:
+        if sorted(bundle.namelist()) != ["core003-pilot.sqlite", "state.sha256"]:
+            raise ValueError("CORE003_PRIVATE_STATE_MEMBERS_INVALID")
+        checksum = bundle.read("state.sha256").decode("ascii")
+        body = bundle.read("core003-pilot.sqlite")
+    if hashlib.sha256(body).hexdigest() != checksum:
+        raise ValueError("CORE003_PRIVATE_STATE_SHA_MISMATCH")
+    return checksum, body
 
 
 def main() -> None:

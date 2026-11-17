@@ -20,7 +20,7 @@ from urllib.parse import quote
 
 from .core_multifactor_research import MODEL_ID as CORE004_ID
 from .core_multifactor_research import analyze_multifactor
-from .core_shadow_pilot import _atg_history_source_diagnostic
+from .core_prefetch import _atg_history_source_diagnostic
 from .race_core_review import MODEL_VERSION as CHAMPION_ID
 from .race_core_review import analyze_race
 

@@ -15,14 +15,15 @@ permissions:
   actions: read
   issues: read
 
-concurrency:
-  group: hbi-state-writer
-  cancel-in-progress: false
-
 jobs:
   settle:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    concurrency:
+      group: hbi-state-writer
+      cancel-in-progress: false
+    outputs:
+      oslo_window: ${{ steps.gate.outputs.should_run }}
     steps:
       - uses: actions/checkout@v4
 
@@ -185,3 +186,13 @@ jobs:
             backup-manifest.json
           if-no-files-found: ignore
           retention-days: 14
+
+  nordic-daily-report:
+    needs: settle
+    if: >-
+      !cancelled() && github.event_name == 'schedule' && github.ref == 'refs/heads/main'
+      && needs.settle.outputs.oslo_window == 'true'
+      && vars.HQ_NORDIC_DAILY_ENABLED == 'true'
+    uses: ./.github/workflows/hq-nordic-acceptance.yml
+    with:
+      previous_oslo_day: true
