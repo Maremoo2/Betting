@@ -114,12 +114,19 @@ def admission(row):
     return "PIT_UNPROVEN", ["TARGET_SPECIFIC_CERTIFICATION_REQUIRED"]
 
 
-def build_races(workspace, events, targets, *, before_day=None):
+def build_races(workspace, events, targets, *, before_day=None, after_day=None,
+                initial_state=None, purse_loader=None, allow_observed_2026=False):
+    def event_day(value):
+        parsed = date.fromisoformat(value)
+        if allow_observed_2026 and parsed.year == 2026:
+            return parsed
+        return historical_day(value)
+
     fields = defaultdict(list)
     coverage = Counter()
     diagnostics = Counter()
     for row in events:
-        year = historical_day(row["race_date"]).year
+        year = event_day(row["race_date"]).year
         status, reasons = admission(row)
         namespace = row["source_url"].split("/")[2] if row.get("source_url") else "UNKNOWN"
         coverage[(year, row["track"], row["country"] or "UNKNOWN", namespace, status)] += 1
@@ -130,23 +137,30 @@ def build_races(workspace, events, targets, *, before_day=None):
                 diagnostics["PRESENT_" + key] += 1
         if row.get("archived_at"):
             stamp = datetime.fromisoformat(row["archived_at"])
-            if stamp.date() > historical_day(row["race_date"]):
+            if stamp.date() > event_day(row["race_date"]):
                 diagnostics["RECEIPT_DATE_AFTER_EVENT_DATE"] += 1
         if row["scratched"] is False:
             fields[row["race_id"]].append(row)
 
     histories, ratings = defaultdict(list), defaultdict(float)
+    if initial_state is not None:
+        for horse, history in initial_state["histories"].items():
+            histories[horse] = [(date.fromisoformat(row[0]), *row[1:]) for row in history]
+        ratings.update(initial_state["ratings"])
     result = []
     purse_count = 0
     by_day = defaultdict(list)
     for target in targets:
-        by_day[historical_day(target["day"])].append(target)
+        by_day[event_day(target["day"])].append(target)
 
     for day, daily in sorted(by_day.items()):
+        if initial_state is not None and day <= date.fromisoformat(initial_state["last_day"]):
+            raise ValueError("STATE_REPLAY_REORDER_OR_DUPLICATE")
         if before_day is not None:
             before_day(day, histories, ratings)
         updates = []
         seen = set()
+        admitted = []
         for target in sorted(daily, key=lambda target: target["race_id"]):
             rid = target["race_id"]
             if rid in seen:
@@ -174,7 +188,7 @@ def build_races(workspace, events, targets, *, before_day=None):
             values = [finite_time(row) for row in field]
             clean = [v for v in values if v is not None]
             mean = sum(clean) / len(clean) if clean else 0
-            purse = purse_proxy(workspace, field[winner])
+            purse = (purse_loader or purse_proxy)(workspace, field[winner])
             purse_count += purse is not None
             pre_ratings = [ratings[horse] for horse in horses]
             expectation = race_softmax(pre_ratings)
@@ -190,10 +204,13 @@ def build_races(workspace, events, targets, *, before_day=None):
                            "result_version": field[winner]["result_version"],
                            "result_source_hash": field[winner].get("source_hash"),
                            "history_counts": dict(zip(selections, [len(histories[h]) for h in horses]))})
+            admitted.append(rid)
         # No outcome enters another race on the same day, including rating or class state.
         for horse, history, change in updates:
             histories[horse].append(history)
             ratings[horse] += change
+        if after_day is not None:
+            after_day(day, histories, ratings, admitted)
 
     diagnostics["PRIOR_PURSE_PROXY_AVAILABLE_RACES"] = purse_count
     return result, coverage, diagnostics
