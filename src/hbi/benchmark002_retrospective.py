@@ -114,7 +114,7 @@ def admission(row):
     return "PIT_UNPROVEN", ["TARGET_SPECIFIC_CERTIFICATION_REQUIRED"]
 
 
-def build_races(workspace, events, targets):
+def build_races(workspace, events, targets, *, before_day=None):
     fields = defaultdict(list)
     coverage = Counter()
     diagnostics = Counter()
@@ -143,6 +143,8 @@ def build_races(workspace, events, targets):
         by_day[historical_day(target["day"])].append(target)
 
     for day, daily in sorted(by_day.items()):
+        if before_day is not None:
+            before_day(day, histories, ratings)
         updates = []
         seen = set()
         for target in sorted(daily, key=lambda target: target["race_id"]):
