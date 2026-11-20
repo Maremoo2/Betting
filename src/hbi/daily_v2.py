@@ -137,19 +137,46 @@ def coverage_rows(source, state):
     return rows
 
 
-def qualified_market(freeze_path, artifact_raw, output, *, now=None, reader):
+def qualified_market(freeze_path, artifact_raw, output, *, now=None, reader,
+                     source_state_raw=None, source_packet_raw=None, source_evidence=None,
+                     archive_root=None):
     """Lazy Collector/Phase-B access. A caller flag cannot open the source gate."""
-    from .benchmark002_shadow import combine_original
+    from .benchmark002_shadow import combine_original, load_artifact, verify_prospective_freeze
+    from .private_win_archive import archive_win, verify_win
+    from .providers.rikstoto import OriginalBytesFetchResult
     from .v2_source_recovery import audit_market
 
     frozen_raw = Path(freeze_path).read_bytes()
     frozen = json.loads(frozen_raw)
     if frozen.get("scope") != "PROSPECTIVE" or frozen.get("pit_certified") is not True:
         raise ValueError("WIN_NOT_READ_PIT_UNVERIFIED")
-    # All command-created prospective freezes must first pass the canonical
-    # freeze_fundamental source adapter. That adapter remains fail-closed today.
-    envelope = reader()
-    now = now or datetime.now(UTC)
+    if archive_root is None:
+        raise ValueError("PRIVATE_WIN_ARCHIVE_REQUIRED")
+    artifact = load_artifact(artifact_raw, ARTIFACT_SHA256)
+    verify_prospective_freeze(frozen, artifact, source_packet_raw, source_state_raw, source_evidence,
+                              artifact_sha256=ARTIFACT_SHA256)
+    moment = now or datetime.now(UTC)
+    from .shadow import ShadowPolicy
+    from .t4_evidence import _aware
+
+    if moment >= _aware(frozen["start_at"])-timedelta(minutes=ShadowPolicy().target_minutes_to_start):
+        raise ValueError("WIN_NOT_READ_AT_OR_AFTER_T4")
+    fixed_now = now
+    fetched = reader()
+    if not isinstance(fetched, OriginalBytesFetchResult):
+        raise TypeError("ORIGINAL_WIN_RESPONSE_BYTES_REQUIRED")
+    root = Path(archive_root)
+    root.mkdir(parents=True, exist_ok=True)
+    receipt_sha = archive_win(root, fetched, race_id=frozen["race_id"], approval_id="P1-020_MANUAL_RESEARCH")
+    archived = verify_win(root, receipt_sha)
+    _, key, number = frozen["race_id"].split(":")
+    from rikstoto_crawler.transport import digest
+
+    envelope = {"url": fetched.url, "path": f"/game/{key}/betdistribution/winodds/{number}",
+        "body": fetched.payload, "body_sha256": digest(fetched.payload),
+        "fetched_at": archived["response_completed_at_utc"],
+        "raw_retention": {"root": str(root), "receipt_sha256": receipt_sha}}
+    now = fixed_now or datetime.now(UTC)
     raw = json.dumps(envelope, ensure_ascii=False, allow_nan=False).encode()
     receipt = {"url": envelope["url"], "status": 200, "sha256": hashlib.sha256(
         json.dumps(envelope["body"]).encode()).hexdigest(),
@@ -160,12 +187,12 @@ def qualified_market(freeze_path, artifact_raw, output, *, now=None, reader):
     if audit["errors"]:
         raise ValueError("MARKET_NOT_VERIFIED:"+";".join(audit["errors"]))
     return combine_original(freeze_path, hashlib.sha256(frozen_raw).hexdigest(), artifact_raw,
-                            ARTIFACT_SHA256, raw, hashlib.sha256(raw).hexdigest(), output, now)
+        ARTIFACT_SHA256, raw, hashlib.sha256(raw).hexdigest(), output, now,
+        source_state_raw=source_state_raw, source_packet_raw=source_packet_raw,
+        source_evidence=source_evidence, runtime_clock=(lambda: fixed_now) if fixed_now else None)
 
 
 def execute(args, *, now=None, clock_reader=None):
-    from rikstoto_crawler.transport import ArchiveClient
-
     from .benchmark002_shadow import checked_json, freeze_fundamental
     from .local_watcher import clock_offset
     from .research_lab import freeze
@@ -208,12 +235,13 @@ def execute(args, *, now=None, clock_reader=None):
             if not args.collector_root or not args.state or not args.state_sha256:
                 raise ValueError("COLLECTOR_AND_HASHED_STATE_REQUIRED")
             source = collector_packet(args.collector_root, args.race_id, now=now)
-            state = checked_json(Path(args.state).read_bytes(), args.state_sha256)
+            state_raw = Path(args.state).read_bytes()
+            state = checked_json(state_raw, args.state_sha256)
             report.update(start_at=source["start_at"], source_hashes=source["source_hashes"],
                           state_sha256=args.state_sha256, known_gaps=state.get("known_gaps", []))
             report["rows"] = coverage_rows(source, state)
             report["blockers"].extend(sorted({b for row in report["rows"] for b in row["feature_blockers"].split(";") if b}))
-            report["blockers"].extend(["CANONICAL_V2_SOURCE_ADAPTER_NOT_ATTESTED",
+            report["blockers"].extend(["REVIEWED_V2_STATE_COVERAGE_ORIGINAL_MISSING_OR_INVALID",
                 "INDEPENDENT_PERMANENT_IDENTITY_NOT_ATTESTED", "INDEPENDENT_SCRATCHINGS_NOT_ATTESTED"])
             if state.get("FULL_F3_COVERAGE") is not True or state.get("known_gaps"):
                 report["blockers"].append("INCOMPLETE_CAREER_AND_OPPONENT_GRAPH")
@@ -227,7 +255,11 @@ def execute(args, *, now=None, clock_reader=None):
             packet = packet_for_field(state, source["key"], source["number"], source["starts_raw"],
                 source["starts_receipt"], source["start_at"], country=source["country"])
             packet["original_program_sha256"] = source["source_hashes"]["program"]
-            freeze(output/"input_packet.json", packet)
+            packet["collector_source_hashes"] = source["source_hashes"]
+            evidence = None
+            if getattr(args, "source_evidence", None):
+                evidence = checked_json(Path(args.source_evidence).read_bytes(), args.source_evidence_sha256)
+                evidence["collector_root"] = str(Path(args.collector_root).resolve())
             offset_ms = clock_reader("time.windows.com")*1000
             # Source loading and NTP can take time. Never backdate the freeze
             # to the command's initial timestamp.
@@ -235,6 +267,7 @@ def execute(args, *, now=None, clock_reader=None):
             if now >= cutoff:
                 raise ValueError("MODEL_AT_OR_AFTER_T4")
             if args.limited_protocol:
+                freeze(output/"input_packet.json", packet)
                 protocol = json.loads(Path(args.limited_protocol).read_bytes())
                 frozen = freeze_limited(output/"limited_fundamental_freeze.json", artifact_raw,
                     ARTIFACT_SHA256, packet, args.state_sha256, protocol, now=now,
@@ -247,17 +280,35 @@ def execute(args, *, now=None, clock_reader=None):
             else:
                 packet.update(scope="PROSPECTIVE", clock_offset_ms=offset_ms,
                               canonical_collector_row={"race_id": args.race_id})
-                raw = json.dumps(packet).encode()
+                freeze(output/"input_packet.json", packet)
+                raw = (output/"input_packet.json").read_bytes()
                 frozen = freeze_fundamental(artifact_raw, ARTIFACT_SHA256, raw,
-                    hashlib.sha256(raw).hexdigest(), output/"fundamental_freeze.json", now)
+                    hashlib.sha256(raw).hexdigest(), output/"fundamental_freeze.json", now,
+                    source_state_raw=state_raw, source_state_sha256=args.state_sha256,
+                    source_evidence=evidence, runtime_clock=(lambda: fixed_now) if fixed_now else None,
+                    clock_offset_reader=lambda: clock_reader("time.windows.com")*1000)
+                report.update(status="PIT_QUALIFIED_FUNDAMENTAL", PIT_CERTIFIED=True,
+                              blockers=[], source_admission=frozen["source_admission"])
+                for row in report["rows"]:
+                    p = frozen["fundamental"][row["selection_id"]]
+                    row.update(fundamental_p=p, fundamental_fair_odds=1/p,
+                               PIT_CERTIFIED=True, source_quality="PIT_VERIFIED", signal="MARKET_NOT_EVALUATED")
                 # Existing source gate must grant the freeze before this can run.
                 if args.market_cache:
                     _, key, number = args.race_id.split(":")
-                    client = ArchiveClient(Path(args.market_cache))
+                    from .providers.rikstoto import RikstotoClient
+
+                    client = RikstotoClient()
+                    def read_market():
+                        fetched = client.win_odds(key, int(number), retain_raw_body=True)
+                        report["WIN_read"] = True
+                        return fetched
+
                     decision = qualified_market(output/"fundamental_freeze.json", artifact_raw,
                         output/"market_decision.json", now=fixed_now,
-                        reader=lambda: client.get(f"/game/{key}/betdistribution/winodds/{number}", refresh=True))
-                    report.update(rows=decision["rows"], WIN_read=True)
+                        reader=read_market, source_state_raw=state_raw,
+                        source_packet_raw=raw, source_evidence=evidence, archive_root=args.market_cache)
+                    report.update(status="PIT_QUALIFIED_SHADOW", rows=decision["rows"], WIN_read=True)
     except (ValueError, TypeError, KeyError, OSError, IndexError, zipfile.BadZipFile) as exc:
         report["blockers"].append(str(exc))
     report["blockers"] = sorted(set(report["blockers"]))
@@ -282,11 +333,13 @@ def add_arguments(parser):
     parser.add_argument("--collector-root", type=Path)
     parser.add_argument("--state", type=Path)
     parser.add_argument("--state-sha256")
+    parser.add_argument("--source-evidence", type=Path, help="Reviewed originals and exact graph bundle; never a PIT flag")
+    parser.add_argument("--source-evidence-sha256")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--limited-protocol", type=Path, help="Explicit unqualified research opt-in; never reads WIN")
     parser.add_argument("--parity-packet", type=Path, help="One historical source packet; no backtest or market")
     parser.add_argument("--parity-packet-sha256")
-    parser.add_argument("--market-cache", type=Path, help="Collector cache; accessed only after canonical PIT approval")
+    parser.add_argument("--market-cache", type=Path, help="Private original WIN archive; accessed only after canonical PIT approval")
 
 
 def cli(args):

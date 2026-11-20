@@ -1,7 +1,8 @@
 """Manual, source-gated BENCHMARK-002 inference. No execution or DB writer.
 
-Historical packet inference is explicitly retrospective. A reviewed live state
-adapter is still missing; no caller-created packet can approve a source.
+Historical packet inference is explicitly retrospective. Live inference requires
+reviewed originals and a source-bound graph replay; numeric caller flags never
+approve a source.
 """
 from __future__ import annotations
 
@@ -98,7 +99,9 @@ def feature_matrix(packet):
     return active, matrix
 
 
-def freeze_fundamental(artifact_raw, artifact_sha, packet_raw, packet_sha, path, now):
+def freeze_fundamental(artifact_raw, artifact_sha, packet_raw, packet_sha, path, now, *,
+                       source_state_raw=None, source_state_sha256=None, source_evidence=None,
+                       runtime_clock=None, clock_offset_reader=None):
     """Write the market-free forecast before a market reader can be invoked."""
     artifact = load_artifact(artifact_raw, artifact_sha)
     packet = checked_json(packet_raw, packet_sha)
@@ -122,11 +125,21 @@ def freeze_fundamental(artifact_raw, artifact_sha, packet_raw, packet_sha, path,
         canonical = packet.get("canonical_collector_row")
         if not canonical or canonical.get("race_id") != packet["race_id"]:
             raise ValueError("CANONICAL_COLLECTOR_ROW_MISSING")
-        # model_dataset.candidate is a historical TRAINING gate requiring outcome
-        # labels. It must not be repurposed to demand future results at inference.
-        # No reviewed source-bound V2 state adapter exists yet. An asserted row
-        # cannot authorize arbitrary numeric state or turn it into PIT evidence.
-        raise ValueError("BLOCKED_SOURCE:V2_LIVE_STATE_ADAPTER_NOT_ATTESTED")
+        from .v2_source_admission import assess_sources
+
+        admission = assess_sources(packet, source_state_raw, source_state_sha256,
+            source_evidence, artifact_sha256=artifact_sha, moment=current)
+        if not admission["qualified"]:
+            raise ValueError("BLOCKED_SOURCE:V2_LIVE_STATE_ADAPTER_NOT_ATTESTED|"+
+                             "|".join(admission["blockers"]))
+        if clock_offset_reader is not None:
+            offset = clock_offset_reader()
+            if type(offset) not in (int, float) or not math.isfinite(offset) or abs(offset) > 250:
+                raise ValueError("CLOCK_OFFSET_EXCEEDS_250_MS")
+        actual = runtime_clock() if runtime_clock else datetime.now(UTC)
+        if actual < current or actual >= start-timedelta(minutes=ShadowPolicy().target_minutes_to_start):
+            raise ValueError("MODEL_AT_OR_AFTER_T4_OR_CLOCK_ROLLBACK")
+        current = actual
     active, matrix = feature_matrix(packet)
     probabilities = bench.race_softmax(matrix @ np.asarray(artifact["fundamental_weights"]))
     if not np.isfinite(probabilities).all() or (probabilities <= 0).any() or abs(probabilities.sum()-1)>1e-12:
@@ -136,9 +149,43 @@ def freeze_fundamental(artifact_raw, artifact_sha, packet_raw, packet_sha, path,
         "created_at": current.isoformat(), "model": MODEL, "artifact_sha256": artifact_sha,
         "packet_sha256": packet_sha, "feature_sha256": digest(matrix.tolist()),
         "active": active, "fundamental": dict(zip([r["selection_id"] for r in active], probabilities.tolist())),
-        "pit_certified": False, "bet_authority": False, "source_quality": packet["source_quality"]}
+        "pit_certified": scope == "PROSPECTIVE", "bet_authority": False,
+        "source_quality": "PIT_VERIFIED" if scope == "PROSPECTIVE" else packet["source_quality"]}
+    if scope == "PROSPECTIVE":
+        actual = runtime_clock() if runtime_clock else datetime.now(UTC)
+        if actual < current or actual >= start-timedelta(minutes=ShadowPolicy().target_minutes_to_start):
+            raise ValueError("MODEL_FINISHED_AT_OR_AFTER_T4_OR_CLOCK_ROLLBACK")
+        result.update(created_at=actual.isoformat(), source_admission=admission,
+                      source_state_sha256=source_state_sha256, measured_clock_offset_ms=offset)
     freeze(Path(path), result)
     return result
+
+
+def verify_prospective_freeze(frozen, artifact, packet_raw, state_raw, source_evidence, *, artifact_sha256):
+    """Rebind approved originals and model outputs; a caller PIT flag is insufficient."""
+    from .v2_source_admission import assess_sources
+
+    if frozen.get("scope") != "PROSPECTIVE" or frozen.get("pit_certified") is not True:
+        raise ValueError("PIT_QUALIFIED_FREEZE_REQUIRED")
+    packet = checked_json(packet_raw, frozen["packet_sha256"])
+    if (frozen.get("artifact_sha256") != artifact_sha256 or frozen.get("model") != artifact["model"]
+            or any(frozen.get(k) != packet.get(k) for k in ("race_id", "day", "start_at"))):
+        raise ValueError("FROZEN_SOURCE_OR_MODEL_BINDING_CONFLICT")
+    created = _aware(frozen.get("created_at"))
+    if created is None:
+        raise ValueError("QUALIFIED_FREEZE_CLOCK_INVALID")
+    admission = assess_sources(packet, state_raw, frozen.get("source_state_sha256"),
+        source_evidence, artifact_sha256=frozen["artifact_sha256"], moment=created)
+    if not admission["qualified"]:
+        raise ValueError("BLOCKED_SOURCE:"+"|".join(admission["blockers"]))
+    active, matrix = feature_matrix(packet)
+    if frozen.get("active") != active or frozen.get("feature_sha256") != digest(matrix.tolist()):
+        raise ValueError("FROZEN_FIELD_OR_FEATURE_BINDING_CONFLICT")
+    expected = dict(zip([r["selection_id"] for r in active],
+        bench.race_softmax(matrix @ np.asarray(artifact["fundamental_weights"])).tolist()))
+    if expected != frozen["fundamental"]:
+        raise ValueError("FROZEN_PREDICTION_SOURCE_OR_MODEL_CONFLICT")
+    return admission
 
 
 def check_market_clock(frozen, original, current):
@@ -157,7 +204,8 @@ def check_market_clock(frozen, original, current):
 
 
 def combine_original(freeze_path, freeze_sha, artifact_raw, artifact_sha,
-                     market_raw, market_sha, output, now):
+                     market_raw, market_sha, output, now, *, source_state_raw=None,
+                     source_packet_raw=None, source_evidence=None, runtime_clock=None):
     frozen = checked_json(Path(freeze_path).read_bytes(), freeze_sha)
     artifact = load_artifact(artifact_raw, artifact_sha)
     if frozen["artifact_sha256"] != artifact_sha or frozen["model"] != MODEL:
@@ -183,9 +231,26 @@ def combine_original(freeze_path, freeze_sha, artifact_raw, artifact_sha,
         raise ValueError("INVALID_WIN_ODDS")
     if frozen["scope"] == "PROSPECTIVE":
         check_market_clock(frozen, original, current)
-        # No prospective freeze can currently be produced, and a caller-created
-        # object with a valid hash cannot bypass the source gate above.
-        raise ValueError("BLOCKED_SOURCE:V2_LIVE_STATE_ADAPTER_NOT_ATTESTED")
+        verify_prospective_freeze(frozen, artifact, source_packet_raw, source_state_raw, source_evidence,
+                                  artifact_sha256=artifact_sha)
+        from .private_win_archive import _blob, verify_win
+
+        retention = original.get("raw_retention")
+        if not isinstance(retention, dict):
+            raise ValueError("ORIGINAL_WIN_RETENTION_REQUIRED")
+        root = Path(retention["root"])
+        retained = verify_win(root, retention["receipt_sha256"])
+        if (retained["race_id"] != frozen["race_id"] or retained["source_uri"] != original["url"]
+                or retained["response_completed_at_utc"] != original["fetched_at"]
+                or json.loads(_blob(root, retained["body_sha256"])) != original["body"]):
+            raise ValueError("ORIGINAL_WIN_RETENTION_BINDING_CONFLICT")
+        current = runtime_clock() if runtime_clock else datetime.now(UTC)
+        check_market_clock(frozen, original, current)
+        completed = _aware(original["fetched_at"])
+        for quote in quotes:
+            updated = _aware(quote.get("lastUpdated"))
+            if updated is None or updated > completed or completed-updated > timedelta(seconds=300):
+                raise ValueError("PROVIDER_MARKET_TIME_UNVERIFIED_OR_STALE")
     market = normalize_market_odds(prices)
     beta, alpha = artifact["market_fundamental_weights"]
     combined = combine_probabilities(frozen["fundamental"], market,
@@ -201,13 +266,16 @@ def combine_original(freeze_path, freeze_sha, artifact_raw, artifact_sha,
             "market_p": market[selection], "combined_p": combined[selection],
             "fair_odds": fair_odds(combined[selection]), "minimum_odds": assessment.minimum_price,
             "WIN": prices[selection], "EV": assessment.expected_value, "status": status,
-            "scope": "RETROSPECTIVE_NON_EXECUTABLE", "uncertainty": "UNCALIBRATED_AT_DECISION_TIME",
+              "scope": "PROSPECTIVE_SHADOW" if frozen["scope"] == "PROSPECTIVE" else "RETROSPECTIVE_NON_EXECUTABLE",
+              "uncertainty": "UNCALIBRATED_AT_DECISION_TIME",
             "market_observed_at": original.get("fetched_at"), "market_read_at": current.isoformat(),
             "freeze_at": frozen["created_at"], "model": MODEL, "bet_authority": False})
     decision = {"schema": "BENCHMARK002_SHADOW_DECISION_V1", "race_id": frozen["race_id"],
-        "scope": "RETROSPECTIVE_NON_EXECUTABLE", "rows": rows, "artifact_sha256": artifact_sha,
+        "scope": "PROSPECTIVE_SHADOW" if frozen["scope"] == "PROSPECTIVE" else "RETROSPECTIVE_NON_EXECUTABLE",
+        "rows": rows, "artifact_sha256": artifact_sha,
         "fundamental_freeze_sha256": freeze_sha, "market_file_sha256": market_sha,
-        "market_body_sha256": original["body_sha256"], "PIT_CERTIFIED": False, "BET_AUTHORITY": False}
+        "market_body_sha256": original["body_sha256"],
+        "PIT_CERTIFIED": frozen["scope"] == "PROSPECTIVE", "BET_AUTHORITY": False}
     freeze(Path(output), decision)
     return decision
 

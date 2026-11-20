@@ -37,9 +37,9 @@ receive SHADOW_PASS. Historical prices remain non-executable retrospective data.
 
 ## Live boundary
 
-PROSPECTIVE mode is deliberately blocked until a reviewed source-bound V2 live
-state adapter exists. A caller-created numeric state or a successful asserted
-canonical row cannot bypass that boundary. The existing historical dataset gate
+PROSPECTIVE mode uses the source-bound V2 adapter described below. Missing
+reviewed originals still block inference. A caller-created numeric state or an
+asserted canonical row cannot bypass that boundary. The existing historical dataset gate
 requires outcome labels and is not repurposed as a live inference gate.
 
 A real Bergen race 1 candidate on 2026-11-19 was captured and tested before its
@@ -90,10 +90,10 @@ Output is `report.json` and `full_field.csv`. Exit 2 means BLOCKED; no model fre
 or market operation is claimed successful. Current input gaps and the existing
 canonical `V2_LIVE_STATE_ADAPTER_NOT_ATTESTED` gate remain effective. A supplied
 `PIT_CERTIFIED=true` or `FULL_F3_COVERAGE=true` state cannot authorize a forecast.
-`--market-cache` is a lazy existing Collector/Phase-B route: no WIN request occurs
-before a canonical PIT-approved freeze; provider timestamps and full-field market
-checks must then pass. There is currently no qualified live V2 source adapter,
-so this route remains blocked. No new attestation authority is introduced here.
+`--market-cache` selects a private original WIN archive. No WIN request occurs
+before a source-approved freeze; original bytes, SHA readback, provider timestamps
+and full-field checks must then pass. Missing source receipts keep this route
+blocked. No new attestation authority is introduced here.
 
 Two explicit non-qualified diagnostic modes are supported:
 
@@ -113,3 +113,53 @@ The authentic Bjerke 2024 parity fixture is preserved under
 `tests/fixtures/trained_v2_2024_{packet,expected}.json`; it is copied from P1-014,
 not regenerated or fitted. These examples are local implementation checks,
 not a repeat of the 5,274-race benchmark or evidence of live betting readiness.
+
+## Reviewed V2 source adapter (P1-020)
+
+`daily-v2` optionally takes `--source-evidence FILE --source-evidence-sha256 SHA`.
+This is a manifest of original locations, not permission to certify them. The
+existing `admission_originals` review pins remain the sole receipt authority;
+this change adds **no real source pins**. Never create or approve a receipt from
+a URI, hash format, local timestamp, or caller completeness flag alone. Local
+SHA readback proves byte integrity, not independent timing or source authority.
+
+The manifest binds `coverage`, `registry`, `scratchings` and `graph_bundle`.
+Each original descriptor requires `uri`, `sha256`, `observed_at_utc` and
+`original_file`. `collector_root` is supplied by the command itself. All captures
+must be aware, not in the future, and strictly before the frozen T−4 deadline.
+Originals must separately pass existing independent review. New roles or source
+values never acquire approval automatically.
+
+- Coverage role `V2_STATE_COVERAGE`: `VERIFIED_V2_COMPLETE_STATE_V1`, binding
+  physical race/start, exact state/model/graph SHA, Collector source hashes and
+  Rikstoto-only policy. An independent review must substantiate complete career
+  and opponent coverage and exact-version availability. It must not attest a
+  knowingly incomplete observed graph.
+- Registry role `REGISTRY_BINDING`: `VERIFIED_V2_REGISTRY_FIELD_V1`, binding
+  physical race, exact startlist SHA and every active selection's native
+  registration to an authoritative permanent ID, source and version. This does
+  not turn a temporary/native registration into permanent identity by assertion.
+- Scratch role `INDEPENDENT_SCRATCH`: existing
+  `VERIFIED_INDEPENDENT_SCRATCH_V1` format, including all listed selections and
+  explicit statuses, verified by `IndependentScratchEvidence`. Shared-feed
+  observations do not establish independence.
+
+The adapter rereads original Collector inputs, verifies every graph original
+through the existing result decoder, and reproduces the supplied state with
+the original day-delayed F0–F3 implementation. Known gaps, unknown result codes,
+changed state values, native-ID conflicts and target/future results block it.
+No 2025 input is opened. The numerical replay does not establish completeness
+or publication timing; these remain separate reviewed source prerequisites.
+
+The model rechecks the 250 ms clock and actual runtime after verification. The
+saved `input_packet.json` bytes are exactly those hashed in the exclusive freeze.
+A later WIN operation revalidates the freeze's source bindings and unchanged
+model output, retains original response bytes with the existing private archive,
+and applies the existing full-field/time checks. There is no scheduler, deploy
+or authority to bet. Synthetic reviewed-receipt contract tests are not evidence
+that a real field has qualified.
+
+On 20 November the Biri 5 source recovery removed both missing clean-time inputs
+using complete original Orkla fields. The real before-start attempt still
+returned BLOCKED: independent source receipts and complete career/opponent
+coverage were unavailable. No real fundamental freeze or WIN read was created.
