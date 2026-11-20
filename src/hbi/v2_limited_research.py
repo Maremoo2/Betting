@@ -1,8 +1,12 @@
 """Explicitly unqualified, gap-state research. Never opens the canonical V2 gate."""
 from __future__ import annotations
 
+import csv
+import hashlib
+import json
 import math
 from datetime import timedelta
+from pathlib import Path
 
 import numpy as np
 
@@ -124,6 +128,12 @@ def combine_limited(frozen_raw, freeze_sha, artifact_raw, artifact_sha, market_r
         raise ValueError("INCOMPLETE_MARKET_OR_SCRATCH_CONFLICT")
     if any(type(p) not in (int, float) or not math.isfinite(p) or p<=1 for p in prices.values()):
         raise ValueError("INVALID_MARKET_PRICE")
+    for quote in quotes:
+        updated = _aware(quote.get("lastUpdated"))
+        if updated is None:
+            raise ValueError("PROVIDER_MARKET_TIMESTAMP_MISSING_OR_NAIVE")
+        if updated > completed or completed-updated > timedelta(seconds=300):
+            raise ValueError("PROVIDER_MARKET_STALE_OR_FUTURE")
     market = normalize_market_odds(prices)
     beta, alpha = artifact["market_fundamental_weights"]
     combined = combine_probabilities(fundamental, market, fundamental_weight=alpha, market_weight=beta)
@@ -151,13 +161,44 @@ def combine_limited(frozen_raw, freeze_sha, artifact_raw, artifact_sha, market_r
             "PIT_CERTIFIED": False, "BET_AUTHORITY": False}
 
 
+def require_registered_pre(ledger, frozen_raw, freeze_sha):
+    """Verify the whole existing chain and exact PRE before any POST read."""
+    frozen = checked_json(frozen_raw, freeze_sha)
+    path = Path(ledger)
+    if not path.exists():
+        raise ValueError("REGISTERED_PRE_MISSING")
+    previous, found, seen = "0"*64, False, set()
+    with path.open(encoding="utf-8", newline="") as stream:
+        reader = csv.DictReader(stream)
+        if reader.fieldnames != ["key", "payload_sha256", "previous_row_sha256", "row_sha256", "payload_json"]:
+            raise ValueError("REGISTERED_PRE_LEDGER_HEADER_INVALID")
+        for row in reader:
+            current = digest([row["key"], row["payload_sha256"], previous])
+            if (row["previous_row_sha256"] != previous or row["row_sha256"] != current
+                    or hashlib.sha256(row["payload_json"].encode()).hexdigest() != row["payload_sha256"]
+                    or row["key"] in seen):
+                raise ValueError("REGISTERED_PRE_LEDGER_TAMPERED")
+            previous = current
+            seen.add(row["key"])
+            payload = json.loads(row["payload_json"])
+            if (payload.get("record_type") == "LIMITED_RESEARCH_FORECAST"
+                    and payload.get("race_id") == frozen["race_id"]
+                    and payload.get("fundamental_freeze_sha256") == freeze_sha
+                    and payload.get("conditional_fundamental_p") == frozen["conditional_fundamental_p"]
+                    and payload.get("frozen_at_utc") == frozen["frozen_at_utc"]):
+                found = True
+    if not found:
+        raise ValueError("REGISTERED_PRE_MISSING_OR_DIFFERENT")
+    return frozen
+
+
 def append_limited_result(ledger, frozen_raw, freeze_sha, result_raw, receipt, roster, *, country):
     """Append a source-verified outcome; never rewrite a forecast.
 
     Local capture/hash validation is research provenance, not official-source
     independence or PIT certification. Revisions get distinct append-only keys.
     """
-    frozen = checked_json(frozen_raw, freeze_sha)
+    frozen = require_registered_pre(ledger, frozen_raw, freeze_sha)
     if (frozen.get("schema") != "V2_LIMITED_RESEARCH_FREEZE_V1"
             or frozen.get("variant") != VARIANT or frozen.get("qualified_full_field") is not False):
         raise ValueError("LIMITED_RESULT_FORECAST_INVALID")

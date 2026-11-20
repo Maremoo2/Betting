@@ -173,7 +173,9 @@ def test_limited_research_is_not_qualified_even_when_math_is_complete(tmp_path):
     frozen = freeze_limited(*args, now=now, clock_offset_ms=0, explicit_research_opt_in=True)
     assert sum(frozen["conditional_fundamental_p"].values()) == pytest.approx(1)
     assert frozen["qualified_full_field"] is False and frozen["PIT_CERTIFIED"] is False
-    market = json.dumps({"success": True, "result": [{"startNumber": 1, "odds": 3.}, {"startNumber": 2, "odds": 2.}]}).encode()
+    market = json.dumps({"success": True, "result": [
+        {"startNumber": 1, "odds": 3., "lastUpdated": now.isoformat()},
+        {"startNumber": 2, "odds": 2., "lastUpdated": now.isoformat()}]}).encode()
     mreceipt = {"url": "https://www.rikstoto.no/api/game/TEST_NR_2026-11-19/betdistribution/winodds/1",
                 "status": 200, "sha256": hashlib.sha256(market).hexdigest(),
                 "started_at": (now+timedelta(seconds=1)).isoformat(), "completed_at": (now+timedelta(seconds=2)).isoformat()}
@@ -205,13 +207,122 @@ def test_result_append_preserves_forecast_and_checks_original(tmp_path, attack):
     fraw = json.dumps(frozen).encode(); fsha = hashlib.sha256(fraw).hexdigest()
     if attack == "freeze_sha": fsha = "0"*64
     ledger = tmp_path/"research.csv"
+    append_research_ledger(ledger, "fixture|PRE", {"record_type": "LIMITED_RESEARCH_FORECAST",
+        "race_id": frozen["race_id"], "fundamental_freeze_sha256": fsha,
+        "conditional_fundamental_p": frozen["conditional_fundamental_p"],
+        "frozen_at_utc": frozen["frozen_at_utc"]})
+    before = ledger.read_bytes()
     if attack:
         with pytest.raises(ValueError):
             append_limited_result(ledger, fraw, fsha, raw, receipt, roster, country="NO")
-        assert not ledger.exists()
+        assert ledger.read_bytes() == before
     else:
         assert append_limited_result(ledger, fraw, fsha, raw, receipt, roster, country="NO")
         old = ledger.read_bytes()
         assert not append_limited_result(ledger, fraw, fsha, raw, receipt, roster, country="NO")
         assert ledger.read_bytes() == old and fraw == json.dumps(frozen).encode()
         assert "LIMITED_RESEARCH_RESULT" in ledger.read_text()
+
+
+@pytest.mark.parametrize("kind", ["valid_and_incomplete", "two_valid_conflicting", "bad_hash", "duplicates"])
+def test_recovery_validates_originals_before_version_conflict(kind):
+    from hbi.v2_source_recovery import recover_versions
+    raw, receipt, roster = source()
+    other = json.loads(raw)
+    if kind == "valid_and_incomplete": other["result"]["results"] = other["result"]["results"][:1]
+    if kind == "two_valid_conflicting": other["result"]["results"][0]["prize"] += 1
+    second = json.dumps(other).encode()
+    rec2 = dict(receipt, raw_sha256=hashlib.sha256(second).hexdigest())
+    if kind == "bad_hash": rec2["raw_sha256"] = "0"*64
+    candidates = [(raw, receipt, "original"), (second, rec2, "other")]
+    if kind == "bad_hash": candidates = candidates[1:]
+    result, audit = recover_versions(candidates, roster, country="NO")
+    assert (result is not None) == (kind in {"valid_and_incomplete", "duplicates"})
+    if kind == "two_valid_conflicting": assert audit["reason"] == "MULTIPLE_VALID_RESULT_VERSIONS"
+    if kind in {"bad_hash", "two_valid_conflicting"}: assert audit["status"] == "SOURCE_DATA_INVALID"
+    if kind == "valid_and_incomplete": assert audit["rejected"]
+
+
+@pytest.fixture
+def pricing_case(tmp_path):
+    state, _ = advance(tmp_path, empty(), [field("2026-11-17")], "2026-11-18T12:00:00+00:00")
+    _, _, roster = source("2026-11-19")
+    starts = json.dumps({"success": True, "result": {"1": roster}}).encode()
+    packet = packet_for_field(state, "TEST_NR_2026-11-19", 1, starts,
+        {"url": "https://www.rikstoto.no/api/racedays/TEST_NR_2026-11-19/starts", "status": 200,
+         "sha256": hashlib.sha256(starts).hexdigest(), "completed_at": "2026-11-18T12:00:00+00:00"},
+        "2026-11-19T18:00:00+00:00", country="NO")
+    model = {"model": MODEL, "feature_order": list(FEATURE_ORDER), "training_last_year": 2022,
+        "calibration_year": 2023, "test_year": 2024, "ridge": .03, "market_domain": "TERMINAL_RETROSPECTIVE",
+        "fundamental_weights": [.1]*9, "market_fundamental_weights": [1., .1]}
+    artifact = json.dumps(model).encode(); artifact_sha = hashlib.sha256(artifact).hexdigest()
+    now = datetime(2026, 11, 19, 12, tzinfo=UTC)
+    path=tmp_path/"frozen.json"
+    freeze_limited(path, artifact, artifact_sha, packet, "b"*64, {"variant": VARIANT},
+        now=now, clock_offset_ms=0, explicit_research_opt_in=True)
+    raw=path.read_bytes()
+    return raw,hashlib.sha256(raw).hexdigest(),artifact,artifact_sha,packet,now
+
+
+@pytest.mark.parametrize("stamp", [None,"2026-11-19T12:00:00","2026-11-19T11:54:00+00:00","2026-11-19T12:01:00+00:00"])
+def test_limited_pricing_rejects_unverified_stale_or_future_provider_clocks(pricing_case, stamp):
+    raw, sha, artifact, asha, _, now = pricing_case
+    market=json.dumps({"success":True,"result":[{"startNumber":n,"odds":3.,"lastUpdated":stamp} for n in [1,2]]}).encode()
+    receipt={"url":"https://www.rikstoto.no/api/game/TEST_NR_2026-11-19/betdistribution/winodds/1",
+        "status":200,"sha256":hashlib.sha256(market).hexdigest(),
+        "started_at":(now+timedelta(seconds=1)).isoformat(),"completed_at":(now+timedelta(seconds=2)).isoformat()}
+    with pytest.raises(ValueError,match="PROVIDER_MARKET"):
+        combine_limited(raw,sha,artifact,asha,market,receipt,now=now+timedelta(seconds=3))
+
+
+def test_full_market_audit_does_not_assume_timezone_or_drop_scratches(pricing_case):
+    from hbi.v2_source_recovery import audit_market
+    _,_,_,_,packet,now=pricing_case
+    packet["runners"].append({"selection_id":"3","scratched":True})
+    body={"success":True,"result":[{"startNumber":n,"odds":3.,"lastUpdated":"2026-11-19T12:00:00"} for n in [1,2]]+
+        [{"startNumber":3,"odds":-.02,"lastUpdated":"2026-11-19T12:00:00"}]}
+    raw=json.dumps(body).encode()
+    receipt={"status":200,"sha256":hashlib.sha256(raw).hexdigest(),
+        "url":"https://www.rikstoto.no/api/game/TEST_NR_2026-11-19/betdistribution/winodds/1",
+        "started_at":now.isoformat(),"completed_at":now.isoformat()}
+    audit=audit_market(raw,receipt,packet,now=now)
+    assert audit["active_quote_count"]==2 and audit["known_scratched_quote_selections"]==["3"]
+    assert audit["qualified_combination_allowed"] is False
+    assert any(e.startswith("PROVIDER_CLOCK_NAIVE") for e in audit["errors"])
+
+
+def test_pre_required_and_entire_chain_checked_before_post(pricing_case, tmp_path):
+    from hbi.v2_limited_research import require_registered_pre
+    raw,sha,_,_,_,_=pricing_case;frozen=json.loads(raw);ledger=tmp_path/"journal.csv"
+    with pytest.raises(ValueError,match="PRE_MISSING"):
+        require_registered_pre(ledger,raw,sha)
+    payload={"record_type":"LIMITED_RESEARCH_FORECAST","race_id":frozen["race_id"],
+        "fundamental_freeze_sha256":sha,"conditional_fundamental_p":frozen["conditional_fundamental_p"],
+        "frozen_at_utc":frozen["frozen_at_utc"]}
+    append_research_ledger(ledger,"PRE",payload)
+    append_research_ledger(ledger,"OTHER",{"x":1})
+    assert require_registered_pre(ledger,raw,sha)==frozen
+    ledger.write_text(ledger.read_text().replace('""x"": 1','""x"": 2'))
+    with pytest.raises(ValueError,match="TAMPERED"):
+        require_registered_pre(ledger,raw,sha)
+
+
+def test_manual_source_command_verifies_bytes_and_never_overwrites(tmp_path):
+    from hbi.v2_source_recovery import main
+    raw,receipt,roster=source()
+    paths={}
+    for name,body in {"state":empty(),"roster":{"result":{"1":roster}},"receipt":receipt}.items():
+        paths[name]=tmp_path/(name+".json");paths[name].write_text(json.dumps(body))
+    result=tmp_path/"original.raw";result.write_bytes(raw)
+    bundle=tmp_path/"sources.json";bundle.write_text(json.dumps({"races":[{
+        "race_id":"RIKSTOTO:TEST_NR_2024-01-01:1","race_number":1,"country":"NO",
+        "roster_file":str(paths["roster"]),"roster_sha256":hashlib.sha256(paths["roster"].read_bytes()).hexdigest(),
+        "candidates":[{"raw_file":str(result),"receipt_file":str(paths["receipt"])}]}]}))
+    args=["--state",str(paths["state"]),"--state-sha256",hashlib.sha256(paths["state"].read_bytes()).hexdigest(),
+        "--source-bundle",str(bundle),"--workspace",str(tmp_path),"--output",str(tmp_path/"next")]
+    assert main(args)==0
+    receipt2=json.loads((tmp_path/"next/receipt.json").read_bytes())
+    assert receipt2["new_fields"]==1 and receipt2["PIT_CERTIFIED"] is False
+    assert receipt2["MANUAL_EXECUTION_ONLY"] is True
+    with pytest.raises(ValueError,match="OUTPUT_EXISTS"):
+        main(args)
