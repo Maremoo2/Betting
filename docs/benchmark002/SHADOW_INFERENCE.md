@@ -53,3 +53,63 @@ Complete artifacts and source receipts are preserved in the local P1-014 output.
 There is no scheduler, database writer, stake, BET authority, automatic promotion,
 deployment or production adoption in this module. Terminal-price calibration
 cannot be transferred to T−4 prices by assertion.
+
+## Integrated manual command: `hbi daily-v2` (P1-019B)
+
+The command is registered in the existing HBI CLI. It reads existing Collector
+originals through `collector_handoff.OriginalArchive`, verifies the physical PDF
+field and calendar clock, and joins the roster to `v2_feature_state` by native
+registration. It never creates a database, schedules a job, retrains a model or
+replaces an existing output directory.
+
+The original trained 2024-fold artifact is bundled at
+`src/hbi/artifacts/challenger_v2_2024.json`, SHA-256
+`cbb9ca7c13032eafc6e639f832f49e2e4cebab0969f501b8170eb62c8853bcf8`.
+All nine features and coefficients and the original market/fundamental weights
+are read unchanged. An alternate `--artifact` must have the same pinned bytes.
+Research dependencies are available with the existing `[dev]` extra; CLI help
+does not require NumPy. For an isolated source checkout, put its `src` directory
+on `PYTHONPATH` and use `python -m hbi.cli daily-v2`.
+
+```text
+hbi daily-v2 --race-id RIKSTOTO:BI_NR_2026-11-20:5
+  --collector-root ORIGINAL_COLLECTOR_DIRECTORY_OR_ZIP
+  --state EXISTING_FEATURE_STATE.json --state-sha256 EXISTING_SHA256
+  --output NEW_DIRECTORY
+```
+
+Join the command onto one line. Collector originals must include verified request
+records for the raw starts, original program PDF and raw NO/SE calendar metadata.
+Request capture times, race identities, hashes and the frozen T−4 boundary are
+checked. Unsupported countries, composites, conflicting clocks, unknown input
+histories and incomplete active fields stop inference. Full-field output retains
+every verified active runner and both runner-specific and race-level blockers.
+The command rechecks real time after source loading and clock measurement.
+
+Output is `report.json` and `full_field.csv`. Exit 2 means BLOCKED; no model freeze
+or market operation is claimed successful. Current input gaps and the existing
+canonical `V2_LIVE_STATE_ADAPTER_NOT_ATTESTED` gate remain effective. A supplied
+`PIT_CERTIFIED=true` or `FULL_F3_COVERAGE=true` state cannot authorize a forecast.
+`--market-cache` is a lazy existing Collector/Phase-B route: no WIN request occurs
+before a canonical PIT-approved freeze; provider timestamps and full-field market
+checks must then pass. There is currently no qualified live V2 source adapter,
+so this route remains blocked. No new attestation authority is introduced here.
+
+Two explicit non-qualified diagnostic modes are supported:
+
+- `--parity-packet FILE --parity-packet-sha256 SHA`: one existing historical
+  market-free packet, labelled RETROSPECTIVE_PARITY. It cannot read current
+  Collector/state/market inputs. Fundamental p(win) and fair odds are shown;
+  there are no combined probabilities, EV or actionable signals.
+- `--limited-protocol FILE`: opt in to the already defined
+  `V2_OBSERVED_GAP_RESEARCH_V1`. All active horses must still have its required
+  observed history/time/prize and source references. Only separately labelled
+  conditional probabilities/fair odds are populated. PIT remains false, global
+  blockers remain visible and WIN/EV stay disabled.
+
+The real Biri 5 source example lists twelve active horses and reports the two
+missing clean-time histories without dropping either horse or inventing p(win).
+The authentic Bjerke 2024 parity fixture is preserved under
+`tests/fixtures/trained_v2_2024_{packet,expected}.json`; it is copied from P1-014,
+not regenerated or fitted. These examples are local implementation checks,
+not a repeat of the 5,274-race benchmark or evidence of live betting readiness.

@@ -1,0 +1,4 @@
+# Preserve imported, SHA-pinned research artifacts exactly across platforms.
+src/hbi/artifacts/challenger_v2_2024.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+tests/fixtures/trained_v2_2024_packet.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+tests/fixtures/trained_v2_2024_expected.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
