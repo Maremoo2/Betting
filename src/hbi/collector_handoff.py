@@ -9,6 +9,7 @@ import argparse
 import hashlib
 import json
 import math
+import os
 import re
 import sqlite3
 import unicodedata
@@ -668,6 +669,50 @@ def evaluate_shadow_v33(handoff: dict, v33_case: dict | None = None) -> dict:
 
 
 
+
+def append_shadow_events(log_path: Path, events: list[dict]) -> list[str]:
+    """Optional append-only Shadow transport log with immediate byte readback.
+
+    The caller chooses an isolated research path; importing without --shadow-log
+    never writes to a production log or triggers a betting workflow.
+    """
+    log_path = Path(log_path)
+    if log_path.is_symlink() or (log_path.exists() and not log_path.is_file()):
+        raise ValueError("SHADOW_LOG_PATH_UNSAFE")
+    if not log_path.parent.is_dir():
+        raise ValueError("SHADOW_LOG_PARENT_MISSING")
+    encoded = [
+        (json.dumps(event, sort_keys=True, ensure_ascii=False, allow_nan=False)
+         + "\\n").encode("utf-8") for event in events
+    ]
+    hashes = [sha(raw) for raw in encoded]
+    if not encoded:
+        return []
+    flags = os.O_WRONLY | os.O_APPEND | os.O_CREAT
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    fd = os.open(log_path, flags, 0o600)
+    try:
+        for payload in encoded:
+            written = 0
+            while written < len(payload):
+                count = os.write(fd, payload[written:])
+                if count <= 0:
+                    raise OSError("SHADOW_APPEND_INCOMPLETE")
+                written += count
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+    # Verify the exact tail without rewriting or truncating previous events.
+    with log_path.open("rb") as stream:
+        stream.seek(-sum(map(len, encoded)), os.SEEK_END)
+        observed = stream.read()
+    if observed != b"".join(encoded):
+        raise ValueError("SHADOW_APPEND_READBACK_MISMATCH")
+    return hashes
+
+
+
 def write_research_model_report(
     conn: sqlite3.Connection, *, handoff: dict, shadow_path: Path,
     source_db: Path, source_report: Path, destination: Path,
@@ -822,7 +867,8 @@ def write_research_model_report(
 
 
 def run_import(db: Path, root: Path, provenance: Path, source_report: Path,
-               out: Path, *, asof: datetime | None = None) -> dict:
+               out: Path, *, asof: datetime | None = None,
+               shadow_log: Path | None = None) -> dict:
     """Write only to the existing isolated CORE-003 SQLite, never hbi-state."""
     source = json.loads(source_report.read_text(encoding="utf-8"))
     ids = source.get("races_in_fixed_cohort")
@@ -878,6 +924,16 @@ def run_import(db: Path, root: Path, provenance: Path, source_report: Path,
     }
     out.write_text(json.dumps(output, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
                    encoding="utf-8")
+    if shadow_log is not None:
+        output["shadow_event_sha256"] = append_shadow_events(
+            shadow_log, output["shadow_records"]
+        )
+        persisted = json.loads(out.read_text(encoding="utf-8"))
+        persisted["shadow_event_sha256"] = output["shadow_event_sha256"]
+        out.write_text(
+            json.dumps(persisted, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     return output
 
 
@@ -888,10 +944,11 @@ def main() -> None:
     parser.add_argument("--collector-provenance", type=Path, required=True)
     parser.add_argument("--source-report", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--shadow-log", type=Path)
     args = parser.parse_args()
     result = run_import(
         args.db, args.collector_root, args.collector_provenance,
-        args.source_report, args.out
+        args.source_report, args.out, shadow_log=args.shadow_log
     )
     print(json.dumps({
         "total": len(result["records"]),
