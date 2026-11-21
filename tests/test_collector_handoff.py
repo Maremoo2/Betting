@@ -673,3 +673,51 @@ def test_shadow_source_envelope_never_promotes_research_to_bet(tmp_path):
     assert len(output["runners"]) == len(NAMES)
     assert output["source_evidence"]["collector_starts_sha256"]
     assert "COLLECTOR_TMP_IDENTITY_NOT_ADMITTED" in output["blockers"]
+
+
+def test_collector_shadow_output_exists_when_original_archive_missing(tmp_path):
+    from hbi.collector_handoff import run_import
+
+    db = tmp_path / "hbi.sqlite"
+    _db(db)
+    src = tmp_path / "source.json"
+    src.write_text(json.dumps({"races_in_fixed_cohort": [RID]}))
+    out = run_import(
+        db, tmp_path / "missing", tmp_path / "missing-provenance.json",
+        src, tmp_path / "handoff.json", asof=NOW,
+    )
+    assert len(out["shadow_records"]) == 1
+    status = out["shadow_records"][0]
+    assert status["source_status"] == "DATA_BLOCKED"
+    assert status["engine_status"] == "NOT_RUN"
+    assert status["engine_blocker"] == "V33_COMPLETE_PRE_RACE_CASE_MISSING"
+    assert status["bet_authority"] is False
+    assert status["p_win"] is None and status["ev"] is None
+
+
+def test_shadow_v33_routes_only_verified_cases_through_frozen_evaluator():
+    from hbi.collector_handoff import evaluate_shadow_v33
+
+    race = {
+        "race_id": RID, "source_imported_to_sqlite": True,
+        "model_input_approved": False, "independent_identity_attested": False,
+        "pit_certified": False,
+        "runners": [{"start_number": 1, "horse_name": "Test", "scratched": False}],
+    }
+    incomplete_case = {"race_id": RID, "active_field": ["1"]}
+    blocked = evaluate_shadow_v33(race, incomplete_case)
+    assert blocked["engine_status"] == "NOT_RUN"
+    assert blocked["engine_blocker"] == "V33_SOURCE_IDENTITY_OR_PIT_GATE_NOT_ATTESTED"
+    assert blocked["bet_authority"] is False
+    # Synthetic software-only gate case: even a claimed verified source cannot
+    # bypass the real V3.3 evaluator's missing PIT/market/FFQ requirements.
+    race.update(
+        model_input_approved=True,
+        independent_identity_attested=True,
+        pit_certified=True,
+    )
+    rejected = evaluate_shadow_v33(race, incomplete_case)
+    assert rejected["engine_status"] == "REJECTED"
+    assert rejected["engine_blocker"].startswith("V33_INPUT_REJECTED:")
+    assert rejected["bet_authority"] is False
+    assert rejected["p_win"] is None and rejected["ev"] is None
