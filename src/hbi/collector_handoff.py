@@ -331,7 +331,54 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
             raise ValueError("COLLECTOR_" + (error or "INVALID_FIELD"))
         pdf_clock = pdf_field(pdf_raw, number, original["all"], manifest["date_oslo"])
         if parse_time(pdf_clock) != scheduled:
-            raise ValueError("COLLECTOR_PDF_START_CLOCK_CONFLICT")
+            # A physical program can predate a legitimate postponement.
+            # Accept original roster archival only when *both* scheduled
+            # clocks were observed by asof for this exact canonical race.
+            # Never promote this to PIT/model/BET approval: schedule
+            # observations are not evidence of the actual starting gun.
+            observations = []
+            if conn.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' "
+                "AND name='race_schedule_observations'"
+            ).fetchone():
+                observations = conn.execute(
+                    "SELECT observed_at_utc,normalized_start_utc,"
+                    "source_grade,source_body_sha256,pit_verified "
+                    "FROM race_schedule_observations WHERE race_id=? "
+                    "ORDER BY observed_at_utc", (race_id,)
+                ).fetchall()
+            prior = [
+                row for row in observations
+                if parse_time(row["observed_at_utc"]) is not None
+                and parse_time(row["observed_at_utc"]) <= asof
+            ]
+            original_seen = any(
+                parse_time(row["normalized_start_utc"]) == parse_time(pdf_clock)
+                for row in prior
+            )
+            revised_seen = any(
+                parse_time(row["normalized_start_utc"]) == scheduled
+                for row in prior
+            )
+            if not (original_seen and revised_seen):
+                raise ValueError("COLLECTOR_PDF_START_CLOCK_CONFLICT")
+            response["start_time_evidence"] = {
+                "original_pdf_start_utc": pdf_clock,
+                "registered_start_utc": scheduled.isoformat(),
+                "asof_utc": asof.isoformat(),
+                "revisions": [
+                    {
+                        "observed_at_utc": row["observed_at_utc"],
+                        "normalized_start_utc": row["normalized_start_utc"],
+                        "source_grade": row["source_grade"],
+                        "source_body_sha256": row["source_body_sha256"],
+                        "pit_verified": bool(row["pit_verified"]),
+                    }
+                    for row in prior
+                ],
+                "actual_start_verified": False,
+            }
+            blocks.add("COLLECTOR_START_REVISION_REQUIRES_PIT_ATTESTATION")
         response["model_input_sources"] = {
             "collector_starts_sha256": sha(start_raw),
             "collector_program_pdf_sha256": sha(pdf_raw),
