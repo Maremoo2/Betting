@@ -652,3 +652,24 @@ def test_revised_start_requires_two_pre_asof_observations(tmp_path, revision_aft
             evidence = result["start_time_evidence"]
             assert evidence["actual_start_verified"] is False
             assert len(evidence["revisions"]) == 2
+
+
+def test_shadow_source_envelope_never_promotes_research_to_bet(tmp_path):
+    from hbi.collector_handoff import shadow_source_envelope
+
+    root = _archive_unicode(tmp_path / "collector")
+    db = tmp_path / "hbi.sqlite"
+    _db(db)
+    with _connection(db) as conn:
+        handoff = verify_import(
+            conn, OriginalArchive(root), RID, asof=NOW, authenticated=True
+        )
+    output = shadow_source_envelope(handoff)
+    assert output["source_status"] == "SOURCE_READY"
+    assert output["fundamental_status"] == "NEEDS_VERIFIED_HISTORY"
+    assert output["decision"] == "BLOCKED"
+    assert output["bet_authority"] is False
+    assert output["p_win"] is None and output["ev"] is None
+    assert len(output["runners"]) == len(NAMES)
+    assert output["source_evidence"]["collector_starts_sha256"]
+    assert "COLLECTOR_TMP_IDENTITY_NOT_ADMITTED" in output["blockers"]
