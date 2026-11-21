@@ -9,6 +9,7 @@ import argparse
 import hashlib
 import json
 import math
+import os
 import re
 import sqlite3
 import unicodedata
@@ -331,7 +332,54 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
             raise ValueError("COLLECTOR_" + (error or "INVALID_FIELD"))
         pdf_clock = pdf_field(pdf_raw, number, original["all"], manifest["date_oslo"])
         if parse_time(pdf_clock) != scheduled:
-            raise ValueError("COLLECTOR_PDF_START_CLOCK_CONFLICT")
+            # A physical program can predate a legitimate postponement.
+            # Accept original roster archival only when *both* scheduled
+            # clocks were observed by asof for this exact canonical race.
+            # Never promote this to PIT/model/BET approval: schedule
+            # observations are not evidence of the actual starting gun.
+            observations = []
+            if conn.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' "
+                "AND name='race_schedule_observations'"
+            ).fetchone():
+                observations = conn.execute(
+                    "SELECT observed_at_utc,normalized_start_utc,"
+                    "source_grade,source_body_sha256,pit_verified "
+                    "FROM race_schedule_observations WHERE race_id=? "
+                    "ORDER BY observed_at_utc", (race_id,)
+                ).fetchall()
+            prior = [
+                row for row in observations
+                if parse_time(row["observed_at_utc"]) is not None
+                and parse_time(row["observed_at_utc"]) <= asof
+            ]
+            original_seen = any(
+                parse_time(row["normalized_start_utc"]) == parse_time(pdf_clock)
+                for row in prior
+            )
+            revised_seen = any(
+                parse_time(row["normalized_start_utc"]) == scheduled
+                for row in prior
+            )
+            if not (original_seen and revised_seen):
+                raise ValueError("COLLECTOR_PDF_START_CLOCK_CONFLICT")
+            response["start_time_evidence"] = {
+                "original_pdf_start_utc": pdf_clock,
+                "registered_start_utc": scheduled.isoformat(),
+                "asof_utc": asof.isoformat(),
+                "revisions": [
+                    {
+                        "observed_at_utc": row["observed_at_utc"],
+                        "normalized_start_utc": row["normalized_start_utc"],
+                        "source_grade": row["source_grade"],
+                        "source_body_sha256": row["source_body_sha256"],
+                        "pit_verified": bool(row["pit_verified"]),
+                    }
+                    for row in prior
+                ],
+                "actual_start_verified": False,
+            }
+            blocks.add("COLLECTOR_START_REVISION_REQUIRES_PIT_ATTESTATION")
         response["model_input_sources"] = {
             "collector_starts_sha256": sha(start_raw),
             "collector_program_pdf_sha256": sha(pdf_raw),
@@ -349,6 +397,18 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
              )}
             for k, v in sorted(original["all"].items(), key=lambda item: int(item[0]))
         ]
+        # Immutable evidence is importable even when the independent ATG
+        # identity join is blocked. No prior row can be silently ignored.
+        imported, import_id = _persist_original_roster(
+            conn, race_id=race_id, raceday_key=key, race_number=number,
+            observed_at=start_receipt["at_utc"], source_uri=start_receipt["url"],
+            original_field=response["runners"],
+            source_checksums=response["model_input_sources"],
+        )
+        response["source_imported_to_sqlite"] = imported
+        response["import_payload_id"] = import_id
+        response["import_record_verified"] = imported
+
         # The archived ORIGINAL is the source input. Validate against the current
         # live roster and its retained /starts versions before admitting it.
         current = conn.execute(
@@ -500,17 +560,6 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
         reg = [v["reg"] for v in original["all"].values()]
         if len(reg) != len(set(reg)):
             blocks.add("COLLECTOR_REGISTRATION_COLLISION")
-        # Immutable evidence is importable even when the independent ATG
-        # identity join is blocked. No prior row can be silently ignored.
-        imported, import_id = _persist_original_roster(
-            conn, race_id=race_id, raceday_key=key, race_number=number,
-            observed_at=start_receipt["at_utc"], source_uri=start_receipt["url"],
-            original_field=response["runners"],
-            source_checksums=response["model_input_sources"],
-        )
-        response["source_imported_to_sqlite"] = imported
-        response["import_payload_id"] = import_id
-        response["import_record_verified"] = imported
         strict_only = {"IDENTITY_CROSS_PROVIDER_NOT_ATTESTED", "COLLECTOR_TMP_IDENTITY_NOT_ADMITTED"}
         if (
             imported and ok
@@ -536,6 +585,132 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
                    else "COLLECTOR_SOURCE_VALIDATION_ERROR")
     response["blockers"] = sorted(blocks)
     return response
+
+
+
+
+def shadow_source_envelope(handoff: dict) -> dict:
+    """Read-only source-status transport, never a V3.3 betting decision.
+
+    Deliberately does not invent probabilities, prices, EV or BET/WATCH/PASS.
+    A source report is not a completed fundamental or betting assessment.
+    """
+    imported = handoff.get("source_imported_to_sqlite") is True
+    model_ready = handoff.get("model_input_approved") is True
+    blockers = sorted(set(handoff.get("blockers") or []))
+    return {
+        "schema": "BETTING_PREWATCH_SHADOW_SOURCE_V1",
+        "race_id": handoff.get("race_id"),
+        "runners": handoff.get("runners") or [],
+        "source_status": "SOURCE_READY" if imported else "DATA_BLOCKED",
+        "fundamental_status": (
+            "MODEL_INPUT_READY" if model_ready else "NEEDS_VERIFIED_HISTORY"
+        ),
+        "market_status": "MARKET_PENDING",
+        "model_calibration": "NOT_ATTESTED",
+        "p_win": None,
+        "ev": None,
+        "decision": "BLOCKED",
+        "bet_authority": False,
+        "pit_certified": False,
+        "source_evidence": handoff.get("model_input_sources") or {},
+        "start_time_evidence": handoff.get("start_time_evidence"),
+        "blockers": blockers,
+    }
+
+
+
+
+def evaluate_shadow_v33(handoff: dict, v33_case: dict | None = None) -> dict:
+    """Route qualified research inputs through the EXISTING frozen V3.3 engine.
+
+    Archived Collector input alone cannot yield model probabilities or EV.
+    No positive V3.3 review is treated as wager authorization here.
+    """
+    report = shadow_source_envelope(handoff)
+    report["betting_engine"] = "betting.v33.evaluate"
+    report["engine_status"] = "NOT_RUN"
+    report["v33_policy_hash"] = None
+    if not isinstance(v33_case, dict):
+        report["engine_blocker"] = "V33_COMPLETE_PRE_RACE_CASE_MISSING"
+        return report
+    if not (
+        handoff.get("source_imported_to_sqlite") is True
+        and handoff.get("model_input_approved") is True
+        and handoff.get("independent_identity_attested") is True
+        and handoff.get("pit_certified") is True
+    ):
+        report["engine_blocker"] = "V33_SOURCE_IDENTITY_OR_PIT_GATE_NOT_ATTESTED"
+        return report
+    original = {
+        str(r["start_number"]) for r in handoff.get("runners", [])
+        if r.get("scratched") is False
+    }
+    if (
+        not original or set(v33_case.get("active_field", [])) != original
+        or v33_case.get("race_id") != handoff.get("race_id")
+    ):
+        report["engine_blocker"] = "V33_ORIGINAL_ACTIVE_FIELD_MISMATCH"
+        return report
+    # All model/market/FFQ-1 checks and probability calculations remain
+    # exclusively inside the existing Betting V3.3 engine.
+    from betting.v33 import POLICY_HASH, evaluate
+    report["v33_policy_hash"] = POLICY_HASH
+    try:
+        reviewed = evaluate(v33_case)
+    except (ValueError, KeyError, TypeError, AttributeError) as exc:
+        report["engine_status"] = "REJECTED"
+        report["engine_blocker"] = "V33_INPUT_REJECTED:" + str(exc)
+        return report
+    report["engine_status"] = "EVALUATED_RESEARCH_ONLY"
+    report["v33_review"] = reviewed
+    report["decision"] = "SHADOW_ONLY"
+    report["bet_authority"] = False
+    return report
+
+
+
+
+def append_shadow_events(log_path: Path, events: list[dict]) -> list[str]:
+    """Optional append-only Shadow transport log with immediate byte readback.
+
+    The caller chooses an isolated research path; importing without --shadow-log
+    never writes to a production log or triggers a betting workflow.
+    """
+    log_path = Path(log_path)
+    if log_path.is_symlink() or (log_path.exists() and not log_path.is_file()):
+        raise ValueError("SHADOW_LOG_PATH_UNSAFE")
+    if not log_path.parent.is_dir():
+        raise ValueError("SHADOW_LOG_PARENT_MISSING")
+    encoded = [
+        (json.dumps(event, sort_keys=True, ensure_ascii=False, allow_nan=False)
+         + "\n").encode("utf-8") for event in events
+    ]
+    hashes = [sha(raw) for raw in encoded]
+    if not encoded:
+        return []
+    flags = os.O_WRONLY | os.O_APPEND | os.O_CREAT | getattr(os, "O_BINARY", 0)
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    fd = os.open(log_path, flags, 0o600)
+    try:
+        for payload in encoded:
+            written = 0
+            while written < len(payload):
+                count = os.write(fd, payload[written:])
+                if count <= 0:
+                    raise OSError("SHADOW_APPEND_INCOMPLETE")
+                written += count
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+    # Verify the exact tail without rewriting or truncating previous events.
+    with log_path.open("rb") as stream:
+        stream.seek(-sum(map(len, encoded)), os.SEEK_END)
+        observed = stream.read()
+    if observed != b"".join(encoded):
+        raise ValueError("SHADOW_APPEND_READBACK_MISMATCH")
+    return hashes
 
 
 
@@ -693,7 +868,8 @@ def write_research_model_report(
 
 
 def run_import(db: Path, root: Path, provenance: Path, source_report: Path,
-               out: Path, *, asof: datetime | None = None) -> dict:
+               out: Path, *, asof: datetime | None = None,
+               shadow_log: Path | None = None) -> dict:
     """Write only to the existing isolated CORE-003 SQLite, never hbi-state."""
     source = json.loads(source_report.read_text(encoding="utf-8"))
     ids = source.get("races_in_fixed_cohort")
@@ -744,10 +920,21 @@ def run_import(db: Path, root: Path, provenance: Path, source_report: Path,
         "schema": SCHEMA, "as_of_utc": when.astimezone(UTC).isoformat(),
         "source_report_sha256": sha(source_report.read_bytes()),
         "collector_archive_required": True, "records": records,
+        "shadow_records": [evaluate_shadow_v33(record) for record in records],
         "bet_authority": False, "pit_certified": False,
     }
     out.write_text(json.dumps(output, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
                    encoding="utf-8")
+    if shadow_log is not None:
+        output["shadow_event_sha256"] = append_shadow_events(
+            shadow_log, output["shadow_records"]
+        )
+        persisted = json.loads(out.read_text(encoding="utf-8"))
+        persisted["shadow_event_sha256"] = output["shadow_event_sha256"]
+        out.write_text(
+            json.dumps(persisted, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     return output
 
 
@@ -758,10 +945,11 @@ def main() -> None:
     parser.add_argument("--collector-provenance", type=Path, required=True)
     parser.add_argument("--source-report", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--shadow-log", type=Path)
     args = parser.parse_args()
     result = run_import(
         args.db, args.collector_root, args.collector_provenance,
-        args.source_report, args.out
+        args.source_report, args.out, shadow_log=args.shadow_log
     )
     print(json.dumps({
         "total": len(result["records"]),
