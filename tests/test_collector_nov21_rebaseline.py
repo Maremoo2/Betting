@@ -207,7 +207,7 @@ def test_real_day_inventory_to_prewatch_including_every_blocked_race(tmp_path):
         day="2026-11-21", decision_time=ASOF.isoformat(), out=destination,
     )
     assert report["counts"]["discovered"] == report["counts"]["terminal"] == 43
-    assert report["counts"]["source_ready"] == 4
+    assert report["counts"]["source_ready"] == 29
     assert report["counts"]["fully_assessed"] == 0
     assert report["counts"]["prospective_predictions"] == 0
     assert len({r["race_id"] for r in report["races"]}) == 43
@@ -215,6 +215,12 @@ def test_real_day_inventory_to_prewatch_including_every_blocked_race(tmp_path):
         row["race_id"] for row in report["races"] if row["source_status"] == "SOURCE_READY"
     }
     assert all(not r["bet_authorized"] and r["probabilities"] is None for r in report["races"])
+    missing_model = next(r for r in report["races"] if r["race_id"] == RACE_PREFIX + "7")
+    assert missing_model["source_record"]["source_imported_to_sqlite"] is True
+    assert missing_model["source_record"]["model_input_approved"] is False
+    assert missing_model["source_record"]["research_model_eligible"] is False
+    assert "MODEL_SOURCE_COHORT_NOT_FOUND" in missing_model["blockers"]
+    assert missing_model["terminal_status"] == "MODEL_BLOCKED"
     assert sha(files["db"].read_bytes()) == SOURCE_DB_SHA
     assert report == json.loads((destination / "prewatch-day.json").read_bytes())
     assert report == run_day(

@@ -397,6 +397,18 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
              )}
             for k, v in sorted(original["all"].items(), key=lambda item: int(item[0]))
         ]
+        # Immutable evidence is importable even when the independent ATG
+        # identity join is blocked. No prior row can be silently ignored.
+        imported, import_id = _persist_original_roster(
+            conn, race_id=race_id, raceday_key=key, race_number=number,
+            observed_at=start_receipt["at_utc"], source_uri=start_receipt["url"],
+            original_field=response["runners"],
+            source_checksums=response["model_input_sources"],
+        )
+        response["source_imported_to_sqlite"] = imported
+        response["import_payload_id"] = import_id
+        response["import_record_verified"] = imported
+
         # The archived ORIGINAL is the source input. Validate against the current
         # live roster and its retained /starts versions before admitting it.
         current = conn.execute(
@@ -548,17 +560,6 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
         reg = [v["reg"] for v in original["all"].values()]
         if len(reg) != len(set(reg)):
             blocks.add("COLLECTOR_REGISTRATION_COLLISION")
-        # Immutable evidence is importable even when the independent ATG
-        # identity join is blocked. No prior row can be silently ignored.
-        imported, import_id = _persist_original_roster(
-            conn, race_id=race_id, raceday_key=key, race_number=number,
-            observed_at=start_receipt["at_utc"], source_uri=start_receipt["url"],
-            original_field=response["runners"],
-            source_checksums=response["model_input_sources"],
-        )
-        response["source_imported_to_sqlite"] = imported
-        response["import_payload_id"] = import_id
-        response["import_record_verified"] = imported
         strict_only = {"IDENTITY_CROSS_PROVIDER_NOT_ATTESTED", "COLLECTOR_TMP_IDENTITY_NOT_ADMITTED"}
         if (
             imported and ok

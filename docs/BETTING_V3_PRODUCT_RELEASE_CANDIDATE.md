@@ -20,6 +20,14 @@ Every observation contains the original source report, hashes, start revisions w
 verified, active field, model/market blockers and terminal transport status.
 An explained terminal block is never counted as an assessed betting opportunity.
 
+An authenticated original roster is now persisted before optional model-cohort
+lookups. Previously MODEL_SOURCE_COHORT_NOT_FOUND aborted before original archival,
+even after PDF/startlist/hash/day checks had succeeded. On the identical 21 Nov
+snapshot, 25 additional diagnostic original rows survive this failure: source
+readback goes from 4 to 29 races. Missing SQLite model fields/cohorts still block
+research/model admission. No runner, history, identity or prediction is invented;
+only ORIGINAL_PROGRAM_ROSTER_V1 provenance rows are appended.
+
 ```sh
 python -m hbi.prewatch_shadow_handoff \
   --day YYYY-MM-DD --decision-time TIMEZONE_AWARE_ORIGINAL_ASOF \
