@@ -331,7 +331,44 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
             raise ValueError("COLLECTOR_" + (error or "INVALID_FIELD"))
         pdf_clock = pdf_field(pdf_raw, number, original["all"], manifest["date_oslo"])
         if parse_time(pdf_clock) != scheduled:
-            raise ValueError("COLLECTOR_PDF_START_CLOCK_CONFLICT")
+            # Documented schedule revisions must not erase the physical PDF
+            # clock. They may be imported as source evidence, never used to
+            # infer an actual off-time or to certify a pre-start prediction.
+            observations = conn.execute(
+                "SELECT observed_at_utc,normalized_start_utc,source_grade,"
+                "source_body_sha256,pit_verified "
+                "FROM race_schedule_observations WHERE race_id=? "
+                "ORDER BY observed_at_utc", (race_id,)
+            ).fetchall()
+            visible = [
+                row for row in observations
+                if parse_time(row["observed_at_utc"]) is not None
+                and parse_time(row["observed_at_utc"]) <= asof
+            ]
+            original_seen = any(
+                parse_time(row["normalized_start_utc"]) == parse_time(pdf_clock)
+                for row in visible
+            )
+            revised_seen = any(
+                parse_time(row["normalized_start_utc"]) == scheduled
+                for row in visible
+            )
+            response["start_time_evidence"] = {
+                "original_pdf_start_utc": pdf_clock,
+                "revised_scheduled_start_utc": scheduled.isoformat(),
+                "observations_visible_at_asof": len(visible),
+                "revision_observed_at_asof": original_seen and revised_seen,
+                "revised_source_grades": [
+                    row["source_grade"] for row in visible
+                    if parse_time(row["normalized_start_utc"]) == scheduled
+                ],
+                "actual_start_verified": False,
+            }
+            blocks.add(
+                "COLLECTOR_START_REVISION_REQUIRES_PIT_ATTESTATION"
+                if original_seen and revised_seen
+                else "COLLECTOR_PDF_START_CLOCK_CONFLICT"
+            )
         response["model_input_sources"] = {
             "collector_starts_sha256": sha(start_raw),
             "collector_program_pdf_sha256": sha(pdf_raw),
