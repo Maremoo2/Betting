@@ -147,7 +147,7 @@ def main() -> None:
     args = parser.parse_args()
     source = json.loads(args.collector_report.read_text(encoding="utf-8"))
     if not isinstance(source, dict) or not isinstance(source.get("records"), list):
-        raise ValueError("EXISTING_COLLECTOR_REPORT_REQUIRED")
+        raise TypeError("EXISTING_COLLECTOR_REPORT_REQUIRED")
     events = [
         build_handoff(row, decision_time=args.decision_time)
         for row in source["records"]
