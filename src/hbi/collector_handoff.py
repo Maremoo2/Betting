@@ -683,7 +683,7 @@ def append_shadow_events(log_path: Path, events: list[dict]) -> list[str]:
         raise ValueError("SHADOW_LOG_PARENT_MISSING")
     encoded = [
         (json.dumps(event, sort_keys=True, ensure_ascii=False, allow_nan=False)
-         + "\\n").encode("utf-8") for event in events
+         + "\n").encode("utf-8") for event in events
     ]
     hashes = [sha(raw) for raw in encoded]
     if not encoded:
