@@ -208,6 +208,14 @@ def test_real_day_inventory_to_prewatch_including_every_blocked_race(tmp_path):
     )
     assert report["counts"]["discovered"] == report["counts"]["terminal"] == 43
     assert report["counts"]["source_ready"] == 29
+    assert report["counts"]["listed_horses_observed"] == 409
+    physical = [r for r in report["races"] if r["terminal_status"] != "OUT_OF_SCOPE"]
+    assert len(physical) == 39
+    assert all(len(r["archived_roster_diagnostic_only"]) >= 2 for r in physical)
+    for row in physical:
+        roster = row["archived_roster_diagnostic_only"]
+        assert len({h["start_number"] for h in roster}) == len(roster)
+        assert row["runtime_gate"]["engine_status"] == "NOT_RUN"
     assert report["counts"]["fully_assessed"] == 0
     assert report["counts"]["prospective_predictions"] == 0
     assert len({r["race_id"] for r in report["races"]}) == 43

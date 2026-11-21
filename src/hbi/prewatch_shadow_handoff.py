@@ -208,9 +208,11 @@ def run_day(*, db: Path, collector_root: Path, provenance: Path, day: str,
         OriginalArchive,
         append_shadow_events,
         evaluate_shadow_v33,
+        pdf_field,
         sha,
         verify_import,
     )
+    from .core_pit_roster_verification import parse_rikstoto_roster
     from .observatory import build_evaluation_summary
     from .storage import SQLiteStore
 
@@ -312,6 +314,40 @@ def run_day(*, db: Path, collector_root: Path, provenance: Path, day: str,
                         conn.execute("RELEASE single_race")
                         source = {"race_id": rid, "blockers": ["SYSTEM_ERROR:" + type(exc).__name__]}
                 transport = build_handoff(source, decision_time=when.isoformat())
+                archived_roster = source.get("runners") or []
+                archived_roster_hashes = source.get("model_input_sources") or {}
+                # The model gate correctly rejects a past start. Still expose
+                # independently hashed, earlier programme rows as diagnostics;
+                # never feed them back into model admission or certify PIT.
+                if (not archived_roster and archive is not None and len(parts) == 3
+                        and archive.manifest.get("date_oslo") == day
+                        and parts[1] not in composites):
+                    try:
+                        starts_receipt, starts = archive.request(parts[1], "starts", rid, when)
+                        pdf_receipt, pdf = archive.request(parts[1], "pdf", rid, when)
+                        roster, error = parse_rikstoto_roster(
+                            starts.decode("utf-8"), int(parts[2]), parts[1]
+                        )
+                        if error or roster is None:
+                            raise ValueError("ARCHIVED_ROSTER_INVALID")
+                        pdf_field(pdf, int(parts[2]), roster["all"], day)
+                        archived_roster = [
+                            {"start_number": int(sid), "horse_name": horse["name"],
+                             "scratched": horse["scratched"],
+                             "registration_number": horse["reg"]}
+                            for sid, horse in sorted(roster["all"].items(), key=lambda x: int(x[0]))
+                        ]
+                        archived_roster_hashes = {
+                            "collector_starts_sha256": sha(starts),
+                            "collector_program_pdf_sha256": sha(pdf),
+                            "collector_manifest_sha256": sha(archive.manifest_raw),
+                            "collector_starts_observed_at_utc": starts_receipt["at_utc"],
+                            "collector_pdf_observed_at_utc": pdf_receipt["at_utc"],
+                            "collector_starts_uri": starts_receipt["url"],
+                            "collector_pdf_uri": pdf_receipt["url"],
+                        }
+                    except (ValueError, TypeError, KeyError, OSError, UnicodeError):
+                        archived_roster = []
                 # Exercise the real existing gate, not a hand-written replacement.
                 # Missing independent model/case evidence must remain NOT_RUN.
                 runtime_gate = evaluate_shadow_v33(source)
@@ -333,6 +369,8 @@ def run_day(*, db: Path, collector_root: Path, provenance: Path, day: str,
                     "start_time_evidence": source.get("start_time_evidence"),
                     "source_record": source, "model_status": "MODEL_NOT_CALIBRATED",
                     "runtime_gate": runtime_gate,
+                    "archived_roster_diagnostic_only": archived_roster,
+                    "archived_roster_sources": archived_roster_hashes,
                 })
             conn.commit()
         finally:
@@ -349,6 +387,9 @@ def run_day(*, db: Path, collector_root: Path, provenance: Path, day: str,
             "counts": {"discovered": len(inventory), "terminal": len(records),
                        "source_ready": sum(r["source_status"] == "SOURCE_READY" for r in records),
                        "fully_assessed": 0, "prospective_predictions": 0,
+                       "listed_horses_observed": sum(
+                           len(r["archived_roster_diagnostic_only"]) for r in records
+                       ),
                        "by_status": dict(counts)},
             "coverage_by_country": dict(Counter(r.get("country") or "UNKNOWN" for r in records)),
             "primary_pit_measurement": measurement,
