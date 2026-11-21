@@ -37,7 +37,7 @@ jobs:
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/mvp014-nov04"
           archive="$RUNNER_TEMP/mvp014-nov04.zip"
-          gh api repos/Maremoo2/rikstoto-program-collector/actions/artifacts/13300048964/zip > "$archive"
+          python scripts/github_retry.py api repos/Maremoo2/rikstoto-program-collector/actions/artifacts/13300048964/zip > "$archive"
           printf '%s  %s\n' \
             9d045fe402348a9465734198bb56dd9a415d6b135141ac6b16c294a053a10dab \
             "$archive" | sha256sum --check -
@@ -109,7 +109,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/mvp016-empty"
-          gh run download 41796128435 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41796128435 --repo "$GITHUB_REPOSITORY" \
             --name bet-mvp-shadow-41796128435 \
             --dir "$RUNNER_TEMP/mvp016-empty"
           printf '%s  %s\n' \
@@ -162,11 +162,11 @@ jobs:
           set -euo pipefail
           root="$RUNNER_TEMP/mvp016-inventory"
           mkdir -p "$root"/{outage,healthy,false_zero}
-          gh run download 41817026855 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41817026855 --repo "$GITHUB_REPOSITORY" \
             --name dev011-coverage-manifest-41817026855 --dir "$root/outage"
-          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41814068321 --repo "$GITHUB_REPOSITORY" \
             --name dev011-coverage-manifest-41814068321 --dir "$root/healthy"
-          gh run download 41817026855 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41817026855 --repo "$GITHUB_REPOSITORY" \
             --name dev009-outcome-scorecards-41817026855 --dir "$root/false_zero"
           printf '%s  %s\n' \
             b14c61c979c656e49da382d574f3416293303e582b3b864b646df592282c4ac7 \
@@ -222,13 +222,13 @@ jobs:
           set -euo pipefail
           folder="$RUNNER_TEMP/mvp016-research"
           mkdir -p "$folder"/{scorecard,source,cohort,manifest}
-          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41814068321 --repo "$GITHUB_REPOSITORY" \
             --name dev009-outcome-scorecards-41814068321 --dir "$folder/scorecard"
-          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41814068321 --repo "$GITHUB_REPOSITORY" \
             --name core003-pilot-report-41814068321 --dir "$folder/source"
-          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41814068321 --repo "$GITHUB_REPOSITORY" \
             --name bet-mvp-shadow-41814068321 --dir "$folder/cohort"
-          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41814068321 --repo "$GITHUB_REPOSITORY" \
             --name dev011-coverage-manifest-41814068321 --dir "$folder/manifest"
           printf '%s  %s\n' \
             62b0d78ca75847d2f2bfe895af240e45eada96a7719aefe4f880c1da02cbe178 \
@@ -288,19 +288,19 @@ jobs:
           root="$RUNNER_TEMP/mvp017-health"
           for part in early outage recent; do mkdir -p "$root/$part"; done
           mkdir -p "$root/v1"
-          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41814068321 --repo "$GITHUB_REPOSITORY" \
             --name dev009-outcome-scorecards-41814068321 --dir "$root/early/score"
-          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41814068321 --repo "$GITHUB_REPOSITORY" \
             --name dev011-coverage-manifest-41814068321 --dir "$root/early/coverage"
-          gh run download 41817026855 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41817026855 --repo "$GITHUB_REPOSITORY" \
             --name dev009-outcome-scorecards-41817026855 --dir "$root/outage/score"
-          gh run download 41817026855 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41817026855 --repo "$GITHUB_REPOSITORY" \
             --name dev011-coverage-manifest-41817026855 --dir "$root/outage/coverage"
-          gh run download 41820503559 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41820503559 --repo "$GITHUB_REPOSITORY" \
             --name dev009-outcome-scorecards-41820503559 --dir "$root/recent/score"
-          gh run download 41820503559 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41820503559 --repo "$GITHUB_REPOSITORY" \
             --name dev011-coverage-manifest-41820503559 --dir "$root/recent/coverage"
-          gh run download 41820373324 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41820373324 --repo "$GITHUB_REPOSITORY" \
             --name hbi-v1-system-audit-41820373324 --dir "$root/v1"
           python - <<'PY'
           import hashlib
@@ -384,14 +384,14 @@ jobs:
           set -euo pipefail
           root="$RUNNER_TEMP/mvp018-original-scratches"
           mkdir -p "$root/scorecard"
-          gh run download 41826490000 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41826490000 --repo "$GITHUB_REPOSITORY" \
             --name dev009-outcome-scorecards-41826490000 --dir "$root/scorecard"
           printf '%s  %s\n' \
             a7cc16d026ea08e0042dc4d6c5c2d75d3212bfd5fb00203dbbbbc36455f11d2b \
             "$root/scorecard/index.json" | sha256sum --check -
           for run in 41488067799 41492573978 41499820309 41708503913; do
             mkdir -p "$root/models/$run"
-            gh run download "$run" --repo "$GITHUB_REPOSITORY" \
+            python scripts/github_retry.py run download "$run" --repo "$GITHUB_REPOSITORY" \
               --name "bet-mvp-shadow-$run" --dir "$root/models/$run"
           done
           MVP018_ORIGINAL_SCRATCH_REPLAY_ROOT="$root" \
@@ -441,7 +441,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/mvp017-original"
-          gh run download 41796128435 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41796128435 --repo "$GITHUB_REPOSITORY" \
             --name bet-mvp-shadow-41796128435 \
             --dir "$RUNNER_TEMP/mvp017-original"
           printf '%s  %s\n' \
@@ -504,14 +504,14 @@ jobs:
           set -euo pipefail
           root="$RUNNER_TEMP/mvp018-freeze"
           mkdir -p "$root/scorecard"
-          gh run download 41826490000 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41826490000 --repo "$GITHUB_REPOSITORY" \
             --name dev009-outcome-scorecards-41826490000 --dir "$root/scorecard"
           printf '%s  %s\n' \
             a7cc16d026ea08e0042dc4d6c5c2d75d3212bfd5fb00203dbbbbc36455f11d2b \
             "$root/scorecard/index.json" | sha256sum --check -
           for run in 41689647527 41710594697 41665938596 41826490000 41811192493; do
             mkdir -p "$root/run-$run"
-            gh run download "$run" --repo "$GITHUB_REPOSITORY" \
+            python scripts/github_retry.py run download "$run" --repo "$GITHUB_REPOSITORY" \
               --name "bet-mvp-shadow-$run" --dir "$root/run-$run"
           done
           python - <<'PY'
@@ -577,13 +577,13 @@ jobs:
           set -euo pipefail
           root="$RUNNER_TEMP/mvp018-funnel"
           mkdir -p "$root"/{scorecard,source,cohort,manifest}
-          gh run download 41832416078 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41832416078 --repo "$GITHUB_REPOSITORY" \
             --name dev009-outcome-scorecards-41832416078 --dir "$root/scorecard"
-          gh run download 41832416078 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41832416078 --repo "$GITHUB_REPOSITORY" \
             --name core003-pilot-report-41832416078 --dir "$root/source"
-          gh run download 41832416078 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41832416078 --repo "$GITHUB_REPOSITORY" \
             --name bet-mvp-shadow-41832416078 --dir "$root/cohort"
-          gh run download 41832416078 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41832416078 --repo "$GITHUB_REPOSITORY" \
             --name dev011-coverage-manifest-41832416078 --dir "$root/manifest"
           printf '%s  %s\n' \
             a4a667bd596bde42b9e3dbed6d96247731067fe76f82b33ea816194fa68b5ff7 \
@@ -643,13 +643,13 @@ jobs:
           set -euo pipefail
           root="$RUNNER_TEMP/mvp019b-original"
           mkdir -p "$root"/{scorecard,source,cohort,manifest}
-          gh run download 41879063497 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41879063497 --repo "$GITHUB_REPOSITORY" \
             --name dev009-outcome-scorecards-41879063497 --dir "$root/scorecard"
-          gh run download 41879063497 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41879063497 --repo "$GITHUB_REPOSITORY" \
             --name core003-pilot-report-41879063497 --dir "$root/source"
-          gh run download 41879063497 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41879063497 --repo "$GITHUB_REPOSITORY" \
             --name bet-mvp-shadow-41879063497 --dir "$root/cohort"
-          gh run download 41879063497 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41879063497 --repo "$GITHUB_REPOSITORY" \
             --name dev011-coverage-manifest-41879063497 --dir "$root/manifest"
           printf '%s  %s\n' \
             6ec0392fd9620b41be90610b5348a019e0a9e43a975562960f8f04d2cbd61a9a \
@@ -689,7 +689,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/dev012-original"
-          gh run download 41663427015 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41663427015 --repo "$GITHUB_REPOSITORY" \
             --name pit003a-collector-evidence-41663427015 \
             --dir "$RUNNER_TEMP/dev012-original"
           HBI_DEV012_AUTHENTIC_ARCHIVE="$RUNNER_TEMP/dev012-original" \
@@ -711,13 +711,13 @@ jobs:
           mkdir -p "$RUNNER_TEMP/p0-nov21/collector" \
             "$RUNNER_TEMP/p0-nov21/sqlite" "$RUNNER_TEMP/p0-nov21/model" \
             "$RUNNER_TEMP/p0-nov21/report"
-          gh run download 44874876371 --repo Maremoo2/rikstoto-program-collector \
+          python scripts/github_retry.py run download 44874876371 --repo Maremoo2/rikstoto-program-collector \
             --name rikstoto-morning-programs --dir "$RUNNER_TEMP/p0-nov21/collector"
-          gh run download 44907636310 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 44907636310 --repo "$GITHUB_REPOSITORY" \
             --name core003-pilot-state --dir "$RUNNER_TEMP/p0-nov21/sqlite"
-          gh run download 44907636310 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 44907636310 --repo "$GITHUB_REPOSITORY" \
             --name bet-mvp-shadow-44907636310 --dir "$RUNNER_TEMP/p0-nov21/model"
-          gh run download 44907636310 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 44907636310 --repo "$GITHUB_REPOSITORY" \
             --name core003-pilot-report-44907636310 --dir "$RUNNER_TEMP/p0-nov21/report"
           printf '%s  %s\n' \
             c8d460aa6e50f5c7f63a976e70e572bd5cc7fc4148ee9bddef786dea2984b20d \
@@ -729,7 +729,19 @@ jobs:
           P0_NOV21_SQLITE="$RUNNER_TEMP/p0-nov21/sqlite/core003-pilot.sqlite" \
           P0_NOV21_FROZEN_SHADOW="$RUNNER_TEMP/p0-nov21/model/race-001/shadow.json" \
           P0_NOV21_SOURCE_REPORT="$RUNNER_TEMP/p0-nov21/report/core003-pilot-report.json" \
+          P0_PRODUCT_OUTPUT="$RUNNER_TEMP/p0-nov21/product" \
             pytest -q -s tests/test_collector_nov21_rebaseline.py
+
+      - name: Upload authenticated Pre-Watch day readback (not live betting)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3313-product-day-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/p0-nov21/product/prewatch-day.json
+            ${{ runner.temp }}/p0-nov21/product/prewatch-day.md
+          if-no-files-found: warn
+          retention-days: 30
 
       - name: Replay frozen Eskilstuna originals through automatic MVP-009 diagnostics
         if: github.event_name == 'pull_request'
@@ -740,10 +752,10 @@ jobs:
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/mvp009/bet-mvp-shadow" \
             "$RUNNER_TEMP/mvp009/pit003a-attestations"
-          gh run download 41626023709 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41626023709 --repo "$GITHUB_REPOSITORY" \
             --name bet-mvp-shadow-41626023709 \
             --dir "$RUNNER_TEMP/mvp009/bet-mvp-shadow"
-          gh run download 41626023709 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41626023709 --repo "$GITHUB_REPOSITORY" \
             --name pit003a-attestations-41626023709 \
             --dir "$RUNNER_TEMP/mvp009/pit003a-attestations"
           printf '%s  %s\n' \
@@ -794,7 +806,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/dev009/models/41646155051"
-          gh run download 41646155051 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41646155051 --repo "$GITHUB_REPOSITORY" \
             --name bet-mvp-shadow-41646155051 \
             --dir "$RUNNER_TEMP/dev009/models/41646155051"
           printf '%s  %s\n' \
@@ -853,7 +865,7 @@ jobs:
           mkdir -p "$root"
           for run in 41456642411 41459303701 41461113601 41462919513 41463276002; do
             mkdir -p "$root/$run"
-            gh run download "$run" --repo "$GITHUB_REPOSITORY" \
+            python scripts/github_retry.py run download "$run" --repo "$GITHUB_REPOSITORY" \
               --name "bet-mvp-shadow-$run" --dir "$root/$run"
           done
           MVP014_LEGACY_ORIGINALS_ROOT="$root" \
@@ -904,10 +916,10 @@ jobs:
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/dev011/models/41646155051" \
             "$RUNNER_TEMP/dev011/results/41662283155"
-          gh run download 41646155051 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41646155051 --repo "$GITHUB_REPOSITORY" \
             --name bet-mvp-shadow-41646155051 \
             --dir "$RUNNER_TEMP/dev011/models/41646155051"
-          gh run download 41662283155 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41662283155 --repo "$GITHUB_REPOSITORY" \
             --name dev009-authentic-original-scorecard-41662283155 \
             --dir "$RUNNER_TEMP/dev011/results/41662283155"
           printf '%s  %s\n' \
@@ -959,13 +971,13 @@ jobs:
           mkdir -p "$RUNNER_TEMP/dev013/models/41635474321" \
             "$RUNNER_TEMP/dev013/models/41646155051" \
             "$RUNNER_TEMP/dev013/results/41662283155"
-          gh run download 41635474321 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41635474321 --repo "$GITHUB_REPOSITORY" \
             --name bet-mvp-shadow-41635474321 \
             --dir "$RUNNER_TEMP/dev013/models/41635474321"
-          gh run download 41646155051 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41646155051 --repo "$GITHUB_REPOSITORY" \
             --name bet-mvp-shadow-41646155051 \
             --dir "$RUNNER_TEMP/dev013/models/41646155051"
-          gh run download 41662283155 --repo "$GITHUB_REPOSITORY" \
+          python scripts/github_retry.py run download 41662283155 --repo "$GITHUB_REPOSITORY" \
             --name dev009-authentic-original-scorecard-41662283155 \
             --dir "$RUNNER_TEMP/dev013/results/41662283155"
           printf '%s  %s\n' \

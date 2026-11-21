@@ -688,7 +688,7 @@ def append_shadow_events(log_path: Path, events: list[dict]) -> list[str]:
     hashes = [sha(raw) for raw in encoded]
     if not encoded:
         return []
-    flags = os.O_WRONLY | os.O_APPEND | os.O_CREAT
+    flags = os.O_WRONLY | os.O_APPEND | os.O_CREAT | getattr(os, "O_BINARY", 0)
     if hasattr(os, "O_NOFOLLOW"):
         flags |= os.O_NOFOLLOW
     fd = os.open(log_path, flags, 0o600)

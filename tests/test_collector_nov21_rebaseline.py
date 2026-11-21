@@ -23,7 +23,7 @@ from hbi.collector_handoff import (
     sha,
     verify_import,
 )
-from hbi.prewatch_shadow_handoff import build_handoff, write_once_and_readback
+from hbi.prewatch_shadow_handoff import build_handoff, run_day, write_once_and_readback
 
 SOURCE_DB_SHA = "c8d460aa6e50f5c7f63a976e70e572bd5cc7fc4148ee9bddef786dea2984b20d"
 SOURCE_REPORT_SHA = "6d1cc224c789734eb136ffe87fbe53e1864080f98a40d827e605277a8ece533e"
@@ -188,3 +188,36 @@ def test_tampered_original_archive_is_not_admitted(tmp_path):
             "S1_NR_2026-11-21", "starts", RACE_PREFIX + "4",
             datetime.fromisoformat("2026-11-21T05:00:00+00:00"),
         )
+
+
+def test_real_day_inventory_to_prewatch_including_every_blocked_race(tmp_path):
+    files = _inputs()
+    assert sha(files["db"].read_bytes()) == SOURCE_DB_SHA
+    archive = OriginalArchive(files["collector"])
+    assert sha(archive.manifest_raw) == MANIFEST_SHA
+    provenance = tmp_path / "verified-github-origin.json"
+    provenance.write_text(json.dumps({
+        "source_repository": "Maremoo2/rikstoto-program-collector",
+        "obtained_via_authenticated_gh_cli": True,
+        "event": "schedule", "conclusion": "success", "github_run_id": 44874876371,
+    }))
+    destination = Path(os.environ.get("P0_PRODUCT_OUTPUT", str(tmp_path / "product")))
+    report = run_day(
+        db=files["db"], collector_root=files["collector"], provenance=provenance,
+        day="2026-11-21", decision_time=ASOF.isoformat(), out=destination,
+    )
+    assert report["counts"]["discovered"] == report["counts"]["terminal"] == 43
+    assert report["counts"]["source_ready"] == 4
+    assert report["counts"]["fully_assessed"] == 0
+    assert report["counts"]["prospective_predictions"] == 0
+    assert len({r["race_id"] for r in report["races"]}) == 43
+    assert {RACE_PREFIX + str(n) for n in COUNTS} <= {
+        row["race_id"] for row in report["races"] if row["source_status"] == "SOURCE_READY"
+    }
+    assert all(not r["bet_authorized"] and r["probabilities"] is None for r in report["races"])
+    assert sha(files["db"].read_bytes()) == SOURCE_DB_SHA
+    assert report == json.loads((destination / "prewatch-day.json").read_bytes())
+    assert report == run_day(
+        db=files["db"], collector_root=files["collector"], provenance=provenance,
+        day="2026-11-21", decision_time=ASOF.isoformat(), out=destination,
+    )

@@ -4,7 +4,7 @@ import json
 import math
 from dataclasses import asdict, dataclass
 from datetime import UTC, date, datetime, time, timedelta
-from statistics import mean, median
+from statistics import mean, median, stdev
 from zoneinfo import ZoneInfo
 
 from .evaluation import calibration_bins, log_loss, multiclass_brier
@@ -58,6 +58,17 @@ def _mean(values: list[float]) -> float | None:
 
 def _median(values: list[float]) -> float | None:
     return None if not values else median(values)
+
+
+def metric_uncertainty(values: list[float]) -> dict:
+    """Descriptive race-level sampling error, never evidence of betting authority."""
+    n = len(values)
+    se = stdev(values) / math.sqrt(n) if n >= 2 else None
+    center = mean(values) if values else None
+    return {"physical_races": n, "mean": center, "standard_error": se,
+            "normal_approximation_95_interval": (
+                [center - 1.96 * se, center + 1.96 * se] if se is not None else None),
+            "limitation": "DESCRIPTIVE_ONLY_RACES_MAY_BE_DEPENDENT_NOT_MODEL_VALIDATION"}
 
 
 def _p95(values: list[float]) -> float | None:
@@ -577,6 +588,12 @@ def build_evaluation_summary(
     return {
         "report_date": report_date.isoformat(),
         "race_evaluations_n": len(evaluations),
+        "measurement_status": "MEASURED_NOT_CALIBRATED" if evaluations else "NO_OBSERVATIONS",
+        "prediction_error_uncertainty": {
+            key: metric_uncertainty(_metric_values(evaluations, key))
+            for key in ("fundamental_log_loss", "market_log_loss", "combined_log_loss",
+                        "fundamental_brier", "market_brier", "combined_brier")
+        },
         "evaluation_population": population,
         "primary_prospective_evaluations_n": len(evaluations) if population == PRIMARY_PIT_QUALIFIED else 0,
         "legacy_uncertified_evaluations_n": sum(
