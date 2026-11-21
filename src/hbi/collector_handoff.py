@@ -586,6 +586,38 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
 
 
 
+
+def shadow_source_envelope(handoff: dict) -> dict:
+    """Read-only source-status transport, never a V3.3 betting decision.
+
+    Deliberately does not invent probabilities, prices, EV or BET/WATCH/PASS.
+    A source report is not a completed fundamental or betting assessment.
+    """
+    imported = handoff.get("source_imported_to_sqlite") is True
+    model_ready = handoff.get("model_input_approved") is True
+    blockers = sorted(set(handoff.get("blockers") or []))
+    return {
+        "schema": "BETTING_PREWATCH_SHADOW_SOURCE_V1",
+        "race_id": handoff.get("race_id"),
+        "runners": handoff.get("runners") or [],
+        "source_status": "SOURCE_READY" if imported else "DATA_BLOCKED",
+        "fundamental_status": (
+            "MODEL_INPUT_READY" if model_ready else "NEEDS_VERIFIED_HISTORY"
+        ),
+        "market_status": "MARKET_PENDING",
+        "model_calibration": "NOT_ATTESTED",
+        "p_win": None,
+        "ev": None,
+        "decision": "BLOCKED",
+        "bet_authority": False,
+        "pit_certified": False,
+        "source_evidence": handoff.get("model_input_sources") or {},
+        "start_time_evidence": handoff.get("start_time_evidence"),
+        "blockers": blockers,
+    }
+
+
+
 def write_research_model_report(
     conn: sqlite3.Connection, *, handoff: dict, shadow_path: Path,
     source_db: Path, source_report: Path, destination: Path,
