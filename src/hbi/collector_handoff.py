@@ -334,12 +334,19 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
             # Documented schedule revisions must not erase the physical PDF
             # clock. They may be imported as source evidence, never used to
             # infer an actual off-time or to certify a pre-start prediction.
-            observations = conn.execute(
-                "SELECT observed_at_utc,normalized_start_utc,source_grade,"
-                "source_body_sha256,pit_verified "
-                "FROM race_schedule_observations WHERE race_id=? "
-                "ORDER BY observed_at_utc", (race_id,)
-            ).fetchall()
+            try:
+                observations = conn.execute(
+                    "SELECT observed_at_utc,normalized_start_utc,source_grade,"
+                    "source_body_sha256,pit_verified "
+                    "FROM race_schedule_observations WHERE race_id=? "
+                    "ORDER BY observed_at_utc", (race_id,)
+                ).fetchall()
+            except sqlite3.OperationalError as exc:
+                # Older isolated SQLite schemas have no revision receipts.
+                # Preserve the established source-clock failure in that case.
+                if "no such table: race_schedule_observations" not in str(exc):
+                    raise
+                raise ValueError("COLLECTOR_PDF_START_CLOCK_CONFLICT") from exc
             visible = [
                 row for row in observations
                 if parse_time(row["observed_at_utc"]) is not None
