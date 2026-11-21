@@ -155,3 +155,48 @@ Final product decisions and exact-head test/CI/source evidence are delivered in
 the single local BETTING_V3_PRODUCT_RELEASE_CANDIDATE package. Merge, activation,
 source collection and qualified betting have separate decisions. Neither a green
 test run nor an imported full field grants betting authority.
+
+## RELEASE-003 frozen operational acceptance
+
+Baseline:816c6e9f9c3677e8db6a2ea2d2df3957dd4201cb, four required checks passed,
+2260 tests passed. No model, decision, source policy or active schedule is changed
+in this acceptance round. Additional tests inject adapter, write/readback, provenance,
+source-binding and HTTP429 failures. They are software fault tests, not live events.
+
+The existing CORE-003 workflow has an explicitly opt-in branch-only manual test:
+`workflow_dispatch`, non-main ref, `execute=true`, `shadow_acceptance=true`.
+Its concurrency group is unique to the test run; main retains the original literal
+`core003-isolated-source-pilot` group. It restores main's immutable source snapshot
+read-only into its own hosted runner, performs the existing bounded source capture,
+then calls the existing day handoff into RUNNER_TEMP. Main-private archive writes
+remain main-only. Source/output artifact IDs belong to this branch/run, so the
+main-filtered production restore does not consume them. This probe is labelled
+MANUAL_DISPATCH_PARTIAL_NOT_SCHEDULED_FULL_DAY and cannot satisfy full-day acceptance.
+It creates no automatic schedule and cannot activate on main, even after a merge.
+
+Isolated rollback is tested by stopping only a probe-created Shadow PID while its
+own writer lock is held, preserving original SQLite and all frozen report/log bytes,
+then resuming and repeating the same command. A stale isolated lock is removed only
+after that exact PID has exited. Log line counts and SHA must remain identical.
+This does not measure real Champion uptime or perform a production rollback.
+
+### P0 closeout (scope is explicit; no false issue closure)
+
+| Work item | State | Evidence / remaining function | Existing owner |
+|---|---|---|---|
+| DATA-003 / DATA-004 independent semantic gold | BLOCKED | Development diagnostics exist; issue104 still requires two independent readings and adjudication of390 fields | Source reviewers / HQ |
+| CORE-003 source software | DONE | Existing capture/state plus authenticated21 Nov replay; not independent PIT readiness | Betting DEV |
+| CORE-003 PIT readiness, issue83 | BLOCKED | Immutable multi-day full-field source/identity/time acceptance remains outstanding | Betting DEV / source owners |
+| Collector-handoff archival transport | DONE |29 verified imports;39 diagnostic fields /409 entries; immutable log readback | Betting DEV / Collector |
+| INTEGRATION archived source-to-Shadow | DONE | Existing CI authentic E2E with correct Betting-port rejection | Betting DEV |
+| DEPLOYMENT-001 / DEPLOYMENT-002 | SUPERSEDED | Candidate work consolidated into213; operational activation not done | Betting DEV / HQ |
+| PRODUCT COMPLETION-001 / RELEASE-002 technical deliverables | DONE | Frozen baseline CI/artifact/rollback/measurement evidence | Betting DEV |
+| PRODUCT COMPLETION-001 / RELEASE-002 operational acceptance | BLOCKED | Carried into this single RELEASE-003 full-day gate, not declared complete | HQ / operations |
+| PR212 | SUPERSEDED | Closed unmerged; transport and tests consolidated into213 | Betting DEV |
+| Pre-Watch reliability, issue46 | BLOCKED | Frozen Champion/Sheets reliability acceptance is not replaced by Shadow archive tests | Betting DEV / HQ |
+| PR213 merge / production / betting | BLOCKED | Actual full-day observation and separate owner decisions required | HQ |
+
+Issues46,83 and104 remain open: their acceptance is not met. No new issue, PR,
+model or parallel status system is created. The one remaining operational gate is
+an actually observed, isolated automatic full racing day with this candidate code;
+if the observation period has not occurred, report NOT_OBSERVED, never GO.

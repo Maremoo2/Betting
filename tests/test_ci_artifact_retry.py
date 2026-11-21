@@ -30,6 +30,7 @@ def test_partial_binary_failure_not_written_before_success(capfdbinary):
 @pytest.mark.parametrize('error,retries', [
     (b'HTTP 403 forbidden', 1), (b'no artifact matches', 1),
     (b'HTTP 404 not found', 1), (b'HTTP 503 unavailable', 4),
+    (b'HTTP 429 too many requests', 4),
     (b'HTTP 403 API rate limit exceeded', 4),
 ])
 def test_missing_or_persistently_unavailable_source_remains_failure(error, retries):
