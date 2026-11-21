@@ -116,6 +116,7 @@ def test_append_only_with_readback(tmp_path):
 
 def test_cli_consumes_original_collector_import_report(tmp_path, monkeypatch):
     import sys
+
     from hbi.prewatch_shadow_handoff import main
 
     report_path = tmp_path / "collector.json"
