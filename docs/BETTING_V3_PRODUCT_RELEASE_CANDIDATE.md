@@ -98,6 +98,26 @@ failed attempts is discarded. Per-attempt timeout is bounded. Historical expecte
 hashes, baseline files, frozen tests and original replay requirements are unchanged.
 No production workflow, event schedule, secret or paid service was changed.
 
+RELEASE-002: within each CI runner, named downloads share one verified inventory per
+source run and one ZIP per immutable artifact ID. Repeat steps rehash original bytes,
+validate repository/run/ID and extract with readback into their own step directory.
+Corrupt cache entries, ambiguous/expired artifacts, unsafe ZIP paths and conflicting
+existing files fail closed, without silently redownloading over corrupt evidence.
+GitHub artifact digests are checked when supplied; old original file pins remain
+mandatory even if GitHub lacks its own ZIP digest. Cache is temporary within this
+CI job, not a new permanent archive or substitute for expired originals.
+All source queries retain contents:read/actions:read. No additional token rights
+or secrets were created. Persistent installation-wide quota exhaustion is still
+an external access failure; source caching cannot fabricate unavailable bytes.
+
+The day command now calls the existing Betting runtime gate for every reference,
+records its exact rejection, and writes a binary append-only event log. Exact
+reruns verify that log rather than append duplicates. Source-ready blocks are
+therefore traceable through runtime gate -> Shadow -> Pre-Watch -> log -> readback,
+without claiming a fundamental model ran or qualified a wager. Local fault-injection
+tests verify two-run stall flags and immutable alert delivery; these are labelled
+software tests, not genuine outages or proof of full-day notification delivery.
+
 The separately approved 21 Nov authentic rebaseline remains distinct from the missing
 2 Nov state with SHA 60dbb4d350c252fd1f6dd7d8ba2c19e841153bd0e260318938e1b888bda913b0.
 The latter is not recovered by a newer database. The original historical test is

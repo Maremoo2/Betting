@@ -1,5 +1,9 @@
+import hashlib
 import importlib.util
+import io
+import json
 import subprocess
+import zipfile
 from pathlib import Path
 
 import pytest
@@ -43,3 +47,59 @@ def test_missing_or_persistently_unavailable_source_remains_failure(error, retri
 def test_write_commands_rejected(args):
     with pytest.raises(ValueError, match='READ_ONLY'):
         retry.run(args)
+
+
+def fixture_download(tmp_path, *, tamper=False, filename='source.json'):
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w') as z:
+        z.writestr(filename, b'{"original":true}')
+    raw = buffer.getvalue()
+    inventory = {'total_count': 1, 'artifacts': [{
+        'id': 123, 'name': 'original', 'expired': False,
+        'workflow_run': {'id': 55},
+        'digest': 'sha256:' + ('0' * 64 if tamper else hashlib.sha256(raw).hexdigest()),
+    }]}
+    calls = []
+
+    def execute(args, **kwargs):
+        calls.append(args)
+        data = raw if args[-1].endswith('/zip') else json.dumps(inventory).encode()
+        return subprocess.CompletedProcess(args, 0, data, b'')
+
+    args = ['run', 'download', '55', '--repo', 'owner/repo', '--name', 'original',
+            '--dir', str(tmp_path / 'one')]
+    return args, execute, calls
+
+
+def test_download_once_reuse_checks_bytes_for_different_steps(tmp_path):
+    args, execute, calls = fixture_download(tmp_path)
+    cache = tmp_path / 'cache'
+    assert retry.cached_download(args, cache, execute=execute) == 0
+    args[-1] = str(tmp_path / 'two')
+    assert retry.cached_download(args, cache, execute=execute) == 0
+    assert len(calls) == 2  # One inventory and one ZIP, rather than four API requests.
+    assert (tmp_path / 'one/source.json').read_bytes() == (tmp_path / 'two/source.json').read_bytes()
+    (cache / '123.zip').write_bytes(b'tampered')
+    with pytest.raises(ValueError, match='INTEGRITY'):
+        retry.cached_download(args, cache, execute=execute)
+    assert len(calls) == 2  # Corruption cannot be hidden by a fresh download.
+
+
+@pytest.mark.parametrize('tamper,filename,reason', [
+    (True, 'source.json', 'SHA_MISMATCH'), (False, '../escape', 'UNSAFE_PATH'),
+])
+def test_invalid_original_not_extracted(tmp_path, tamper, filename, reason):
+    args, execute, _ = fixture_download(tmp_path, tamper=tamper, filename=filename)
+    with pytest.raises(ValueError, match=reason):
+        retry.cached_download(args, tmp_path / 'cache', execute=execute)
+    assert not (tmp_path / 'one/source.json').exists()
+
+
+def test_existing_different_original_not_overwritten(tmp_path):
+    args, execute, _ = fixture_download(tmp_path)
+    target = tmp_path / 'one/source.json'
+    target.parent.mkdir()
+    target.write_bytes(b'another original')
+    with pytest.raises(ValueError, match='DESTINATION_CONFLICT'):
+        retry.cached_download(args, tmp_path / 'cache', execute=execute)
+    assert target.read_bytes() == b'another original'

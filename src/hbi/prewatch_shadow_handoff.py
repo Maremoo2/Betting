@@ -204,7 +204,13 @@ def run_day(*, db: Path, collector_root: Path, provenance: Path, day: str,
     No provider traffic, scheduler, model fitting, settlement or production writes.
     Observation time labels an offline replay, never a prospective prediction.
     """
-    from .collector_handoff import OriginalArchive, sha, verify_import
+    from .collector_handoff import (
+        OriginalArchive,
+        append_shadow_events,
+        evaluate_shadow_v33,
+        sha,
+        verify_import,
+    )
     from .observatory import build_evaluation_summary
     from .storage import SQLiteStore
 
@@ -306,6 +312,13 @@ def run_day(*, db: Path, collector_root: Path, provenance: Path, day: str,
                         conn.execute("RELEASE single_race")
                         source = {"race_id": rid, "blockers": ["SYSTEM_ERROR:" + type(exc).__name__]}
                 transport = build_handoff(source, decision_time=when.isoformat())
+                # Exercise the real existing gate, not a hand-written replacement.
+                # Missing independent model/case evidence must remain NOT_RUN.
+                runtime_gate = evaluate_shadow_v33(source)
+                if runtime_gate.get("engine_blocker"):
+                    transport["blockers"] = sorted(set(transport["blockers"]) | {
+                        runtime_gate["engine_blocker"]
+                    })
                 start = race.get("start_time_utc")
                 try:
                     local_start = _clock(start).astimezone(OSLO).isoformat() if start else None
@@ -319,6 +332,7 @@ def run_day(*, db: Path, collector_root: Path, provenance: Path, day: str,
                     "start_time_utc": start, "start_time_oslo": local_start,
                     "start_time_evidence": source.get("start_time_evidence"),
                     "source_record": source, "model_status": "MODEL_NOT_CALIBRATED",
+                    "runtime_gate": runtime_gate,
                 })
             conn.commit()
         finally:
@@ -346,6 +360,11 @@ def run_day(*, db: Path, collector_root: Path, provenance: Path, day: str,
             "production_activated": False,
         }
         report["health"] = completion_health([*(previous or []), report])
+        encoded = [
+            (json.dumps(r, sort_keys=True, ensure_ascii=False, allow_nan=False) + "\n").encode()
+            for r in report["races"]
+        ]
+        report["event_log_sha256"] = sha(b"".join(encoded))
         if sha(db.read_bytes()) != original_sha:
             raise ValueError("SOURCE_DATABASE_CHANGED_DURING_REPLAY")
         # Exclusive writes and exact retry equivalence; no frozen report replacement.
@@ -355,6 +374,21 @@ def run_day(*, db: Path, collector_root: Path, provenance: Path, day: str,
                 raise ValueError("FROZEN_DAY_REPORT_CONFLICT")
         else:
             write_once_and_readback(report, target)
+        log = out / "prewatch-events.jsonl"
+        expected_log = b"".join(encoded)
+        if log.exists():
+            if log.is_symlink() or log.read_bytes() != expected_log:
+                raise ValueError("FROZEN_DAY_EVENT_LOG_CONFLICT")
+        else:
+            append_shadow_events(log, report["races"])
+        if log.read_bytes() != expected_log:
+            raise OSError("DAY_EVENT_LOG_READBACK_FAILURE")
+        if report["health"]["alert_required"]:
+            alert = out / "health-alert.json"
+            if not alert.exists():
+                write_once_and_readback(report["health"], alert)
+            elif json.loads(alert.read_bytes()) != report["health"]:
+                raise ValueError("FROZEN_DAY_HEALTH_ALERT_CONFLICT")
         md = out / "prewatch-day.md"
         text = day_markdown(report)
         if md.exists():

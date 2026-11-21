@@ -66,6 +66,31 @@ def test_every_discovered_race_remains_visible_and_source_unchanged(tmp_path):
     assert hashlib.sha256(kwargs["db"].read_bytes()).hexdigest() == before
     assert report == run_day(**kwargs)
     assert json.loads((kwargs["out"] / "prewatch-day.json").read_bytes()) == report
+    log = (kwargs["out"] / "prewatch-events.jsonl").read_bytes()
+    assert hashlib.sha256(log).hexdigest() == report["event_log_sha256"]
+    assert len(log.splitlines()) == 2
+    assert all(r["runtime_gate"]["engine_status"] == "NOT_RUN" for r in report["races"])
+    # Identical reruns cannot append duplicate race observations.
+    run_day(**kwargs)
+    assert (kwargs["out"] / "prewatch-events.jsonl").read_bytes() == log
+
+
+def test_two_unexplained_stalls_publish_a_readable_alert(tmp_path):
+    kwargs = inputs(tmp_path)
+    report = run_day(**kwargs)
+    broken_one = copy.deepcopy(report)
+    broken_one['observed_at_utc'] = '2026-11-21T08:00:00+00:00'
+    broken_one['races'] = []
+    broken_two = copy.deepcopy(broken_one)
+    broken_two['observed_at_utc'] = '2026-11-21T08:05:00+00:00'
+    health = completion_health([broken_one, broken_two])
+    assert health['alert_required']
+    # This tests local alert transport, not a real scheduler outage or e-mail.
+    from hbi.prewatch_shadow_handoff import write_once_and_readback
+    path = tmp_path / 'fault-injection-alert.json'
+    digest = write_once_and_readback(health, path)
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == digest
+    assert json.loads(path.read_bytes())['status'] == 'P0_COMPLETION_STALL_TWO_RUNS'
 
 
 def test_conflict_never_replaces_frozen_day_and_lock_is_fail_closed(tmp_path):
