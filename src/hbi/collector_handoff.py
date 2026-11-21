@@ -618,6 +618,56 @@ def shadow_source_envelope(handoff: dict) -> dict:
 
 
 
+
+def evaluate_shadow_v33(handoff: dict, v33_case: dict | None = None) -> dict:
+    """Route qualified research inputs through the EXISTING frozen V3.3 engine.
+
+    Archived Collector input alone cannot yield model probabilities or EV.
+    No positive V3.3 review is treated as wager authorization here.
+    """
+    report = shadow_source_envelope(handoff)
+    report["betting_engine"] = "betting.v33.evaluate"
+    report["engine_status"] = "NOT_RUN"
+    report["v33_policy_hash"] = None
+    if not isinstance(v33_case, dict):
+        report["engine_blocker"] = "V33_COMPLETE_PRE_RACE_CASE_MISSING"
+        return report
+    if not (
+        handoff.get("source_imported_to_sqlite") is True
+        and handoff.get("model_input_approved") is True
+        and handoff.get("independent_identity_attested") is True
+        and handoff.get("pit_certified") is True
+    ):
+        report["engine_blocker"] = "V33_SOURCE_IDENTITY_OR_PIT_GATE_NOT_ATTESTED"
+        return report
+    original = {
+        str(r["start_number"]) for r in handoff.get("runners", [])
+        if r.get("scratched") is False
+    }
+    if (
+        not original or set(v33_case.get("active_field", [])) != original
+        or v33_case.get("race_id") != handoff.get("race_id")
+    ):
+        report["engine_blocker"] = "V33_ORIGINAL_ACTIVE_FIELD_MISMATCH"
+        return report
+    # All model/market/FFQ-1 checks and probability calculations remain
+    # exclusively inside the existing Betting V3.3 engine.
+    from betting.v33 import POLICY_HASH, evaluate
+    report["v33_policy_hash"] = POLICY_HASH
+    try:
+        reviewed = evaluate(v33_case)
+    except (ValueError, KeyError, TypeError, AttributeError) as exc:
+        report["engine_status"] = "REJECTED"
+        report["engine_blocker"] = "V33_INPUT_REJECTED:" + str(exc)
+        return report
+    report["engine_status"] = "EVALUATED_RESEARCH_ONLY"
+    report["v33_review"] = reviewed
+    report["decision"] = "SHADOW_ONLY"
+    report["bet_authority"] = False
+    return report
+
+
+
 def write_research_model_report(
     conn: sqlite3.Connection, *, handoff: dict, shadow_path: Path,
     source_db: Path, source_report: Path, destination: Path,
@@ -823,6 +873,7 @@ def run_import(db: Path, root: Path, provenance: Path, source_report: Path,
         "schema": SCHEMA, "as_of_utc": when.astimezone(UTC).isoformat(),
         "source_report_sha256": sha(source_report.read_bytes()),
         "collector_archive_required": True, "records": records,
+        "shadow_records": [evaluate_shadow_v33(record) for record in records],
         "bet_authority": False, "pit_certified": False,
     }
     out.write_text(json.dumps(output, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
