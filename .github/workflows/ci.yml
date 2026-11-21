@@ -740,6 +740,7 @@ jobs:
           path: |
             ${{ runner.temp }}/p0-nov21/product/prewatch-day.json
             ${{ runner.temp }}/p0-nov21/product/prewatch-day.md
+            ${{ runner.temp }}/p0-nov21/product/prewatch-events.jsonl
           if-no-files-found: warn
           retention-days: 30
 
