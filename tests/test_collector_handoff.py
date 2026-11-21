@@ -721,3 +721,46 @@ def test_shadow_v33_routes_only_verified_cases_through_frozen_evaluator():
     assert rejected["engine_blocker"].startswith("V33_INPUT_REJECTED:")
     assert rejected["bet_authority"] is False
     assert rejected["p_win"] is None and rejected["ev"] is None
+
+
+def test_shadow_append_only_readback_and_reject_symlink(tmp_path):
+    from hbi.collector_handoff import append_shadow_events, sha
+
+    log = tmp_path / "events.jsonl"
+    first = {"race_id": RID, "decision": "BLOCKED", "bet_authority": False}
+    second = {"race_id": RID, "decision": "SHADOW_ONLY", "bet_authority": False}
+    first_hashes = append_shadow_events(log, [first])
+    original = log.read_bytes()
+    second_hashes = append_shadow_events(log, [second])
+    lines = log.read_bytes().splitlines(keepends=True)
+    assert len(lines) == 2
+    assert lines[0] == original
+    assert [sha(lines[0])] == first_hashes
+    assert [sha(lines[1])] == second_hashes
+    assert json.loads(lines[0]) == first
+    assert json.loads(lines[1]) == second
+    link = tmp_path / "link.jsonl"
+    link.symlink_to(log)
+    with pytest.raises(ValueError, match="SHADOW_LOG_PATH_UNSAFE"):
+        append_shadow_events(link, [first])
+
+
+def test_import_optional_shadow_log_has_consistent_json_readback(tmp_path):
+    from hbi.collector_handoff import run_import
+
+    db = tmp_path / "hbi.sqlite"
+    _db(db)
+    src = tmp_path / "source.json"
+    src.write_text(json.dumps({"races_in_fixed_cohort": [RID]}))
+    dest = tmp_path / "handoff.json"
+    log = tmp_path / "shadow.jsonl"
+    response = run_import(
+        db, tmp_path / "missing", tmp_path / "provenance.json", src, dest,
+        asof=NOW, shadow_log=log,
+    )
+    reread = json.loads(dest.read_text())
+    assert reread["shadow_records"] == response["shadow_records"]
+    assert reread["shadow_event_sha256"] == response["shadow_event_sha256"]
+    assert json.loads(log.read_text().splitlines()[0]) == response["shadow_records"][0]
+    assert len(response["shadow_event_sha256"]) == 1
+    assert response["bet_authority"] is False
