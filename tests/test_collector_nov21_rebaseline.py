@@ -18,7 +18,10 @@ import pytest
 
 from betting.v33 import evaluate
 from hbi.collector_handoff import (
-    OriginalArchive, evaluate_shadow_v33, sha, verify_import,
+    OriginalArchive,
+    evaluate_shadow_v33,
+    sha,
+    verify_import,
 )
 from hbi.prewatch_shadow_handoff import build_handoff, write_once_and_readback
 
