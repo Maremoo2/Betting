@@ -606,3 +606,49 @@ def test_long_title_with_physical_label_starts_a_new_pdf_section():
     assert pdf_field(body, 6, {"1": {"name": "Beta"}}, "2026-11-13") == "2026-11-13T13:10:00+00:00"
     with pytest.raises(ValueError, match="COLLECTOR_PDF_FIELD_MISMATCH"):
         pdf_field(body, 5, {"1": {"name": "Beta"}}, "2026-11-13")
+
+
+@pytest.mark.parametrize("revision_after_asof", [False, True])
+def test_revised_start_requires_two_pre_asof_observations(tmp_path, revision_after_asof):
+    """A changed program clock may be archived, never used to certify PIT/BET."""
+    root = _archive_unicode(
+        tmp_path / "collector", tmp=False, physical_clock="21:34"
+    )
+    db = tmp_path / "hbi.sqlite"
+    _db(db)
+    with _connection(db) as conn:
+        conn.execute("""
+            CREATE TABLE race_schedule_observations(
+                race_id TEXT, observed_at_utc TEXT, normalized_start_utc TEXT,
+                source_grade TEXT, source_body_sha256 TEXT, pit_verified INTEGER)
+        """)
+        original_time = START + timedelta(minutes=1)
+        original_observed = NOW - timedelta(minutes=3)
+        revised_observed = (
+            NOW + timedelta(minutes=1) if revision_after_asof
+            else NOW - timedelta(minutes=2)
+        )
+        conn.executemany(
+            "INSERT INTO race_schedule_observations VALUES (?,?,?,?,?,?)",
+            [
+                (RID, original_observed.isoformat(), original_time.isoformat(),
+                 "HASH_ONLY_NO_RAW_BYTES", "a" * 64, 0),
+                (RID, revised_observed.isoformat(), START.isoformat(),
+                 "HASH_ONLY_NO_RAW_BYTES", "b" * 64, 0),
+            ],
+        )
+        result = verify_import(
+            conn, OriginalArchive(root), RID, asof=NOW, authenticated=True
+        )
+        assert result["model_input_approved"] is False
+        assert result["bet_authority"] is False
+        assert result["pit_certified"] is False
+        if revision_after_asof:
+            assert "COLLECTOR_PDF_START_CLOCK_CONFLICT" in result["blockers"]
+            assert result["source_imported_to_sqlite"] is False
+        else:
+            assert result["source_imported_to_sqlite"] is True, result["blockers"]
+            assert "COLLECTOR_START_REVISION_REQUIRES_PIT_ATTESTATION" in result["blockers"]
+            evidence = result["start_time_evidence"]
+            assert evidence["actual_start_verified"] is False
+            assert len(evidence["revisions"]) == 2
