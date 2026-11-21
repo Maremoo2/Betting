@@ -134,3 +134,35 @@ def write_once_and_readback(report: dict, target: Path) -> str:
     if target.read_bytes() != raw:
         raise OSError("SHADOW_REPORT_READBACK_CONFLICT")
     return hashlib.sha256(raw).hexdigest()
+
+
+def main() -> None:
+    """Convert an existing collector_handoff.run_import report to gated Shadow JSON."""
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Read-only Pre-Watch Shadow transport")
+    parser.add_argument("--collector-report", type=Path, required=True)
+    parser.add_argument("--decision-time", required=True)
+    parser.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args()
+    source = json.loads(args.collector_report.read_text(encoding="utf-8"))
+    if not isinstance(source, dict) or not isinstance(source.get("records"), list):
+        raise ValueError("EXISTING_COLLECTOR_REPORT_REQUIRED")
+    events = [
+        build_handoff(row, decision_time=args.decision_time)
+        for row in source["records"]
+    ]
+    output = {
+        "schema": "PREWATCH_SHADOW_BATCH_V3313_V1",
+        "source_report_sha256": hashlib.sha256(
+            args.collector_report.read_bytes()
+        ).hexdigest(),
+        "races": events,
+        "bet_authorized": False,
+        "champion_changed": False,
+    }
+    write_once_and_readback(output, args.out)
+
+
+if __name__ == "__main__":
+    main()
