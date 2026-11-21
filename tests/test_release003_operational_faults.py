@@ -83,3 +83,7 @@ def test_isolated_acceptance_cannot_activate_on_main_or_share_its_writer_group()
     assert 'inputs.shadow_acceptance && inputs.execute' in step.split('shell:')[0]
     assert 'Path(os.environ["RUNNER_TEMP"]) / "v3313-isolated-acceptance"' in step
     assert 'MANUAL_DISPATCH_PARTIAL_NOT_SCHEDULED_FULL_DAY' in step
+    outcomes = workflow.split('  outcome-research:')[1]
+    assert "github.ref == 'refs/heads/main' && 'core003-isolated-outcome-research'" in outcomes
+    assert "format('core003-acceptance-outcomes-{0}', github.run_id)" in outcomes
+    assert "&& !(github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && inputs.shadow_acceptance)" in outcomes

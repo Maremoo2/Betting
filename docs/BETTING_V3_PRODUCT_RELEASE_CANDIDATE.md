@@ -173,6 +173,13 @@ remain main-only. Source/output artifact IDs belong to this branch/run, so the
 main-filtered production restore does not consume them. This probe is labelled
 MANUAL_DISPATCH_PARTIAL_NOT_SCHEDULED_FULL_DAY and cannot satisfy full-day acceptance.
 It creates no automatic schedule and cannot activate on main, even after a merge.
+The bounded manual source probe explicitly excludes the unrelated all-history
+outcome-recovery job. That step is NOT_TESTED by this probe, not passed or replaced;
+mandatory CI outcome replays remain unchanged. Other branch outcome jobs have their
+own run-specific group, while main retains its original outcome concurrency group.
+The first probe was cancelled after its source artifact was verified because this
+second concurrency boundary was found to be shared. Preserve the cancelled attempt
+and its artifacts; it is not a successful complete workflow or a full-day test.
 
 Isolated rollback is tested by stopping only a probe-created Shadow PID while its
 own writer lock is held, preserving original SQLite and all frozen report/log bytes,
