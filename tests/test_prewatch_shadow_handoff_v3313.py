@@ -112,3 +112,24 @@ def test_append_only_with_readback(tmp_path):
     assert json.loads(path.read_text()) == report
     with pytest.raises(FileExistsError):
         write_once_and_readback(report, path)
+
+
+def test_cli_consumes_original_collector_import_report(tmp_path, monkeypatch):
+    import sys
+    from hbi.prewatch_shadow_handoff import main
+
+    report_path = tmp_path / "collector.json"
+    output_path = tmp_path / "prewatch.json"
+    report_path.write_text(json.dumps({"records": [source()]}))
+    monkeypatch.setattr(
+        sys, "argv",
+        [
+            "shadow", "--collector-report", str(report_path),
+            "--decision-time", DECISION, "--out", str(output_path),
+        ],
+    )
+    main()
+    result = json.loads(output_path.read_text())
+    assert len(result["races"]) == 1
+    assert result["races"][0]["source_status"] == "SOURCE_READY"
+    assert result["bet_authorized"] is False
