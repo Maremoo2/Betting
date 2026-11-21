@@ -42,7 +42,7 @@ def build_handoff(
         raise ValueError("CANONICAL_RACE_ID_REQUIRED")
     rows = source.get("runners") or []
     if not isinstance(rows, list):
-        raise ValueError("RUNNER_ROWS_INVALID")
+        raise TypeError("RUNNER_ROWS_INVALID")
     selections = [str(row["start_number"]) for row in rows]
     if len(selections) != len(set(selections)):
         raise ValueError("DUPLICATE_START_NUMBER")
@@ -51,7 +51,7 @@ def build_handoff(
         key: value for key, value in (source.get("model_input_sources") or {}).items()
         if key.startswith("collector_")
     }
-    blockers = set(str(code) for code in source.get("blockers", []))
+    blockers = {str(code) for code in source.get("blockers", [])}
     required_hashes = (
         "collector_starts_sha256",
         "collector_program_pdf_sha256",
