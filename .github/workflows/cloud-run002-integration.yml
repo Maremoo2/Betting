@@ -31,7 +31,9 @@ jobs:
         run: pip install -e ".[dev]"
       - name: Fetch **existing** original Collector artifact with permitted read-only token
         env:
-          GH_TOKEN: ${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN || github.token }}
+          # This is a public, pinned original. Avoid the exhausted shared
+          # installation token; the existing workflow has read-only access.
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           mkdir -p collector-input
