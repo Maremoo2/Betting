@@ -12,7 +12,7 @@ import json
 import math
 import re
 from collections import Counter, defaultdict
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from zipfile import ZipFile
 from zoneinfo import ZoneInfo
@@ -80,9 +80,11 @@ def _original(root: Path, path: str, *, result: bool = False) -> dict | None:
     return record
 
 
-def _inventory(root: Path) -> dict[str, dict]:
+def _inventory(root: Path, months: set[str] | None = None) -> dict[str, dict]:
     out: dict[str, dict] = {}
     for file in sorted((root / "inventory").glob("*.json")):
+        if months is not None and file.stem not in months:
+            continue
         doc = _read(file)
         if (
             doc.get("path") != "/racedays/dates/" + file.stem + "-01/"
@@ -364,11 +366,24 @@ def _assess(
 
 
 
-def _weekly_market_days(root: Path) -> tuple[dict[str, dict], int]:
+def _week_months(path: Path) -> set[str]:
+    match = re.fullmatch(r"(\d{4})-W(\d{2})-MARKET", path.stem)
+    if not match:
+        raise ValueError("WEEKLY_ARCHIVE_WEEK_NAME_INVALID")
+    try:
+        first = date.fromisocalendar(int(match[1]), int(match[2]), 1)
+    except ValueError as exc:
+        raise ValueError("WEEKLY_ARCHIVE_WEEK_NAME_INVALID") from exc
+    return {(first + timedelta(days=n)).isoformat()[:7] for n in range(7)}
+
+
+def _weekly_market_days(root: Path, months: set[str] | None = None) -> tuple[dict[str, dict], int]:
     """Verify existing MARKET_ONLY weekly ZIP manifests without extracting files."""
     days: dict[str, dict] = {}
     count = 0
     for zip_path in sorted((root / "weekly").glob("*-MARKET.zip")):
+        if months is not None and not (_week_months(zip_path) & months):
+            continue
         if zip_path.is_symlink():
             raise ValueError("SYMLINKED_WEEKLY_ARCHIVE_REJECTED")
         with ZipFile(zip_path) as archive:
@@ -403,6 +418,11 @@ def _weekly_market_days(root: Path) -> tuple[dict[str, dict], int]:
                 ):
                     raise ValueError("WEEKLY_MARKET_DAY_FREEZE_INVALID:" + name)
                 day = name.removesuffix(".json")
+                iso = date.fromisoformat(day).isocalendar()
+                if f"{iso.year}-W{iso.week:02}" != manifest["week"]:
+                    raise ValueError("WEEKLY_MARKET_DAY_WEEK_CONFLICT:" + day)
+                if months is not None and day[:7] not in months:
+                    continue
                 if day in days and digest(days[day]) != digest(doc):
                     raise ValueError("CONFLICTING_WEEKLY_MARKET_DAY:" + day)
                 days[day] = doc
@@ -410,15 +430,22 @@ def _weekly_market_days(root: Path) -> tuple[dict[str, dict], int]:
     return days, count
 
 
-def build_coverage(root: Path) -> dict:
+def build_coverage(root: Path, *, months: set[str] | None = None) -> dict:
     """Build from a supplied UNPACKED native archive root; never touch network."""
     root = Path(root)
     if not root.is_dir():
         raise ValueError("HISTORICAL_ARCHIVE_ROOT_NOT_FOUND")
-    metadata = _inventory(root)
-    market_days, weekly_count = _weekly_market_days(root)
+    if months is not None:
+        if not months:
+            raise ValueError("EXPLICIT_NONEMPTY_MONTH_SCOPE_REQUIRED")
+        for month in months:
+            _month_last_day(month)
+    metadata = _inventory(root, months)
+    market_days, weekly_count = _weekly_market_days(root, months)
     unbound_meeting_rows: set[tuple[str, str]] = set()
     for path in sorted((root / "market-days").glob("*.json")):
+        if months is not None and path.stem[:7] not in months:
+            continue
         doc = _read(path)
         if doc.get("stage") != "MARKET_ONLY" or not isinstance(doc.get("races"), list) or doc.get("sha256") != digest(doc["races"]):
             raise ValueError("MARKET_DAY_FREEZE_SHA_INVALID:" + path.name)
@@ -469,6 +496,8 @@ def build_coverage(root: Path) -> dict:
     results = {}
     lockbox_result_files_withheld = 0
     for path in sorted((root / "result-days").glob("*.json")):
+        if months is not None and path.stem[:7] not in months:
+            continue
         # 2025 is only a lockbox candidate. Do NOT parse or hash its outcomes;
         # even a retrospective coverage read can disclose hidden labels.
         if path.stem.startswith("2025-"):
@@ -537,8 +566,10 @@ def build_coverage(root: Path) -> dict:
         "training_performed": False, "fitting_authorized": False,
         "year_scope": "2015-2026; only supplied source files inspected",
         "source_root": str(root),
+        "month_scope": sorted(months) if months is not None else None,
         "source_file_count": {
-            "inventories": len(list((root / "inventory").glob("*.json"))),
+            "inventories": sum(months is None or f.stem in months
+                               for f in (root / "inventory").glob("*.json")),
             "market_days": len(market_days), "result_days": len(results),
             "weekly_market_archives": weekly_count,
             "2025_lockbox_result_files_not_read": lockbox_result_files_withheld,
@@ -557,6 +588,11 @@ def build_coverage(root: Path) -> dict:
                 row["country"] in {"NO", "SE"}
                 and row["metadata_dimensions"].get("sport_type") == "T"
                 and row["categories"]["PIT_MODEL_ELIGIBLE"] for row in rows
+            ),
+            "NO_SE_TROT_NON_LOCKBOX_METADATA_REFERENCES": sum(
+                row["country"] in {"NO", "SE"} and row["year"] != 2025
+                and row["metadata_dimensions"].get("sport_type") == "T"
+                for row in rows
             ),
         },
         **{label: {
@@ -587,8 +623,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--month", action="append",
+                        help="Explicit YYYY-MM scope; repeat for bounded archive audits")
     args = parser.parse_args(argv)
-    result = build_coverage(args.root)
+    result = build_coverage(args.root, months=set(args.month) if args.month else None)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     # Exclusive creation: no silent replacement of prior research output.
     with args.output.open("x", encoding="utf-8") as handle:

@@ -63,3 +63,33 @@ def test_bound_original_integrity_failure_still_blocks(tmp_path):
     put_json(cache, body)
     with pytest.raises(ValueError, match='ORIGINAL_SOURCE_SHA_OR_ORIGIN_CONFLICT'):
         build_coverage(tmp_path)
+
+
+def test_month_scope_is_explicit_and_matches_full_same_month(tmp_path):
+    fixture(tmp_path)
+    full = build_coverage(tmp_path)
+    month = build_coverage(tmp_path, months={'2020-01'})
+    assert full['by_race'] == month['by_race']
+    assert full['counts'] == month['counts']
+    assert month['month_scope'] == ['2020-01']
+    assert build_coverage(tmp_path, months={'2020-02'})['by_race'] == []
+    with pytest.raises(ValueError, match='MONTH_SCOPE'):
+        build_coverage(tmp_path, months=set())
+
+
+def test_week_label_cannot_hide_a_day_from_month_audit(tmp_path):
+    from zipfile import ZipFile
+
+    case = fixture(tmp_path, outcome=False)
+    raw = json.dumps(case['pre']).encode()
+    path = tmp_path / 'weekly/2020-W05-MARKET.zip'
+    path.parent.mkdir()
+    with ZipFile(path, 'w') as z:
+        z.writestr('MANIFEST.json', json.dumps({
+            'stage': 'MARKET_ONLY', 'retrospective': True, 'week': '2020-W05',
+            'days': ['2020-01-04'],
+            'files_sha256': {'2020-01-04.json': hashlib.sha256(raw).hexdigest()},
+        }))
+        z.writestr('2020-01-04.json', raw)
+    with pytest.raises(ValueError, match='WEEKLY_MARKET_DAY_WEEK_CONFLICT'):
+        build_coverage(tmp_path, months={'2020-01'})
