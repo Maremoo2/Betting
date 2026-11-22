@@ -97,3 +97,19 @@ This is a proposed CI dependency change only. The new corpus does not restore
 the exact contract before #215 can be accepted on it. After owner adoption,
 #215 needs its own required checks on the new main-based test contract; this
 PR's compatibility job does not rewrite #215's currently failed check status.
+
+## Observed CI quota failure and bounded token correction
+
+The bootstrap replay and separate SQLite readback passed, as did all 2,237
+Ubuntu tests of pinned #215. A subsequent source download returned HTTP 403,
+explicitly "API rate limit exceeded for installation". A later unchanged
+MVP-014 source step and manual CLOUD-RUN-002 validation hit the same shared
+Collector installation-token quota. These failed attempts remain failures.
+
+The Collector repository was verified publicly readable without authentication.
+CI already uses github.token for other pinned cross-repository original replays.
+The candidate therefore uses that existing read-only workflow token for the new
+same-repository mirror, the affected MVP-014 source read, and CLOUD-RUN-002's
+public original read. No secrets, permission scopes, source IDs, expected hashes,
+schedules or production workflows change. CLOUD-RUN-002 is an isolated PR/manual
+integration test with temporary SQLite, not the active production watcher.

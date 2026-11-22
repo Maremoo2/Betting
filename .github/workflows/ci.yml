@@ -33,7 +33,8 @@ jobs:
       - name: Replay MVP-014 4 Nov genuine PDF race headers (NO PIT/BET)
         if: github.event_name == 'pull_request'
         env:
-          GH_TOKEN: ${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN || github.token }}
+          # Public Collector archive; keep exact original SHA, use scoped CI access.
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
