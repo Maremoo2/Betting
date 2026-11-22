@@ -330,4 +330,3 @@ def test_authentic_original_import_model_parity_idempotence_and_readback(origina
         shutil.copyfile(db, destination / "replay.sqlite")
         shutil.copyfile(tmp_path / "receipt.json", destination / "receipt.json")
     print("CORE003_AUTHENTIC_REPLAY_V2_PASS", json.dumps(receipt, sort_keys=True))
-

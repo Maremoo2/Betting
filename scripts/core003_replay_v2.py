@@ -90,7 +90,8 @@ def download(entry, destination):
                 + str(entry["artifact_id"]))
     metadata = gh_json(endpoint)
     if (metadata["expired"] or metadata["workflow_run"]["id"] != entry["run_id"]
-            or metadata["digest"] != "sha256:" + entry["sha256"]):
+            or metadata["digest"] != "sha256:" + entry["sha256"]
+            or metadata["workflow_run"]["head_sha"] != entry["commit"]):
         raise ValueError("REPLAY_ARTIFACT_PROVENANCE_MISMATCH")
     with Path(destination).open("xb") as target:
         subprocess.run(["gh", "api", endpoint + "/zip"], check=True, stdout=target)
@@ -150,4 +151,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
