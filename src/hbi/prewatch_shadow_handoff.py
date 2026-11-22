@@ -163,6 +163,7 @@ def completion_health(reports: list[dict]) -> dict:
     alert = len(stalls) >= 2 and all(stalls[-2:])
     return {"status": "P0_COMPLETION_STALL_TWO_RUNS" if alert else "NO_COMPLETION_STALL",
             "distinct_runs": len(ordered), "alert_required": alert,
+            "incomplete_observations": sum(stalls),
             "notification_delivery": "NOT_ACTIVATED", "bet_authority": False}
 
 

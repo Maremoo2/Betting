@@ -77,6 +77,132 @@ def api(path, method='GET', payload=None):
     raise AssertionError('unreachable')
 
 
+def reconcile_clock(plan, inventory, receipts, runs, reports, *, observed_at):
+    """Reconcile an immutable clock, not certify source/PIT or a whole phase.
+
+    Caller retains authenticated API/ZIP receipts separately. No dispatch, source
+    access, backfill, probability calculation or notification is performed here.
+    An accepted POST or a green workflow is insufficient without its day journal.
+    """
+    from hbi.prewatch_shadow_handoff import completion_health
+
+    now = stamp(observed_at)
+    regenerated = make_plan(plan['start'], plan['end'], plan['pin'], inventory)
+    if regenerated != plan:
+        raise ValueError('FROZEN_ACCEPTANCE_PLAN_CONFLICT')
+    expected_races = {row['race_id'] for row in inventory}
+    if len(expected_races) != len(inventory):
+        raise ValueError('ACCEPTANCE_INVENTORY_DUPLICATE_RACE')
+    by_receipt = {}
+    for receipt in receipts:
+        tick = receipt['planned_at_utc']
+        if tick not in plan['ticks'] or receipt.get('head') != plan['pin']:
+            raise ValueError('ACCEPTANCE_RECEIPT_CLOCK_OR_HEAD_CONFLICT')
+        old = by_receipt.get(tick)
+        if old is not None and old != receipt:
+            raise ValueError('ACCEPTANCE_RECEIPT_REVISION_CONFLICT')
+        by_receipt[tick] = receipt
+    by_run, quarantined = {}, []
+    seen_ids = set()
+    for run in runs:
+        title = run.get('display_title', '')
+        if not title.startswith('V3313 tick '):
+            continue
+        tick = title.removeprefix('V3313 tick ')
+        if run['id'] in seen_ids:
+            raise ValueError('ACCEPTANCE_DUPLICATE_RUN_INVENTORY')
+        seen_ids.add(run['id'])
+        if (tick not in plan['ticks'] or run.get('head_sha') != plan['pin']
+                or run.get('head_branch') != plan['branch']
+                or run.get('event') != 'workflow_dispatch'):
+            quarantined.append({'run_id': run['id'], 'reason': 'RUN_CLOCK_OR_HEAD_CONFLICT'})
+            continue
+        by_run.setdefault(tick, []).append(run)
+    rows = []
+    for tick in plan['ticks']:
+        planned = stamp(tick)
+        receipt = by_receipt.get(tick)
+        found = by_run.get(tick, [])
+        row = {'planned_at_utc': tick, 'dispatch_receipt': receipt,
+               'workflow_run_ids': [run['id'] for run in found], 'issues': []}
+        if planned > now:
+            row['status'] = 'FUTURE_NOT_DUE'
+            if found:
+                row['issues'].append('FUTURE_TICK_ALREADY_DISPATCHED')
+        elif len(found) > 1:
+            row['status'] = 'DUPLICATE_RUNS'
+        elif not found:
+            if now <= planned + timedelta(seconds=120):
+                row['status'] = 'WITHIN_DISPATCH_WINDOW'
+            else:
+                row['status'] = 'NO_WORKFLOW_RUN'
+        else:
+            run = found[0]
+            created = stamp(run['created_at'])
+            row['creation_lag_seconds'] = (created - planned).total_seconds()
+            if created > now or created < planned:
+                row['issues'].append('RUN_CREATION_CLOCK_CONFLICT')
+            if row['creation_lag_seconds'] > 120:
+                row['issues'].append('LATE_RUN_CREATION')
+            if run['status'] != 'completed':
+                row['status'] = 'RUN_PENDING'
+            elif run.get('conclusion') != 'success':
+                row['status'] = 'RUN_FAILED'
+            else:
+                report = reports.get(run['id'])
+                if report is None:
+                    row['status'] = 'ACCEPTANCE_ARTIFACT_MISSING'
+                elif (not report.get('inventory')
+                      or not expected_races <= set(report['inventory'])
+                      or completion_health([report])['incomplete_observations']
+                      or any(report.get(key) is not False for key in (
+                          'bet_authority', 'production_activated', 'champion_changed'))):
+                    row['status'] = 'ACCEPTANCE_ARTIFACT_INVALID'
+                else:
+                    row['status'] = 'COMPLETED_WITH_TERMINAL_JOURNAL'
+                    row['journal_evidence_mode'] = report.get('evidence_mode')
+                    row['prospective_predictions'] = report['counts']['prospective_predictions']
+            if receipt and receipt.get('workflow_run_id') not in (None, run['id']):
+                row['issues'].append('RECEIPT_RUN_ID_CONFLICT')
+        if receipt and receipt['status'] != 'DISPATCH_ACCEPTED_OBSERVATION_PENDING':
+            row['issues'].append('CONTROLLER_DISPATCH_NOT_CONFIRMED')
+        if not receipt:
+            row['receipt_state'] = 'NOT_PUBLISHED_OR_NOT_RECORDED'
+        rows.append(row)
+    good = 'COMPLETED_WITH_TERMINAL_JOURNAL'
+    pending = {'FUTURE_NOT_DUE', 'WITHIN_DISPATCH_WINDOW', 'RUN_PENDING'}
+    failed = [row for row in rows if row['issues'] or row['status'] not in pending | {good}]
+    window_complete = now >= stamp(plan['end'])
+    acknowledged = all(row['dispatch_receipt'] for row in rows)
+    complete = (window_complete and acknowledged and not failed and not quarantined
+                and all(row['status'] == good for row in rows))
+    # Reuse the existing two-observation health convention for missed journal
+    # deliveries, rather than mistaking two complete reports around a gap for health.
+    gap_streak = peak_gap_streak = 0
+    for row in rows:
+        if row['status'] in ('NO_WORKFLOW_RUN', 'RUN_FAILED', 'ACCEPTANCE_ARTIFACT_MISSING',
+                             'ACCEPTANCE_ARTIFACT_INVALID', 'DUPLICATE_RUNS'):
+            gap_streak += 1
+            peak_gap_streak = max(peak_gap_streak, gap_streak)
+        else:
+            gap_streak = 0
+    return {
+        'schema': 'RELEASE003_CLOCK_RECONCILIATION_V1', 'observed_at_utc': now.isoformat(),
+        'pin': plan['pin'], 'expected_ticks': len(rows), 'observations': rows,
+        'window_complete': window_complete, 'closed_receipts': len(by_receipt),
+        'workflow_runs_observed': sum(len(group) for group in by_run.values()),
+        'known_failed_ticks': len(failed), 'quarantined_runs': quarantined,
+        'status': ('BLOCKED_INTEGRATION' if failed or quarantined else
+                   'BLOCKED_SOURCE' if window_complete and not acknowledged else
+                   'TECHNICALLY_COMPLETE' if complete else 'WAIT_LIVE'),
+        'clock_reconciliation_complete': complete,
+        'alert_required': peak_gap_streak >= 2,
+        'notification_delivery': 'NOT_ACTIVATED',
+        'full_day_accepted': False, 'pit_certified': False, 'bet_authority': False,
+        'note': 'Clock reconciliation does not grant whole-day, phase, model or PIT acceptance.',
+    }
+
+
 def run_phase(plan, phase, out, *, request=api, clock=lambda: datetime.now(UTC), sleep=time.sleep):
     out.mkdir(parents=True, exist_ok=True)
     low = stamp(plan['start']) + timedelta(seconds=phase * PHASE_SECONDS)
