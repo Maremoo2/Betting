@@ -15,6 +15,7 @@ from pathlib import Path
 
 import pytest
 
+import hbi
 from hbi.collector_handoff import (
     OriginalArchive,
     sha,
@@ -36,6 +37,8 @@ verify_inputs = replay.verify_inputs
 
 @pytest.fixture(scope="module")
 def originals(tmp_path_factory):
+    if expected_root := os.environ.get("CORE003_REPLAY_V2_EXPECT_SOURCE_ROOT"):
+        assert Path(hbi.__file__).resolve().is_relative_to(Path(expected_root).resolve())
     value = os.environ.get("CORE003_REPLAY_V2_INPUT_ROOT")
     if not value:
         if os.environ.get("CORE003_REPLAY_V2_REQUIRED") == "1":

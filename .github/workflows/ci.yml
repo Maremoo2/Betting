@@ -1052,12 +1052,14 @@ jobs:
           pytest -q --junitxml="$RUNNER_TEMP/pr215-full.xml"
       - name: Replay proposed V2 contract against pinned PR 215 source
         if: github.head_ref == 'fix/core003-authentic-replay-v2'
+        working-directory: pr215
         env:
           GH_TOKEN: ${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN || github.token }}
           PYTHONPATH: ${{ github.workspace }}/pr215/src
+          CORE003_REPLAY_V2_EXPECT_SOURCE_ROOT: ${{ github.workspace }}/pr215/src
         run: |
           set -euo pipefail
-          python scripts/core003_replay_v2.py fetch --root "$RUNNER_TEMP/pr215-v2-input"
+          python ../scripts/core003_replay_v2.py fetch --root "$RUNNER_TEMP/pr215-v2-input"
           CORE003_REPLAY_V2_INPUT_ROOT="$RUNNER_TEMP/pr215-v2-input" \
           CORE003_REPLAY_V2_REQUIRED=1 \
-            pytest -q -s tests/test_core003_authentic_replay_v2.py
+            pytest -c pyproject.toml -q -s ../tests/test_core003_authentic_replay_v2.py
