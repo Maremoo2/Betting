@@ -1021,6 +1021,12 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+      - name: Report authenticated API quota after an archive failure
+        if: failure() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api rate_limit --jq '.resources.core | {limit, remaining, reset, used}'
+
   replay-v2-independent-readback:
     if: always() && github.event_name == 'pull_request' && needs.test.outputs.replay_v2_status == 'success'
     needs: test
