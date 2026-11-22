@@ -59,9 +59,18 @@ def _time(day: str, raw: object) -> datetime:
 
 def prepare_source(
     archive: Path, checksum: Path, *, date_oslo: str | None = None,
+    race_ids: list[str] | None = None,
 ) -> tuple[dict[str, object], list[SourceRace]]:
     """Validate the *entire* daily ZIP and selected NO/SE field before DB writes."""
+    if race_ids is not None and (
+        not isinstance(race_ids, list) or not race_ids
+        or any(not isinstance(x, str) or not x for x in race_ids)
+        or len(set(race_ids)) != len(race_ids)
+    ):
+        raise ValueError("COLLECTOR_EXPLICIT_RACE_SCOPE_INVALID")
+    selected = set(race_ids) if race_ids is not None else None
     receipt = audit_release(archive, checksum)
+    excluded = []
     day = str(receipt["date_oslo"])
     if date_oslo is not None and day != date_oslo:
         raise ValueError("COLLECTOR_REQUESTED_DATE_MISMATCH")
@@ -122,6 +131,7 @@ def prepare_source(
             part.get("race", {}).get("race_number") for part in parts
         ):
             raise ValueError("COLLECTOR_RACE_NUMBERS_DISAGREE")
+        reconciled_runners = 0
         for part in parts:
             race = part["race"]
             n = race.get("race_number")
@@ -161,7 +171,17 @@ def prepare_source(
                 })
             if len(runners) != len(by_number) or len({r["selection_id"] for r in runners}) != len(runners):
                 raise ValueError("COLLECTOR_FIELD_SIZE_CONFLICT")
+            reconciled_runners += len(runners)
             start_at = _time(day, race.get("scheduled_time_local"))
+            if selected is not None and race_id not in selected:
+                excluded.append({
+                    "race_id": race_id, "reason": "OUTSIDE_EXPLICIT_IMPORT_SCOPE",
+                    "start_time_utc": start_at.isoformat(),
+                    "source_observed_at_utc": received.isoformat(),
+                    "source_completed_before_start": received < start_at,
+                    "model_ready": False, "pit_certified": False,
+                })
+                continue
             if received >= start_at:
                 raise ValueError("COLLECTOR_SNAPSHOT_AFTER_RACE_START")
             if not isinstance(race.get("distance_m"), int) or race["distance_m"] <= 0:
@@ -198,10 +218,15 @@ def prepare_source(
                 "independent_t4_attested": False,
             }
             prepared.append(SourceRace(card, mid, n, received, str(race["source_url"]), payload))
-        if sum(len(row.card.runners) for row in prepared if row.meeting_id == mid) != qa.get("horses_verified"):
+        if reconciled_runners != qa.get("horses_verified"):
             raise ValueError("COLLECTOR_RECONCILED_FIELD_TOTAL_MISMATCH")
+    if selected is not None and not selected.issubset(seen):
+        raise ValueError("COLLECTOR_REQUESTED_RACE_NOT_VERIFIED_IN_ARCHIVE")
     if not prepared:
         raise ValueError("COLLECTOR_NO_VERIFIED_NO_SE_RACES")
+    if selected is not None:
+        receipt["explicit_import_scope"] = sorted(selected)
+        receipt["excluded_races"] = excluded
     return receipt, prepared
 
 
@@ -257,6 +282,20 @@ def persist_source(store: SQLiteStore, races: list[SourceRace]) -> dict[str, obj
                                 "start_time_utc", "discipline", "distance_m", "start_method"):
                         if canonical[col] != card.race[col]:
                             raise ValueError("COLLECTOR_EXISTING_CANONICAL_RACE_CONFLICT")
+                ref = db.execute(
+                    "SELECT race_id FROM provider_race_refs WHERE provider='rikstoto' "
+                    "AND provider_raceday_key=? AND race_number=?",
+                    (item.meeting_id, item.race_no),
+                ).fetchone()
+                if ref is None:
+                    db.execute(
+                        "INSERT INTO provider_race_refs "
+                        "(provider,provider_raceday_key,race_number,race_id,discovered_at_utc) "
+                        "VALUES ('rikstoto',?,?,?,?)",
+                        (item.meeting_id, item.race_no, race_id, item.received_at.isoformat()),
+                    )
+                elif ref["race_id"] != race_id:
+                    raise ValueError("COLLECTOR_EXISTING_PROVIDER_REFERENCE_CONFLICT")
                 for runner in card.runners:
                     selected = db.execute(
                         "SELECT * FROM runners WHERE race_id=? AND selection_id=?",
@@ -310,10 +349,14 @@ def persist_source(store: SQLiteStore, races: list[SourceRace]) -> dict[str, obj
 
 def import_source(
     store: SQLiteStore, archive: Path, checksum: Path, *, date_oslo: str | None = None,
+    race_ids: list[str] | None = None,
 ) -> dict[str, object]:
-    receipt, races = prepare_source(archive, checksum, date_oslo=date_oslo)
+    receipt, races = prepare_source(archive, checksum, date_oslo=date_oslo, race_ids=race_ids)
     result = persist_source(store, races)
     result["archive_sha256"] = receipt["archive_sha256"]
     result["manifest_sha256"] = receipt["manifest_sha256"]
     result["collector_status"] = receipt["collector_status"]
+    if race_ids is not None:
+        result["explicit_import_scope"] = receipt["explicit_import_scope"]
+        result["excluded_races"] = receipt["excluded_races"]
     return result
