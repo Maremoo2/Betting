@@ -703,7 +703,9 @@ jobs:
         id: replay_v2
         if: github.event_name == 'pull_request'
         env:
-          GH_TOKEN: ${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN || github.token }}
+          # Final V2 mirror is in this repository; do not consume the shared
+          # cross-repository Collector installation token for same-repo reads.
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
@@ -1087,7 +1089,7 @@ jobs:
         if: github.head_ref == 'fix/core003-authentic-replay-v2'
         working-directory: pr215
         env:
-          GH_TOKEN: ${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN || github.token }}
+          GH_TOKEN: ${{ github.token }}
           PYTHONPATH: ${{ github.workspace }}/pr215/src
           CORE003_REPLAY_V2_EXPECT_SOURCE_ROOT: ${{ github.workspace }}/pr215/src
         run: |
