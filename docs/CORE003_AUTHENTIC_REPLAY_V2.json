@@ -1,0 +1,82 @@
+{
+  "schema": "CORE003_AUTHENTIC_REPLAY_V2",
+  "version": 2,
+  "status": "PROPOSED_PENDING_HQ_ACCEPTANCE",
+  "legacy": {
+    "status": "NOT_REPRODUCIBLE_SOURCE_EXPIRED",
+    "run_id": 41518035718,
+    "artifact_id": 13176561174,
+    "sqlite_sha256": "60dbb4d350c252fd1f6dd7d8ba2c19e841153bd0e260318938e1b888bda913b0"
+  },
+  "mirror": null,
+  "artifacts": [
+    {
+      "role": "collector",
+      "repository": "Maremoo2/rikstoto-program-collector",
+      "run_id": 44874876371,
+      "artifact_id": 14695542768,
+      "sha256": "ddb07503641d88aec4f90ef263f0fdf322c8a8ed852c8ee28d8fec19e49ceff4"
+    },
+    {
+      "role": "state",
+      "repository": "Maremoo2/Betting",
+      "run_id": 44907636310,
+      "artifact_id": 14708117248,
+      "sha256": "51e6cb4ee388d098b1cb3894f6133e293a30194ccb3d19ab41435c222881b699"
+    },
+    {
+      "role": "model",
+      "repository": "Maremoo2/Betting",
+      "run_id": 44907636310,
+      "artifact_id": 14708341778,
+      "sha256": "c25d4c569c8cb74924853fe4b6ea0bbac68effb983487ff6d4af8e0bb88cfd23"
+    },
+    {
+      "role": "report",
+      "repository": "Maremoo2/Betting",
+      "run_id": 44907636310,
+      "artifact_id": 14708301894,
+      "sha256": "84a67bc202bdf53455c4276eea5a45543c1365cf06420f4b3a5075c3a34047a9"
+    }
+  ],
+  "sqlite_sha256": "c8d460aa6e50f5c7f63a976e70e572bd5cc7fc4148ee9bddef786dea2984b20d",
+  "report_sha256": "6d1cc224c789734eb136ffe87fbe53e1864080f98a40d827e605277a8ece533e",
+  "manifest_sha256": "27d81e314c091805caf458bc4bfae794cffae221ed1f50669771a05ad6c5b58d",
+  "as_of_utc": "2026-11-21T13:12:07.300862+00:00",
+  "raceday": "S1_NR_2026-11-21",
+  "track": "Jägersro",
+  "counts": {
+    "races": 1253,
+    "runners": 8069,
+    "provider_race_refs": 1253,
+    "provider_payloads": 3979,
+    "runner_fundamental_snapshots": 19265,
+    "schema_migrations": 10,
+    "predictions": 0,
+    "shadow_tickets": 0
+  },
+  "fields": [
+    {
+      "race_id": "RIKSTOTO:S1_NR_2026-11-21:4",
+      "listed": 12,
+      "active": 11,
+      "model_path": "race-001/shadow.json",
+      "model_sha256": "33b5b2d96f2f82732bc43197b583427996e8c056b9bf04f25515c9b89f9514f0"
+    },
+    {
+      "race_id": "RIKSTOTO:S1_NR_2026-11-21:5",
+      "listed": 12,
+      "active": 8,
+      "model_path": "race-002/shadow.json",
+      "model_sha256": "89e307bcc5edd0c06baa613e941250b8ac29af13ba687f3183cadef66bca21eb"
+    },
+    {
+      "race_id": "RIKSTOTO:S1_NR_2026-11-21:6",
+      "listed": 10,
+      "active": 10,
+      "model_path": "race-003/shadow.json",
+      "model_sha256": "aa093289171ada70d8752d5948c9e700240492613764fa84e89200b3e80f4191"
+    }
+  ]
+}
+
