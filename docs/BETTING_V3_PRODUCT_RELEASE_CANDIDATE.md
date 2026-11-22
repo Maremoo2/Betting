@@ -207,3 +207,18 @@ Issues46,83 and104 remain open: their acceptance is not met. No new issue, PR,
 model or parallel status system is created. The one remaining operational gate is
 an actually observed, isolated automatic full racing day with this candidate code;
 if the observation period has not occurred, report NOT_OBSERVED, never GO.
+
+
+### RELEASE-003 one-off timed acceptance, 22 November
+
+The existing branch-only source workflow can dispatch its own isolated probes at
+frozen five-minute times on 22 November. Three finite standard Linux jobs keep each
+job below GitHub's six-hour limit. This is opt-in, bound to the exact PR SHA, and
+never runs on main. Moving the branch stops dispatch. Missed observations are
+recorded and never backfilled. Each probe preserves its planned time separately
+from actual source/adapter execution. The original 52-race Collector inventory
+(run 44993097051, artifact 14742578389) is frozen in research/. All later discovered
+physical races remain visible. The day is NOT accepted merely because dispatch
+succeeds; completed artifacts, every race status, integrity and elapsed real time
+must be checked after the last event. Clock receipts confer no PIT/BET authority.
+No active automation, main schedule, production SQLite or model weights change.
