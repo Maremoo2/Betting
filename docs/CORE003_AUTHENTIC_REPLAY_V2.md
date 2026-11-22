@@ -73,3 +73,27 @@ No test copy mutation is written back to the original SQLite or original ZIPs.
 The CI candidate also checks pinned #215 code separately. This compatibility
 job is restricted to this replay PR branch and does not replace #215's registered
 checks or constitute HQ acceptance of the proposed contract.
+
+## Pinned source mirror and explicit retention limit
+
+The bootstrap PR CI run 45062690629 executed the real V2 replay successfully
+on commit 48a6f18d842d86d0de833d325fdc56c9d760435e, then uploaded the exact four
+original ZIPs without changing their bytes. Mirror artifact 14769603393 has
+ZIP SHA-256 c3b6b3a24f1bfc861060015a378bc891d7c48925ce8242be633a246e5829df75.
+It was independently downloaded locally; all four inner original ZIP hashes
+must still match the original run/artifact pins in the JSON contract.
+
+The final proposed CI source is this exact mirror, never latest state and never
+an automatic fallback to a different source. Configured retention is 90 days;
+current expiry is **20 February 2027 20:46:57 Europe/Oslo**
+(2027-02-20T19:46:57Z). This is finite Actions retention, not permanent storage.
+Before that horizon HQ must review a byte-identical, independently verified
+retained copy and its new location, or CI will fail closed. The same old seven-day
+state is not silently assumed available. The bootstrap mirror is only uploaded
+when the reviewed contract explicitly has mirror=null, not on normal future runs.
+
+This is a proposed CI dependency change only. The new corpus does not restore
+2 Nov data or authorize merge of either PR. HQ must review and explicitly adopt
+the exact contract before #215 can be accepted on it. After owner adoption,
+#215 needs its own required checks on the new main-based test contract; this
+PR's compatibility job does not rewrite #215's currently failed check status.

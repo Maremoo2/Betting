@@ -8,35 +8,47 @@
     "artifact_id": 13176561174,
     "sqlite_sha256": "60dbb4d350c252fd1f6dd7d8ba2c19e841153bd0e260318938e1b888bda913b0"
   },
-  "mirror": null,
+  "mirror": {
+    "repository": "Maremoo2/Betting",
+    "run_id": 45062690629,
+    "artifact_id": 14769603393,
+    "commit": "48a6f18d842d86d0de833d325fdc56c9d760435e",
+    "sha256": "c3b6b3a24f1bfc861060015a378bc891d7c48925ce8242be633a246e5829df75",
+    "expires_at_utc": "2027-02-20T19:46:57Z",
+    "retention_days": 90
+  },
   "artifacts": [
     {
       "role": "collector",
       "repository": "Maremoo2/rikstoto-program-collector",
       "run_id": 44874876371,
       "artifact_id": 14695542768,
-      "sha256": "ddb07503641d88aec4f90ef263f0fdf322c8a8ed852c8ee28d8fec19e49ceff4"
+      "sha256": "ddb07503641d88aec4f90ef263f0fdf322c8a8ed852c8ee28d8fec19e49ceff4",
+      "commit": "21031b554d34f1bfd8538b85e7c7183fa7d42c74"
     },
     {
       "role": "state",
       "repository": "Maremoo2/Betting",
       "run_id": 44907636310,
       "artifact_id": 14708117248,
-      "sha256": "51e6cb4ee388d098b1cb3894f6133e293a30194ccb3d19ab41435c222881b699"
+      "sha256": "51e6cb4ee388d098b1cb3894f6133e293a30194ccb3d19ab41435c222881b699",
+      "commit": "f9cfbd1403ab392d89808d9eea4534b331696b29"
     },
     {
       "role": "model",
       "repository": "Maremoo2/Betting",
       "run_id": 44907636310,
       "artifact_id": 14708341778,
-      "sha256": "c25d4c569c8cb74924853fe4b6ea0bbac68effb983487ff6d4af8e0bb88cfd23"
+      "sha256": "c25d4c569c8cb74924853fe4b6ea0bbac68effb983487ff6d4af8e0bb88cfd23",
+      "commit": "f9cfbd1403ab392d89808d9eea4534b331696b29"
     },
     {
       "role": "report",
       "repository": "Maremoo2/Betting",
       "run_id": 44907636310,
       "artifact_id": 14708301894,
-      "sha256": "84a67bc202bdf53455c4276eea5a45543c1365cf06420f4b3a5075c3a34047a9"
+      "sha256": "84a67bc202bdf53455c4276eea5a45543c1365cf06420f4b3a5075c3a34047a9",
+      "commit": "f9cfbd1403ab392d89808d9eea4534b331696b29"
     }
   ],
   "sqlite_sha256": "c8d460aa6e50f5c7f63a976e70e572bd5cc7fc4148ee9bddef786dea2984b20d",
@@ -79,4 +91,3 @@
     }
   ]
 }
-
