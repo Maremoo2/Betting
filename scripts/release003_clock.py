@@ -36,6 +36,13 @@ def make_plan(start, end, pin, inventory, *, campaign=None):
     branch = campaign['branch'] if campaign else BRANCH
     if repo not in {REPO, 'Maremoo2/betting-hq-private-research'} or branch == 'main':
         raise ValueError('ACCEPTANCE_REPOSITORY_BRANCH_SHA_BOUNDARY')
+    if campaign:
+        if (campaign.get("start") != start.isoformat() or campaign.get("end") != end.isoformat()
+                or stamp(campaign["frozen_at_utc"]) >= start
+                or stamp(campaign["source_completed_at_utc"]) > stamp(campaign["frozen_at_utc"])
+                or not inventory or len({r["race_id"] for r in inventory}) != len(inventory)
+                or any(r.get("country") not in {"NO", "SE"} for r in inventory)):
+            raise ValueError("FROZEN_CAMPAIGN_CLOCK_OR_SCOPE_INVALID")
     if (start.date().isoformat() != day or end.date() != start.date()
             or not timedelta(0) < end - start <= timedelta(hours=13.5)
             or len(pin) != 40 or any(c not in '0123456789abcdef' for c in pin)):
@@ -287,10 +294,13 @@ def run_phase(plan, phase, out, *, request=api, clock=lambda: datetime.now(UTC),
             handle.write(json.dumps(row, sort_keys=True) + '\n')
             handle.flush()
             os.fsync(handle.fileno())
+        if row['status'] != 'DISPATCH_ACCEPTED_OBSERVATION_PENDING':
+            print(f"::error title=Isolated acceptance window blocked::{value} {row['status']} {row.get('reason', '')}")
         if row.get('reason') == 'ACCEPTANCE_HEAD_MOVED_STOP_DISPATCH':
             break
     (out / 'phase-summary.json').write_text(json.dumps({
         'phase': phase, 'observations': rows, 'full_day_accepted': False,
+        'alert_required': any(r['status'] != 'DISPATCH_ACCEPTED_OBSERVATION_PENDING' for r in rows),
         'note': 'Dispatch receipts are not completed race/field/market/PIT acceptance.'}, indent=2))
     return rows
 

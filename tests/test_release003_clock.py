@@ -109,9 +109,11 @@ def test_clock_jobs_are_opt_in_branch_only_and_standard_linux():
 
 
 def test_private_campaign_uses_exact_previous_producer_and_blocks_missing(tmp_path):
-    inventory = [{"start_utc": "2026-11-23T11:20:00Z"}]
+    inventory = [{"race_id": "RIKSTOTO:TEST:1", "country": "NO", "start_utc": "2026-11-23T11:20:00Z"}]
     campaign = {"day": "2026-11-23", "repo": "Maremoo2/betting-hq-private-research",
-                "branch": "test/frozen", "seed_state": {"run_id": 99}}
+                "branch": "test/frozen", "seed_state": {"run_id": 99},
+                "start": "2026-11-23T10:00:00+00:00", "end": "2026-11-23T12:20:00+00:00",
+                "frozen_at_utc": "2026-11-23T09:00:00Z", "source_completed_at_utc": "2026-11-23T08:59:00Z"}
     p = clock.make_plan("2026-11-23T10:00:00Z", "2026-11-23T12:20:00Z",
                         PIN, inventory, campaign=campaign)
     p["ticks"] = p["ticks"][:2]
