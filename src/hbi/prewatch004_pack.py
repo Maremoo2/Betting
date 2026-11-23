@@ -104,7 +104,7 @@ def build_race_pack(
         raise ValueError("PREWATCH004_RACE_IDENTITY_OR_SOURCE_INVALID")
     original = doc.get("entrants")
     if not isinstance(original, list):
-        raise ValueError("PREWATCH004_PDF_RUNNERS_MISSING")
+        raise TypeError("PREWATCH004_PDF_RUNNERS_MISSING")
     by_number: dict[str, dict] = {}
     for entry in original:
         if not isinstance(entry, dict) or type(entry.get("program_number")) is not int:
@@ -122,7 +122,7 @@ def build_race_pack(
             raise ValueError("PREWATCH004_FULL_FIELD_MISMATCH")
         history = parsed.get("past_starts")
         if not isinstance(history, list):
-            raise ValueError("PREWATCH004_HISTORY_SHAPE_INVALID")
+            raise TypeError("PREWATCH004_HISTORY_SHAPE_INVALID")
         source_rows = [_source_row(row) for row in history]
         rows.append({
             "selection_id": number,
@@ -213,6 +213,13 @@ def validate_phase_a_draft(draft: dict[str, Any], pack: dict[str, Any]) -> None:
             or draft.get("race_id") != pack.get("race_id")
             or draft.get("source_run_id") != pack.get("source", {}).get("run_id")):
         raise ValueError("PREWATCH004_DRAFT_IDENTITY_OR_STATUS_INVALID")
+    allowed_draft_keys = {
+        "schema", "status", "race_id", "source_run_id", "runners",
+        "race_shape", "candidate", "counterargument", "uncertainty",
+        "champion_provisional", "champion_evidence",
+    }
+    if set(draft) - allowed_draft_keys or set(draft) & FORBIDDEN:
+        raise ValueError("PREWATCH004_DRAFT_FORBIDDEN_FIELDS")
     runners = draft.get("runners")
     if not isinstance(runners, list) or len(runners) != pack["active_count"]:
         raise ValueError("PREWATCH004_DRAFT_FULL_FIELD_MISSING")
@@ -221,6 +228,8 @@ def validate_phase_a_draft(draft: dict[str, Any], pack: dict[str, Any]) -> None:
     if len(set(observed)) != len(observed) or set(observed) != expected:
         raise ValueError("PREWATCH004_DRAFT_RUNNER_ID_MISMATCH")
     for runner in runners:
+        if set(runner) - {"selection_id", "assessment", "strengths", "weaknesses", "evidence"}:
+            raise ValueError("PREWATCH004_DRAFT_RUNNER_FORBIDDEN_FIELDS")
         if any(
             not isinstance(runner.get(k), str) or not runner[k].strip()
             for k in ("assessment", "strengths", "weaknesses", "evidence")
@@ -237,6 +246,12 @@ def validate_phase_a_draft(draft: dict[str, Any], pack: dict[str, Any]) -> None:
             value = scores[key]
             if type(value) is not int or not 0 <= value <= bound:
                 raise ValueError("PREWATCH004_DRAFT_SCORE_BOUNDS_INVALID")
+        reasons = draft.get("champion_evidence")
+        if (not isinstance(reasons, dict) or set(reasons) != set(SCORE_BOUNDS)
+                or any(not isinstance(v, str) or not v.strip() for v in reasons.values())):
+            raise ValueError("PREWATCH004_DRAFT_SCORE_EVIDENCE_MISSING")
+    elif "champion_evidence" in draft:
+        raise ValueError("PREWATCH004_DRAFT_EVIDENCE_WITHOUT_SCORES")
     if set(draft) & FORBIDDEN or draft.get("bet_authorized", False) is not False:
         raise ValueError("PREWATCH004_DRAFT_MARKET_OR_BET_FIELD_FORBIDDEN")
 
