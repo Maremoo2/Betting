@@ -9,12 +9,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from .historical_intelligence_v2 import SCHEMA as HISTORIC_SCHEMA
 from .historical_intelligence_v2 import history_coverage, verified_past_race
+from .providers.atg import AtgClient
 from .horse_identity import ModelIdentityEvidence, resolve_model_identity
 from .prewatch004_pack import _write_once, digest
 from .prewatch004b_features import make_feature_day_packs, validate_context_for_draft
@@ -66,6 +69,9 @@ def aggregate_official_history(
     if type(horse_id) is not int or horse_id <= 0:
         raise ValueError("PREWATCH004B2_HORSE_ID_MISSING")
     cutoff = utc(cutoff_utc)
+    # A caller flag alone never attests a complete previous-start index.
+    if history_index_complete:
+        raise ValueError("PREWATCH004B2_HISTORY_INDEX_ATTESTATION_NOT_AVAILABLE")
     admitted = []
     seen = set()
     for item in results:
@@ -74,6 +80,17 @@ def aggregate_official_history(
         uri = item.get("source_uri")
         if not isinstance(uri, str) or not uri:
             raise ValueError("PREWATCH004B2_SOURCE_ID_REQUIRED")
+        pattern = r"[0-9]{4}-[0-9]{2}-[0-9]{2}_[1-9][0-9]*_[1-9][0-9]*"
+        if (item.get("schema") != HISTORIC_SCHEMA
+                or not re.fullmatch(r"[0-9a-f]{64}", str(item.get("original_sha256", "")))
+                or item.get("dynamic_horse_statistics_ignored") is not True
+                or item.get("provider_publication_attested") is not
+                    (item.get("source_published_at_utc") is not None)
+                or not uri.startswith(f"{AtgClient.GAME_API}/vinnare_")
+                or not re.fullmatch(
+                    pattern, uri.removeprefix(f"{AtgClient.GAME_API}/vinnare_")
+                )):
+            raise ValueError("PREWATCH004B2_UNATTESTED_UPSTREAM_RESULT_PROVENANCE")
         if uri in seen:
             raise ValueError("PREWATCH004B2_DUPLICATE_PRIOR_RACE")
         seen.add(uri)
