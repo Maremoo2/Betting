@@ -43,7 +43,7 @@ def audit(report: dict[str, Any]) -> dict[str, Any]:
     for observation_id in CANDIDATES:
         d = indexed.get(observation_id)
         if not isinstance(d, dict):
-            raise ValueError("004B6_MISSING_REAL_CANDIDATE:" + observation_id)
+            raise TypeError("004B6_MISSING_REAL_CANDIDATE:" + observation_id)
         reasons = d.get("exclusion_reasons")
         if (d.get("historical_result_chain_pit_decision") != "PIT_VERIFIED"
                 or d.get("A_E_research") is not True
