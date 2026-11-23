@@ -106,3 +106,41 @@ def test_clock_jobs_are_opt_in_branch_only_and_standard_linux():
         assert 'timeout-minutes: 350' in job
     guard = workflow.split('Enforce branch acceptance SHA before source access', 1)[1]
     assert guard.index('FROZEN_ACCEPTANCE_HEAD_CHANGED_NO_SOURCE_ACCESS') < guard.index('Execute research source capture')
+
+
+def test_private_campaign_uses_exact_previous_producer_and_blocks_missing(tmp_path):
+    inventory = [{"race_id": "RIKSTOTO:TEST:1", "country": "NO", "start_utc": "2026-11-23T11:20:00Z"}]
+    campaign = {"day": "2026-11-23", "repo": "Maremoo2/betting-hq-private-research",
+                "branch": "test/frozen", "seed_state": {"run_id": 99, "expires_at_utc": "2026-11-30T20:00:00Z"},
+                "start": "2026-11-23T10:00:00+00:00", "end": "2026-11-23T12:20:00+00:00",
+                "frozen_at_utc": "2026-11-23T09:00:00Z", "source_completed_at_utc": "2026-11-23T08:59:00Z"}
+    p = clock.make_plan("2026-11-23T10:00:00Z", "2026-11-23T12:20:00Z",
+                        PIN, inventory, campaign=campaign)
+    p["ticks"] = p["ticks"][:2]
+    timer = Time(clock.stamp(p["start"]))
+    posted = []
+
+    def request(path, method="GET", payload=None):
+        assert "/repos/Maremoo2/betting-hq-private-research/" in path
+        if "/branches/" in path:
+            return {"commit": {"sha": PIN}}
+        if method == "POST":
+            posted.append(payload)
+            return None
+        return {"workflow_runs": []}
+
+    rows = clock.run_phase(p, 0, tmp_path, request=request, clock=timer, sleep=timer.sleep)
+    assert len(posted) == 1
+    assert posted[0]["inputs"]["acceptance_state_run"] == "99"
+    assert rows[1]["status"] == "DISPATCH_BLOCKED"
+    assert rows[1]["reason"] == "EXACT_PREVIOUS_STATE_RUN_MISSING_NO_FALLBACK"
+
+
+def test_private_seed_must_survive_entire_future_window():
+    campaign = {"day": "2026-11-24", "repo": "Maremoo2/betting-hq-private-research",
+                "branch": "test/frozen", "seed_state": {"expires_at_utc": "2026-11-23T20:48:25Z"},
+                "start": "2026-11-24T10:00:00+00:00", "end": "2026-11-24T12:20:00+00:00",
+                "frozen_at_utc": "2026-11-23T12:00:00Z", "source_completed_at_utc": "2026-11-23T11:59:00Z"}
+    inventory = [{"race_id": "RIKSTOTO:TEST:1", "country": "NO", "start_utc": "2026-11-24T11:20:00Z"}]
+    with pytest.raises(ValueError, match="SEED_EXPIRES_BEFORE_WINDOW_END"):
+        clock.make_plan(campaign["start"], campaign["end"], PIN, inventory, campaign=campaign)

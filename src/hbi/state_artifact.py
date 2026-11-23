@@ -19,6 +19,35 @@ from pathlib import Path
 API = "https://api.github.com"
 
 
+def write_restore_failure_status(
+    path: Path, *, reason: str, run_id: str, declared_race_ids: tuple[str, ...] = (),
+) -> dict:
+    """Observable failure receipt; never claims a restore or sends external mail."""
+    if (len(set(declared_race_ids)) != len(declared_race_ids)
+            or any(not isinstance(race, str) or not race for race in declared_race_ids)):
+        raise ValueError("STATE_FAILURE_DECLARED_RACE_IDENTITIES_INVALID")
+    document = {
+        "schema": "STATE_HANDOFF_FAILURE_V1", "status": "BLOCKED",
+        "observed_at_utc": datetime.now(UTC).isoformat(), "workflow_run_id": run_id,
+        "reason": reason, "alert_required": True, "notification_channel": "GITHUB_ACTIONS_ERROR",
+        "restored": False, "bootstrap_allowed": False, "bet_authority": False,
+        "production_activated": False,
+        "declared_races": [
+            {"race_id": race, "terminal_status": "SYSTEM_BLOCKED", "reason": reason}
+            for race in declared_race_ids
+        ],
+        "declaration_is_live_discovery": False,
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("x", encoding="utf-8") as stream:
+        json.dump(document, stream, sort_keys=True, indent=2)
+        stream.flush()
+        os.fsync(stream.fileno())
+    if json.loads(path.read_bytes()) != document:
+        raise ValueError("STATE_RESTORE_FAILURE_STATUS_READBACK_MISMATCH")
+    return document
+
+
 def _request(url: str, token: str) -> urllib.request.Request:
     return urllib.request.Request(
         url,
@@ -158,6 +187,10 @@ def restore_latest_state(
     audit_code_sha: str | None = None,
     required: bool = False,
     validate_sqlite: bool = False,
+    source_run_id: int | None = None,
+    expected_zip_sha256: str | None = None,
+    expected_database_sha256: str | None = None,
+    source_job_name: str | None = None,
 ) -> bool:
     """Restore the newest non-expired HBI SQLite database artifact.
 
@@ -171,13 +204,47 @@ def restore_latest_state(
         or re.fullmatch(r"[0-9a-fA-F]{40}", audit_code_sha) is None
     ):
         raise ValueError("V1_AUDIT_RUN_AND_CODE_SHA_NOT_ATTESTED")
-    url = f"{API}/repos/{repository}/actions/artifacts?name={artifact_name}&per_page=100"
+    for digest in (expected_zip_sha256, expected_database_sha256):
+        if digest is not None and re.fullmatch(r"[0-9a-f]{64}", digest) is None:
+            raise ValueError("STATE_RESTORE_EXPECTED_SHA_INVALID")
+    if source_run_id is not None:
+        if type(source_run_id) is not int or source_run_id <= 0:
+            raise ValueError("STATE_RESTORE_SOURCE_RUN_INVALID")
+        run = _inventory_json(f"{API}/repos/{repository}/actions/runs/{source_run_id}", token)
+        if (run.get("id") != source_run_id
+                or (branch is not None and run.get("head_branch") != branch)):
+            raise ValueError("STATE_RESTORE_SOURCE_RUN_NOT_SUCCESSFUL")
+        if source_job_name is None:
+            if run.get("status") != "completed" or run.get("conclusion") != "success":
+                raise ValueError("STATE_RESTORE_SOURCE_RUN_NOT_SUCCESSFUL")
+        else:
+            # Read-only sidecars may still run after the actual state writer is
+            # complete. Require GitHub's completed writer job, not a self-issued
+            # success flag, and bind it to the same frozen consumer code.
+            if source_job_name != "source-pilot" or run.get("head_sha") != audit_code_sha:
+                raise ValueError("STATE_RESTORE_WRITER_CODE_NOT_ATTESTED")
+            jobs = _inventory_json(
+                f"{API}/repos/{repository}/actions/runs/{source_run_id}/jobs?per_page=100", token,
+            ).get("jobs", [])
+            writers = [job for job in jobs if job.get("name") == source_job_name]
+            if (len(writers) != 1 or writers[0].get("status") != "completed"
+                    or writers[0].get("conclusion") != "success"):
+                raise ValueError("STATE_RESTORE_WRITER_JOB_NOT_SUCCESSFUL")
+        # Run-scoped inventory cannot silently select a different producer.
+        url = f"{API}/repos/{repository}/actions/runs/{source_run_id}/artifacts?per_page=100"
+    else:
+        url = f"{API}/repos/{repository}/actions/artifacts?name={artifact_name}&per_page=100"
     payload = _inventory_json(url, token)
 
     artifacts = [
         item
         for item in payload.get("artifacts", [])
         if not item.get("expired", False)
+        and (source_run_id is None or (
+            item.get("name") == artifact_name
+            and (item.get("workflow_run") or {}).get("id") == source_run_id
+            and (item.get("workflow_run") or {}).get("head_sha") == run.get("head_sha")
+        ))
         and (
             branch is None
             or (item.get("workflow_run") or {}).get("head_branch") == branch
@@ -190,6 +257,8 @@ def restore_latest_state(
 
     artifacts.sort(key=lambda item: item["created_at"], reverse=True)
     latest = artifacts[0]
+    if source_run_id is not None and len(artifacts) != 1:
+        raise ValueError("STATE_RESTORE_SOURCE_ARTIFACT_NOT_UNIQUE")
     if receipt_path is not None:
         source_run = latest.get("workflow_run") or {}
         if (
@@ -249,6 +318,10 @@ def restore_latest_state(
     # GitHub Actions artifacts may advertise their immutable ZIP digest.
     # Verify that digest before extracting or touching the canonical state.
     advertised = latest.get("digest")
+    if expected_zip_sha256 is not None and hashlib.sha256(archive).hexdigest() != expected_zip_sha256:
+        raise ValueError("STATE_RESTORE_EXPECTED_ZIP_SHA_MISMATCH")
+    if source_run_id is not None and advertised is None:
+        raise ValueError("STATE_RESTORE_ARTIFACT_DIGEST_REQUIRED")
     if advertised is not None:
         if (not isinstance(advertised, str)
                 or re.fullmatch(r"sha256:[0-9a-f]{64}", advertised) is None):
@@ -257,6 +330,9 @@ def restore_latest_state(
             raise ValueError("STATE_RESTORE_ARTIFACT_ZIP_SHA_MISMATCH")
 
     target = Path(target_path)
+    if target.is_symlink() or any(Path(str(target) + suffix).exists()
+                                  for suffix in ("-wal", "-shm", "-journal")):
+        raise ValueError("STATE_RESTORE_TARGET_BUSY_OR_SYMLINK")
     target.parent.mkdir(parents=True, exist_ok=True)
     database_sha256 = hashlib.sha256()
     database_size = 0
@@ -286,6 +362,9 @@ def restore_latest_state(
             raise ValueError("STATE_RESTORE_DATABASE_READBACK_SHA_MISMATCH")
         if validate_sqlite:
             _verify_canonical_sqlite(temporary)
+        if (expected_database_sha256 is not None
+                and database_sha256.hexdigest() != expected_database_sha256):
+            raise ValueError("STATE_RESTORE_EXPECTED_DATABASE_SHA_MISMATCH")
         # The prior database remains byte-identical on every upstream failure.
         os.replace(temporary, target)
         temporary = None
@@ -308,7 +387,8 @@ def restore_latest_state(
             "source_head_branch": source_run.get("head_branch"),
             "source_head_sha": source_run.get("head_sha"),
             "restore_branch_filter": branch,
-            "selection_rule": "NEWEST_NON_EXPIRED_MATCHING_GITHUB_ARTIFACT",
+            "selection_rule": ("EXACT_SUCCESSFUL_SOURCE_RUN" if source_run_id is not None
+                               else "NEWEST_NON_EXPIRED_MATCHING_GITHUB_ARTIFACT"),
             "artifact_zip_sha256": hashlib.sha256(archive).hexdigest(),
             "restored_database_sha256": database_sha256.hexdigest(),
             "restored_database_size_bytes": database_size,

@@ -29,12 +29,25 @@ def stamp(value):
     return result.astimezone(UTC)
 
 
-def make_plan(start, end, pin, inventory):
+def make_plan(start, end, pin, inventory, *, campaign=None):
     start, end = stamp(start), stamp(end)
-    if (start.date().isoformat() != '2026-11-22' or end.date() != start.date()
+    day = campaign['day'] if campaign else '2026-11-22'
+    repo = campaign['repo'] if campaign else REPO
+    branch = campaign['branch'] if campaign else BRANCH
+    if repo not in {REPO, 'Maremoo2/betting-hq-private-research'} or branch == 'main':
+        raise ValueError('ACCEPTANCE_REPOSITORY_BRANCH_SHA_BOUNDARY')
+    if campaign and (campaign.get("start") != start.isoformat() or campaign.get("end") != end.isoformat()
+                or stamp(campaign["frozen_at_utc"]) >= start
+                or stamp(campaign["source_completed_at_utc"]) > stamp(campaign["frozen_at_utc"])
+                or not inventory or len({r["race_id"] for r in inventory}) != len(inventory)
+                or any(r.get("country") not in {"NO", "SE"} for r in inventory)):
+        raise ValueError("FROZEN_CAMPAIGN_CLOCK_OR_SCOPE_INVALID")
+    if (start.date().isoformat() != day or end.date() != start.date()
             or not timedelta(0) < end - start <= timedelta(hours=13.5)
             or len(pin) != 40 or any(c not in '0123456789abcdef' for c in pin)):
         raise ValueError('ONE_OFF_ACCEPTANCE_BOUNDARY_INVALID')
+    if campaign and stamp(campaign['seed_state']['expires_at_utc']) <= end:
+        raise ValueError('ACCEPTANCE_SEED_EXPIRES_BEFORE_WINDOW_END')
     first = min(stamp(r['start_utc']) for r in inventory)
     last = max(stamp(r['start_utc']) for r in inventory)
     if start >= first - timedelta(minutes=4) or end < last + timedelta(minutes=60):
@@ -46,16 +59,20 @@ def make_plan(start, end, pin, inventory):
         tick += timedelta(minutes=5)
     if len(ticks) > 162:
         raise ValueError('ACCEPTANCE_TICK_LIMIT')
-    return {'schema': 'RELEASE003_ONE_OFF_CLOUD_CLOCK_V1', 'repo': REPO, 'branch': BRANCH,
-            'day': '2026-11-22', 'pin': pin, 'start': start.isoformat(), 'end': end.isoformat(),
+    plan = {'schema': 'RELEASE003_ONE_OFF_CLOUD_CLOCK_V1', 'repo': repo, 'branch': branch,
+            'day': day, 'pin': pin, 'start': start.isoformat(), 'end': end.isoformat(),
             'ticks': ticks, 'source_inventory_sha256': hashlib.sha256(
                 json.dumps(inventory, sort_keys=True).encode()).hexdigest(),
             'scope_rule': 'ALL_PHYSICAL_COLLECTOR_RACES_PLUS_LATER_DISCOVERIES_NOT_PRODUCTS',
             'production_activation': False, 'bet_authority': False}
+    if campaign:
+        plan['campaign'] = campaign
+    return plan
 
 
 def api(path, method='GET', payload=None):
-    if not path.startswith(f'/repos/{REPO}/'):
+    repository = os.environ.get('GITHUB_REPOSITORY', REPO)
+    if repository not in {REPO, 'Maremoo2/betting-hq-private-research'} or not path.startswith(f'/repos/{repository}/'):
         raise ValueError('ACCEPTANCE_API_SCOPE_INVALID')
     data = json.dumps(payload).encode() if payload is not None else None
     request = urllib.request.Request('https://api.github.com' + path, data=data, method=method,
@@ -87,7 +104,7 @@ def reconcile_clock(plan, inventory, receipts, runs, reports, *, observed_at):
     from hbi.prewatch_shadow_handoff import completion_health
 
     now = stamp(observed_at)
-    regenerated = make_plan(plan['start'], plan['end'], plan['pin'], inventory)
+    regenerated = make_plan(plan['start'], plan['end'], plan['pin'], inventory, campaign=plan.get('campaign'))
     if regenerated != plan:
         raise ValueError('FROZEN_ACCEPTANCE_PLAN_CONFLICT')
     expected_races = {row['race_id'] for row in inventory}
@@ -205,6 +222,7 @@ def reconcile_clock(plan, inventory, receipts, runs, reports, *, observed_at):
 
 def run_phase(plan, phase, out, *, request=api, clock=lambda: datetime.now(UTC), sleep=time.sleep):
     out.mkdir(parents=True, exist_ok=True)
+    repo, branch_name = plan['repo'], plan['branch']
     low = stamp(plan['start']) + timedelta(seconds=phase * PHASE_SECONDS)
     high = min(stamp(plan['end']), low + timedelta(seconds=PHASE_SECONDS))
     rows = []
@@ -221,12 +239,12 @@ def run_phase(plan, phase, out, *, request=api, clock=lambda: datetime.now(UTC),
             row['status'] = 'MISSED_CONTROLLER_SLOT_NOT_BACKFILLED'
         else:
             try:
-                branch = request(f'/repos/{REPO}/branches/' + urllib.parse.quote(BRANCH, safe=''))
+                branch = request(f'/repos/{repo}/branches/' + urllib.parse.quote(branch_name, safe=''))
                 if branch['commit']['sha'] != plan['pin']:
                     raise ValueError('ACCEPTANCE_HEAD_MOVED_STOP_DISPATCH')
-                lookup = (f'/repos/{REPO}/actions/workflows/{WORKFLOW}/runs?'
+                lookup = (f'/repos/{repo}/actions/workflows/{WORKFLOW}/runs?'
                           'event=workflow_dispatch&per_page=20&branch='
-                          + urllib.parse.quote(BRANCH, safe=''))
+                          + urllib.parse.quote(branch_name, safe=''))
                 existing = request(lookup)
                 already = [r for r in existing['workflow_runs']
                            if r.get('display_title') == 'V3313 tick ' + value
@@ -234,10 +252,33 @@ def run_phase(plan, phase, out, *, request=api, clock=lambda: datetime.now(UTC),
                 if len(already) > 1:
                     raise ValueError('DUPLICATE_ACCEPTANCE_TICK_ALREADY_EXISTS')
                 if not already:
-                    request(f'/repos/{REPO}/actions/workflows/{WORKFLOW}/dispatches', 'POST', {
-                        'ref': BRANCH, 'inputs': {'execute': 'true', 'shadow_acceptance': 'true',
+                    state_input = {}
+                    if plan.get('campaign'):
+                        index = plan['ticks'].index(value)
+                        if index == 0:
+                            previous_run = plan['campaign']['seed_state']['run_id']
+                        else:
+                            previous_title = 'V3313 tick ' + plan['ticks'][index - 1]
+                            previous = [r for r in existing['workflow_runs']
+                                        if r.get('display_title') == previous_title
+                                        and r.get('head_sha') == plan['pin']]
+                            if len(previous) != 1:
+                                raise ValueError('EXACT_PREVIOUS_STATE_RUN_MISSING_NO_FALLBACK')
+                            producer = request(f"/repos/{repo}/actions/runs/{previous[0]['id']}")
+                            if producer.get('head_sha') != plan['pin']:
+                                raise ValueError('EXACT_PREVIOUS_WRITER_CODE_CHANGED')
+                            jobs = request(f"/repos/{repo}/actions/runs/{previous[0]['id']}/jobs?per_page=100")["jobs"]
+                            writers = [job for job in jobs if job.get('name') == 'source-pilot']
+                            if (len(writers) != 1 or writers[0].get('status') != 'completed'
+                                    or writers[0].get('conclusion') != 'success'):
+                                raise ValueError('EXACT_PREVIOUS_STATE_WRITER_NOT_SUCCESSFUL')
+                            previous_run = previous[0]['id']
+                        state_input['acceptance_state_run'] = str(previous_run)
+                        row['state_source_run_id'] = previous_run
+                    request(f'/repos/{repo}/actions/workflows/{WORKFLOW}/dispatches', 'POST', {
+                        'ref': branch_name, 'inputs': {'execute': 'true', 'shadow_acceptance': 'true',
                         'acceptance_schedule': 'false', 'acceptance_day': plan['day'],
-                        'acceptance_pin_sha': plan['pin'], 'acceptance_tick_utc': value}})
+                        'acceptance_pin_sha': plan['pin'], 'acceptance_tick_utc': value, **state_input}})
                 row['status'] = 'DISPATCH_ACCEPTED_OBSERVATION_PENDING'
                 for _ in range(3):
                     sleep(2)
@@ -259,10 +300,13 @@ def run_phase(plan, phase, out, *, request=api, clock=lambda: datetime.now(UTC),
             handle.write(json.dumps(row, sort_keys=True) + '\n')
             handle.flush()
             os.fsync(handle.fileno())
+        if row['status'] != 'DISPATCH_ACCEPTED_OBSERVATION_PENDING':
+            print(f"::error title=Isolated acceptance window blocked::{value} {row['status']} {row.get('reason', '')}")
         if row.get('reason') == 'ACCEPTANCE_HEAD_MOVED_STOP_DISPATCH':
             break
     (out / 'phase-summary.json').write_text(json.dumps({
         'phase': phase, 'observations': rows, 'full_day_accepted': False,
+        'alert_required': any(r['status'] != 'DISPATCH_ACCEPTED_OBSERVATION_PENDING' for r in rows),
         'note': 'Dispatch receipts are not completed race/field/market/PIT acceptance.'}, indent=2))
     return rows
 
@@ -273,12 +317,16 @@ def main():
     parser.add_argument('--plan-only', action='store_true')
     args = parser.parse_args()
     pin = os.environ['ACCEPTANCE_PIN_SHA']
-    if (os.environ['GITHUB_REPOSITORY'] != REPO
-            or os.environ['GITHUB_REF_NAME'] != BRANCH or os.environ['GITHUB_SHA'] != pin):
+    manifest = os.environ.get('ACCEPTANCE_MANIFEST')
+    campaign = json.loads(Path(manifest).read_bytes()) if manifest else None
+    repo = campaign['repo'] if campaign else REPO
+    branch = campaign['branch'] if campaign else BRANCH
+    if (os.environ['GITHUB_REPOSITORY'] != repo
+            or os.environ['GITHUB_REF_NAME'] != branch or os.environ['GITHUB_SHA'] != pin):
         raise ValueError('ACCEPTANCE_REPOSITORY_BRANCH_SHA_BOUNDARY')
-    inventory = json.loads(Path('research/release003-20261122-scope.json').read_bytes())['races']
+    inventory = campaign['races'] if campaign else json.loads(Path('research/release003-20261122-scope.json').read_bytes())['races']
     plan = make_plan(os.environ['ACCEPTANCE_START_UTC'], os.environ['ACCEPTANCE_END_UTC'],
-                     pin, inventory)
+                     pin, inventory, campaign=campaign)
     out = Path(os.environ['RUNNER_TEMP']) / f'release003-clock-{args.phase}'
     out.mkdir(parents=True, exist_ok=True)
     target = out / 'plan.json'

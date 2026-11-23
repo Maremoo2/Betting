@@ -45,6 +45,10 @@ on:
         description: "Required exact SHA for timed test"
         type: string
         default: ''
+      acceptance_state_run:
+        description: "Exact previous successful isolated state run (no latest fallback)"
+        type: string
+        default: ''
       acceptance_tick_utc:
         description: "Controller planned UTC; empty for manual probe"
         type: string
@@ -58,7 +62,7 @@ jobs:
   source-pilot:
     if: ${{ !inputs.acceptance_schedule }}
     concurrency:
-      group: ${{ github.ref == 'refs/heads/main' && 'core003-isolated-source-pilot' || format('core003-acceptance-{0}', github.run_id) }}
+      group: ${{ github.ref == 'refs/heads/main' && 'core003-isolated-source-pilot' || format('core003-acceptance-writer-{0}', github.ref) }}
       cancel-in-progress: false
     outputs:
       run: ${{ steps.gate.outputs.run }}
@@ -119,6 +123,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HQ_PRIVATE_ARCHIVE_ROOT: ${{ github.ref == 'refs/heads/main' && vars.HQ_PRIVATE_ARCHIVE_ROOT || '' }}
           PRIVATE_REPOSITORY: ${{ github.event.repository.private }}
+          ACCEPTANCE_STATE_RUN: ${{ inputs.acceptance_state_run }}
+          ACCEPTANCE_TICK: ${{ inputs.acceptance_tick_utc }}
         run: |
           python - <<'PY'
           import os
@@ -130,19 +136,79 @@ jobs:
               if os.environ.get("PRIVATE_REPOSITORY") != "true":
                   raise SystemExit("CORE003_PRIVATE_ARCHIVE_REQUIRES_PRIVATE_REPOSITORY")
               sha = private_pilot_state(Path(private_root), target)
+              import json
+              Path("state-handoff").mkdir(exist_ok=True)
+              Path("state-handoff/private-restore-receipt.json").write_text(json.dumps({
+                  "schema": "PRIVATE_STATE_READBACK_V1", "restored_database_sha256": sha,
+                  "source": "AUTHORIZED_PRIVATE_MOUNT", "bet_authority": False}))
               print(f"PILOT_STATE_RESTORE=PRIVATE_ARCHIVE sha256={sha}")
           else:
+              options = {}
+              source_repository = os.environ["GITHUB_REPOSITORY"]
+              source_branch = "main"
+              source_artifact = "core003-pilot-state"
+              restore_target = target
+              campaign_path = Path("research/phase1-acceptance-scope.json")
+              if os.environ.get("ACCEPTANCE_TICK") and campaign_path.exists():
+                  import json
+                  campaign = json.loads(campaign_path.read_bytes())
+                  source_run = os.environ.get("ACCEPTANCE_STATE_RUN", "")
+                  if not source_run.isdigit():
+                      raise SystemExit("EXACT_PREVIOUS_STATE_RUN_REQUIRED_NO_BOOTSTRAP")
+                  options["source_run_id"] = int(source_run)
+                  source_branch = os.environ["GITHUB_REF_NAME"]
+                  options["source_job_name"] = "source-pilot"
+                  seed = campaign["seed_state"]
+                  if int(source_run) == seed["run_id"]:
+                      options.pop("source_job_name")
+                      source_repository, source_branch = seed["repository"], seed["branch"]
+                      source_artifact = seed["artifact_name"]
+                      restore_target = target.with_name(seed["database_filename"])
+                      options["expected_zip_sha256"] = seed["zip_sha256"]
+                      options["expected_database_sha256"] = seed["database_sha256"]
               restore_latest_state(
-                  repository=os.environ["GITHUB_REPOSITORY"],
+                  repository=source_repository,
                   token=os.environ["GITHUB_TOKEN"],
-                  target_path=target,
-                  artifact_name="core003-pilot-state",
-                  branch="main",
+                  target_path=restore_target,
+                  artifact_name=source_artifact,
+                  branch=source_branch,
+                  receipt_path=Path("state-handoff/restore-receipt.json"),
+                  audit_workflow_run_id=int(os.environ["GITHUB_RUN_ID"]),
+                  audit_code_sha=os.environ["GITHUB_SHA"],
+                  **options,
                   required=True,
                   validate_sqlite=True,
               )
+              if restore_target != target:
+                  os.replace(restore_target, target)
               print("PILOT_STATE_RESTORE=RESTORED")
           PY
+
+      - name: Expose blocked state handoff and alert
+        if: failure() && steps.restore.outcome == 'failure'
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from hbi.state_artifact import write_restore_failure_status
+          import json
+          campaign = Path("research/phase1-acceptance-scope.json")
+          declared = json.loads(campaign.read_bytes())["races"] if campaign.exists() else []
+          write_restore_failure_status(Path("state-handoff/failure.json"),
+              reason="RESTORE_FAILED_SEE_ORIGINAL_STEP_ERROR_NO_FALLBACK",
+              run_id=os.environ["GITHUB_RUN_ID"],
+              declared_race_ids=tuple(r["race_id"] for r in declared))
+          print("::error title=State restore blocked::No source/model execution; verified state required")
+          PY
+
+      - name: Publish state handoff receipt even on failure
+        if: always() && steps.restore.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: state-handoff-${{ github.run_id }}
+          path: state-handoff/
+          if-no-files-found: error
+          retention-days: 21
 
       - name: Initialize isolated research database
         if: steps.gate.outputs.run == 'true'
