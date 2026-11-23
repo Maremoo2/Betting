@@ -1,7 +1,4 @@
 """TEST_ONLY B5 negative coverage; real originals replayed in PR Actions."""
-from copy import deepcopy
-from datetime import timedelta
-
 import pytest
 
 from hbi.prewatch004b5_evidence_recovery import assemble, source_window
