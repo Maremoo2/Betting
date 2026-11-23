@@ -1,0 +1,71 @@
+name: PREWATCH-004B5 authentic source PIT evidence audit (NO BET)
+
+on:
+  pull_request:
+    paths:
+      - "src/hbi/prewatch004b5_evidence_recovery.py"
+      - "tests/test_prewatch004b5_evidence_recovery.py"
+      - "docs/PREWATCH004B5_PIT_EVIDENCE_RECOVERY.md"
+      - ".github/workflows/prewatch004b5-evidence-pr.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  pit-evidence-replay:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Full PREWATCH 004B to 004B5 focused regressions
+        run: pytest -q tests/test_prewatch004b_features.py tests/test_prewatch004b2_original_binding.py tests/test_prewatch004b3_flexible_pilot.py tests/test_prewatch004b4_fullfield_pilot.py tests/test_prewatch004b5_evidence_recovery.py
+      - name: Check source and tests
+        run: ruff check src/hbi/prewatch004b5_evidence_recovery.py tests/test_prewatch004b5_evidence_recovery.py
+      - name: Download original November 23 Collector archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p collector-input
+          gh run download 45141884691 --repo Maremoo2/rikstoto-program-collector --name prewatch-bridge-fallback --dir collector-input
+      - name: Reconcile genuine historical results against old PIT source research
+        run: |
+          set -euo pipefail
+          mapfile -t archives < <(find collector-input -type f -name 'rikstoto-2026-11-23-*.zip')
+          test "${#archives[@]}" -eq 1
+          archive="${archives[0]}"
+          test -s "$archive.sha256"
+          mkdir -p prewatch004b5-output
+          python -m hbi.prewatch004b5_evidence_recovery --root . --archive "$archive" --checksum "$archive.sha256" --date-oslo 2026-11-23 --output prewatch004b5-output/evidence.json
+          cp prewatch004b5-output/evidence.json prewatch004b5-output/first.json
+          python -m hbi.prewatch004b5_evidence_recovery --root . --archive "$archive" --checksum "$archive.sha256" --date-oslo 2026-11-23 --output prewatch004b5-output/evidence.json
+          cmp prewatch004b5-output/first.json prewatch004b5-output/evidence.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path("prewatch004b5-output/evidence.json").read_text())
+          assert r["active_runners"] == 15 and len(r["field"]) == 15
+          assert r["active_with_five_pdf_raw_lines"] == 15
+          assert r["retrospective_no2026_official_source_observations"] == 7
+          assert r["nov23_fullfield_historical_PIT_verified_horses"] == 0
+          assert not r["first_genuine_historical_pit_admission"]
+          assert not r["model_eligible"] and not r["bet_authorized"]
+          assert r["source_clock"]["source_captured_before_cutoff"]
+          assert r["m7b2b_existing_original_research"]["cutoff_evidence"]
+          assert len(r["legacy_pit_candidate_rows_Tminus4_not_new_admissions"]) == 18
+          assert all(x["new_target_history_PIT_admitted"] is False for x in r["legacy_pit_candidate_rows_Tminus4_not_new_admissions"])
+          PY
+      - name: Upload immutable isolated evidence report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prewatch004b5-authentic-pit-audit-${{ github.run_id }}
+          path: prewatch004b5-output/
+          if-no-files-found: warn
+          retention-days: 14
