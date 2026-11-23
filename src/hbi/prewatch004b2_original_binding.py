@@ -17,10 +17,10 @@ from typing import Any
 
 from .historical_intelligence_v2 import SCHEMA as HISTORIC_SCHEMA
 from .historical_intelligence_v2 import history_coverage, verified_past_race
-from .providers.atg import AtgClient
 from .horse_identity import ModelIdentityEvidence, resolve_model_identity
 from .prewatch004_pack import _write_once, digest
 from .prewatch004b_features import make_feature_day_packs, validate_context_for_draft
+from .providers.atg import AtgClient
 
 SCHEMA = "PREWATCH004B2_ORIGINAL_HISTORY_BINDING_V1"
 DAY_SCHEMA = "PREWATCH004B2_DAY_IDENTITY_COVERAGE_V1"
