@@ -73,6 +73,27 @@ jobs:
               assert pack["phase_a_status"]=="NOT_RUN"
               assert pack["bet_authorized"] is False
           print("PREWATCH004_GENUINE_COLLECTOR_COHORT_PASS 26 RACES 284 LISTED RUNNERS")
+          example_entry = next(
+              (x for x in entries if x["race_id"] == "RIKSTOTO:S1_NR_2026-11-23:1"),
+              entries[0],
+          )
+          example = json.loads((root/example_entry["file"]).read_text())
+          preview = {
+              "race_id": example["race_id"],
+              "start_time_utc": example["race"]["start_time_utc"],
+              "listed_count": example["listed_count"],
+              "active_count": example["active_count"],
+              "scratched_numbers": example["scratched_numbers"],
+              "first_three": [
+                  {"selection_id": row["selection_id"], "name": row["horse_name"],
+                   "scratched": row["scratched"],
+                   "raw_history_rows": row["conservative_form"]["source_history_rows"]}
+                  for row in example["runners"][:3]
+              ],
+              "source_run_id": example["source"]["run_id"],
+              "phase_a_status": example["phase_a_status"],
+          }
+          print("PREWATCH004_REAL_RACE_PACK_EXAMPLE " + json.dumps(preview, ensure_ascii=False, sort_keys=True))
           PY
       - name: Publish source-only acceptance evidence
         if: always()
