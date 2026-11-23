@@ -4,6 +4,8 @@ No synthetic positive test is evidence of a real accepted PIT or permanent ID.
 """
 from __future__ import annotations
 
+import hashlib
+import json
 from copy import deepcopy
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -11,7 +13,10 @@ from pathlib import Path
 import pytest
 from test_prewatch004b_features import sample
 
+from hbi import admission_originals
 from hbi.historical_intelligence_v2 import SCHEMA as HISTORIC_SCHEMA
+from hbi.horse_identity import AttestedHorseIdentity, ModelIdentityEvidence
+from hbi.providers.atg import AtgClient
 from hbi.mvp023b_performance_features import run_authentic_research
 from hbi.prewatch004b2_original_binding import (
     DAY_SCHEMA,
@@ -201,3 +206,110 @@ def test_invalid_upstream_historical_result_provenance_is_rejected():
     row["dynamic_horse_statistics_ignored"] = False
     with pytest.raises(ValueError, match="UNATTESTED_UPSTREAM"):
         aggregate_official_history([row], horse_id=12345, cutoff_utc=CUTOFF)
+
+
+def test_only_independent_registry_and_original_result_positive_path(monkeypatch):
+    """TEST_ONLY: do NOT count this synthetic registration or outcome as real PIT."""
+    pack, doc = sample()
+    context = build_feature_context(pack, doc)
+    captured = datetime(2026, 11, 23, 9, 0, tzinfo=UTC)
+    provider_race_id = "2026-11-23_1_1"
+    current_uri = f"{AtgClient.GAME_API}/vinnare_{provider_race_id}"
+    current = {
+        "id": f"vinnare_{provider_race_id}",
+        "races": [{
+            "id": provider_race_id, "sport": "trot", "status": "upcoming",
+            "startTime": pack["race"]["start_time_utc"],
+            "starts": [
+                {"number": i, "horse": {
+                    "id": i, "age": 5, "sex": "mare",
+                    "statistics": {
+                        "life": {
+                            "starts": 20,
+                            "placement": {"1": i, "2": 0, "3": 0},
+                            "earnings": 0,
+                        },
+                        "years": {"2026": {"starts": 0, "earnings": 0}},
+                    },
+                }}
+                for i in (1, 2)
+            ],
+        }],
+    }
+    current_bytes = json.dumps(current, sort_keys=True).encode()
+    current_hash = hashlib.sha256(current_bytes).hexdigest()
+    reg_url = "https://registry.example/TEST_ONLY_PREWATCH004B2"
+    registry = {
+        "schema": "VERIFIED_REGISTRY_BINDING_V1",
+        "race_id": pack["race_id"], "selection_id": "1",
+        "horse_id": "TEST_ONLY_REGISTRATION:1",
+        "source": "TEST_ONLY", "source_version": "1",
+        "atg_horse_id": 1, "snapshot_id": "1",
+        "history_original_sha256": current_hash,
+        "atg_race_id": provider_race_id,
+    }
+    registry_bytes = json.dumps(registry, sort_keys=True).encode()
+    registry_hash = hashlib.sha256(registry_bytes).hexdigest()
+    pins = frozenset({
+        ("REGISTRY_BINDING", reg_url, registry_hash, captured),
+        ("ATG_HISTORY", current_uri, current_hash, captured),
+    })
+    monkeypatch.setattr(admission_originals, "_REVIEWED_RECEIPTS", pins)
+    identity = ModelIdentityEvidence(
+        AttestedHorseIdentity(
+            pack["race_id"], "1", "TEST_ONLY_REGISTRATION:1", "TEST_ONLY", "1",
+        ), captured, reg_url, registry_hash, 1, "1",
+        current_uri, current_hash, captured, registry_bytes, current_bytes,
+    )
+    previous = {
+        "id": "2026-11-10_1_1",
+        "date": "2026-11-10", "number": 1,
+        "track": {"id": 1, "name": "Test Track", "countryCode": "SE"},
+        "sport": "trot", "status": "results",
+        "startTime": "2026-11-10T11:00:00+00:00",
+        "distance": 2140, "startMethod": "AUTO",
+        "starts": [
+            {"number": 1, "horse": {"id": 1, "name": "Kvikke Åsa"},
+             "result": {"place": 1, "galloped": False, "disqualified": False}},
+            {"number": 2, "horse": {"id": 2, "name": "Other Horse"},
+             "result": {"place": 2, "galloped": True, "disqualified": False}},
+        ],
+    }
+    previous_original = json.dumps({"races": [previous]}, sort_keys=True).encode()
+    previous_source = {
+        "original": previous_original,
+        "sha256": hashlib.sha256(previous_original).hexdigest(),
+        "atg_race_id": "2026-11-10_1_1",
+        "source_uri": f"{AtgClient.GAME_API}/vinnare_2026-11-10_1_1",
+        "observed_at_utc": "2026-11-22T12:00:00+00:00",
+        "published_at_utc": None,
+    }
+    kwargs = {
+        "selection_id": "1", "cutoff_utc": CUTOFF,
+        "current_atg": {"horseId": 1, "lifeStarts": 20, "lifeWins": 1},
+        "identity_row": {"source_uri": current_uri, "snapshot_id": "1"},
+        "identities": (identity,),
+        "historical_originals": (previous_source,),
+    }
+    good = bind_target_horse(pack, context, **kwargs)
+    assert good["identity_status"] == "ATTESTED_ORIGINAL_BINDING"
+    assert good["permanent_horse_identity"] == "TEST_ONLY_REGISTRATION:1"
+    assert good["historical_results_verified"] == 1
+    assert good["features"]["observed_win_rate"]["value"] == 1.0
+    assert good["features"]["observed_gallop_rate"]["value"] == 0.0
+    assert good["features"]["last_3_complete_results"]["value"] == "UNKNOWN"
+    assert good["pit_status"] == PIT_UNPROVEN
+    assert good["model_eligible"] is False and good["bet_authorized"] is False
+
+    monkeypatch.setattr(admission_originals, "_REVIEWED_RECEIPTS", frozenset())
+    absent = bind_target_horse(pack, context, **kwargs)
+    assert absent["identity_status"] == "IDENTITY_UNRESOLVED"
+    assert absent["historical_results_verified"] == 0
+
+    monkeypatch.setattr(admission_originals, "_REVIEWED_RECEIPTS", pins)
+    tampered = {**previous_source, "sha256": "0" * 64}
+    with pytest.raises(ValueError, match="HISTORIC_RAW_SHA_MISMATCH"):
+        bind_target_horse(pack, context, **{**kwargs, "historical_originals": (tampered,)})
+    late = {**previous_source, "published_at_utc": "2026-11-23T09:31:00+00:00"}
+    with pytest.raises(ValueError, match="PAST_RESULT_NOT_AVAILABLE"):
+        bind_target_horse(pack, context, **{**kwargs, "historical_originals": (late,)})
