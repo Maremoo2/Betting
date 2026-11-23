@@ -1,5 +1,18 @@
 # Betting HQ – master-roadmap og gjennomføringsstatus
 
+## Gjeldende gjennomføringsnotat – 23. november 2026
+
+De fem eksisterende fasene og V1 → V1.1 → V2 → V2.1 → V3 beholdes. Ingen ny roadmap.
+Eldre daterte statuser nedenfor er revisjonsbevis, ikke dagens driftsakseptanse.
+
+- **Fase 1:** #218 er oppdatert mot main `9aa963c35270cdb7b7254d7785fa7ff7b24fdb79` uten duplisert #213-kode. Kun NO/SE-trav er obligatorisk provider-akseptanse; DK/FR er separate diagnostikker. Ny heldagsprøve organiseres separat og er ikke påstått bestått.
+- **Fase 2:** Nye originaler dekker dagens 26 NO/SE-løp. Sørlandet 2: ni aktive hester med eksakt UELN-samsvar mellom Rikstoto og DNT, 45 trykte historikkrader og 42 DNT-utdrag med eksplisitt løpslenke. Dette er kildefakta, ikke attestert fullfelt/PIT. Strykningenes uavhengige kildeopphav, kontrollert identitetsattestasjon og historikksemantikk blokkerer fortsatt.
+- **Fase 3–4:** Streng eksisterende T−4 håndheves også ved skåring; frosne modellvekter og paper-motor beholdes. Forskningsfrys uten identitets-/PIT-attestasjon kan ikke åpne V3.3-porten. Kalibrerte individuelle usikkerhetsintervaller mangler.
+- **Fase 5:** Tre autentiske, eksisterende Jägersro-frys fra 21. november er koblet til tre offisielle resultater med eksisterende evalueringskode; ett løp har samtidig WIN. Dette er ny evaluering av gamle frys, ikke tre nye prediksjoner. Terminalodds hentet etter løpet er ikke dokumentert førstarts-closing eller kvalifisert CLV.
+
+Gjeldende implementasjon, eksakt HEAD og CI fremgår av [PR #218](https://github.com/Maremoo2/Betting/pull/218). Ingen fase er DONE før sine faktiske akseptansekriterier er bestått. NO BET; ingen merge eller produksjonsaktivering er autorisert av dette notatet.
+
+
 ## Gjeldende roadmap fra 15. november 2026
 
 Betting HQ skal selvstendig følge hele det norske og svenske travprogrammet, analysere kvalifiserte løp før T−4 og varsle om dokumenterte forskningskandidater. Bruk den eksisterende kjeden Collector → CORE-003 → Champion/CORE-004 → Research Ledger → HQ. Rekkefølgen er **V1 → V1.1 → V2 → V2.1 → V3**.

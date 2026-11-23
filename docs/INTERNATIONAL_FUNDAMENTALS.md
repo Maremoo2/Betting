@@ -95,13 +95,17 @@ invariance.
 pip install -e '.[dev]'
 ruff check .
 pytest -q
-HBI_SMOKE_REQUIRED_COUNTRIES=SE,DK,NO,FR python -m hbi.live_smoke
+HBI_SMOKE_REQUIRED_COUNTRIES=NO,SE python -m hbi.live_smoke
+# Separate coverage diagnostic; not a product acceptance dependency:
+HBI_SMOKE_REQUIRED_COUNTRIES=DK,FR python -m hbi.live_smoke
 python -m hbi.provider_research
 ```
 
 The live-smoke workflow runs on relevant PRs, main pushes, and manual dispatch.
-Acceptance requires actual future full-field runtime passes in all four named
-countries; no-data is not counted as a pass. It probes up to three races per
+Product acceptance requires actual future full-field runtime passes in both NO and SE
+for trot. DK/FR results are separate diagnostics, retaining actual failures; no-data
+is never counted as a pass in either scope. The old four-country product scope is
+retired by the 23 November HQ instruction. See `PROVIDER_ACCEPTANCE_CONTRACT.md`. It probes up to three races per
 meeting, at most 60 attempts, and writes every rejection and success. Additional
 research probes public ATG calendars and official French pages without changing
 the registry. JSON artifacts are uploaded even when acceptance fails.

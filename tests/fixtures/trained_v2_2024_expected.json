@@ -1,0 +1,75 @@
+{
+  "schema": "BENCHMARK002_SHADOW_FREEZE_V1",
+  "race_id": "RIKSTOTO:BJ_NR_2024-01-02:1",
+  "day": "2024-01-02",
+  "start_at": null,
+  "scope": "RETROSPECTIVE",
+  "created_at": "2026-11-19T13:02:30.842039+00:00",
+  "model": "BENCHMARK002_CHALLENGER_V2_RETRO_V1",
+  "artifact_sha256": "cbb9ca7c13032eafc6e639f832f49e2e4cebab0969f501b8170eb62c8853bcf8",
+  "packet_sha256": "87d2fc2fac4731bca89eb3f18ffd41dccfd8949700f96b477eeaba354c607b6f",
+  "feature_sha256": "ef912fd915cc3eb9af6533a1d4b08a1df37f49a24bbb6238e8e4c4acb6dde2d9",
+  "active": [
+    {
+      "horse_id": "RIKSTOTO_REG:578001020150386",
+      "horse_name": "Jelina",
+      "registration": "578001020150386",
+      "scratched": false,
+      "selection_id": "1"
+    },
+    {
+      "horse_id": "RIKSTOTO_REG:578001020190100",
+      "horse_name": "\u00c5se Mona",
+      "registration": "578001020190100",
+      "scratched": false,
+      "selection_id": "2"
+    },
+    {
+      "horse_id": "RIKSTOTO_REG:578001020110714",
+      "horse_name": "Bj\u00f8re Lydia",
+      "registration": "578001020110714",
+      "scratched": false,
+      "selection_id": "3"
+    },
+    {
+      "horse_id": "RIKSTOTO_REG:578001020140170",
+      "horse_name": "Komnes Anna",
+      "registration": "578001020140170",
+      "scratched": false,
+      "selection_id": "4"
+    },
+    {
+      "horse_id": "RIKSTOTO_REG:578001020160360",
+      "horse_name": "Valle Grid",
+      "registration": "578001020160360",
+      "scratched": false,
+      "selection_id": "6"
+    },
+    {
+      "horse_id": "RIKSTOTO_REG:578001020120252",
+      "horse_name": "Smedtulla",
+      "registration": "578001020120252",
+      "scratched": false,
+      "selection_id": "7"
+    },
+    {
+      "horse_id": "RIKSTOTO_REG:578001020180228",
+      "horse_name": "Voje Linn",
+      "registration": "578001020180228",
+      "scratched": false,
+      "selection_id": "8"
+    }
+  ],
+  "fundamental": {
+    "1": 0.17698369483499288,
+    "2": 0.09817088496836016,
+    "3": 0.11234479521703633,
+    "4": 0.2715742970778425,
+    "6": 0.05593171856636669,
+    "7": 0.14505038070338094,
+    "8": 0.13994422863202052
+  },
+  "pit_certified": false,
+  "bet_authority": false,
+  "source_quality": "RETROSPECTIVE_ONLY|TIME_UNVERIFIED|NATIVE_ID_ONLY"
+}

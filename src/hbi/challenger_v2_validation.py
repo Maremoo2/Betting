@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import math
 import random
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from statistics import mean
+
+from .shadow import ShadowPolicy
 
 SCHEMA = "CHALLENGER_V2_PROSPECTIVE_VALIDATION_V1"
 
@@ -80,6 +82,9 @@ def score_existing_challenger(
             "status":"NOT_AVAILABLE",
             "reason":"MODEL_NOT_INDEPENDENTLY_ARCHIVED_BEFORE_START_OR_NOT_HOLDOUT",
         }
+    if persisted >= start - timedelta(minutes=ShadowPolicy().target_minutes_to_start):
+        return {"status": "NOT_AVAILABLE",
+                "reason": "MODEL_NOT_INDEPENDENTLY_ARCHIVED_BEFORE_T4"}
     probs=_qualified_distribution(original_challenger)
     if not probs:
         return {"status":"NOT_AVAILABLE","reason":"NO_VALID_FROZEN_V2_FULL_FIELD"}

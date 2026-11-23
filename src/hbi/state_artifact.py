@@ -38,15 +38,20 @@ def _report_github_artifact_error(exc: urllib.error.HTTPError, *, stage: str) ->
     access-policy denials. Emit an evidence-only marker; preserve the original
     HTTPError so canonical state restore *always* fails closed.
     """
-    if exc.code not in {403, 429}:
+    if exc.code not in {403, 404, 410, 429}:
         return
     body = exc.read(4096)
     message = body.decode("utf-8", errors="replace").lower()
-    kind = (
-        "INSTALLATION_RATE_LIMIT"
-        if "rate limit" in message or str((exc.headers or {}).get("X-RateLimit-Remaining")) == "0"
-        else "HTTP_ACCESS_OR_SCOPE_UNVERIFIED"
-    )
+    if exc.code in {404, 410}:
+        # GitHub may conceal inaccessible resources with 404. Do not claim
+        # expiry/deletion or choose an older state without original evidence.
+        kind = "ORIGINAL_NOT_FOUND_OR_INACCESSIBLE"
+    else:
+        kind = (
+            "INSTALLATION_RATE_LIMIT"
+            if "rate limit" in message or str((exc.headers or {}).get("X-RateLimit-Remaining")) == "0"
+            else "HTTP_ACCESS_OR_SCOPE_UNVERIFIED"
+        )
     headers = exc.headers or {}
     remaining = headers.get("X-RateLimit-Remaining", "UNVERIFIED")
     reset = headers.get("X-RateLimit-Reset", "UNVERIFIED")
@@ -196,6 +201,18 @@ def restore_latest_state(
             or re.fullmatch(r"[0-9a-fA-F]{40}", source_run["head_sha"]) is None
         ):
             raise ValueError("STATE_RESTORE_ORIGINAL_ARTIFACT_METADATA_NOT_ATTESTED")
+    # Selection is diagnostic evidence, never a successful restore receipt.
+    # Emit only numeric identities; never a token or signed download URL.
+    source_run = latest.get("workflow_run") or {}
+    selected_id = latest.get("id")
+    selected_run = source_run.get("id") if isinstance(source_run, dict) else None
+    print(
+        "STATE_RESTORE_SOURCE_SELECTED "
+        f"artifact_id={selected_id if type(selected_id) is int else 'UNVERIFIED'} "
+        f"source_workflow_run_id={selected_run if type(selected_run) is int else 'UNVERIFIED'} "
+        "source_state=NOT_RESTORED no_bootstrap=true",
+        file=sys.stderr,
+    )
     archive_request = _request(latest["archive_download_url"], token)
 
     class _NoRedirect(urllib.request.HTTPRedirectHandler):

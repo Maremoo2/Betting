@@ -34,12 +34,8 @@ jobs:
       - name: Run live read-only provider smoke
         env:
           HBI_LIVE_SMOKE_PATH: live-smoke.json
-          HBI_SMOKE_REQUIRED_COUNTRIES: SE,DK,NO,FR
+          HBI_SMOKE_REQUIRED_COUNTRIES: NO,SE
         run: python -m hbi.live_smoke
-
-      - name: Probe additional public provider capabilities
-        if: always()
-        run: python -m hbi.provider_research
 
       - name: Upload diagnostics
         if: always()
@@ -48,6 +44,57 @@ jobs:
           name: hbi-provider-live-smoke-${{ github.run_id }}
           path: |
             live-smoke.json
+          if-no-files-found: error
+          retention-days: 14
+
+  provider-diagnostics:
+    name: DK/FR diagnostics (non-blocking)
+    # A green workflow does not certify DK/FR. Their raw errors and actual step
+    # outcome are retained separately; they cannot satisfy NO/SE acceptance.
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install HBI
+        run: pip install -e ".[dev]"
+      - name: Run separate DK FR diagnostic
+        id: diagnostic
+        env:
+          HBI_LIVE_SMOKE_PATH: diagnostic-smoke.json
+          HBI_SMOKE_REQUIRED_COUNTRIES: DK,FR
+        run: python -m hbi.live_smoke
+      - name: Probe additional public provider capabilities
+        if: always()
+        run: python -m hbi.provider_research
+      - name: Record actual diagnostic outcome
+        if: always()
+        env:
+          DIAGNOSTIC_OUTCOME: ${{ steps.diagnostic.outcome }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          status = {'scope': 'DK_FR_TROT_DIAGNOSTIC_V1', 'mandatory_for_product': False,
+                    'actual_step_outcome': os.environ['DIAGNOSTIC_OUTCOME']}
+          Path('diagnostic-status.json').write_text(json.dumps(status, indent=2))
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as handle:
+              handle.write('DK/FR diagnostic outcome: ' + status['actual_step_outcome']
+                           + '. This is not NO/SE product acceptance.\n')
+          PY
+      - name: Upload separate diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hbi-provider-diagnostic-dk-fr-${{ github.run_id }}
+          path: |
+            diagnostic-smoke.json
+            diagnostic-status.json
             provider-research.json
-          if-no-files-found: ignore
+          if-no-files-found: error
           retention-days: 14
