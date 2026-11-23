@@ -29,7 +29,7 @@ jobs:
         run: pytest -q tests/test_prewatch004b_features.py
       - name: Download authentic Collector 23 Nov 2026 original archive
         env:
-          GH_TOKEN: \${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN || github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           mkdir -p collector-input
@@ -40,8 +40,8 @@ jobs:
         run: |
           set -euo pipefail
           mapfile -t originals < <(find collector-input -type f -name 'rikstoto-2026-11-23-*.zip')
-          test "\${#originals[@]}" -eq 1
-          archive="\${originals[0]}"
+          test "${#originals[@]}" -eq 1
+          archive="${originals[0]}"
           test -s "$archive"
           test -s "$archive.sha256"
           python -m hbi.prewatch004b_features \
@@ -108,7 +108,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: prewatch004b-real-original-20261123-\${{ github.run_id }}
+          name: prewatch004b-real-original-20261123-${{ github.run_id }}
           path: prewatch004b-output/
           if-no-files-found: warn
           retention-days: 14
