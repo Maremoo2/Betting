@@ -1,0 +1,211 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:prewatch004b:race-feature-context:v1",
+  "title": "PREWATCH004B_RACE_FEATURE_CONTEXT_V1 — source-bound research input, not Phase A or BET",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "race_id",
+    "source_run_id",
+    "source_race_pack_sha256",
+    "source",
+    "race",
+    "listed_count",
+    "active_count",
+    "runners",
+    "historical_feature_admission",
+    "history_semantics",
+    "phase_a_status",
+    "pit_certified",
+    "bet_authorized"
+  ],
+  "properties": {
+    "schema": {
+      "const": "PREWATCH004B_RACE_FEATURE_CONTEXT_V1"
+    },
+    "race_id": {
+      "type": "string",
+      "pattern": "^RIKSTOTO:[A-Z0-9_]+_[0-9]{4}-[0-9]{2}-[0-9]{2}:[1-9][0-9]*$"
+    },
+    "source_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_race_pack_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "archive_sha256",
+        "program_pdf_original_sha256",
+        "observed_at_utc"
+      ],
+      "properties": {
+        "archive_sha256": {
+          "type": "string"
+        },
+        "program_pdf_original_sha256": {
+          "type": "string"
+        },
+        "observed_at_utc": {
+          "type": "string"
+        }
+      }
+    },
+    "race": {
+      "type": "object",
+      "required": [
+        "start_time_utc",
+        "race_number"
+      ],
+      "properties": {
+        "start_time_utc": {
+          "type": "string"
+        },
+        "race_number": {
+          "type": "integer"
+        }
+      }
+    },
+    "listed_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "active_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "runners": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "selection_id",
+          "horse_name",
+          "scratched",
+          "source_history_count",
+          "research_source_extractions",
+          "verified_racing_features",
+          "model_eligible",
+          "pit_eligible",
+          "bet_authorized"
+        ],
+        "properties": {
+          "selection_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "horse_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "scratched": {
+            "type": "boolean"
+          },
+          "source_history_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "research_source_extractions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "raw_sha256",
+                "semantic_status",
+                "verified_official_result",
+                "pit_certified",
+                "field_candidates"
+              ],
+              "properties": {
+                "raw_sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "semantic_status": {
+                  "enum": [
+                    "VERIFIED",
+                    "PARTIAL",
+                    "UNKNOWN",
+                    "BLOCKED"
+                  ]
+                },
+                "verified_official_result": {
+                  "const": false
+                },
+                "pit_certified": {
+                  "const": false
+                },
+                "field_candidates": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "verified_racing_features": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "required": [
+                "value",
+                "status",
+                "denominator",
+                "basis",
+                "bet_authority"
+              ],
+              "properties": {
+                "status": {
+                  "enum": [
+                    "VERIFIED",
+                    "PARTIAL",
+                    "UNKNOWN",
+                    "BLOCKED"
+                  ]
+                },
+                "denominator": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "basis": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "bet_authority": {
+                  "const": false
+                }
+              }
+            }
+          },
+          "model_eligible": {
+            "const": false
+          },
+          "pit_eligible": {
+            "const": false
+          },
+          "bet_authorized": {
+            "const": false
+          }
+        }
+      }
+    },
+    "historical_feature_admission": {
+      "const": "BLOCKED_WITHOUT_INDEPENDENT_ORIGINAL_RESULT_PIT"
+    },
+    "history_semantics": {
+      "const": "RESEARCH_ONLY"
+    },
+    "phase_a_status": {
+      "const": "NOT_RUN"
+    },
+    "pit_certified": {
+      "const": false
+    },
+    "bet_authorized": {
+      "const": false
+    }
+  },
+  "description": "Context may be passed alongside PREWATCH004_PHASE_A_DRAFT_V1 input. It is never a full sports analysis, not authenticated historical result gold, cannot freeze or write to Ledger. Cross-field count, source signature, PIT and identity checks are enforced by code, not solely this schema."
+}
