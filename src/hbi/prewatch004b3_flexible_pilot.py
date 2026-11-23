@@ -10,7 +10,6 @@ import json
 import tempfile
 from collections import Counter
 from pathlib import Path
-from typing import Any
 
 from .prewatch004_pack import _write_once, digest
 from .prewatch004b_features import make_feature_day_packs
