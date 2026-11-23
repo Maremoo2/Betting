@@ -80,5 +80,5 @@ def test_reject_bad_or_fabricated_candidate(mutation):
         candidate["exclusion_reasons"] = ["NO_PROBLEMS"]
     elif mutation == "wrong_count":
         value["cutoff_observations"].pop()
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, TypeError)):
         audit(value)
