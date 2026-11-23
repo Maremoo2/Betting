@@ -35,7 +35,7 @@ def evaluate(contexts: list[dict[str, Any]], identity: dict[str, Any]) -> dict[s
         raise ValueError("004B3_DUPLICATE_ACTIVE_SELECTION")
     observations = identity.get("horse_observations")
     if not isinstance(observations, list):
-        raise ValueError("004B3_MISSING_IDENTITY_OBSERVATIONS")
+        raise TypeError("004B3_MISSING_IDENTITY_OBSERVATIONS")
     indexed = {(r["race_id"], r["selection_id"]): r for r in observations}
     if len(indexed) != len(observations) or set(indexed) != set(roster):
         raise ValueError("004B3_FULL_FIELD_IDENTITY_MISMATCH")
