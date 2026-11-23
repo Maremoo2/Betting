@@ -13,6 +13,7 @@ from hbi.ingestion import RaceCard
 from hbi.prewatch004_pack import (
     DRAFT_SCHEMA,
     SCHEMA,
+    SCORE_BOUNDS,
     _snapshot_diff,
     _write_once,
     build_race_pack,
@@ -214,3 +215,17 @@ def test_previous_pack_cannot_be_different_race():
     pack = build_race_pack(rec, item, doc)
     with pytest.raises(ValueError, match="IDENTITY"):
         _snapshot_diff({**pack, "race_id": "RIKSTOTO:OTHER:1"}, pack)
+
+def test_json_schema_matches_frozen_champion_boundaries():
+    schema = json.loads(
+        (Path(__file__).resolve().parents[1] / "docs/PREWATCH004_DRAFT_SCHEMA.json")
+        .read_text(encoding="utf-8")
+    )
+    assert schema["properties"]["status"]["const"] == "DRAFT"
+    assert schema["additionalProperties"] is False
+    assert schema["properties"]["runners"]["items"]["additionalProperties"] is False
+    assert set(schema["properties"]["champion_provisional"]["properties"]) == set(SCORE_BOUNDS)
+    for key, bound in SCORE_BOUNDS.items():
+        spec = schema["properties"]["champion_provisional"]["properties"][key]
+        assert spec == {"type": "integer", "minimum": 0, "maximum": bound}
+    assert schema["dependentRequired"]["champion_provisional"] == ["champion_evidence"]
