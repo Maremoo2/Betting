@@ -16,7 +16,6 @@ from test_prewatch004b_features import sample
 from hbi import admission_originals
 from hbi.historical_intelligence_v2 import SCHEMA as HISTORIC_SCHEMA
 from hbi.horse_identity import AttestedHorseIdentity, ModelIdentityEvidence
-from hbi.providers.atg import AtgClient
 from hbi.mvp023b_performance_features import run_authentic_research
 from hbi.prewatch004b2_original_binding import (
     DAY_SCHEMA,
@@ -26,6 +25,7 @@ from hbi.prewatch004b2_original_binding import (
     feature,
 )
 from hbi.prewatch004b_features import build_feature_context
+from hbi.providers.atg import AtgClient
 
 NOW = datetime(2026, 11, 23, 9, 30, tzinfo=UTC)
 CUTOFF = NOW.isoformat()
