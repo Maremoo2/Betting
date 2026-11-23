@@ -2,9 +2,9 @@
 from copy import deepcopy
 
 import pytest
+from test_prewatch004b3_flexible_pilot import fixture
 
 from hbi.prewatch004b4_fullfield_pilot import select_race
-from test_prewatch004b3_flexible_pilot import fixture
 
 
 def source_fixture():
