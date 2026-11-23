@@ -12,6 +12,7 @@ def source_fixture():
     for race in contexts:
         race["race"] = {"track": "TEST_ONLY", "race_number": 1}
         for runner in race["runners"]:
+            runner["horse_name"] = f"TEST_ONLY_{runner['selection_id']}"
             for prior in runner["research_source_extractions"]:
                 prior.update({
                     "verified_official_result": False,
@@ -45,7 +46,7 @@ def test_deterministic_max_min_selection():
     for r in extra["runners"]:
         if not r["scratched"]:
             r["source_history_count"] = 5
-            r["research_source_extractions"] = [{}] * 5
+            r["research_source_extractions"] = [deepcopy(r["research_source_extractions"][0]) for _ in range(5)]
     contexts.append(extra)
     for i in (1, 2):
         identity["horse_observations"].append(
