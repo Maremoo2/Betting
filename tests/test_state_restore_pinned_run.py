@@ -105,3 +105,34 @@ def test_restore_failure_is_durable_observable_and_not_overwritten(tmp_path):
     assert json.loads(target.read_bytes()) == report
     with pytest.raises(FileExistsError):
         state.write_restore_failure_status(target, reason="other", run_id="123")
+
+
+@pytest.mark.parametrize("writer_status,writer_result,accepted", [
+    ("completed", "success", True), ("in_progress", None, False),
+    ("completed", "failure", False),
+])
+def test_only_github_completed_writer_can_handoff_while_readonly_sidecar_runs(
+        tmp_path, monkeypatch, writer_status, writer_result, accepted):
+    raw = _valid_db(tmp_path)
+    body = _zip(raw)
+    feed(monkeypatch, body)
+    original = state._inventory_json
+
+    def api(url, token):
+        if url.endswith("/jobs?per_page=100"):
+            return {"jobs": [{"name": "source-pilot", "status": writer_status,
+                              "conclusion": writer_result}]}
+        result = original(url, token)
+        if url.endswith("/actions/runs/99"):
+            result.update(status="in_progress", conclusion=None)
+        return result
+
+    monkeypatch.setattr(state, "_inventory_json", api)
+    kwargs = {"source_job_name": "source-pilot", "audit_code_sha": "a" * 40}
+    if accepted:
+        assert restore(tmp_path, **kwargs)
+        assert (tmp_path / "hbi.sqlite").read_bytes() == raw
+    else:
+        with pytest.raises(ValueError, match="WRITER_JOB_NOT_SUCCESSFUL"):
+            restore(tmp_path, **kwargs)
+        assert not (tmp_path / "hbi.sqlite").exists()

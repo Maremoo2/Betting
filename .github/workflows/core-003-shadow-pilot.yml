@@ -157,8 +157,10 @@ jobs:
                       raise SystemExit("EXACT_PREVIOUS_STATE_RUN_REQUIRED_NO_BOOTSTRAP")
                   options["source_run_id"] = int(source_run)
                   source_branch = os.environ["GITHUB_REF_NAME"]
+                  options["source_job_name"] = "source-pilot"
                   seed = campaign["seed_state"]
                   if int(source_run) == seed["run_id"]:
+                      options.pop("source_job_name")
                       source_repository, source_branch = seed["repository"], seed["branch"]
                       source_artifact = seed["artifact_name"]
                       restore_target = target.with_name(seed["database_filename"])

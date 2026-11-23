@@ -263,8 +263,13 @@ def run_phase(plan, phase, out, *, request=api, clock=lambda: datetime.now(UTC),
                             if len(previous) != 1:
                                 raise ValueError('EXACT_PREVIOUS_STATE_RUN_MISSING_NO_FALLBACK')
                             producer = request(f"/repos/{repo}/actions/runs/{previous[0]['id']}")
-                            if producer.get('status') != 'completed' or producer.get('conclusion') != 'success':
-                                raise ValueError('EXACT_PREVIOUS_STATE_RUN_NOT_SUCCESSFUL')
+                            if producer.get('head_sha') != plan['pin']:
+                                raise ValueError('EXACT_PREVIOUS_WRITER_CODE_CHANGED')
+                            jobs = request(f"/repos/{repo}/actions/runs/{previous[0]['id']}/jobs?per_page=100")["jobs"]
+                            writers = [job for job in jobs if job.get('name') == 'source-pilot']
+                            if (len(writers) != 1 or writers[0].get('status') != 'completed'
+                                    or writers[0].get('conclusion') != 'success'):
+                                raise ValueError('EXACT_PREVIOUS_STATE_WRITER_NOT_SUCCESSFUL')
                             previous_run = previous[0]['id']
                         state_input['acceptance_state_run'] = str(previous_run)
                         row['state_source_run_id'] = previous_run

@@ -190,6 +190,7 @@ def restore_latest_state(
     source_run_id: int | None = None,
     expected_zip_sha256: str | None = None,
     expected_database_sha256: str | None = None,
+    source_job_name: str | None = None,
 ) -> bool:
     """Restore the newest non-expired HBI SQLite database artifact.
 
@@ -210,10 +211,25 @@ def restore_latest_state(
         if type(source_run_id) is not int or source_run_id <= 0:
             raise ValueError("STATE_RESTORE_SOURCE_RUN_INVALID")
         run = _inventory_json(f"{API}/repos/{repository}/actions/runs/{source_run_id}", token)
-        if (run.get("id") != source_run_id or run.get("status") != "completed"
-                or run.get("conclusion") != "success"
+        if (run.get("id") != source_run_id
                 or (branch is not None and run.get("head_branch") != branch)):
             raise ValueError("STATE_RESTORE_SOURCE_RUN_NOT_SUCCESSFUL")
+        if source_job_name is None:
+            if run.get("status") != "completed" or run.get("conclusion") != "success":
+                raise ValueError("STATE_RESTORE_SOURCE_RUN_NOT_SUCCESSFUL")
+        else:
+            # Read-only sidecars may still run after the actual state writer is
+            # complete. Require GitHub's completed writer job, not a self-issued
+            # success flag, and bind it to the same frozen consumer code.
+            if source_job_name != "source-pilot" or run.get("head_sha") != audit_code_sha:
+                raise ValueError("STATE_RESTORE_WRITER_CODE_NOT_ATTESTED")
+            jobs = _inventory_json(
+                f"{API}/repos/{repository}/actions/runs/{source_run_id}/jobs?per_page=100", token,
+            ).get("jobs", [])
+            writers = [job for job in jobs if job.get("name") == source_job_name]
+            if (len(writers) != 1 or writers[0].get("status") != "completed"
+                    or writers[0].get("conclusion") != "success"):
+                raise ValueError("STATE_RESTORE_WRITER_JOB_NOT_SUCCESSFUL")
         # Run-scoped inventory cannot silently select a different producer.
         url = f"{API}/repos/{repository}/actions/runs/{source_run_id}/artifacts?per_page=100"
     else:
