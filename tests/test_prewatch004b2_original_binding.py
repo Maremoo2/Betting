@@ -314,3 +314,13 @@ def test_only_independent_registry_and_original_result_positive_path(monkeypatch
     late = {**previous_source, "published_at_utc": "2026-11-23T09:31:00+00:00"}
     with pytest.raises(ValueError, match="PAST_RESULT_NOT_AVAILABLE"):
         bind_target_horse(pack, context, **{**kwargs, "historical_originals": (late,)})
+
+
+def test_verified_positive_placing_cannot_coexist_with_dq_or_dnf():
+    row = fake_original(10, placing=1, gallop=True, dq=True)
+    with pytest.raises(ValueError, match="PLACED_RESULT_CONTRADICTS_DQ_OR_DNF"):
+        aggregate_official_history([row], horse_id=12345, cutoff_utc=CUTOFF)
+    row = fake_original(10, placing=1, gallop=False, dq=False)
+    row["fields"]["not_finished"] = True
+    with pytest.raises(ValueError, match="PLACED_RESULT_CONTRADICTS_DQ_OR_DNF"):
+        aggregate_official_history([row], horse_id=12345, cutoff_utc=CUTOFF)
