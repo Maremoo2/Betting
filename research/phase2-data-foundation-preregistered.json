@@ -1,0 +1,42 @@
+{
+  "schema": "PHASE2_REPRESENTATIVITY_PREREG_V1",
+  "frozen_at_utc": "2026-11-22T10:18:50.836341+00:00",
+  "scope": {
+    "countries": [
+      "NO",
+      "SE"
+    ],
+    "sport": "TROT",
+    "outcome_years_excluded": [
+      2025
+    ]
+  },
+  "unit": "physical complete race; not horses, history lines or metadata references",
+  "minimum": {
+    "disjoint_chronological_calendar_years": 3,
+    "minimum_per_country": {
+      "train": 1000,
+      "validation": 200,
+      "untouched_test": 200
+    },
+    "all_four_quarters_in_each_country_split": true,
+    "auto_and_volt_each_country_each_split": true,
+    "source_verified_identity_history_and_pit_for_every_active_runner": true,
+    "verified_label_separate_from_features": true,
+    "all_required_strata_reported_unknown_never_imputed": true
+  },
+  "rationale": "Initial coverage screening floor, not statistical power or model-promotion authority. Race-cluster samples in both countries and all seasons prevent a single-track/day sample being called representative. 1000/200/200 is a frozen prospective audit minimum; final statistical power belongs to separately authorized Phase 3. No outcomes or ROI are used to choose this standard.",
+  "strata": [
+    "year",
+    "month",
+    "country",
+    "track",
+    "race_type",
+    "start_method",
+    "distance",
+    "runner_count",
+    "quality",
+    "provider"
+  ],
+  "authority": "REPORT_ONLY; existing admission, holdout and model policies unchanged; does not authorize training"
+}

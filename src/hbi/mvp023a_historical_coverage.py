@@ -12,7 +12,7 @@ import json
 import math
 import re
 from collections import Counter, defaultdict
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from zipfile import ZipFile
 from zoneinfo import ZoneInfo
@@ -80,9 +80,11 @@ def _original(root: Path, path: str, *, result: bool = False) -> dict | None:
     return record
 
 
-def _inventory(root: Path) -> dict[str, dict]:
+def _inventory(root: Path, months: set[str] | None = None) -> dict[str, dict]:
     out: dict[str, dict] = {}
     for file in sorted((root / "inventory").glob("*.json")):
+        if months is not None and file.stem not in months:
+            continue
         doc = _read(file)
         if (
             doc.get("path") != "/racedays/dates/" + file.stem + "-01/"
@@ -117,6 +119,13 @@ def _inventory(root: Path) -> dict[str, dict]:
                     "start_time_original": race.get("startTime"),
                     "metadata_observed_at_utc": doc["fetched_at"],
                     "metadata_source_sha256": doc["body_sha256"],
+                    "metadata_source_uri": doc["url"],
+                    "metadata_dimensions": {
+                        "sport_type": meeting.get("sportType"),
+                        "race_type": race.get("raceType"),
+                        "start_method": race.get("startMethod"),
+                        "distance": race.get("distance"),
+                    },
                 }
                 if rid in out and out[rid] != value:
                     # Two different versions must not win on iteration order.
@@ -215,9 +224,10 @@ def _assess(
             if ref["path"] in receipts and receipts[ref["path"]] != original["body_sha256"]:
                 raise ValueError("CONFLICTING_ORIGINAL_SOURCE_RECEIPTS:" + rid)
             receipts[ref["path"]] = original["body_sha256"]
-    starts = _original(root, f"/racedays/{key}/starts")
-    if starts is not None and f"/racedays/{key}/starts" not in receipts:
-        starts = None  # An unbound cache is not an authenticated archived freeze input.
+    # An unbound cache is not an input. Do not open it only to discard it:
+    # unrelated/corrupt cache bytes must not abort a metadata-only census.
+    starts_path = f"/racedays/{key}/starts"
+    starts = _original(root, starts_path) if starts_path in receipts else None
     active, field, provider_ids_stable = _verified_roster(row, starts, number)
     win_path = f"/game/{key}/betdistribution/winodds/{number}"
     win = _original(root, win_path) if win_path in receipts else None
@@ -334,6 +344,11 @@ def _assess(
     return {
         **{k: item[k] for k in ("race_id", "day", "month", "year", "country", "track")},
         "start_time_original": item.get("start_time_original"),
+        "metadata_dimensions": dict(item.get("metadata_dimensions") or {}),
+        "metadata_dimensions_role": "SOURCE_METADATA_NOT_MODEL_FEATURES",
+        "metadata_source_uri": item.get("metadata_source_uri"),
+        "metadata_source_sha256": item.get("metadata_source_sha256"),
+        "metadata_observed_at_utc": item.get("metadata_observed_at_utc"),
         "start_time_verified_utc": start.isoformat() if start else None,
         "cutoff_t4_utc": cutoff.isoformat() if cutoff else None,
         "active_runners": len(active) if field else None,
@@ -351,11 +366,24 @@ def _assess(
 
 
 
-def _weekly_market_days(root: Path) -> tuple[dict[str, dict], int]:
+def _week_months(path: Path) -> set[str]:
+    match = re.fullmatch(r"(\d{4})-W(\d{2})-MARKET", path.stem)
+    if not match:
+        raise ValueError("WEEKLY_ARCHIVE_WEEK_NAME_INVALID")
+    try:
+        first = date.fromisocalendar(int(match[1]), int(match[2]), 1)
+    except ValueError as exc:
+        raise ValueError("WEEKLY_ARCHIVE_WEEK_NAME_INVALID") from exc
+    return {(first + timedelta(days=n)).isoformat()[:7] for n in range(7)}
+
+
+def _weekly_market_days(root: Path, months: set[str] | None = None) -> tuple[dict[str, dict], int]:
     """Verify existing MARKET_ONLY weekly ZIP manifests without extracting files."""
     days: dict[str, dict] = {}
     count = 0
     for zip_path in sorted((root / "weekly").glob("*-MARKET.zip")):
+        if months is not None and not (_week_months(zip_path) & months):
+            continue
         if zip_path.is_symlink():
             raise ValueError("SYMLINKED_WEEKLY_ARCHIVE_REJECTED")
         with ZipFile(zip_path) as archive:
@@ -390,6 +418,11 @@ def _weekly_market_days(root: Path) -> tuple[dict[str, dict], int]:
                 ):
                     raise ValueError("WEEKLY_MARKET_DAY_FREEZE_INVALID:" + name)
                 day = name.removesuffix(".json")
+                iso = date.fromisoformat(day).isocalendar()
+                if f"{iso.year}-W{iso.week:02}" != manifest["week"]:
+                    raise ValueError("WEEKLY_MARKET_DAY_WEEK_CONFLICT:" + day)
+                if months is not None and day[:7] not in months:
+                    continue
                 if day in days and digest(days[day]) != digest(doc):
                     raise ValueError("CONFLICTING_WEEKLY_MARKET_DAY:" + day)
                 days[day] = doc
@@ -397,15 +430,22 @@ def _weekly_market_days(root: Path) -> tuple[dict[str, dict], int]:
     return days, count
 
 
-def build_coverage(root: Path) -> dict:
+def build_coverage(root: Path, *, months: set[str] | None = None) -> dict:
     """Build from a supplied UNPACKED native archive root; never touch network."""
     root = Path(root)
     if not root.is_dir():
         raise ValueError("HISTORICAL_ARCHIVE_ROOT_NOT_FOUND")
-    metadata = _inventory(root)
-    market_days, weekly_count = _weekly_market_days(root)
+    if months is not None:
+        if not months:
+            raise ValueError("EXPLICIT_NONEMPTY_MONTH_SCOPE_REQUIRED")
+        for month in months:
+            _month_last_day(month)
+    metadata = _inventory(root, months)
+    market_days, weekly_count = _weekly_market_days(root, months)
     unbound_meeting_rows: set[tuple[str, str]] = set()
     for path in sorted((root / "market-days").glob("*.json")):
+        if months is not None and path.stem[:7] not in months:
+            continue
         doc = _read(path)
         if doc.get("stage") != "MARKET_ONLY" or not isinstance(doc.get("races"), list) or doc.get("sha256") != digest(doc["races"]):
             raise ValueError("MARKET_DAY_FREEZE_SHA_INVALID:" + path.name)
@@ -456,6 +496,8 @@ def build_coverage(root: Path) -> dict:
     results = {}
     lockbox_result_files_withheld = 0
     for path in sorted((root / "result-days").glob("*.json")):
+        if months is not None and path.stem[:7] not in months:
+            continue
         # 2025 is only a lockbox candidate. Do NOT parse or hash its outcomes;
         # even a retrospective coverage read can disclose hidden labels.
         if path.stem.startswith("2025-"):
@@ -488,15 +530,28 @@ def build_coverage(root: Path) -> dict:
             root, item, matches[0] if matches else None, outcome.get(rid),
             freeze_verified=bool(document), result_binding_verified=bound,
         ))
+    extra_dimensions = ("sport_type", "race_type", "start_method", "distance")
     counters: dict[str, dict[str, Counter]] = {
         dimension: defaultdict(Counter)
-        for dimension in ("by_year", "by_month", "by_country", "by_track")
+        for dimension in ("by_year", "by_month", "by_country", "by_track",
+                          "by_runner_count", "by_data_quality", "by_provider",
+                          *("by_" + key for key in extra_dimensions))
     }
     totals = Counter()
     blockers = Counter()
     for row in rows:
-        for label, key in (("by_year", str(row["year"])), ("by_month", row["month"]),
-                           ("by_country", row["country"]), ("by_track", row["track"])):
+        dimensions = row["metadata_dimensions"]
+        groups = [("by_year", str(row["year"])), ("by_month", row["month"]),
+                  ("by_country", row["country"]), ("by_track", row["track"]),
+                  ("by_runner_count", str(row["active_runners"])
+                   if row["active_runners"] is not None else "UNKNOWN"),
+                  ("by_data_quality", row["primary_blocker"] or "NO_PRIMARY_BLOCKER"),
+                  ("by_provider", "RIKSTOTO" if row["metadata_source_uri"]
+                   or row["categories"]["SOURCE_ARCHIVED"] else "UNKNOWN")]
+        groups.extend(("by_" + key, str(dimensions[key])
+                       if dimensions.get(key) is not None else "UNKNOWN")
+                      for key in extra_dimensions)
+        for label, key in groups:
             counters[label][key]["physical_races"] += 1
             for category, enabled in row["categories"].items():
                 counters[label][key][category] += int(enabled)
@@ -511,14 +566,35 @@ def build_coverage(root: Path) -> dict:
         "training_performed": False, "fitting_authorized": False,
         "year_scope": "2015-2026; only supplied source files inspected",
         "source_root": str(root),
+        "month_scope": sorted(months) if months is not None else None,
         "source_file_count": {
-            "inventories": len(list((root / "inventory").glob("*.json"))),
+            "inventories": sum(months is None or f.stem in months
+                               for f in (root / "inventory").glob("*.json")),
             "market_days": len(market_days), "result_days": len(results),
             "weekly_market_archives": weekly_count,
             "2025_lockbox_result_files_not_read": lockbox_result_files_withheld,
             "unbound_meeting_source_failures_not_physical_races": len(unbound_meeting_rows),
         },
         "counts": dict(totals), "primary_blockers": dict(sorted(blockers.items())),
+        "intended_scope_counts": {
+            # Same supported code as the existing backfill: T=trav, G=galopp.
+            # Unknown/other sports or countries are never inferred from track/name.
+            "NO_SE_TROT_METADATA_REFERENCES": sum(
+                row["country"] in {"NO", "SE"}
+                and row["metadata_dimensions"].get("sport_type") == "T"
+                for row in rows
+            ),
+            "NO_SE_TROT_PIT_MODEL_ELIGIBLE": sum(
+                row["country"] in {"NO", "SE"}
+                and row["metadata_dimensions"].get("sport_type") == "T"
+                and row["categories"]["PIT_MODEL_ELIGIBLE"] for row in rows
+            ),
+            "NO_SE_TROT_NON_LOCKBOX_METADATA_REFERENCES": sum(
+                row["country"] in {"NO", "SE"} and row["year"] != 2025
+                and row["metadata_dimensions"].get("sport_type") == "T"
+                for row in rows
+            ),
+        },
         **{label: {
             key: {**dict(count), "coverage_denominator": count["physical_races"]}
             for key, count in sorted(group.items())
@@ -547,8 +623,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--month", action="append",
+                        help="Explicit YYYY-MM scope; repeat for bounded archive audits")
     args = parser.parse_args(argv)
-    result = build_coverage(args.root)
+    result = build_coverage(args.root, months=set(args.month) if args.month else None)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     # Exclusive creation: no silent replacement of prior research output.
     with args.output.open("x", encoding="utf-8") as handle:

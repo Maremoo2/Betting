@@ -606,3 +606,161 @@ def test_long_title_with_physical_label_starts_a_new_pdf_section():
     assert pdf_field(body, 6, {"1": {"name": "Beta"}}, "2026-11-13") == "2026-11-13T13:10:00+00:00"
     with pytest.raises(ValueError, match="COLLECTOR_PDF_FIELD_MISMATCH"):
         pdf_field(body, 5, {"1": {"name": "Beta"}}, "2026-11-13")
+
+
+@pytest.mark.parametrize("revision_after_asof", [False, True])
+def test_revised_start_requires_two_pre_asof_observations(tmp_path, revision_after_asof):
+    """A changed program clock may be archived, never used to certify PIT/BET."""
+    root = _archive_unicode(
+        tmp_path / "collector", tmp=False, physical_clock="21:34"
+    )
+    db = tmp_path / "hbi.sqlite"
+    _db(db)
+    with _connection(db) as conn:
+        conn.execute("""
+            CREATE TABLE race_schedule_observations(
+                race_id TEXT, observed_at_utc TEXT, normalized_start_utc TEXT,
+                source_grade TEXT, source_body_sha256 TEXT, pit_verified INTEGER)
+        """)
+        original_time = START + timedelta(minutes=1)
+        original_observed = NOW - timedelta(minutes=3)
+        revised_observed = (
+            NOW + timedelta(minutes=1) if revision_after_asof
+            else NOW - timedelta(minutes=2)
+        )
+        conn.executemany(
+            "INSERT INTO race_schedule_observations VALUES (?,?,?,?,?,?)",
+            [
+                (RID, original_observed.isoformat(), original_time.isoformat(),
+                 "HASH_ONLY_NO_RAW_BYTES", "a" * 64, 0),
+                (RID, revised_observed.isoformat(), START.isoformat(),
+                 "HASH_ONLY_NO_RAW_BYTES", "b" * 64, 0),
+            ],
+        )
+        result = verify_import(
+            conn, OriginalArchive(root), RID, asof=NOW, authenticated=True
+        )
+        assert result["model_input_approved"] is False
+        assert result["bet_authority"] is False
+        assert result["pit_certified"] is False
+        if revision_after_asof:
+            assert "COLLECTOR_PDF_START_CLOCK_CONFLICT" in result["blockers"]
+            assert result["source_imported_to_sqlite"] is False
+        else:
+            assert result["source_imported_to_sqlite"] is True, result["blockers"]
+            assert "COLLECTOR_START_REVISION_REQUIRES_PIT_ATTESTATION" in result["blockers"]
+            evidence = result["start_time_evidence"]
+            assert evidence["actual_start_verified"] is False
+            assert len(evidence["revisions"]) == 2
+
+
+def test_shadow_source_envelope_never_promotes_research_to_bet(tmp_path):
+    from hbi.collector_handoff import shadow_source_envelope
+
+    root = _archive_unicode(tmp_path / "collector")
+    db = tmp_path / "hbi.sqlite"
+    _db(db)
+    with _connection(db) as conn:
+        handoff = verify_import(
+            conn, OriginalArchive(root), RID, asof=NOW, authenticated=True
+        )
+    output = shadow_source_envelope(handoff)
+    assert output["source_status"] == "SOURCE_READY"
+    assert output["fundamental_status"] == "NEEDS_VERIFIED_HISTORY"
+    assert output["decision"] == "BLOCKED"
+    assert output["bet_authority"] is False
+    assert output["p_win"] is None and output["ev"] is None
+    assert len(output["runners"]) == len(NAMES)
+    assert output["source_evidence"]["collector_starts_sha256"]
+    assert "COLLECTOR_TMP_IDENTITY_NOT_ADMITTED" in output["blockers"]
+
+
+def test_collector_shadow_output_exists_when_original_archive_missing(tmp_path):
+    from hbi.collector_handoff import run_import
+
+    db = tmp_path / "hbi.sqlite"
+    _db(db)
+    src = tmp_path / "source.json"
+    src.write_text(json.dumps({"races_in_fixed_cohort": [RID]}))
+    out = run_import(
+        db, tmp_path / "missing", tmp_path / "missing-provenance.json",
+        src, tmp_path / "handoff.json", asof=NOW,
+    )
+    assert len(out["shadow_records"]) == 1
+    status = out["shadow_records"][0]
+    assert status["source_status"] == "DATA_BLOCKED"
+    assert status["engine_status"] == "NOT_RUN"
+    assert status["engine_blocker"] == "V33_COMPLETE_PRE_RACE_CASE_MISSING"
+    assert status["bet_authority"] is False
+    assert status["p_win"] is None and status["ev"] is None
+
+
+def test_shadow_v33_routes_only_verified_cases_through_frozen_evaluator():
+    from hbi.collector_handoff import evaluate_shadow_v33
+
+    race = {
+        "race_id": RID, "source_imported_to_sqlite": True,
+        "model_input_approved": False, "independent_identity_attested": False,
+        "pit_certified": False,
+        "runners": [{"start_number": 1, "horse_name": "Test", "scratched": False}],
+    }
+    incomplete_case = {"race_id": RID, "active_field": ["1"]}
+    blocked = evaluate_shadow_v33(race, incomplete_case)
+    assert blocked["engine_status"] == "NOT_RUN"
+    assert blocked["engine_blocker"] == "V33_SOURCE_IDENTITY_OR_PIT_GATE_NOT_ATTESTED"
+    assert blocked["bet_authority"] is False
+    # Synthetic software-only gate case: even a claimed verified source cannot
+    # bypass the real V3.3 evaluator's missing PIT/market/FFQ requirements.
+    race.update(
+        model_input_approved=True,
+        independent_identity_attested=True,
+        pit_certified=True,
+    )
+    rejected = evaluate_shadow_v33(race, incomplete_case)
+    assert rejected["engine_status"] == "REJECTED"
+    assert rejected["engine_blocker"].startswith("V33_INPUT_REJECTED:")
+    assert rejected["bet_authority"] is False
+    assert rejected["p_win"] is None and rejected["ev"] is None
+
+
+def test_shadow_append_only_readback_and_reject_symlink(tmp_path):
+    from hbi.collector_handoff import append_shadow_events, sha
+
+    log = tmp_path / "events.jsonl"
+    first = {"race_id": RID, "decision": "BLOCKED", "bet_authority": False}
+    second = {"race_id": RID, "decision": "SHADOW_ONLY", "bet_authority": False}
+    first_hashes = append_shadow_events(log, [first])
+    original = log.read_bytes()
+    second_hashes = append_shadow_events(log, [second])
+    lines = log.read_bytes().splitlines(keepends=True)
+    assert len(lines) == 2
+    assert lines[0] == original
+    assert [sha(lines[0])] == first_hashes
+    assert [sha(lines[1])] == second_hashes
+    assert json.loads(lines[0]) == first
+    assert json.loads(lines[1]) == second
+    link = tmp_path / "link.jsonl"
+    link.symlink_to(log)
+    with pytest.raises(ValueError, match="SHADOW_LOG_PATH_UNSAFE"):
+        append_shadow_events(link, [first])
+
+
+def test_import_optional_shadow_log_has_consistent_json_readback(tmp_path):
+    from hbi.collector_handoff import run_import
+
+    db = tmp_path / "hbi.sqlite"
+    _db(db)
+    src = tmp_path / "source.json"
+    src.write_text(json.dumps({"races_in_fixed_cohort": [RID]}))
+    dest = tmp_path / "handoff.json"
+    log = tmp_path / "shadow.jsonl"
+    response = run_import(
+        db, tmp_path / "missing", tmp_path / "provenance.json", src, dest,
+        asof=NOW, shadow_log=log,
+    )
+    reread = json.loads(dest.read_text())
+    assert reread["shadow_records"] == response["shadow_records"]
+    assert reread["shadow_event_sha256"] == response["shadow_event_sha256"]
+    assert json.loads(log.read_text().splitlines()[0]) == response["shadow_records"][0]
+    assert len(response["shadow_event_sha256"]) == 1
+    assert response["bet_authority"] is False

@@ -742,6 +742,43 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+      # Both contracts use the same four original ZIPs. Reverify the shared
+      # inputs before the separate Pre-Watch and rollback assertions.
+      - name: Replay authenticated 21 Nov Collector, SQLite, Shadow and Pre-Watch
+        id: replay_nov21
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/p0-nov21"
+          python - "$RUNNER_TEMP/core003-v2-input" "$root" <<'PYTHON'
+          import sys
+          from scripts.core003_replay_v2 import extract_inputs
+
+          extract_inputs(sys.argv[1], sys.argv[2])
+          PYTHON
+          P0_NOV21_COLLECTOR_ROOT="$root/collector" \
+          P0_NOV21_SQLITE="$root/state/core003-pilot.sqlite" \
+          P0_NOV21_FROZEN_SHADOW="$root/model/race-001/shadow.json" \
+          P0_NOV21_SOURCE_REPORT="$root/report/core003-pilot-report.json" \
+          P0_PRODUCT_OUTPUT="$root/product" \
+            pytest -q -s tests/test_collector_nov21_rebaseline.py
+          for file in prewatch-day.json prewatch-day.md prewatch-events.jsonl; do
+            test -s "$root/product/$file"
+          done
+
+      - name: Upload authenticated Pre-Watch day readback (not live betting)
+        if: github.event_name == 'pull_request' && steps.replay_nov21.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3313-product-day-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/p0-nov21/product/prewatch-day.json
+            ${{ runner.temp }}/p0-nov21/product/prewatch-day.md
+            ${{ runner.temp }}/p0-nov21/product/prewatch-events.jsonl
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Replay frozen Eskilstuna originals through automatic MVP-009 diagnostics
         if: github.event_name == 'pull_request'
         env:

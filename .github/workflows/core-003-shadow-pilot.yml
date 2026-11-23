@@ -1,4 +1,5 @@
 name: CORE-003 Isolated Source Coverage Pilot
+run-name: ${{ inputs.acceptance_schedule && format('V3313 clock {0}', inputs.acceptance_day) || (inputs.acceptance_tick_utc != '' && format('V3313 tick {0}', inputs.acceptance_tick_utc) || github.workflow) }}
 
 on:
   # Pilot only: source acquisition in a dedicated SQLite artifact. Never writes hbi-state.
@@ -18,14 +19,46 @@ on:
         type: boolean
         default: false
 
+      shadow_acceptance:
+        description: "Branch-only isolated Shadow acceptance probe (not full-day proof)"
+        required: false
+        type: boolean
+        default: false
+
+      acceptance_schedule:
+        description: "One-off timed branch test (never production)"
+        type: boolean
+        default: false
+      acceptance_day:
+        description: "One-off acceptance date"
+        type: string
+        default: ''
+      acceptance_start_utc:
+        description: "Frozen first dispatch UTC"
+        type: string
+        default: ''
+      acceptance_end_utc:
+        description: "Frozen stop UTC"
+        type: string
+        default: ''
+      acceptance_pin_sha:
+        description: "Required exact SHA for timed test"
+        type: string
+        default: ''
+      acceptance_tick_utc:
+        description: "Controller planned UTC; empty for manual probe"
+        type: string
+        default: ''
+
 permissions:
   contents: read
   actions: read
 
 jobs:
   source-pilot:
+    if: ${{ !inputs.acceptance_schedule }}
     concurrency:
-      group: core003-isolated-source-pilot
+      group: ${{ github.ref == 'refs/heads/main' && 'core003-isolated-source-pilot' || format('core003-acceptance-{0}', github.run_id) }}
       cancel-in-progress: false
     outputs:
       run: ${{ steps.gate.outputs.run }}
@@ -35,6 +68,20 @@ jobs:
     timeout-minutes: 13
     steps:
       - uses: actions/checkout@v4
+
+      - name: Enforce branch acceptance SHA before source access
+        if: github.event_name == 'workflow_dispatch' && inputs.shadow_acceptance
+        env:
+          ACCEPTANCE_PIN: ${{ inputs.acceptance_pin_sha }}
+        run: |
+          python - <<'PY'
+          import os
+          if os.environ["GITHUB_REF"] == "refs/heads/main":
+              raise SystemExit("SHADOW_ACCEPTANCE_MUST_NOT_RUN_ON_MAIN")
+          expected = os.environ.get("ACCEPTANCE_PIN")
+          if expected and expected != os.environ["GITHUB_SHA"]:
+              raise SystemExit("FROZEN_ACCEPTANCE_HEAD_CHANGED_NO_SOURCE_ACCESS")
+          PY
 
       - uses: actions/setup-python@v5
         with:
@@ -128,6 +175,7 @@ jobs:
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && steps.restore.outcome == 'success' && always()
         env:
           GH_TOKEN: ${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN || github.token }}
+          ACCEPTANCE_SOURCE_DAY: ${{ inputs.shadow_acceptance && inputs.acceptance_day || '' }}
         run: |
           if [ ! -f core003-pilot-report.json ]; then
             echo "CORE003_SOURCE_REPORT_NOT_AVAILABLE"; exit 0
@@ -153,6 +201,8 @@ jobs:
               for rid in source.get("races_in_fixed_cohort", [])
               if isinstance(rid, str) and rid.startswith("RIKSTOTO:")
           }
+          if os.environ.get("ACCEPTANCE_SOURCE_DAY"):
+              dates = {os.environ["ACCEPTANCE_SOURCE_DAY"]}
           runs = json.loads((Path(os.environ["RUNNER_TEMP"]) /
                              "pit003a-collector-runs.json").read_text())
           matches = [
@@ -211,6 +261,59 @@ jobs:
             --collector-provenance pit003a-collector-archive/provenance.json \
             --source-report core003-pilot-report.json \
             --out collector-handoff.json
+
+      # Acceptance only: no automatic schedule or production consumer activation.
+      - name: Branch-only isolated source to Pre-Watch acceptance
+        if: always() && github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && inputs.shadow_acceptance && inputs.execute && steps.restore.outcome == 'success'
+        shell: bash
+        env:
+          ACCEPTANCE_DAY: ${{ inputs.acceptance_day }}
+          ACCEPTANCE_TICK: ${{ inputs.acceptance_tick_utc }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from datetime import UTC, datetime
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+          from hbi.prewatch_shadow_handoff import run_day
+          path = Path("core003-pilot-report.json")
+          source = json.loads(path.read_bytes()) if path.exists() else {}
+          asof = source.get("finished_at_utc") or datetime.now(UTC).isoformat()
+          day = os.environ.get("ACCEPTANCE_DAY") or datetime.fromisoformat(asof).astimezone(ZoneInfo("Europe/Oslo")).date().isoformat()
+          report = run_day(
+              db=Path("data/core003-pilot.sqlite"),
+              collector_root=Path("pit003a-collector-archive"),
+              provenance=Path("pit003a-collector-archive/provenance.json"),
+              day=day, decision_time=asof,
+              out=Path(os.environ["RUNNER_TEMP"]) / "v3313-isolated-acceptance",
+          )
+          trigger = {"workflow_run_id": int(os.environ["GITHUB_RUN_ID"]),
+                     "head": os.environ["GITHUB_SHA"],
+                     "planned_tick_utc": os.environ.get("ACCEPTANCE_TICK") or None,
+                     "source_started_at_utc": source.get("started_at_utc"),
+                     "source_finished_at_utc": source.get("finished_at_utc"),
+                     "full_day_accepted": False}
+          target = Path(os.environ["RUNNER_TEMP"]) / "v3313-isolated-acceptance/acceptance-trigger.json"
+          with target.open("x", encoding="utf-8") as handle:
+              json.dump(trigger, handle, indent=2)
+          print(json.dumps({"probe": "MANUAL_DISPATCH_PARTIAL_NOT_SCHEDULED_FULL_DAY",
+                            "source_capture_mode": source.get("mode"),
+                            "counts": report["counts"], "bet_authority": False}))
+          PY
+
+      - name: Publish branch-only acceptance trace
+        if: always() && github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && inputs.shadow_acceptance
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3313-isolated-acceptance-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/v3313-isolated-acceptance/prewatch-day.json
+            ${{ runner.temp }}/v3313-isolated-acceptance/prewatch-day.md
+            ${{ runner.temp }}/v3313-isolated-acceptance/prewatch-events.jsonl
+            ${{ runner.temp }}/v3313-isolated-acceptance/acceptance-trigger.json
+          if-no-files-found: error
+          retention-days: 21
 
       - name: Freeze read-only Champion and CORE-004 reports for fixed cohort
         if: steps.gate.outputs.run == 'true' && steps.gate.outputs.execute == 'true' && success()
@@ -519,8 +622,9 @@ jobs:
       always() && needs.source-pilot.outputs.run == 'true'
       && needs.source-pilot.outputs.execute == 'true'
       && needs.source-pilot.outputs.restore == 'success'
+      && !(github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && inputs.shadow_acceptance)
     concurrency:
-      group: core003-isolated-outcome-research
+      group: ${{ github.ref == 'refs/heads/main' && 'core003-isolated-outcome-research' || format('core003-acceptance-outcomes-{0}', github.run_id) }}
       cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 13
@@ -914,4 +1018,126 @@ jobs:
           name: dev011-coverage-manifest-${{ github.run_id }}
           path: dev011-coverage/
           if-no-files-found: warn
+          retention-days: 21
+
+  acceptance-clock-0:
+    if: always() && !cancelled() && github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && inputs.acceptance_schedule
+    permissions:
+      contents: read
+      actions: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Freeze one-off plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACCEPTANCE_PIN_SHA: ${{ inputs.acceptance_pin_sha }}
+          ACCEPTANCE_START_UTC: ${{ inputs.acceptance_start_utc }}
+          ACCEPTANCE_END_UTC: ${{ inputs.acceptance_end_utc }}
+        run: python scripts/release003_clock.py --phase 0 --plan-only
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release003-clock-plan-0-${{ github.run_id }}
+          path: ${{ runner.temp }}/release003-clock-0/plan.json
+          if-no-files-found: error
+          retention-days: 21
+      - name: Dispatch predeclared isolated observations
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACCEPTANCE_PIN_SHA: ${{ inputs.acceptance_pin_sha }}
+          ACCEPTANCE_START_UTC: ${{ inputs.acceptance_start_utc }}
+          ACCEPTANCE_END_UTC: ${{ inputs.acceptance_end_utc }}
+        run: python scripts/release003_clock.py --phase 0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release003-clock-receipts-0-${{ github.run_id }}
+          path: ${{ runner.temp }}/release003-clock-0/
+          if-no-files-found: error
+          retention-days: 21
+
+  acceptance-clock-1:
+    needs: acceptance-clock-0
+    if: always() && !cancelled() && github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && inputs.acceptance_schedule
+    permissions:
+      contents: read
+      actions: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Freeze one-off plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACCEPTANCE_PIN_SHA: ${{ inputs.acceptance_pin_sha }}
+          ACCEPTANCE_START_UTC: ${{ inputs.acceptance_start_utc }}
+          ACCEPTANCE_END_UTC: ${{ inputs.acceptance_end_utc }}
+        run: python scripts/release003_clock.py --phase 1 --plan-only
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release003-clock-plan-1-${{ github.run_id }}
+          path: ${{ runner.temp }}/release003-clock-1/plan.json
+          if-no-files-found: error
+          retention-days: 21
+      - name: Dispatch predeclared isolated observations
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACCEPTANCE_PIN_SHA: ${{ inputs.acceptance_pin_sha }}
+          ACCEPTANCE_START_UTC: ${{ inputs.acceptance_start_utc }}
+          ACCEPTANCE_END_UTC: ${{ inputs.acceptance_end_utc }}
+        run: python scripts/release003_clock.py --phase 1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release003-clock-receipts-1-${{ github.run_id }}
+          path: ${{ runner.temp }}/release003-clock-1/
+          if-no-files-found: error
+          retention-days: 21
+
+  acceptance-clock-2:
+    needs: acceptance-clock-1
+    if: always() && !cancelled() && github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && inputs.acceptance_schedule
+    permissions:
+      contents: read
+      actions: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Freeze one-off plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACCEPTANCE_PIN_SHA: ${{ inputs.acceptance_pin_sha }}
+          ACCEPTANCE_START_UTC: ${{ inputs.acceptance_start_utc }}
+          ACCEPTANCE_END_UTC: ${{ inputs.acceptance_end_utc }}
+        run: python scripts/release003_clock.py --phase 2 --plan-only
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release003-clock-plan-2-${{ github.run_id }}
+          path: ${{ runner.temp }}/release003-clock-2/plan.json
+          if-no-files-found: error
+          retention-days: 21
+      - name: Dispatch predeclared isolated observations
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACCEPTANCE_PIN_SHA: ${{ inputs.acceptance_pin_sha }}
+          ACCEPTANCE_START_UTC: ${{ inputs.acceptance_start_utc }}
+          ACCEPTANCE_END_UTC: ${{ inputs.acceptance_end_utc }}
+        run: python scripts/release003_clock.py --phase 2
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release003-clock-receipts-2-${{ github.run_id }}
+          path: ${{ runner.temp }}/release003-clock-2/
+          if-no-files-found: error
           retention-days: 21
