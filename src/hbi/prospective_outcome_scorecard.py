@@ -18,6 +18,7 @@ from typing import Any
 from .evaluation import calibration_bins, log_loss, multiclass_brier
 from .probability import normalize_market_odds
 from .providers.rikstoto import OriginalBytesFetchResult, RikstotoClient
+from .shadow import ShadowPolicy
 
 SCHEMA = "DEV009_PROSPECTIVE_OUTCOME_SCORECARD_V1"
 COHORT = "BET_MVP_002_FIXED_COHORT_INDEX_V1"
@@ -101,7 +102,7 @@ def read_archived_models(root: Path) -> tuple[list[dict], list[dict], list[str]]
                     "race_id": race_id, "model": report,
                     "model_sha256": digest(report_raw),
                     "cohort_index_sha256": digest(raw_index),
-                    "original_model_path": str(path),
+                    "original_model_path": path.as_posix(),
                 })
             candidates.extend(local_candidates)
         except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
@@ -181,7 +182,8 @@ def _field(model: dict) -> tuple[list[dict] | None, list[str]]:
     freeze = clock(model.get("report_created_at_utc"))
     asof = clock(model.get("as_of_utc"))
     if (start is None or freeze is None or asof is None
-            or not asof <= freeze <= start - timedelta(minutes=4)):
+            or not asof <= freeze < start - timedelta(
+                minutes=ShadowPolicy().target_minutes_to_start)):
         blocks.append("FROZEN_MODEL_MISSED_T4_OR_INVALID_CLOCK")
     if model.get("run_kind") != "PROSPECTIVE_ATTEMPT":
         blocks.append("NOT_PROSPECTIVE_FROZEN_MODEL")
