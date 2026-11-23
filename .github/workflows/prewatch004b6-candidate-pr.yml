@@ -1,0 +1,56 @@
+name: PREWATCH-004B6 nine historical PIT candidates authentic audit NO BET
+
+on:
+  pull_request:
+    paths:
+      - "src/hbi/prewatch004b6_candidate_audit.py"
+      - "tests/test_prewatch004b6_candidate_audit.py"
+      - "docs/PREWATCH004B6_NINE_CANDIDATES.md"
+      - ".github/workflows/prewatch004b6-candidate-pr.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  candidate-originals:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - name: Previous 004B to 004B6 research regressions
+        run: pytest -q tests/test_prewatch004b_features.py tests/test_prewatch004b2_original_binding.py tests/test_prewatch004b3_flexible_pilot.py tests/test_prewatch004b4_fullfield_pilot.py tests/test_prewatch004b5_evidence_recovery.py tests/test_prewatch004b6_candidate_audit.py
+      - name: Ruff
+        run: ruff check src/hbi/prewatch004b6_candidate_audit.py tests/test_prewatch004b6_candidate_audit.py
+      - name: Replay genuine M7B2B original sources and audit all nine
+        run: |
+          set -euo pipefail
+          mkdir -p audit-output
+          python -m hbi.prewatch004b6_candidate_audit --root . --output audit-output/candidates.json
+          cp audit-output/candidates.json audit-output/first.json
+          python -m hbi.prewatch004b6_candidate_audit --root . --output audit-output/candidates.json
+          cmp audit-output/first.json audit-output/candidates.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path("audit-output/candidates.json").read_text())
+          assert len(r["candidate_audits"]) == 9
+          assert r["T_minus_4_legacy_scoped_source_pit"] == 18
+          assert r["genuine_new_target_historical_PIT_admissions"] == 0
+          assert all(x["model_eligible"] is False for x in r["candidate_audits"])
+          assert not r["bet_authorized"]
+          print(json.dumps({"nine_candidate_ids": [x["observation_id"] for x in r["candidate_audits"]],
+                            "blocking_counts": r["blocker_counts"],"status":r["status"]},sort_keys=True))
+          PY
+      - name: Save authentic research audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prewatch004b6-nine-original-candidates-${{ github.run_id }}
+          path: audit-output/
+          retention-days: 14
+          if-no-files-found: warn
