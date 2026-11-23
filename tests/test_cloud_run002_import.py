@@ -67,6 +67,25 @@ def test_real_canonical_tables_and_idempotent_second_run(tmp_path):
     assert first["model_ready"] == first["bet_ready"] == 0
     assert db.fetch_table("predictions") == []
     assert db.fetch_table("shadow_decision_runs") == []
+    refs = db.fetch_table("provider_race_refs")
+    assert len(refs) == 1
+    assert refs[0]["provider"] == "rikstoto"
+    assert refs[0]["provider_raceday_key"] == "S1_NR_2026-11-12"
+    assert refs[0]["race_number"] == 1
+    assert refs[0]["race_id"] == first["records"][0]["race_id"]
+
+
+def test_existing_provider_reference_conflict_does_not_overwrite_or_partially_import(tmp_path):
+    db = store(tmp_path)
+    persist_source(db, [race(1), race(2)])
+    with db.connect() as c:
+        c.execute("UPDATE provider_race_refs SET race_id=? WHERE race_number=1",
+                  (race(2).card.race["race_id"],))
+    before = {t: db.fetch_table(t) for t in ("races", "runners", "provider_payloads",
+                                           "provider_race_refs")}
+    with pytest.raises(ValueError, match="PROVIDER_REFERENCE_CONFLICT"):
+        persist_source(db, [race(3), race(1)])
+    assert before == {t: db.fetch_table(t) for t in before}
 
 
 def test_new_version_is_append_only_and_does_not_promote(tmp_path):

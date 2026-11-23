@@ -70,6 +70,8 @@ def run_once(*, db_path: str, mode: str) -> RunAudit:
         result = import_source(
             store, Path(archive_env), Path(checksum_env),
             date_oslo=os.environ.get("HBI_COLLECTOR_DATE_OSLO") or None,
+            race_ids=(json.loads(os.environ["HBI_COLLECTOR_RACE_IDS_JSON"])
+                      if "HBI_COLLECTOR_RACE_IDS_JSON" in os.environ else None),
         )
         audit.provider_status = "COLLECTOR_VERIFIED_ARCHIVE_RESEARCH_ONLY"
         audit.race_cards = int(result["observed_races"])
