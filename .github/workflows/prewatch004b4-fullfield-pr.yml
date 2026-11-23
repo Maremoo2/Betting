@@ -1,0 +1,66 @@
+name: PREWATCH-004B4 genuine full field pilot (NO BET)
+
+on:
+  pull_request:
+    paths:
+      - "src/hbi/prewatch004b4_fullfield_pilot.py"
+      - "tests/test_prewatch004b4_fullfield_pilot.py"
+      - "docs/PREWATCH004B4_AUTHENTIC_FULLFIELD_PILOT.md"
+      - ".github/workflows/prewatch004b4-fullfield-pr.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  fullfield-original-pilot:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - name: All available focused 004B, 004B2, 004B3, 004B4 tests
+        run: pytest -q tests/test_prewatch004b_features.py tests/test_prewatch004b2_original_binding.py tests/test_prewatch004b3_flexible_pilot.py tests/test_prewatch004b4_fullfield_pilot.py
+      - name: Ruff new research and tests
+        run: ruff check src/hbi/prewatch004b4_fullfield_pilot.py tests/test_prewatch004b4_fullfield_pilot.py
+      - name: Download genuine original Collector ZIP and checksum
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p collector-input
+          gh run download 45141884691 --repo Maremoo2/rikstoto-program-collector --name prewatch-bridge-fallback --dir collector-input
+      - name: Full field original replay twice; explicit PIT blocking
+        run: |
+          set -euo pipefail
+          mapfile -t archives < <(find collector-input -type f -name 'rikstoto-2026-11-23-*.zip')
+          test "${#archives[@]}" -eq 1
+          archive="${archives[0]}"
+          test -s "$archive.sha256"
+          mkdir -p prewatch004b4-output
+          python -m hbi.prewatch004b4_fullfield_pilot --archive "$archive" --checksum "$archive.sha256" --date-oslo 2026-11-23 --output prewatch004b4-output/fullfield.json
+          cp prewatch004b4-output/fullfield.json prewatch004b4-output/first.json
+          python -m hbi.prewatch004b4_fullfield_pilot --archive "$archive" --checksum "$archive.sha256" --date-oslo 2026-11-23 --output prewatch004b4-output/fullfield.json
+          cmp prewatch004b4-output/first.json prewatch004b4-output/fullfield.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path("prewatch004b4-output/fullfield.json").read_text())
+          assert len(x["runners"]) == x["listed_count"]
+          assert len([r for r in x["runners"] if not r["scratched"]]) == x["active_count"]
+          assert x["active_count"] > 0
+          assert all(r.get("pit_status") == "PIT_UNPROVEN" and r.get("verified_official_results") == 0 for r in x["runners"] if not r["scratched"])
+          assert x["bet_authorized"] is False and x["p_win"] == "NOT_ESTIMABLE"
+          print("PREWATCH004B4_SELECTED_FULLFIELD", json.dumps(x,ensure_ascii=False,sort_keys=True))
+          PY
+      - name: Preserve actual research manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prewatch004b4-authentic-fullfield-${{ github.run_id }}
+          path: prewatch004b4-output/
+          if-no-files-found: warn
+          retention-days: 14
