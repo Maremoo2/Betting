@@ -11,7 +11,11 @@ import pytest
 from hbi.cloud_run002_import import SourceRace
 from hbi.ingestion import RaceCard
 from hbi.prewatch004_pack import (
-    DRAFT_SCHEMA, SCHEMA, _snapshot_diff, _write_once, build_race_pack,
+    DRAFT_SCHEMA,
+    SCHEMA,
+    _snapshot_diff,
+    _write_once,
+    build_race_pack,
     validate_phase_a_draft,
 )
 
@@ -145,6 +149,13 @@ def _draft(pack):
             "data_25": 10, "shape_20": 8, "mispricing_30": 6,
             "liquidity_15": 1, "today_fit_10": 4,
         },
+        "champion_evidence": {
+            "data_25": "Snapshot complete, semantic history unknown",
+            "shape_20": "Potential inside pace from start positions",
+            "mispricing_30": "Unconfirmed hypothesis from source-only evidence",
+            "liquidity_15": "No observed pool; preliminary only",
+            "today_fit_10": "Distance and start method observed",
+        },
     }
 
 
@@ -161,6 +172,17 @@ def test_draft_requires_all_active_runners_and_keeps_draft_status():
         validate_phase_a_draft(bad, pack)
     with pytest.raises(ValueError, match="STATUS"):
         validate_phase_a_draft({**draft, "status": "FULLY_ASSESSED"}, pack)
+    with pytest.raises(ValueError, match="FORBIDDEN"):
+        validate_phase_a_draft({**draft, "frozen_at": "2026-11-23T09:01:00Z"}, pack)
+    with pytest.raises(ValueError, match="SCORE_EVIDENCE_MISSING"):
+        validate_phase_a_draft({**draft, "champion_evidence": {}}, pack)
+    with pytest.raises(ValueError, match="RUNNER_FORBIDDEN"):
+        validate_phase_a_draft(
+            {**draft, "runners": [
+                {**draft["runners"][0], "win_odds": 2.0},
+                draft["runners"][1],
+            ]}, pack,
+        )
 
 
 def test_draft_rejects_market_and_invalid_champion_scores():
