@@ -186,6 +186,7 @@ def assess_and_run(
                     check_clock(role, uri, stamp.isoformat() if isinstance(stamp, datetime) else None)
             horse_id, identity_reason = resolve_model_identity(
                 race_id, selection, row, atg, proofs, min(moment, cutoff) if cutoff else moment,
+                race_cutoff=cutoff,
             )
             if identity_reason:
                 reasons.extend(("PERMANENT_HORSE_ID_UNATTESTED", identity_reason))

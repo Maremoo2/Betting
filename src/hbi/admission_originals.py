@@ -13,8 +13,15 @@ _REVIEWED_RECEIPTS: frozenset[tuple[str, str, str, datetime]] = frozenset()
 def verified_original(
     role: str, uri: str, digest: str, observed: datetime, original: bytes | None, cutoff: datetime,
 ) -> dict | None:
-    """Require both matching bytes and an independently reviewed capture receipt."""
-    if not isinstance(observed, datetime) or observed.utcoffset() is None or observed > cutoff or not isinstance(original, bytes):
+    """Verify bytes and authority by an inclusive information-time bound.
+
+    This bound may be the current observation time, not the race's T-4 instant.
+    The existing admission gate separately requires completion strictly before
+    canonical T-4. Do not reject a source completed exactly at a valid earlier now.
+    """
+    if (not isinstance(cutoff, datetime) or cutoff.utcoffset() is None
+            or not isinstance(observed, datetime) or observed.utcoffset() is None
+            or observed > cutoff or not isinstance(original, bytes)):
         return None
     if hashlib.sha256(original).hexdigest() != digest:
         return None

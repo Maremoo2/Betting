@@ -55,12 +55,13 @@ def cohort(tmp_path, monkeypatch):
     proofs = []
     pins = set()
     atg_uri = "https://www.atg.se/services/racinginfo/v1/api/games/vinnare_test"
-    history = dumps({"id": "test", "status": "upcoming", "starts": [
+    history = dumps({"id": "vinnare_test", "races": [{"id": "test", "sport": "trot",
+        "status": "upcoming", "startTime": START.isoformat(), "starts": [
         {"number": i, "horse": {"id": i, "age": 5, "sex": "mare", "trainer": {"lastName": "Test"},
          "statistics": {"life": {"starts": 20, "placement": {"1": i, "2": 0, "3": 0}, "earnings": 0},
                         "years": {"2026": {"starts": 0, "earnings": 0}}}}}
         for i in (1, 2)
-    ]}).encode()
+    ]}]}).encode()
     history_hash = sha256(history).hexdigest()
     pins.add(("ATG_HISTORY", atg_uri, history_hash, CAPTURE))
     for i in (1, 2, 3):
