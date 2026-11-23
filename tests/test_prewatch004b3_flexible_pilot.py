@@ -3,7 +3,7 @@ from copy import deepcopy
 
 import pytest
 
-from hbi.prewatch004b3_flexible_pilot import evaluate, NOT_ESTIMABLE
+from hbi.prewatch004b3_flexible_pilot import NOT_ESTIMABLE, evaluate
 
 
 def fixture():
