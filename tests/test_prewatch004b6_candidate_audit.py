@@ -1,6 +1,4 @@
 """004B6 TEST_ONLY negative mutations; positive authentic proof is in Action."""
-from copy import deepcopy
-
 import pytest
 
 from hbi.prewatch004b6_candidate_audit import CANDIDATES, audit
