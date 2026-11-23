@@ -100,8 +100,22 @@ def assemble(fullfield: dict[str, Any], source: dict[str, Any],
         "pdf_source_pit_verified_M7B2B_research": a[k]["pdf_pit_verified"],
         "official_history_chain_pit_counts_M7B2B": a[k]["chain_pit_counts"],
     } for k in sorted(a, key=int)}
+    legacy_candidates = [
+        {
+            "observation_id": d["observation_id"],
+            "cutoff_minutes": d["cutoff_minutes"],
+            "legacy_chain_status": d["historical_result_chain_pit_decision"],
+            "legacy_A_E_research": d["A_E_research"],
+            "exclusion_reasons": d["exclusion_reasons"],
+            "new_target_history_PIT_admitted": False,
+        }
+        for d in availability.get("cutoff_observations", [])
+        if d["cutoff_minutes"] == 4
+        and d["historical_result_chain_pit_decision"] == "PIT_VERIFIED"
+    ]
     return {
         "schema": SCHEMA,
+        "legacy_pit_candidate_rows_Tminus4_not_new_admissions": legacy_candidates,
         "race_id": fullfield["race_id"],
         "race": fullfield["race"],
         "source_original_archive_sha256": fullfield["archive_sha256"],
