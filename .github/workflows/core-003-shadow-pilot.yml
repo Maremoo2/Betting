@@ -189,9 +189,13 @@ jobs:
           import os
           from pathlib import Path
           from hbi.state_artifact import write_restore_failure_status
+          import json
+          campaign = Path("research/phase1-acceptance-scope.json")
+          declared = json.loads(campaign.read_bytes())["races"] if campaign.exists() else []
           write_restore_failure_status(Path("state-handoff/failure.json"),
               reason="RESTORE_FAILED_SEE_ORIGINAL_STEP_ERROR_NO_FALLBACK",
-              run_id=os.environ["GITHUB_RUN_ID"])
+              run_id=os.environ["GITHUB_RUN_ID"],
+              declared_race_ids=tuple(r["race_id"] for r in declared))
           print("::error title=State restore blocked::No source/model execution; verified state required")
           PY
 

@@ -95,8 +95,11 @@ def test_busy_target_never_replaced(tmp_path, monkeypatch, suffix):
 
 def test_restore_failure_is_durable_observable_and_not_overwritten(tmp_path):
     target = tmp_path / "state-status/failure.json"
-    report = state.write_restore_failure_status(target, reason="SHA_MISMATCH", run_id="123")
+    report = state.write_restore_failure_status(target, reason="SHA_MISMATCH", run_id="123",
+                                                declared_race_ids=("RIKSTOTO:TEST:1",))
     assert report["alert_required"] is True
+    assert report["declared_races"][0]["terminal_status"] == "SYSTEM_BLOCKED"
+    assert report["declaration_is_live_discovery"] is False
     assert report["restored"] is False
     assert report["bootstrap_allowed"] is False
     assert json.loads(target.read_bytes()) == report

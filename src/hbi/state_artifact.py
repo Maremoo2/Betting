@@ -19,14 +19,24 @@ from pathlib import Path
 API = "https://api.github.com"
 
 
-def write_restore_failure_status(path: Path, *, reason: str, run_id: str) -> dict:
+def write_restore_failure_status(
+    path: Path, *, reason: str, run_id: str, declared_race_ids: tuple[str, ...] = (),
+) -> dict:
     """Observable failure receipt; never claims a restore or sends external mail."""
+    if (len(set(declared_race_ids)) != len(declared_race_ids)
+            or any(not isinstance(race, str) or not race for race in declared_race_ids)):
+        raise ValueError("STATE_FAILURE_DECLARED_RACE_IDENTITIES_INVALID")
     document = {
         "schema": "STATE_HANDOFF_FAILURE_V1", "status": "BLOCKED",
         "observed_at_utc": datetime.now(UTC).isoformat(), "workflow_run_id": run_id,
         "reason": reason, "alert_required": True, "notification_channel": "GITHUB_ACTIONS_ERROR",
         "restored": False, "bootstrap_allowed": False, "bet_authority": False,
         "production_activated": False,
+        "declared_races": [
+            {"race_id": race, "terminal_status": "SYSTEM_BLOCKED", "reason": reason}
+            for race in declared_race_ids
+        ],
+        "declaration_is_live_discovery": False,
     }
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("x", encoding="utf-8") as stream:
