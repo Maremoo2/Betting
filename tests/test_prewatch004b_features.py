@@ -9,7 +9,11 @@ import pytest
 from hbi.cloud_run002_import import SourceRace
 from hbi.ingestion import RaceCard
 from hbi.prewatch004_pack import build_race_pack
-from hbi.prewatch004b_features import build_feature_context, coverage_report
+from hbi.prewatch004b_features import (
+    build_feature_context,
+    coverage_report,
+    validate_context_for_draft,
+)
 
 MID = "S1_NR_2026-11-23"
 RID = f"RIKSTOTO:{MID}:1"
@@ -131,3 +135,51 @@ def test_coverage_report_separates_all_runners_and_active():
     assert report["bet_authorized"] is False
     with pytest.raises(ValueError, match="DUPLICATE_PHYSICAL_RACE"):
         coverage_report([enriched, enriched])
+
+
+def test_future_ai_context_rebinds_to_exact_source_and_rejects_score_promotion():
+    pack, doc = sample()
+    context = build_feature_context(pack, doc)
+    validate_context_for_draft(pack, context)
+    corrupted = deepcopy(context)
+    corrupted["runners"][0]["verified_racing_features"]["verified_wins"]["value"] = 1
+    corrupted["runners"][0]["verified_racing_features"]["verified_wins"]["status"] = "VERIFIED"
+    with pytest.raises(ValueError, match="UNATTESTED_RESULT"):
+        validate_context_for_draft(pack, corrupted)
+    corrupted = deepcopy(context)
+    corrupted["runners"][0]["research_source_extractions"][0]["raw_sha256"] = "b" * 64
+    with pytest.raises(ValueError, match="PROVENANCE"):
+        validate_context_for_draft(pack, corrupted)
+    corrupted = deepcopy(context)
+    corrupted["source_race_pack_sha256"] = "c" * 64
+    with pytest.raises(ValueError, match="SOURCE_CONTEXT"):
+        validate_context_for_draft(pack, corrupted)
+    corrupted = deepcopy(context)
+    corrupted["runners"][0]["horse_name"] = "Different Horse"
+    with pytest.raises(ValueError, match="RUNNER_IDENTITY"):
+        validate_context_for_draft(pack, corrupted)
+
+
+def test_explicit_unplaced_and_gallop_markers_remain_research_only():
+    prior = {"date": "2026-11-10", "race_number": 1,
+             "raw_text": "TEST_ONLY U 10.11.26-1|1 1 0 2140 17,9g 999 10"}
+    pack, doc = sample(priors=[prior])
+    context = build_feature_context(pack, doc)
+    prior = context["runners"][0]["research_source_extractions"][0]
+    assert prior["semantic_status"] == "PARTIAL"
+    assert prior["field_candidates"]["placing"]["value"] == "UNPLACED"
+    assert prior["field_candidates"]["gallop_flag"]["value"] is True
+    facts = context["runners"][0]["verified_racing_features"]
+    assert facts["research_explicit_gallop_markers"]["value"] == 1
+    assert facts["research_explicit_gallop_markers"]["status"] == "PARTIAL"
+    assert facts["verified_gallop_rate"]["status"] == "UNKNOWN"
+    assert facts["verified_win_rate"]["status"] == "UNKNOWN"
+
+
+def test_invalid_history_date_remains_blocked():
+    priors = [{"date": "2026-13-11", "race_number": 1,
+               "raw_text": "TEST_ONLY U 10.11.26-1|1 1 1 2140 17,9 999 10"}]
+    pack, doc = sample(priors=priors)
+    context = build_feature_context(pack, doc)
+    assert context["runners"][0]["research_source_extractions"][0]["semantic_status"] == "BLOCKED"
+    assert context["runners"][0]["verified_racing_features"]["verified_win_rate"]["value"] == "UNKNOWN"
