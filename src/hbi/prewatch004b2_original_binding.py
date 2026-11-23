@@ -32,7 +32,7 @@ MARKET_KEYS = frozenset({
 def utc(value: str) -> datetime:
     if not isinstance(value, str):
         raise TypeError("PREWATCH004B2_AWARE_UTC_REQUIRED")
-    point = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    point = datetime.fromisoformat(value)
     if point.utcoffset() is None:
         raise ValueError("PREWATCH004B2_NAIVE_CLOCK_FORBIDDEN")
     return point.astimezone(UTC)
@@ -168,7 +168,9 @@ def aggregate_official_history(
         )
 
     for last_n in (3, 5, 10):
-        allowed = coverage[f"last_{last_n}"] == "VERIFIED"
+        allowed = (history_index_complete and len(ordered) >= 3) if last_n == 3 else (
+            coverage[f"last_{last_n}"] == "VERIFIED"
+        )
         subset = ordered[:last_n] if allowed else []
         values[f"last_{last_n}_complete_results"] = feature(
             [
