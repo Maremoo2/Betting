@@ -252,6 +252,69 @@ def build_feature_context(
     }
 
 
+
+def validate_context_for_draft(source_pack: dict[str, Any],
+                               context: dict[str, Any]) -> None:
+    """Rebind a future AI input to the exact original P0 bytes and active roster."""
+    expected_sha = digest((
+        json.dumps(source_pack, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
+    ).encode("utf-8"))
+    if (context.get("schema") != PACK_SCHEMA
+            or context.get("source_race_pack_sha256") != expected_sha
+            or context.get("race_id") != source_pack.get("race_id")
+            or context.get("source_run_id") != source_pack.get("source", {}).get("run_id")
+            or context.get("source") != source_pack.get("source")
+            or context.get("race") != source_pack.get("race")
+            or context.get("historical_feature_admission")
+                != "BLOCKED_WITHOUT_INDEPENDENT_ORIGINAL_RESULT_PIT"
+            or context.get("phase_a_status") != "NOT_RUN"
+            or context.get("pit_certified") is not False
+            or context.get("bet_authorized") is not False):
+        raise ValueError("PREWATCH004B_DRAFT_SOURCE_CONTEXT_CONFLICT")
+    runners = context.get("runners")
+    if (not isinstance(runners, list)
+            or len(runners) != len(source_pack["runners"])
+            or context.get("active_count") != source_pack["active_count"]
+            or context.get("listed_count") != source_pack["listed_count"]):
+        raise ValueError("PREWATCH004B_DRAFT_FULL_FIELD_COUNT_MISMATCH")
+    for original, row in zip(source_pack["runners"], runners, strict=True):
+        if (original["selection_id"] != row.get("selection_id")
+                or original["horse_name"] != row.get("horse_name")
+                or original["scratched"] != row.get("scratched")
+                or row.get("source_history_count") != len(original["source_history"])
+                or row.get("model_eligible") is not False
+                or row.get("pit_eligible") is not False
+                or row.get("bet_authorized") is not False):
+            raise ValueError("PREWATCH004B_DRAFT_RUNNER_IDENTITY_OR_GATE_CONFLICT")
+        observations = row.get("research_source_extractions")
+        if not isinstance(observations, list) or len(observations) != len(original["source_history"]):
+            raise ValueError("PREWATCH004B_DRAFT_HISTORY_COUNT_CONFLICT")
+        for prev, obs in zip(original["source_history"], observations, strict=True):
+            if (prev["raw_sha256"] != obs.get("raw_sha256")
+                    or obs.get("verified_official_result") is not False
+                    or obs.get("pit_certified") is not False):
+                raise ValueError("PREWATCH004B_DRAFT_HISTORY_PROVENANCE_CONFLICT")
+        feature_values = row.get("verified_racing_features")
+        if not isinstance(feature_values, dict):
+            raise ValueError("PREWATCH004B_DRAFT_FEATURES_REQUIRED")
+        for key in (
+            "permanent_horse_id", "last_verified_start_date",
+            "verified_historical_result_count", "verified_wins",
+            "verified_top3", "verified_win_rate", "verified_top3_rate",
+            "verified_gallop_rate", "verified_dq_rate",
+            "verified_distance_history", "verified_start_method_history",
+            "verified_historical_class", "opponent_strength",
+            "verified_last_3_results", "verified_last_5_results",
+            "verified_last_10_results",
+        ):
+            value = feature_values.get(key)
+            if (not isinstance(value, dict)
+                    or value.get("status") != "UNKNOWN"
+                    or value.get("value") != UNKNOWN):
+                raise ValueError("PREWATCH004B_UNATTESTED_RESULT_PREMATURELY_VERIFIED")
+
+
+
 def coverage_report(contexts: list[dict[str, Any]]) -> dict[str, Any]:
     if len({x["race_id"] for x in contexts}) != len(contexts):
         raise ValueError("PREWATCH004B_DUPLICATE_PHYSICAL_RACE")
@@ -342,6 +405,7 @@ def make_feature_day_packs(
             if (mid, n) not in original_docs:
                 raise ValueError("PREWATCH004B_ORIGINAL_RACE_NOT_FOUND")
             enriched = build_feature_context(pack, original_docs[(mid, n)])
+            validate_context_for_draft(pack, enriched)
             fname = f"features_{mid}_{n}.json"
             content = (json.dumps(enriched, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode()
             outputs.append((fname, content, enriched))
