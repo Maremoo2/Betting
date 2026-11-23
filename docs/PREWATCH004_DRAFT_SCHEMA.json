@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:prewatch004:phase-a-draft:v1",
+  "title": "PREWATCH004_PHASE_A_DRAFT_V1 (NO FREEZE OR BET AUTHORITY)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "status",
+    "race_id",
+    "source_run_id",
+    "runners",
+    "race_shape",
+    "candidate",
+    "counterargument",
+    "uncertainty"
+  ],
+  "properties": {
+    "schema": {
+      "const": "PREWATCH004_PHASE_A_DRAFT_V1"
+    },
+    "status": {
+      "const": "DRAFT"
+    },
+    "race_id": {
+      "type": "string",
+      "pattern": "^RIKSTOTO:[A-Z0-9_]+_[0-9]{4}-[0-9]{2}-[0-9]{2}:[1-9][0-9]*$"
+    },
+    "source_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runners": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "selection_id",
+          "assessment",
+          "strengths",
+          "weaknesses",
+          "evidence"
+        ],
+        "properties": {
+          "selection_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$"
+          },
+          "assessment": {
+            "type": "string",
+            "minLength": 1
+          },
+          "strengths": {
+            "type": "string",
+            "minLength": 1
+          },
+          "weaknesses": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "race_shape": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate": {
+      "type": "string",
+      "minLength": 1
+    },
+    "counterargument": {
+      "type": "string",
+      "minLength": 1
+    },
+    "uncertainty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "champion_provisional": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data_25",
+        "shape_20",
+        "mispricing_30",
+        "liquidity_15",
+        "today_fit_10"
+      ],
+      "properties": {
+        "data_25": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 25
+        },
+        "shape_20": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "mispricing_30": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30
+        },
+        "liquidity_15": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 15
+        },
+        "today_fit_10": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        }
+      }
+    },
+    "champion_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data_25",
+        "shape_20",
+        "mispricing_30",
+        "liquidity_15",
+        "today_fit_10"
+      ],
+      "properties": {
+        "data_25": {
+          "type": "string",
+          "minLength": 1
+        },
+        "shape_20": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mispricing_30": {
+          "type": "string",
+          "minLength": 1
+        },
+        "liquidity_15": {
+          "type": "string",
+          "minLength": 1
+        },
+        "today_fit_10": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "dependentRequired": {
+    "champion_provisional": [
+      "champion_evidence"
+    ],
+    "champion_evidence": [
+      "champion_provisional"
+    ]
+  },
+  "description": "Syntactic source-linked AI draft transport. Unique full active roster and source-capture identity must ALSO be checked by validate_phase_a_draft; no automatic status promotion, freeze, or betting."
+}
