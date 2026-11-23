@@ -58,6 +58,8 @@ jobs:
           assert not r["model_eligible"] and not r["bet_authorized"]
           assert r["source_clock"]["source_captured_before_cutoff"]
           assert r["m7b2b_existing_original_research"]["cutoff_evidence"]
+          assert len(r["legacy_pit_candidate_rows_Tminus4_not_new_admissions"]) == 18
+          assert all(x["new_target_history_PIT_admitted"] is False for x in r["legacy_pit_candidate_rows_Tminus4_not_new_admissions"])
           PY
       - name: Upload immutable isolated evidence report
         if: always()
