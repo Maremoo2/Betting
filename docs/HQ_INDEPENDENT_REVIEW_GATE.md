@@ -19,7 +19,7 @@ Den gamle, ikke-aktive evaluatoren `scripts/hq_exact_head_review_gate.py` og til
 
 ## Teknisk kontroll og tilstand
 
-- `test`, `v1-integrity`, `protected-strategy` forblir de sentrale automatiserte kode-/integritetskontrollene. `live-smoke` for SE, DK, NO og FR beholdes synlig som egen datadekningsdiagnostikk. Dansk `NO_FULL_FIELD_LIVE_PASS:DK` er ikke dokumentert som regresjon i Collector-integrasjonen. Ingen dansk dekning skal påstås før det finnes et faktisk bestått dansk fullfeltsbevis; dersom landdekning er et eksplisitt akseptkrav for en endring, må den kontrolleres separat.
+- `test`, `v1-integrity`, `protected-strategy` er sentrale kode-/integritetskontroller. Etter HQs eksplisitte produktavgrensning 23. november 2026 er også `live-smoke` obligatorisk for **både NO og SE, kun trav**. Felt-, identitets-, historikk- og tidskrav beholdes. DK/FR kjøres separat som ikke-blokkerende diagnostikk med faktisk stegutfall og feil bevart; grønn produkt-workflow betyr ikke DK/FR-PASS. Se [gjeldende provider-kontrakt](PROVIDER_ACCEPTANCE_CONTRACT.md).
 - Allprospektiv PIT T−4-attestasjon krever reelle originaler, dokumenterte klokker, matchende revisionskjede og uavhengig attestasjon. Historiske `HISTORICAL_REPLAY`-resultater kan ikke brukes som prospektivt PIT-bevis.
 - Hvis teknisk CI feiler på HEAD, er PR teknisk blokkert. Hvis eneste røde check er en klart separat datadekningsdiagnostikk, skal den forbli RED i rapporteringen, men klassifiseres etter sitt faktiske omfang i stedet for å behandles som automatisk Collector-kodefeil.
 - Ingen manuell `workflow_dispatch`, merge, aktiv produksjonsendring eller endring av bettingterskler/innsats uten egen, uttrykkelig beslutning fra prosjekteieren.
