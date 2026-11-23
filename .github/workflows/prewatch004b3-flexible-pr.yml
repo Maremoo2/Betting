@@ -1,0 +1,66 @@
+name: PREWATCH-004B3 flexible history feasibility (NO BET)
+
+on:
+  pull_request:
+    paths:
+      - "src/hbi/prewatch004b3_flexible_pilot.py"
+      - "tests/test_prewatch004b3_flexible_pilot.py"
+      - "docs/PREWATCH004B3_FLEXIBLE_HISTORY_PILOT.md"
+      - ".github/workflows/prewatch004b3-flexible-pr.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  flexible-feasibility:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - name: Focused fail-closed research tests
+        run: pytest -q tests/test_prewatch004b3_flexible_pilot.py tests/test_prewatch004b2_original_binding.py tests/test_prewatch004b_features.py
+      - name: Ruff
+        run: ruff check src/hbi/prewatch004b3_flexible_pilot.py tests/test_prewatch004b3_flexible_pilot.py
+      - name: Download genuine original Collector archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p collector-input
+          gh run download 45141884691 --repo Maremoo2/rikstoto-program-collector --name prewatch-bridge-fallback --dir collector-input
+      - name: Exact original STRICT versus FLEXIBLE feasibility twice
+        run: |
+          set -euo pipefail
+          mapfile -t archives < <(find collector-input -name 'rikstoto-2026-11-23-*.zip' -type f)
+          test "${#archives[@]}" -eq 1
+          archive="${archives[0]}"
+          test -s "$archive.sha256"
+          mkdir -p prewatch004b3-output
+          python -m hbi.prewatch004b3_flexible_pilot --archive "$archive" --checksum "$archive.sha256" --date-oslo 2026-11-23 --output prewatch004b3-output/comparison.json
+          cp prewatch004b3-output/comparison.json prewatch004b3-output/first.json
+          python -m hbi.prewatch004b3_flexible_pilot --archive "$archive" --checksum "$archive.sha256" --date-oslo 2026-11-23 --output prewatch004b3-output/comparison.json
+          cmp prewatch004b3-output/first.json prewatch004b3-output/comparison.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path("prewatch004b3-output/comparison.json").read_text())
+          assert (x["physical_races"],x["listed_runners"],x["active_runners"]) == (26,284,275)
+          assert (x["raw_prior_pdf_lines"],x["research_semantic_rows"]) == (1374,1356)
+          assert x["research_pdf_row_tiers"] == {"pdf_raw_ge1":275,"pdf_raw_ge3":264,"pdf_raw_ge5":257,"pdf_raw_ge10":0}
+          assert x["strict"]["model_eligible_horses"] == x["flexible"]["model_eligible_horses"] == 0
+          assert x["comparison"]["p_win"] == x["comparison"]["bet_candidates"] == "NOT_ESTIMABLE"
+          assert x["bet_authorized"] is False and x["research_bets_issued"] == 0
+          PY
+      - name: Preserve original-bound feasibility report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prewatch004b3-genuine-feasibility-${{ github.run_id }}
+          path: prewatch004b3-output/
+          if-no-files-found: warn
+          retention-days: 14
