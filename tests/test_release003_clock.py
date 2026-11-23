@@ -106,3 +106,29 @@ def test_clock_jobs_are_opt_in_branch_only_and_standard_linux():
         assert 'timeout-minutes: 350' in job
     guard = workflow.split('Enforce branch acceptance SHA before source access', 1)[1]
     assert guard.index('FROZEN_ACCEPTANCE_HEAD_CHANGED_NO_SOURCE_ACCESS') < guard.index('Execute research source capture')
+
+
+def test_private_campaign_uses_exact_previous_producer_and_blocks_missing(tmp_path):
+    inventory = [{"start_utc": "2026-11-23T11:20:00Z"}]
+    campaign = {"day": "2026-11-23", "repo": "Maremoo2/betting-hq-private-research",
+                "branch": "test/frozen", "seed_state": {"run_id": 99}}
+    p = clock.make_plan("2026-11-23T10:00:00Z", "2026-11-23T12:20:00Z",
+                        PIN, inventory, campaign=campaign)
+    p["ticks"] = p["ticks"][:2]
+    timer = Time(clock.stamp(p["start"]))
+    posted = []
+
+    def request(path, method="GET", payload=None):
+        assert "/repos/Maremoo2/betting-hq-private-research/" in path
+        if "/branches/" in path:
+            return {"commit": {"sha": PIN}}
+        if method == "POST":
+            posted.append(payload)
+            return None
+        return {"workflow_runs": []}
+
+    rows = clock.run_phase(p, 0, tmp_path, request=request, clock=timer, sleep=timer.sleep)
+    assert len(posted) == 1
+    assert posted[0]["inputs"]["acceptance_state_run"] == "99"
+    assert rows[1]["status"] == "DISPATCH_BLOCKED"
+    assert rows[1]["reason"] == "EXACT_PREVIOUS_STATE_RUN_MISSING_NO_FALLBACK"
