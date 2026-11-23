@@ -223,6 +223,7 @@ def test_only_independent_registry_and_original_result_positive_path(monkeypatch
             "starts": [
                 {"number": i, "horse": {
                     "id": i, "age": 5, "sex": "mare",
+                    "trainer": {"lastName": "Synthetic"},
                     "statistics": {
                         "life": {
                             "starts": 20,
