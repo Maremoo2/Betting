@@ -41,6 +41,8 @@ def fake_original(i: int, *, placing: int | str, gallop: bool | str,
         "source_published_at_utc": published,
         "original_sha256": "a" * 64,
         "pit_certified": False, "bet_authority": False,
+        "dynamic_horse_statistics_ignored": True,
+        "provider_publication_attested": published is not None,
         "fields": {
             "race_date": f"2026-11-{i:02d}", "placing": placing,
             "distance_m": 2140, "start_method": "AUTO",
@@ -78,15 +80,14 @@ def test_complete_last3_only_with_explicit_attestation():
         rows, horse_id=12345, cutoff_utc=CUTOFF,
         history_index_complete=False,
     )
-    b = aggregate_official_history(
-        rows, horse_id=12345, cutoff_utc=CUTOFF,
-        history_index_complete=True,
-    )
     assert a["features"]["last_3_complete_results"]["value"] == "UNKNOWN"
-    assert b["features"]["last_3_complete_results"]["status"] == "VERIFIED"
-    assert b["features"]["last_5_complete_results"]["denominator"] == 5
-    assert b["features"]["last_10_complete_results"]["status"] == "UNKNOWN"
-    assert b["model_eligible"] is False
+    assert a["features"]["last_5_complete_results"]["value"] == "UNKNOWN"
+    # A caller boolean cannot attest a complete history index.
+    with pytest.raises(ValueError, match="HISTORY_INDEX_ATTESTATION"):
+        aggregate_official_history(
+            rows, horse_id=12345, cutoff_utc=CUTOFF,
+            history_index_complete=True,
+        )
 
 
 @pytest.mark.parametrize("mutation, error", [
@@ -188,3 +189,14 @@ def test_unknown_feature_cannot_be_made_a_verified_zero():
     assert feature()["value"] == "UNKNOWN"
     assert feature()["denominator"] == 0
     assert DAY_SCHEMA.endswith("COVERAGE_V1")
+
+
+def test_invalid_upstream_historical_result_provenance_is_rejected():
+    row = fake_original(10, placing=1, gallop=False)
+    row["original_sha256"] = "unverified"
+    with pytest.raises(ValueError, match="UNATTESTED_UPSTREAM"):
+        aggregate_official_history([row], horse_id=12345, cutoff_utc=CUTOFF)
+    row = fake_original(10, placing=1, gallop=False)
+    row["dynamic_horse_statistics_ignored"] = False
+    with pytest.raises(ValueError, match="UNATTESTED_UPSTREAM"):
+        aggregate_official_history([row], horse_id=12345, cutoff_utc=CUTOFF)
