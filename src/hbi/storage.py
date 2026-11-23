@@ -737,6 +737,7 @@ class SQLiteStore:
             return dict(row) if row else None
 
     def insert_shadow_decision_run(self, run: dict[str, object]) -> bool:
+        """Append a frozen decision; identical retries cannot hide revised payloads."""
         columns = (
             "decision_run_id", "race_id", "provider_raceday_key", "product",
             "created_at_utc", "race_start_time_utc", "decision_status", "reason",
@@ -748,12 +749,26 @@ class SQLiteStore:
         )
         values = [run.get(column) for column in columns]
         with self.connect() as connection:
-            cursor = connection.execute(
-                f"INSERT OR IGNORE INTO shadow_decision_runs ({','.join(columns)}) "
-                f"VALUES ({','.join('?' for _ in columns)})",
-                values,
-            )
-            return cursor.rowcount == 1
+            try:
+                connection.execute(
+                    f"INSERT INTO shadow_decision_runs ({','.join(columns)}) "
+                    f"VALUES ({','.join('?' for _ in columns)})", values,
+                )
+            except sqlite3.IntegrityError as exc:
+                if exc.sqlite_errorcode not in (
+                    sqlite3.SQLITE_CONSTRAINT_PRIMARYKEY, sqlite3.SQLITE_CONSTRAINT_UNIQUE,
+                ):
+                    raise
+                existing = connection.execute(
+                    f"SELECT {','.join(columns)} FROM shadow_decision_runs "
+                    "WHERE decision_run_id=?", (run.get("decision_run_id"),),
+                ).fetchone()
+                if existing is not None and all(
+                    existing[column] == value for column, value in zip(columns, values, strict=True)
+                ):
+                    return False
+                raise ValueError("SHADOW_DECISION_RUN_PAYLOAD_CONFLICT") from exc
+            return True
 
     def upsert_race_research_evaluation(self, evaluation: dict[str, object]) -> None:
         columns = (
@@ -978,6 +993,7 @@ class SQLiteStore:
             return cursor.rowcount == 1
 
     def create_shadow_ticket(self, ticket: dict[str, object]) -> bool:
+        """Append paper intent, checking dedupe collisions without reopening settlement."""
         columns = (
             "ticket_id", "dedupe_key", "created_at_utc", "decision_time_utc", "race_id",
             "provider", "provider_raceday_key", "product", "decision", "status",
@@ -989,12 +1005,34 @@ class SQLiteStore:
         )
         values = [ticket.get(column) for column in columns]
         with self.connect() as connection:
-            cursor = connection.execute(
-                f"INSERT OR IGNORE INTO shadow_tickets ({','.join(columns)}) "
-                f"VALUES ({','.join('?' for _ in columns)})",
-                values,
-            )
-            return cursor.rowcount == 1
+            try:
+                connection.execute(
+                    f"INSERT INTO shadow_tickets ({','.join(columns)}) "
+                    f"VALUES ({','.join('?' for _ in columns)})", values,
+                )
+            except sqlite3.IntegrityError as exc:
+                if exc.sqlite_errorcode not in (
+                    sqlite3.SQLITE_CONSTRAINT_PRIMARYKEY, sqlite3.SQLITE_CONSTRAINT_UNIQUE,
+                ):
+                    raise
+                rows = connection.execute(
+                    "SELECT * FROM shadow_tickets WHERE ticket_id=? OR dedupe_key=?",
+                    (ticket.get("ticket_id"), ticket.get("dedupe_key")),
+                ).fetchall()
+                if len(rows) != 1:
+                    raise ValueError("SHADOW_TICKET_PAYLOAD_CONFLICT") from exc
+                existing = rows[0]
+                # A retry may generate a fresh request UUID, but may not change
+                # the frozen intent. Settlement alone owns lifecycle status;
+                # this method never rewrites or reopens a settled ticket.
+                ignored = {"ticket_id"}
+                if existing["settled_at_utc"] is not None:
+                    ignored.add("status")
+                if all(existing[column] == value for column, value in zip(
+                    columns, values, strict=True) if column not in ignored):
+                    return False
+                raise ValueError("SHADOW_TICKET_PAYLOAD_CONFLICT") from exc
+            return True
 
     def settle_shadow_ticket(
         self,

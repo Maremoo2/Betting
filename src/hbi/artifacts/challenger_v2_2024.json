@@ -1,0 +1,42 @@
+{
+  "BET_AUTHORITY": false,
+  "MODEL_VALIDATED": false,
+  "calibration_year": 2023,
+  "export_manifest_sha256": "a1dec9a7b07bfe7433792049752ca5a732dc786bb5c846312d746ffdd0af2432",
+  "feature_order": [
+    "F0_CAREER",
+    "F1_LAST5",
+    "F1_LAST10",
+    "F1_EXP90",
+    "F1_LAYOFF",
+    "F2_PRIOR_PURSE",
+    "F2_PURSE_TIME",
+    "F3_OWN_RATING",
+    "F3_FACED_RATING"
+  ],
+  "fundamental_weights": [
+    0.38609490033777083,
+    0.4874291627097957,
+    0.30657801676404084,
+    0.8777002051709392,
+    -0.07370220750258591,
+    -0.07274352675606882,
+    0.08598238916870944,
+    0.6461754098218246,
+    2.365642309713137
+  ],
+  "market_domain": "TERMINAL_RETROSPECTIVE",
+  "market_fundamental_weights": [
+    0.9617488039702581,
+    0.24846332212854086
+  ],
+  "market_only_weight": [
+    1.0902643123095321
+  ],
+  "model": "BENCHMARK002_CHALLENGER_V2_RETRO_V1",
+  "ridge": 0.03,
+  "schema": "BENCHMARK002_SHADOW_ARTIFACT_V1",
+  "source_benchmark_sha256": "6e6be3468367192e708d50e4322f29f352e1b4af5d4d6cb522f4c378588d4955",
+  "test_year": 2024,
+  "training_last_year": 2022
+}

@@ -164,6 +164,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--schema", default=None)
     sub = parser.add_subparsers(dest="command", required=True)
 
+    from .daily_v2 import add_arguments as daily_v2_arguments
+    from .daily_v2 import cli as daily_v2_cli
+
+    daily_v2 = sub.add_parser("daily-v2", help="Manual frozen-2024 V2; source-gated research only")
+    daily_v2_arguments(daily_v2)
+    daily_v2.set_defaults(func=daily_v2_cli)
+
     from .model_protocol import cli as audit_cli
     from .swedish_identity import cli as identity_cli
 
