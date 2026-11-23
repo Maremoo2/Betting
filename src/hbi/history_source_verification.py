@@ -8,7 +8,7 @@ import json
 import re
 import zipfile
 from collections import Counter
-from datetime import date
+from datetime import date, datetime
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -64,6 +64,78 @@ class ResultCells(HTMLParser):
         if tag in ("td", "th") and self.current is not None:
             self.cells.append(" ".join("".join(self.current).split()))
             self.current = None
+
+
+def inspect_dnt_profile_history(source, *, registration: str, target_date: str,
+                                cutoff: datetime) -> dict:
+    """Bind original profile excerpts to UELN; never attest/model-admit them.
+
+    Reuses the official-source byte verifier and HTML cell reader. Raw result
+    codes stay raw: qualification/monté/disqualification policy is not invented.
+    A current planned entry is never a historical start.
+    """
+    meta, raw = checked_source(source)
+    uri = "https://www.travsport.no/sportsbasen/sportssok/horse/" + registration
+    if (not re.fullmatch(r"[A-Za-z0-9]{15}", registration)
+            or meta["url"] != uri or meta.get("final_url") != uri):
+        raise ValueError("DNT_PROFILE_SOURCE_OR_REGISTRATION_CONFLICT")
+    observed = timestamp(meta["observed_at"])
+    if not isinstance(cutoff, datetime) or cutoff.utcoffset() is None or observed >= cutoff:
+        raise ValueError("DNT_PROFILE_NOT_BEFORE_CUTOFF")
+    day = date.fromisoformat(target_date)
+    text = raw.decode("utf-8")
+    plain = " ".join(html.unescape(re.sub(r"<[^>]+>", " ", text)).split())
+    if re.findall(r"UELN:\s*([A-Za-z0-9]+)", plain) != [registration]:
+        raise ValueError("DNT_PROFILE_UELN_CONFLICT")
+    tables = [t for t in re.findall(r"<table\b[^>]*>.*?</table>", text, re.DOTALL)
+              if re.search(r"<th>\s*Kusknavn\s*</th>", t)
+              and re.search(r"<th>\s*Prog[.]nr[.]\s*</th>", t)]
+    if len(tables) != 1:
+        raise ValueError("DNT_PROFILE_HISTORY_TABLE_MISSING_OR_AMBIGUOUS")
+    headers = [html.unescape(re.sub(r"<[^>]+>", " ", x)).strip()
+               for x in re.findall(r"<th\b[^>]*>(.*?)</th>", tables[0], re.DOTALL)]
+    if headers[:13] != ["Kusknavn", "Banenavn", "Dato", "Løp", "Dist.", "Spor",
+                         "Prog.nr.", "T", "Tid", "Plas.", "R", "G", "Odds"]:
+        raise ValueError("DNT_PROFILE_HISTORY_COLUMNS_CHANGED")
+    prior, current, unbound, seen = [], [], [], set()
+    for row in re.findall(r"<tr\b[^>]*>.*?</tr>", tables[0], re.DOTALL):
+        if "<td" not in row:
+            continue
+        cells = ResultCells()
+        cells.feed(row)
+        refs = re.findall(r'href="(/travbaner/[a-z0-9-]+/results/(\d{4}-\d{2}-\d{2})#race-([1-9]\d*))"', row)
+        if len(cells.cells) < 13 or len(refs) != 1:
+            # Preserve missing references explicitly; never invent a race-ID
+            # or let these rows become approved model history.
+            unbound.append({"reason": "DNT_PROFILE_HISTORY_ROW_UNBOUND",
+                            "row_sha256": sha(row.encode()), "raw_cells": cells.cells})
+            continue
+        ref, event_day, number = refs[0]
+        day_parts = re.fullmatch(r"(\d{2})[.](\d{2})[.](\d{4})", cells.cells[2])
+        if (day_parts is None or date(int(day_parts[3]), int(day_parts[2]),
+                                      int(day_parts[1])).isoformat() != event_day):
+            raise ValueError("DNT_PROFILE_HISTORY_DATE_CONFLICT")
+        if ref in seen:
+            raise ValueError("DNT_PROFILE_HISTORY_DUPLICATE_RACE")
+        seen.add(ref)
+        item = {"official_race_uri": "https://www.travsport.no" + ref,
+                "date": event_day, "race_number": int(number), "track": cells.cells[1],
+                "historical_program_number_raw": cells.cells[6],
+                "distance_raw": cells.cells[4], "race_type_raw": cells.cells[7],
+                "km_time_raw": cells.cells[8], "placing_raw": cells.cells[9],
+                "gallop_column_raw": cells.cells[11],
+                "row_sha256": sha(row.encode()), "profile_sha256": meta["sha256"]}
+        (prior if date.fromisoformat(event_day) < day else current).append(item)
+    prior.sort(key=lambda item: (item["date"], item["official_race_uri"]), reverse=True)
+    return {"registration": registration, "profile_uri": uri,
+            "profile_sha256": meta["sha256"], "observed_at": meta["observed_at"],
+            "prior_race_excerpts": prior, "latest_five_excerpts": prior[:5],
+            "current_or_future_excluded": current,
+            "unbound_rows": unbound,
+            "excerpt_not_certified_last_five_actual_starts": True,
+            "raw_result_codes_not_semantically_approved": True,
+            "independent_identity_attested": False, "model_eligible": False,
+            "pit_certified": False}
 
 
 def sources(path, *, expected_sha=SOURCE_SHA, expected_schema="M7B1A_OFFICIAL_SOURCE_ARCHIVE_V1"):
