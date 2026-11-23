@@ -346,7 +346,7 @@ def make_feature_day_packs(
             content = (json.dumps(enriched, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode()
             outputs.append((fname, content, enriched))
         report = coverage_report([entry for _, _, entry in outputs])
-        report["source_original_archive_sha256"] = p0["source_packs"][0]["sha256"] if False else UNKNOWN
+        report["source_original_archive_sha256"] = outputs[0][2]["source"]["archive_sha256"]
         report["source_p0_races"] = p0["source_discovered_physical_races"]
         report["source_p0_listed_runners"] = p0["listed_runners"]
         report["files"] = [{"filename": f, "sha256": digest(raw)}
