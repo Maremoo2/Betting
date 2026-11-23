@@ -9,6 +9,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
+from test_prewatch004b_features import sample
 
 from hbi.historical_intelligence_v2 import SCHEMA as HISTORIC_SCHEMA
 from hbi.mvp023b_performance_features import run_authentic_research
@@ -20,7 +21,6 @@ from hbi.prewatch004b2_original_binding import (
     feature,
 )
 from hbi.prewatch004b_features import build_feature_context
-from test_prewatch004b_features import sample
 
 NOW = datetime(2026, 11, 23, 9, 30, tzinfo=UTC)
 CUTOFF = NOW.isoformat()
