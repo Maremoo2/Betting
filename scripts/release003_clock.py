@@ -46,6 +46,8 @@ def make_plan(start, end, pin, inventory, *, campaign=None):
             or not timedelta(0) < end - start <= timedelta(hours=13.5)
             or len(pin) != 40 or any(c not in '0123456789abcdef' for c in pin)):
         raise ValueError('ONE_OFF_ACCEPTANCE_BOUNDARY_INVALID')
+    if campaign and stamp(campaign['seed_state']['expires_at_utc']) <= end:
+        raise ValueError('ACCEPTANCE_SEED_EXPIRES_BEFORE_WINDOW_END')
     first = min(stamp(r['start_utc']) for r in inventory)
     last = max(stamp(r['start_utc']) for r in inventory)
     if start >= first - timedelta(minutes=4) or end < last + timedelta(minutes=60):
