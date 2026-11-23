@@ -111,6 +111,10 @@ def aggregate_official_history(
                 raise ValueError("PREWATCH004B2_OFFICIAL_RESULT_FIELDS_MISSING")
             from datetime import date
 
+            if (type(fields["placing"]) is int and fields["placing"] > 0
+                    and (fields.get("disqualified") is True
+                         or fields.get("not_finished") is True)):
+                raise ValueError("PREWATCH004B2_PLACED_RESULT_CONTRADICTS_DQ_OR_DNF")
             if date.fromisoformat(fields["race_date"]) >= cutoff.date():
                 raise ValueError("PREWATCH004B2_FUTURE_OR_SAME_DAY_HISTORY")
             admitted.append(item)
