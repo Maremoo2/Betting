@@ -20,6 +20,8 @@ def source_fixture():
                     "semantic_status": "UNKNOWN",
                     "raw_sha256": "a" * 64,
                 })
+    for row in identities["horse_observations"]:
+        row["verified_original_results_admitted"] = 0
     return contexts, identities
 
 
