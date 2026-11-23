@@ -31,7 +31,7 @@ def select_race(contexts: list[dict[str, Any]], identity: dict[str, Any]) -> dic
         scored.append((min(counts), sum(counts), len(active), context["race_id"], context))
     if not scored:
         raise ValueError("004B4_NO_ACTIVE_RACES")
-    _, _, _, _, race = sorted(scored, key=lambda x: (-x[0], -x[1], -x[2], x[3]))[0]
+    _, _, _, _, race = min(scored, key=lambda x: (-x[0], -x[1], -x[2], x[3]))
     ids = {(r["race_id"], r["selection_id"]): r for r in identity["horse_observations"]}
     runners = []
     for r in race["runners"]:
