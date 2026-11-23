@@ -296,7 +296,7 @@ def validate_context_for_draft(source_pack: dict[str, Any],
                 raise ValueError("PREWATCH004B_DRAFT_HISTORY_PROVENANCE_CONFLICT")
         feature_values = row.get("verified_racing_features")
         if not isinstance(feature_values, dict):
-            raise ValueError("PREWATCH004B_DRAFT_FEATURES_REQUIRED")
+            raise TypeError("PREWATCH004B_DRAFT_FEATURES_REQUIRED")
         for key in (
             "permanent_horse_id", "last_verified_start_date",
             "verified_historical_result_count", "verified_wins",
