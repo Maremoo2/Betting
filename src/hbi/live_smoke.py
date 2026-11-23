@@ -26,6 +26,9 @@ class SmokeReport:
     probes: list[dict] = field(default_factory=list)
     verified_countries: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
+    acceptance_scope: str = "NO_SE_TROT_PRODUCT_V1"
+    required_countries: list[str] = field(default_factory=lambda: ["NO", "SE"])
+    candidate_races_by_country: dict[str, int] = field(default_factory=dict)
 
 
 def _store(path: str | Path) -> SQLiteStore:
@@ -38,7 +41,15 @@ def _store(path: str | Path) -> SQLiteStore:
 def run_live_smoke() -> SmokeReport:
     now = datetime.now(UTC)
     report = SmokeReport(observed_at_utc=now.isoformat())
-    required = set(filter(None, os.getenv("HBI_SMOKE_REQUIRED_COUNTRIES", "SE,DK,NO,FR").split(",")))
+    required = {part.strip().upper() for part in
+                os.getenv("HBI_SMOKE_REQUIRED_COUNTRIES", "NO,SE").split(",") if part.strip()}
+    # The product contract cannot accidentally drop one of its two countries.
+    # DK/FR use the same unchanged gates in a separate diagnostic job.
+    if required not in ({"NO", "SE"}, {"DK", "FR"}):
+        raise ValueError("PROVIDER_SMOKE_SCOPE_MUST_BE_NO_SE_OR_DIAGNOSTIC_DK_FR")
+    report.required_countries = sorted(required)
+    if required == {"DK", "FR"}:
+        report.acceptance_scope = "DK_FR_TROT_DIAGNOSTIC_V1"
     with tempfile.TemporaryDirectory() as tmp:
         store = _store(Path(tmp) / "smoke.sqlite")
         collector = RikstotoCollector(store)
@@ -46,8 +57,12 @@ def run_live_smoke() -> SmokeReport:
         report.races_discovered = len(races)
         meetings = {}
         for race in sorted(races, key=lambda r: r.start_time):
-            if race.start_time > now and race.country_code and race.progress_status == "Future":
+            if (race.start_time > now and race.country_code in required
+                    and race.progress_status == "Future"
+                    and collector._discipline(race.sport_type) == "trot"):
                 meetings.setdefault(race.raceday_key, []).append(race)
+                report.candidate_races_by_country[race.country_code] = (
+                    report.candidate_races_by_country.get(race.country_code, 0) + 1)
         # Test each meeting before testing further races. Bounded requests, no polling loop.
         selected = [
             meeting[i] for i in range(3) for meeting in meetings.values() if len(meeting) > i
