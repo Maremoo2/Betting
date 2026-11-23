@@ -111,6 +111,7 @@ def test_untrusted_official_rows_fail_closed(mutation, error):
         a["source_observed_at_utc"] = (NOW + timedelta(minutes=1)).isoformat()
     elif mutation == "post_published":
         a["source_published_at_utc"] = (NOW + timedelta(minutes=1)).isoformat()
+        a["provider_publication_attested"] = True
     elif mutation == "same_day":
         a["fields"]["race_date"] = "2026-11-23"
     elif mutation == "granted_bet":
