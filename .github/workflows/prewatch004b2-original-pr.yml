@@ -1,0 +1,76 @@
+name: PREWATCH-004B2 authentic historical identity and PIT pilot (NO BET)
+
+on:
+  pull_request:
+    paths:
+      - "src/hbi/prewatch004b2_original_binding.py"
+      - "tests/test_prewatch004b2_original_binding.py"
+      - "docs/PREWATCH004B2_HISTORICAL_ORIGINALS.md"
+      - ".github/workflows/prewatch004b2-original-pr.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  original-binding-pilot:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install HBI dependencies
+        run: pip install -e ".[dev]"
+      - name: Typed adapter, PIT and original historical regression
+        run: pytest -q tests/test_prewatch004b2_original_binding.py tests/test_prewatch004b_features.py
+      - name: Replay real seven DNT Norwegian prior-start originals (retrospective only)
+        run: |
+          mkdir -p prewatch004b2-output
+          python -m hbi.mvp023b_performance_features --root . --output prewatch004b2-output/genuine-dnt-retrospective.json
+      - name: Download Nov 23 Collector archive from genuine Actions run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p collector-input
+          gh run download 45141884691 --repo Maremoo2/rikstoto-program-collector --name prewatch-bridge-fallback --dir collector-input
+      - name: Build source-preserving 275-runner identity admission report twice
+        run: |
+          set -euo pipefail
+          mapfile -t archives < <(find collector-input -type f -name 'rikstoto-2026-11-23-*.zip')
+          test "${#archives[@]}" -eq 1
+          archive="${archives[0]}"
+          test -s "$archive"
+          test -s "$archive.sha256"
+          python -m hbi.prewatch004b2_original_binding --archive "$archive" --checksum "$archive.sha256" --date-oslo 2026-11-23 --output prewatch004b2-output/identity-coverage-20261123.json
+          python -m hbi.prewatch004b2_original_binding --archive "$archive" --checksum "$archive.sha256" --date-oslo 2026-11-23 --output prewatch004b2-output/identity-coverage-20261123.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('prewatch004b2-output')
+          report=json.loads((root/'identity-coverage-20261123.json').read_text())
+          assert report['physical_races']==26 and report['listed_runners']==284, report
+          assert report['active_runners']==275, report
+          assert len(report['horse_observations'])==275
+          assert len({(x['race_id'],x['selection_id']) for x in report['horse_observations']})==275
+          assert report['active_with_independent_permanent_horse_id']==0
+          assert report['active_with_verified_original_history']==0
+          assert report['active_with_pit_qualified_history']==0
+          assert all(x['identity_status']=='IDENTITY_UNRESOLVED' and x['model_eligible'] is False for x in report['horse_observations'])
+          retro=json.loads((root/'genuine-dnt-retrospective.json').read_text())
+          assert retro['source_observations']==7 and retro['model_eligible_races']==0
+          example=retro['materialized'][0]
+          print('PREWATCH004B2_GENUINE_RETROSPECTIVE_EXAMPLE '+json.dumps({'horse_identity':example['horse_identity'],'target_race_id':example['target_race_id'],'target_selection_id':example['target_selection_id'],'prior_start_count':example['prior_start_count'],'original_shas':example['observed_source_sha256'],'pit_verified':example['pit_verified'],'model_eligible':example['model_eligible']},ensure_ascii=False,sort_keys=True))
+          print('PREWATCH004B2_NOV23_ACTUAL_COVERAGE '+json.dumps({k:v for k,v in report.items() if k not in ('horse_observations',)},ensure_ascii=False,sort_keys=True))
+          PY
+      - name: Preserve immutable research-only acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prewatch004b2-genuine-originals-${{ github.run_id }}
+          path: prewatch004b2-output/
+          if-no-files-found: warn
+          retention-days: 14
