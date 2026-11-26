@@ -1,0 +1,105 @@
+name: PREWATCH-004 P0 real original archive E2E (NO BET)
+
+on:
+  pull_request:
+    paths:
+      - "src/hbi/prewatch004_pack.py"
+      - "tests/test_prewatch004_pack.py"
+      - "docs/PREWATCH004_P0.md"
+      - ".github/workflows/prewatch004-original-pr.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  nov23-original:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install existing HBI tests
+        run: pip install -e ".[dev]"
+      - name: Focused PREWATCH-004 unit regressions
+        run: pytest -q tests/test_prewatch004_pack.py
+      - name: Download genuine 23 Nov 08:50 Collector original archive
+        env:
+          GH_TOKEN: ${{ secrets.CLOUD_RUN_COLLECTOR_READ_TOKEN || github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p collector-input
+          gh run download 45141884691 \
+            --repo Maremoo2/rikstoto-program-collector \
+            --name prewatch-bridge-fallback --dir collector-input
+      - name: Verify original ZIP and build all physical race packs
+        run: |
+          set -euo pipefail
+          mapfile -t archives < <(find collector-input -type f -name 'rikstoto-2026-11-23-*.zip')
+          test "${#archives[@]}" -eq 1
+          archive="${archives[0]}"
+          test -s "$archive"
+          test -s "$archive.sha256"
+          python -m hbi.prewatch004_pack \
+            --archive "$archive" --checksum "$archive.sha256" \
+            --date-oslo 2026-11-23 --output prewatch004-output
+          python -m hbi.prewatch004_pack \
+            --archive "$archive" --checksum "$archive.sha256" \
+            --date-oslo 2026-11-23 --output prewatch004-output
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path("prewatch004-output")
+          report=json.loads((root/"coverage.json").read_text())
+          entries=report["source_packs"]
+          assert len(entries)==report["source_discovered_physical_races"]
+          assert len(entries)==26, f"Expected Collector 23 Nov candidate count 26, got {len(entries)}"
+          assert report["listed_runners"]==284, "Collector candidate runner inventory changed"
+          assert len({x["race_id"] for x in entries})==26
+          assert all(not x["history_semantics_accepted"] for x in entries)
+          assert report["actual_phase_a_completed"]==0
+          assert not report["independent_whole_day_denominator_verified"]
+          for entry in entries:
+              pack=json.loads((root/entry["file"]).read_text())
+              assert pack["race_id"]==entry["race_id"]
+              assert pack["active_count"]==entry["active_count"]
+              assert pack["active_count"]==sum(not x["scratched"] for x in pack["runners"])
+              assert pack["listed_count"]==len(pack["runners"])
+              assert len({x["selection_id"] for x in pack["runners"]})==pack["listed_count"]
+              assert pack["source"]["status"]=="VERIFIED_AS_OF_SOURCE_CAPTURE"
+              assert pack["phase_a_status"]=="NOT_RUN"
+              assert pack["bet_authorized"] is False
+          print("PREWATCH004_GENUINE_COLLECTOR_COHORT_PASS 26 RACES 284 LISTED RUNNERS")
+          example_entry = next(
+              (x for x in entries if x["race_id"] == "RIKSTOTO:S1_NR_2026-11-23:1"),
+              entries[0],
+          )
+          example = json.loads((root/example_entry["file"]).read_text())
+          preview = {
+              "race_id": example["race_id"],
+              "start_time_utc": example["race"]["start_time_utc"],
+              "listed_count": example["listed_count"],
+              "active_count": example["active_count"],
+              "scratched_numbers": example["scratched_numbers"],
+              "first_three": [
+                  {"selection_id": row["selection_id"], "name": row["horse_name"],
+                   "scratched": row["scratched"],
+                   "raw_history_rows": row["conservative_form"]["source_history_rows"]}
+                  for row in example["runners"][:3]
+              ],
+              "source_run_id": example["source"]["run_id"],
+              "phase_a_status": example["phase_a_status"],
+          }
+          print("PREWATCH004_REAL_RACE_PACK_EXAMPLE " + json.dumps(preview, ensure_ascii=False, sort_keys=True))
+          PY
+      - name: Publish source-only acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prewatch004-original-20261123-${{ github.run_id }}
+          path: prewatch004-output/
+          if-no-files-found: warn
+          retention-days: 14

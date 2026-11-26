@@ -76,7 +76,8 @@ def test_changed_source_snapshot_cannot_reuse_a_bound_working_copy(tmp_path):
 def test_isolated_acceptance_cannot_activate_on_main_or_share_its_writer_group():
     workflow = (Path(__file__).parents[1] / '.github/workflows/core-003-shadow-pilot.yml').read_text()
     assert "github.ref == 'refs/heads/main' && 'core003-isolated-source-pilot'" in workflow
-    assert "format('core003-acceptance-{0}', github.run_id)" in workflow
+    assert "format('core003-acceptance-writer-{0}', github.ref)" in workflow
+    assert "format('core003-acceptance-{0}', github.run_id)" not in workflow
     step = workflow.split('      - name: Branch-only isolated source to Pre-Watch acceptance')[1]
     assert "github.ref != 'refs/heads/main'" in step.split('shell:')[0]
     assert "github.event_name == 'workflow_dispatch'" in step.split('shell:')[0]
