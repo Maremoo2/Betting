@@ -313,3 +313,41 @@ def test_cli_fails_closed_and_never_overwrites(tmp_path):
     assert json.loads(output.read_text())["allowed"] is False
     with pytest.raises(FileExistsError):
         main(["register-batch", "batch", "--output", str(output)])
+
+
+def test_source_adapter_exposes_existing_full_field_math_only_after_source_gate(case):
+    """Synthetic complete source contract, never an authentic BET or calibration proof."""
+    from hbi.collector_handoff import evaluate_shadow_v33
+
+    handoff = {"race_id": case["race_id"], "source_imported_to_sqlite": True,
+               "model_input_approved": True, "independent_identity_attested": True,
+               "pit_certified": True,
+               "runners": [{"start_number": k, "scratched": False} for k in case["active_field"]]}
+    result = evaluate_shadow_v33(handoff, case)
+    assert result["engine_status"] == "EVALUATED_RESEARCH_ONLY"
+    assert set(result["paper_price_checks"]) == set(case["active_field"])
+    for key, item in result["paper_price_checks"].items():
+        p = case["fundamental"]["probabilities"][key]
+        odds = case["decision_snapshot"]["WIN"]["odds"][key]
+        assert item["fair_odds"] == pytest.approx(1 / p["p_mid"])
+        assert item["ev_mid"] == pytest.approx(p["p_mid"] * odds - 1)
+        assert item["ev_conservative"] == pytest.approx(p["p_low"] * odds - 1)
+        assert item["locked_minimum_price"] == case["cases"][key]["minimum_price"]
+        assert item["bet_authority"] is False
+    assert result["paper_price_checks"]["1"]["ev_mid"] > 0
+    assert result["paper_price_checks"]["1"]["ev_conservative"] < 0
+    assert result["paper_price_checks"]["1"]["engine_decision"] == "PRICE_PASS"
+    assert result["bet_authority"] is False and result["decision"] == "SHADOW_ONLY"
+
+
+@pytest.mark.parametrize("missing", ["source_imported_to_sqlite", "model_input_approved",
+                                     "independent_identity_attested", "pit_certified"])
+def test_unqualified_source_never_gets_even_paper_price_checks(case, missing):
+    from hbi.collector_handoff import evaluate_shadow_v33
+
+    handoff = {"source_imported_to_sqlite": True, "model_input_approved": True,
+               "independent_identity_attested": True, "pit_certified": True, missing: False}
+    result = evaluate_shadow_v33(handoff, case)
+    assert result["engine_status"] == "NOT_RUN"
+    assert "paper_price_checks" not in result
+    assert result["bet_authority"] is False

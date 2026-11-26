@@ -664,6 +664,20 @@ def evaluate_shadow_v33(handoff: dict, v33_case: dict | None = None) -> dict:
         return report
     report["engine_status"] = "EVALUATED_RESEARCH_ONLY"
     report["v33_review"] = reviewed
+    report["paper_price_checks"] = {
+        selection: {
+            "fair_odds": row["WIN"]["fair_odds"],
+            "locked_minimum_price": row["WIN"]["minimum_price"],
+            "available_odds": row["WIN"]["available_odds"],
+            "ev_mid": row["WIN"]["p_mid"] * row["WIN"]["available_odds"] - 1,
+            "ev_conservative": row["WIN"]["p_low"] * row["WIN"]["available_odds"] - 1,
+            "price_margin_to_minimum": row["WIN"]["available_odds"] - row["WIN"]["minimum_price"],
+            "engine_decision": row["WIN"]["decision"],
+            "full_field_review_allowed": reviewed["allowed"],
+            "bet_authority": False,
+        }
+        for selection, row in reviewed["runners"].items()
+    }
     report["decision"] = "SHADOW_ONLY"
     report["bet_authority"] = False
     return report
