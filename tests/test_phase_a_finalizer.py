@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 import pytest
 from test_phase_a_contract import PHYSICAL, RUN, adapt, envelope_fixture, packet_fixture
@@ -98,7 +98,7 @@ def test_changed_or_stale_recheck_blocks(change):
 def test_naive_clock_blocks():
     p = packet_fixture()
     with pytest.raises(ValueError, match="NAIVE_TEST_CLOCK"):
-        run(p, envelope_fixture(p), rechecks=evidence(p), now=datetime(2026, 11, 25))
+        run(p, envelope_fixture(p), rechecks=evidence(p), now=NOW.replace(tzinfo=None))
 
 
 def test_live_diagnostic_packet_still_has_no_authority():

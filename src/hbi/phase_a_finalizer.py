@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any
+from unicodedata import normalize
 
 from .phase_a_contract import adapt_ready_packet, digest, require, validate_envelope
 from .prewatch004_pack import SCORE_BOUNDS
@@ -68,7 +69,8 @@ def evaluate_test_candidate(
             and all(isinstance(x, str) and bool(x.strip())
                     for x in rechecks.completed_physical_race_ids),
             "006A_LEDGER_EVIDENCE_INVALID")
-    require(adapted["physical_race_id"] not in rechecks.completed_physical_race_ids,
+    completed = {normalize("NFC", race_id) for race_id in rechecks.completed_physical_race_ids}
+    require(adapted["physical_race_id"] not in completed,
             "006A_ALREADY_COMPLETED")
     scores = envelope["draft"]["champion_provisional"]
     # Recompute; do not trust any model-supplied total or classification.

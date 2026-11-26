@@ -71,3 +71,10 @@ row is emitted. Never turn an offline preview into an operational signal.
 
 Rollback: close the draft PR / discard the development branch; no production
 change or migration is needed.
+
+
+Collector's bare `build_ready()` output can omit the publication flag in replay
+mode. An explicit publication flag must be false. The scheduled start is
+minute-precision source evidence. Actual start and live checks require a
+separately authorized live evidence path. Physical race IDs supplied in
+simulated Ledger rechecks are compared in Unicode NFC.

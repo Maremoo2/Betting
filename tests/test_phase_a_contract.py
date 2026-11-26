@@ -215,3 +215,16 @@ def test_draft_fail_closed(case):
         d["frozen_at"] = "2026-11-25T08:15:00Z"
     with pytest.raises(ValueError):
         validate_envelope(e, adapt(p))
+
+
+@pytest.mark.parametrize("replay_only", [True, False])
+def test_bare_build_ready_requires_replay(replay_only):
+    packet = packet_fixture()
+    packet["replay_only"] = replay_only
+    del packet["operational_publication_allowed"]
+    del packet["diagnostic_status"]
+    if replay_only:
+        assert adapt(packet)["active_count"] == 2
+    else:
+        with pytest.raises(ValueError, match="UNSAFE_PACKET"):
+            adapt(packet)

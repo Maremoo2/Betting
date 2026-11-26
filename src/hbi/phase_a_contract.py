@@ -47,8 +47,10 @@ def stamp(value: str) -> datetime:
 
 def _name(value: str) -> str:
     require(isinstance(value, str) and bool(value.strip()), "006A_NAME_INVALID")
-    return re.sub(r"[^a-z0-9]", "", unicodedata.normalize("NFKD", value)
-                  .encode("ascii", "ignore").decode().casefold())
+    normalized = re.sub(r"[^a-z0-9]", "", unicodedata.normalize("NFKD", value)
+                        .encode("ascii", "ignore").decode().casefold())
+    require(bool(normalized), "006A_NAME_INVALID")
+    return normalized
 
 
 def _number(value: Any) -> int:
@@ -86,11 +88,13 @@ def adapt_ready_packet(packet: dict, *, expected_packet_sha256: str) -> dict:
         require(isinstance(expected_packet_sha256, str)
                 and SHA.fullmatch(expected_packet_sha256) is not None
                 and digest(packet) == expected_packet_sha256, "006A_PACKET_HASH_MISMATCH")
+        publication_disabled = packet.get("operational_publication_allowed") is False
+        bare_replay = packet["replay_only"] is True and "operational_publication_allowed" not in packet
         require(packet["schema"] == READY_SCHEMA and packet["status"] == "SOURCE_READY"
                 and type(packet["replay_only"]) is bool
                 and packet["phase_a_completed"] is False
                 and packet["bet_authority"] is False
-                and packet["operational_publication_allowed"] is False
+                and (publication_disabled or bare_replay)
                 and packet["freeze_recheck_required"] is True, "006A_UNSAFE_PACKET")
         day = date.fromisoformat(packet["date_oslo"])
         run = packet["collector_run_id"]
@@ -107,7 +111,9 @@ def adapt_ready_packet(packet: dict, *, expected_packet_sha256: str) -> dict:
         race = source["program"]["race"]
         mid, n = race["meeting_id"], _number(race["race_number"])
         rid = f"RIKSTOTO:{mid}:{n}"
-        physical = unicodedata.normalize("NFC", f"{day}|{race['track']}|{n}")
+        track = race["track"]
+        require(_text(track) and "|" not in track, "006A_TRACK_INVALID")
+        physical = unicodedata.normalize("NFC", f"{day}|{track}|{n}")
         require(MID.fullmatch(mid) is not None and mid.endswith(str(day))
                 and source["schema"] == "prewatch_source_v1"
                 and source["record_type"] == "PHASE_A_SOURCE_PROJECTION"
@@ -130,6 +136,7 @@ def adapt_ready_packet(packet: dict, *, expected_packet_sha256: str) -> dict:
         require(start.astimezone(OSLO).date() == day
                 and start.astimezone(OSLO).strftime("%H:%M")
                 == race["scheduled_time_local"].zfill(5)
+                and start.second == start.microsecond == 0
                 and start > ref, "006A_START_MISMATCH")
         roster = source["official_roster"]
         require(roster["status"] == "VERIFIED_AS_OF_SOURCE_CAPTURE"
@@ -166,7 +173,7 @@ def adapt_ready_packet(packet: dict, *, expected_packet_sha256: str) -> dict:
                     and _name(row["horse_name"]) == _name(entry["name"])
                     and entry["scratch_state"] == (
                         "SCRATCHED_AS_OF_SNAPSHOT" if scratch else "ACTIVE_AS_OF_SNAPSHOT")
-                    and bool(row["effective_driver"])
+                    and _text(row["effective_driver"])
                     and row["effective_driver"] == (
                         changes[num]["new_driver"] if num in changes
                         else row["original_official_driver"]), "006A_ROSTER_CONFLICT")
