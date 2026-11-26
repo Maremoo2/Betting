@@ -49,6 +49,8 @@ def validate_frozen_rows(rows):
         runners += len(field)
     return {"physical_races": len(ids), "runner_observations": runners,
             "full_fields_verified": len(ids), "probability_sums_verified": True,
+            "field_verification_basis": "IDENTICAL_FROZEN_MODEL_KEYSETS",
+            "external_active_roster_verified_by_this_check": False,
             "pit_certified_by_this_check": False,
             "holdout_status": "ALREADY_EXAMINED_RETROSPECTIVE_NOT_UNTOUCHED"}
 

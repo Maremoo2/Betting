@@ -68,7 +68,9 @@ def test_frozen_evaluation_never_scores_invalid_cohorts(fault):
 
 def test_metric_bootstrap_is_not_a_calibrated_horse_probability_interval():
     rows = [row()]
-    assert validate_frozen_rows(rows)["full_fields_verified"] == 1
+    coverage = validate_frozen_rows(rows)
+    assert coverage["full_fields_verified"] == 1
+    assert coverage["external_active_roster_verified_by_this_check"] is False
     result = paired(rows, "V2", "M0")
     assert result["uncertainty_status"] == "INSUFFICIENT_INDEPENDENT_CLUSTERS"
     assert result["ll_lo"] is None and result["brier_hi"] is None
