@@ -5,10 +5,10 @@ from dataclasses import replace
 from datetime import datetime, timedelta
 
 import pytest
+from test_phase_a_contract import PHYSICAL, RUN, adapt, envelope_fixture, packet_fixture
 
 from hbi.phase_a_contract import digest, stamp
 from hbi.phase_a_finalizer import TestRechecks, evaluate_test_candidate
-from test_phase_a_contract import PHYSICAL, RUN, adapt, envelope_fixture, packet_fixture
 
 NOW = stamp("2026-11-25T08:15:00Z")
 
