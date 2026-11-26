@@ -234,7 +234,9 @@ def test_nightly_settlement_and_report(tmp_path):
     ticket = store.fetch_table("shadow_tickets")[0]
     assert ticket["gross_return_nok"] == 62.5
     assert ticket["net_pnl_nok"] == 37.5
-    assert ticket["clv"] > 0
+    assert ticket["clv"] is None
+    assert ticket["closing_price"] is None
+    assert json.loads(ticket["result_json"])["official_final_odds"] == 2.5
 
     report = build_daily_report(store, datetime(2026, 9, 27, tzinfo=UTC).date())
     assert report["tickets"] == 1

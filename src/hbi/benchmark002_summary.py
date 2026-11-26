@@ -2,6 +2,7 @@
 import argparse
 import csv
 import json
+import math
 from collections import defaultdict
 from datetime import date
 from pathlib import Path
@@ -24,6 +25,34 @@ UNMEASURED = ("F2_EXPLICIT_CLASS", "F4_CURRENT_RACE_CONDITIONS", "F5_DRIVER_TRAI
               "DIRECT_MEETINGS")
 
 
+def validate_frozen_rows(rows):
+    """Research scoring contract, never a PIT or untouched-holdout certificate."""
+    if not rows:
+        raise ValueError("FROZEN_COHORT_EMPTY")
+    ids, model_names, runners = set(), set(rows[0]["probabilities"]), 0
+    for row in rows:
+        if row.get("scope") != "RESEARCH_RETROSPECTIVE" or row["race_id"] in ids:
+            raise ValueError("FROZEN_COHORT_SCOPE_OR_DUPLICATE")
+        ids.add(row["race_id"])
+        if not 2015 <= date.fromisoformat(row["day"]).year <= 2024:
+            raise ValueError("FROZEN_COHORT_OUTSIDE_RESEARCH_SCOPE")
+        if set(row["probabilities"]) != model_names:
+            raise ValueError("FROZEN_COHORT_MODEL_SET_CONFLICT")
+        field = set(row["probabilities"]["M0"])
+        if len(field) < 2 or row["winner"] not in field:
+            raise ValueError("FROZEN_COHORT_FIELD_OR_WINNER_INVALID")
+        for distribution in row["probabilities"].values():
+            if (set(distribution) != field or any(type(v) not in (int, float)
+                    or not math.isfinite(v) or not 0 < v <= 1 for v in distribution.values())
+                    or not math.isclose(math.fsum(distribution.values()), 1, rel_tol=0, abs_tol=1e-9)):
+                raise ValueError("FROZEN_COHORT_DISTRIBUTION_INVALID")
+        runners += len(field)
+    return {"physical_races": len(ids), "runner_observations": runners,
+            "full_fields_verified": len(ids), "probability_sums_verified": True,
+            "pit_certified_by_this_check": False,
+            "holdout_status": "ALREADY_EXAMINED_RETROSPECTIVE_NOT_UNTOUCHED"}
+
+
 def paired(rows, first, second):
     groups = defaultdict(list)
     for row in rows:
@@ -37,11 +66,15 @@ def paired(rows, first, second):
     delta = totals.sum(axis=0) / n.sum()
     draws = np.random.default_rng(20261107).integers(len(n), size=(4000, len(n)))
     replicates = totals[draws].sum(axis=1) / n[draws].sum(axis=1)[:, None]
-    ci = np.quantile(replicates, [0.025, 0.975], axis=0)
+    ci = np.quantile(replicates, [0.025, 0.975], axis=0) if len(n) >= 2 else None
     p = (1 + np.sum(abs(replicates[:, 0] - delta[0]) >= abs(delta[0]))) / (1 + len(draws))
     return {"races": int(n.sum()), "weeks": len(n), "delta_ll": float(delta[0]),
-            "ll_lo": float(ci[0, 0]), "ll_hi": float(ci[1, 0]), "delta_brier": float(delta[1]),
-            "brier_lo": float(ci[0, 1]), "brier_hi": float(ci[1, 1]), "bootstrap_p": float(p)}
+            "ll_lo": float(ci[0, 0]) if ci is not None else None, "ll_hi": float(ci[1, 0]) if ci is not None else None, "delta_brier": float(delta[1]),
+            "brier_lo": float(ci[0, 1]) if ci is not None else None,
+            "brier_hi": float(ci[1, 1]) if ci is not None else None, "bootstrap_p": float(p) if ci is not None else None,
+            "uncertainty_scope": "WEEK_CLUSTER_METRIC_DIFFERENCE_NOT_HORSE_PWIN_INTERVAL",
+            "uncertainty_status": "DESCRIPTIVE_ONLY" if ci is not None else "INSUFFICIENT_INDEPENDENT_CLUSTERS",
+            "pwin_intervals_calibrated": False}
 
 
 def favorite(rows, model):
@@ -65,14 +98,7 @@ def favorite(rows, model):
 
 def summarize(path):
     rows = [json.loads(line) for line in (path / "predictions.jsonl").read_bytes().splitlines()]
-    ids = set()
-    for row in rows:
-        assert row["scope"] == "RESEARCH_RETROSPECTIVE" and row["race_id"] not in ids
-        ids.add(row["race_id"])
-        expected = set(row["probabilities"]["M0"])
-        for p in row["probabilities"].values():
-            assert set(p) == expected and all(0 < v <= 1 for v in p.values())
-            assert abs(sum(p.values()) - 1) < 1e-9
+    coverage = validate_frozen_rows(rows)
     ranking = {}
     for model in rows[0]["probabilities"]:
         bins = calibration_bins([(p, selection == row["winner"]) for row in rows
@@ -89,7 +115,10 @@ def summarize(path):
                  "status": "RETROSPECTIVE_ONLY", **paired(rows, model, reference)}
                 for feature, model, reference in ABLATIONS]
     previous = 0
-    for i, row in enumerate(sorted(ablation, key=lambda r: r["bootstrap_p"])):
+    for i, row in enumerate(sorted(ablation, key=lambda r: r["bootstrap_p"] if r["bootstrap_p"] is not None else float("inf"))):
+        if row["bootstrap_p"] is None:
+            row["holm_p"] = None
+            continue
         previous = min(1, max(previous, (len(ablation) - i) * row["bootstrap_p"]))
         row["holm_p"] = previous
     with (path / "ABLATION_RESULTS.csv").open("x", newline="", encoding="utf-8") as stream:
@@ -98,7 +127,8 @@ def summarize(path):
         writer.writerows(ablation)
         writer.writerows({"feature": key, "status": "NOT_TESTABLE"} for key in UNMEASURED)
     with (path / "summary.json").open("x", encoding="utf-8") as stream:
-        json.dump({"ranking": ranking, "favorite": {m: favorite(rows, m) for m in
+        json.dump({"coverage": coverage, "market_time_status": "TERMINAL_RETROSPECTIVE_NOT_PRESTART",
+                   "pwin_interval_status": "NOT_CALIBRATED_NOT_PRODUCED", "ranking": ranking, "favorite": {m: favorite(rows, m) for m in
                    ("CHALLENGER_V2", "V2_MARKET_COMBO", "CALIBRATED_MARKET")},
                    "economic": "ECONOMIC_TEST_NOT_QUALIFIED"}, stream, indent=2)
 

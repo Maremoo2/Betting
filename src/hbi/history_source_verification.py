@@ -66,8 +66,63 @@ class ResultCells(HTMLParser):
             self.current = None
 
 
+class _RaceTerms(HTMLParser):
+    """Read only the intro of an explicitly identified official race panel."""
+    def __init__(self, race_number):
+        super().__init__()
+        self.race_number, self.depth, self.table = race_number, 0, False
+        self.parts, self.panels = [], []
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == "div":
+            if self.depth:
+                self.depth += 1
+            elif (attrs.get("id") == f"race-{self.race_number}"
+                  and "js-tabbedContent-panel" in attrs.get("class", "").split()):
+                self.depth, self.table, self.parts = 1, False, []
+        if self.depth and tag == "table":
+            self.table = True
+
+    def handle_data(self, data):
+        if self.depth and not self.table:
+            self.parts.append(data)
+
+    def handle_endtag(self, tag):
+        if tag == "div" and self.depth:
+            self.depth -= 1
+            if not self.depth:
+                self.panels.append(" ".join(" ".join(self.parts).split()))
+
+
+def inspect_dnt_race_kind(source, *, official_race_uri: str, cutoff: datetime) -> dict:
+    """Explicit official terms only; absence of a trial label proves no ordinary start."""
+    meta, raw = checked_source(source)
+    match = re.fullmatch(r"(https://www[.]travsport[.]no/travbaner/[a-z0-9-]+/results/"
+                         r"\d{4}-\d{2}-\d{2})#race-([1-9]\d*)", official_race_uri)
+    if (match is None or meta["url"] != match[1] or meta.get("final_url") != match[1]):
+        raise ValueError("DNT_RACE_KIND_SOURCE_CONFLICT")
+    if cutoff.utcoffset() is None or timestamp(meta["observed_at"]) >= cutoff:
+        raise ValueError("DNT_RACE_KIND_NOT_BEFORE_CUTOFF")
+    reader = _RaceTerms(int(match[2]))
+    reader.feed(raw.decode("utf-8"))
+    if len(reader.panels) != 1:
+        raise ValueError("DNT_RACE_KIND_PANEL_MISSING_OR_AMBIGUOUS")
+    terms = reader.panels[0]
+    labels = [label for label in ("Prøveløp", "Mønstringsløp")
+              if re.search(r"\b" + label + r"\b", terms, re.IGNORECASE)]
+    if len(labels) > 1:
+        raise ValueError("DNT_RACE_KIND_TERMS_CONFLICT")
+    return {"official_race_uri": official_race_uri, "source_sha256": meta["sha256"],
+            "observed_at": meta["observed_at"], "official_terms": terms,
+            "kind": {"Prøveløp": "QUALIFICATION", "Mønstringsløp": "PATTERN_TEST"}.get(
+                labels[0] if labels else "", "UNCLASSIFIED_REQUIRES_REVIEW"),
+            "exclude_from_ordinary_last_five": bool(labels),
+            "model_eligible": False, "pit_certified": False}
+
+
 def inspect_dnt_profile_history(source, *, registration: str, target_date: str,
-                                cutoff: datetime) -> dict:
+                                cutoff: datetime, race_sources: dict | None = None) -> dict:
     """Bind original profile excerpts to UELN; never attest/model-admit them.
 
     Reuses the official-source byte verifier and HTML cell reader. Raw result
@@ -126,11 +181,19 @@ def inspect_dnt_profile_history(source, *, registration: str, target_date: str,
                 "gallop_column_raw": cells.cells[11],
                 "row_sha256": sha(row.encode()), "profile_sha256": meta["sha256"]}
         (prior if date.fromisoformat(event_day) < day else current).append(item)
+    for item in prior:
+        original = (race_sources or {}).get(item["official_race_uri"])
+        item["race_kind_review"] = (inspect_dnt_race_kind(
+            original, official_race_uri=item["official_race_uri"], cutoff=cutoff)
+            if original is not None else None)
     prior.sort(key=lambda item: (item["date"], item["official_race_uri"]), reverse=True)
     return {"registration": registration, "profile_uri": uri,
             "profile_sha256": meta["sha256"], "observed_at": meta["observed_at"],
             "prior_race_excerpts": prior, "latest_five_excerpts": prior[:5],
             "current_or_future_excluded": current,
+            "confirmed_nonordinary_excerpts": [r for r in prior if r["race_kind_review"]
+                and r["race_kind_review"]["exclude_from_ordinary_last_five"]],
+            "last_five_actual_starts_status": "BLOCKED_ORDINARY_START_SEMANTICS_UNAPPROVED",
             "unbound_rows": unbound,
             "excerpt_not_certified_last_five_actual_starts": True,
             "raw_result_codes_not_semantically_approved": True,
