@@ -40,7 +40,7 @@ def digest(value: Any) -> str:
 
 def stamp(value: str) -> datetime:
     require(isinstance(value, str), "006A_TIMESTAMP_INVALID")
-    when = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    when = datetime.fromisoformat(value)
     require(when.utcoffset() is not None, "006A_NAIVE_TIMESTAMP")
     return when.astimezone(UTC)
 
