@@ -1,12 +1,17 @@
 """Synthetic transport failures; actual historical original remains SHA-pinned."""
 import hashlib
+import importlib.util
 import io
 import json
 import zipfile
+from pathlib import Path
 
 import pytest
 
-from scripts import mvp016_source_recovery as recovery
+spec = importlib.util.spec_from_file_location(
+    "mvp016_source_recovery", Path(__file__).parents[1] / "scripts/mvp016_source_recovery.py")
+recovery = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(recovery)
 
 
 def sample(*, members=None, **updates):
