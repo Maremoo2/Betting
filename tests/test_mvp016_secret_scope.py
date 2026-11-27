@@ -32,3 +32,14 @@ def test_public_mvp016_artifact_contains_only_explicit_replay_report():
     paths = re.findall(r"^          path: (.*)$", upload, re.MULTILINE)
     assert paths == ["${{ runner.temp }}/mvp016-empty/mvp016-empty-original-replay.json"]
     assert "permissions:\n  contents: read\n" in steps[0]
+
+
+def test_separate_readback_pins_this_attempts_upload_not_reused_name():
+    text = (ROOT / ".github/workflows/ci.yml").read_text()
+    assert "replay_v2_artifact_id: ${{ steps.replay_v2_publish.outputs.artifact-id }}" in text
+    publish = next(s for s in workflow_steps() if "name: Publish V2 SQLite and receipt" in s)
+    assert "id: replay_v2_publish" in publish
+    job = text.split("  replay-v2-independent-readback:", 1)[1]
+    assert 'run: test -n "$REPLAY_ARTIFACT_ID"' in job
+    assert "artifact-ids: ${{ needs.test.outputs.replay_v2_artifact_id }}" in job
+    assert "name: core003-authentic-replay-v2-readback-" not in job

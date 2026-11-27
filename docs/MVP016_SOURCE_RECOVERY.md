@@ -40,6 +40,11 @@ commit and original hashes without depending on expiring workflow artifacts.
 The existing canonical SQLite independent readback is also preserved: its
 unchanged producer steps now run before legacy archive steps so unrelated
 historical source failures no longer hide the independent readback result.
+The producer exports the upload action's exact artifact ID. Separate readback
+requires that nonempty ID and downloads by ID, never a reused artifact name.
+This prevents a later attempt from silently selecting an older attempt's ZIP.
+SQLite SHA, counts, migration ledger, original inputs and integrity tests remain
+unchanged. Missing transport identity fails before any download.
 No mandatory legacy step is skipped, removed, softened or called PASS.
 
 ## Scope of authenticity

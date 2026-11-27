@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       replay_v2_status: ${{ steps.replay_v2.outcome }}
+      replay_v2_artifact_id: ${{ steps.replay_v2_publish.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -138,6 +139,7 @@ jobs:
           compression-level: 0
 
       - name: Publish V2 SQLite and receipt for separate-runner readback
+        id: replay_v2_publish
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
@@ -1086,9 +1088,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Require exact artifact from this producer attempt
+        env:
+          REPLAY_ARTIFACT_ID: ${{ needs.test.outputs.replay_v2_artifact_id }}
+        run: test -n "$REPLAY_ARTIFACT_ID"
       - uses: actions/download-artifact@v4
         with:
-          name: core003-authentic-replay-v2-readback-${{ github.run_id }}
+          artifact-ids: ${{ needs.test.outputs.replay_v2_artifact_id }}
+          merge-multiple: true
           path: recovered
       - name: Verify transported SQLite SHA, counts, ledger and integrity
         run: python scripts/core003_replay_v2.py readback --root recovered
