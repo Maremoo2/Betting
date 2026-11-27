@@ -1,0 +1,23 @@
+{
+  "schema": "HBI_ORIGINAL_EVIDENCE_MANIFEST_V1",
+  "entries": [
+    {
+      "repository": "Maremoo2/Betting",
+      "run_id": 41796128435,
+      "artifact_id": 13304793845,
+      "artifact_name": "bet-mvp-shadow-41796128435",
+      "source_job_id": 126460564343,
+      "uploaded_at_utc": "2026-11-04T08:02:24.7006487Z",
+      "zip_size_bytes": 575,
+      "zip_sha256": "2b2683ba14774b637237f99484f1b8256321744c0552c0d30a5635bd549a6cfa",
+      "member_name": "cohort-index.json",
+      "member_sha256": "ebeb64f1fc27328c0ff5f063ede33ec1d08615e482d4a017680ea0d5813b9aa0",
+      "retention_days": 21,
+      "actions_availability": "NOT_LISTED_AS_OF_2026_11_26",
+      "provenance": "ORIGINAL_UPLOAD_JOB_LOG_AND_EXISTING_CI_PIN",
+      "local_recovery_status": "REPORTED_VERIFIED_NOT_RECHECKED_IN_THIS_TASK",
+      "carrier_status": "APPROVAL_PENDING",
+      "approved_carrier": null
+    }
+  ]
+}
