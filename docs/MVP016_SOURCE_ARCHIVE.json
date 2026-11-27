@@ -1,0 +1,17 @@
+{
+  "schema": "MVP016_PRIVATE_GIT_ORIGINAL_V1",
+  "repository": "Maremoo2/betting-hq-private-research",
+  "commit": "eb4f479bd90f31fcfd3d2d07b92f14179442c98b",
+  "path": "archive/mvp016/13304793845.zip",
+  "zip_sha256": "2b2683ba14774b637237f99484f1b8256321744c0552c0d30a5635bd549a6cfa",
+  "zip_size": 575,
+  "member": "cohort-index.json",
+  "member_sha256": "ebeb64f1fc27328c0ff5f063ede33ec1d08615e482d4a017680ea0d5813b9aa0",
+  "source_run": 41796128435,
+  "source_artifact": 13304793845,
+  "upstream_hashes": {
+    "source_report_sha256": "3b48833babffd0b1ea0fa7cbc5a0bfb6cd3217f9302f6f9986b5f3b65703ed21",
+    "source_database_sha256": "6865214ab5adc703e1bc1bbf96194eaa6faf4e49d4ea24f0b7ad7fd5343b892a",
+    "collector_handoff_sha256": "861b44181eb4dc0b2653b3c4062ea9f0ddb8f3683e4b778b64f1113fb314022a"
+  }
+}
