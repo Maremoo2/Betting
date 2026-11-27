@@ -29,6 +29,7 @@ from .core_pit_roster_verification import (
 SCHEMA = "COLLECTOR_TO_BETTING_ORIGINAL_V1"
 OSLO = ZoneInfo("Europe/Oslo")
 SOURCE_REPO = "Maremoo2/rikstoto-program-collector"
+COLLECTOR_WORKFLOW_ID = 388333234
 CATEGORIES = ("RACEDAY_STARTS", "FULL_FIELD_ONLY_V1")
 
 
@@ -38,6 +39,54 @@ def sha(raw: bytes) -> str:
 
 def name_key(value: str) -> str:
     return " ".join(unicodedata.normalize("NFKC", value).casefold().split())
+
+
+def select_collector_run(runs: list[dict], dates: set[str], asof: datetime) -> dict | None:
+    """Select actual completed automatic Collector runs, not arbitrary dispatches."""
+    if asof.utcoffset() is None:
+        raise ValueError('COLLECTOR_SELECTION_CLOCK_UNKNOWN')
+    accepted = []
+    for run in runs:
+        created, completed = parse_time(run.get('created_at')), parse_time(run.get('updated_at'))
+        actor = run.get('actor') or {}
+        automatic = run.get('event') == 'schedule' or (
+            run.get('event') == 'workflow_dispatch'
+            and actor.get('id') == 41898282 and actor.get('login') == 'github-actions[bot]'
+        )
+        if (automatic and run.get('workflow_id') == COLLECTOR_WORKFLOW_ID
+                and run.get('path') == '.github/workflows/rikstoto-morning.yml'
+                and run.get('head_branch') == 'main'
+                and (run.get('repository') or {}).get('full_name') == SOURCE_REPO
+                and (run.get('head_repository') or {}).get('full_name') == SOURCE_REPO
+                and run.get('status') == 'completed' and run.get('conclusion') == 'success'
+                and created is not None and completed is not None
+                and created <= completed <= asof
+                and created.astimezone(OSLO).date().isoformat() in dates
+                and re.fullmatch('[0-9a-f]{40}', str(run.get('head_sha') or ''))):
+            accepted.append(run)
+    if not accepted:
+        return None
+    latest = max(parse_time(run['created_at']) for run in accepted)
+    matches = [run for run in accepted if parse_time(run['created_at']) == latest]
+    return matches[0] if len(matches) == 1 else None
+
+
+def authenticated_collector_origin(origin: dict) -> bool:
+    base = (origin.get('source_repository') == SOURCE_REPO
+            and origin.get('obtained_via_authenticated_gh_cli') is True
+            and origin.get('conclusion') == 'success'
+            and type(origin.get('github_run_id')) is int and origin['github_run_id'] > 0)
+    if not base:
+        return False
+    if origin.get('event') == 'schedule':
+        return True  # Preserve the existing authenticated morning-archive contract.
+    return (origin.get('event') == 'workflow_dispatch'
+            and origin.get('workflow_id') == COLLECTOR_WORKFLOW_ID
+            and origin.get('head_branch') == 'main'
+            and origin.get('actor_id') == 41898282
+            and origin.get('actor_login') == 'github-actions[bot]'
+            and origin.get('head_repository') == SOURCE_REPO
+            and origin.get('workflow_path') == '.github/workflows/rikstoto-morning.yml')
 
 
 class OriginalArchive:
@@ -195,17 +244,27 @@ def _registered(val):
             and not val.upper().startswith(("TMP", "TEMP", "UNKNOWN")))
 
 
+def _scratch_revision(previous: dict, current: dict) -> bool:
+    """Only unchanged listed identities and one-way explicit scratches may differ."""
+    return set(previous) == set(current) and all(
+        old['name'] == current[sid]['name'] and old['reg'] == current[sid]['reg']
+        and type(old['scratched']) is bool and type(current[sid]['scratched']) is bool
+        and not (old['scratched'] and not current[sid]['scratched'])
+        for sid, old in previous.items()
+    )
+
+
 
 def _persist_original_roster(
     conn: sqlite3.Connection, *, race_id: str, raceday_key: str,
     race_number: int, observed_at: str, source_uri: str,
     original_field: list[dict], source_checksums: dict,
 ) -> tuple[bool, str]:
-    """One immutable Collector source row per *physical* race, not per raceday.
+    """Immutable Collector source versions per physical race, not per raceday.
 
     The raceday-wide raw starts SHA remains unmodified in source_checksums.
-    Existing different versions are a hard conflict; they are never
-    overwritten, OR IGNORE'd, or treated as successful imports.
+    Same-key conflicts are never overwritten or ignored. A later authenticated
+    full-source version may only add explicit scratches to unchanged identities.
     """
     # Store only immutable Collector provenance in the original row.
     # ATG diagnostics belong in the per-run handoff report and may evolve.
@@ -237,16 +296,41 @@ def _persist_original_roster(
         "AND provider_raceday_key=? AND race_number=?",
         (raceday_key, race_number),
     ).fetchall()
-    if existing:
+    same = [row for row in existing if row['payload_id'] == payload_id]
+    if same:
         identical = (
-            len(existing) == 1
-            and existing[0]["payload_id"] == payload_id
-            and existing[0]["observed_at_utc"] == observed_at
-            and existing[0]["source_uri"] == source_uri
-            and existing[0]["payload_json"] == canonical
+            len(same) == 1
+            and same[0]["observed_at_utc"] == observed_at
+            and same[0]["source_uri"] == source_uri
+            and same[0]["payload_json"] == canonical
         )
         if not identical:
             raise ValueError("COLLECTOR_IMPORT_REVISION_CONFLICT")
+    for row in existing:
+        if row['payload_id'] == payload_id:
+            continue
+        try:
+            old = json.loads(row['payload_json'])
+            prior = {str(r['start_number']): {
+                'name': r['horse_name'], 'reg': r['registration_number'],
+                'scratched': r['scratched'],
+            } for r in old['original_field']}
+            current = {str(r['start_number']): {
+                'name': r['horse_name'], 'reg': r['registration_number'],
+                'scratched': r['scratched'],
+            } for r in original_field}
+            older, newer = parse_time(row['observed_at_utc']), parse_time(observed_at)
+            valid = (old['race_id'] == race_id and row['source_uri'] == source_uri
+                     and older is not None and newer is not None and older < newer
+                     and len(prior) == len(old['original_field'])
+                     and old['source_checksums']['collector_pdf_clock_utc']
+                     == source_checksums['collector_pdf_clock_utc']
+                     and _scratch_revision(prior, current))
+        except (KeyError, TypeError, ValueError):
+            valid = False
+        if not valid:
+            raise ValueError('COLLECTOR_IMPORT_REVISION_CONFLICT')
+    if same:
         return True, payload_id
 
     try:
@@ -437,9 +521,13 @@ def verify_import(conn: sqlite3.Connection, archive: OriginalArchive, race_id: s
         live_field, err = parse_rikstoto_roster(json.dumps(live_payload), number, key)
         if err or live_field is None or live_field["all"] != original["all"]:
             blocks.add("COLLECTOR_LIVE_ROSTER_REVISION_CONFLICT")
-        for _, raw_json in live_versions:
+        for observed, raw_json in live_versions:
             parsed, err = parse_rikstoto_roster(raw_json, number, key)
-            if err or parsed is None or parsed["all"] != original["all"]:
+            if (err or parsed is None or parsed["all"] != original["all"]) and not (
+                parsed is not None and not err
+                and observed < parse_time(start_receipt['at_utc'])
+                and _scratch_revision(parsed['all'], original['all'])
+            ):
                 blocks.add("COLLECTOR_RETAINED_ROSTER_REVISION_CONFLICT")
         identity, _ = _latest_source(
             conn, "atg", "FULL_FIELD_ONLY_V1", race_id, number, asof
@@ -883,12 +971,7 @@ def run_import(db: Path, root: Path, provenance: Path, source_report: Path,
     authenticated = False
     try:
         origin = json.loads(provenance.read_text(encoding="utf-8"))
-        authenticated = (origin.get("source_repository") == SOURCE_REPO
-                         and origin.get("obtained_via_authenticated_gh_cli") is True
-                         and origin.get("event") == "schedule"
-                         and origin.get("conclusion") == "success"
-                         and type(origin.get("github_run_id")) is int
-                         and origin["github_run_id"] > 0)
+        authenticated = authenticated_collector_origin(origin)
         if authenticated:
             archive = OriginalArchive(root)
     except (ValueError, OSError, KeyError, zipfile.BadZipFile):

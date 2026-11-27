@@ -247,19 +247,18 @@ jobs:
             echo "CORE003_SOURCE_REPORT_NOT_AVAILABLE"; exit 0
           fi
           mkdir -p pit003a-collector-archive
-          if ! gh run list --repo Maremoo2/rikstoto-program-collector \
-              --workflow rikstoto-morning.yml --limit 15 \
-              --status success --event schedule --branch main \
-              --json databaseId,createdAt,event,conclusion,workflowName,headSha \
+          if ! gh api -X GET \
+              repos/Maremoo2/rikstoto-program-collector/actions/workflows/rikstoto-morning.yml/runs \
+              -f branch=main -f status=success -f per_page=50 \
               > "$RUNNER_TEMP/pit003a-collector-runs.json"; then
             echo "COLLECTOR_RUN_LIST_UNAVAILABLE"; exit 0
           fi
           python - <<'PY' > "$RUNNER_TEMP/pit003a-collector-selected.txt"
           import json
           import os
-          from datetime import datetime
+          from datetime import UTC, datetime
           from pathlib import Path
-          from zoneinfo import ZoneInfo
+          from hbi.collector_handoff import select_collector_run
 
           source = json.loads(Path("core003-pilot-report.json").read_text())
           dates = {
@@ -271,19 +270,11 @@ jobs:
               dates = {os.environ["ACCEPTANCE_SOURCE_DAY"]}
           runs = json.loads((Path(os.environ["RUNNER_TEMP"]) /
                              "pit003a-collector-runs.json").read_text())
-          matches = [
-              run for run in runs
-              if run.get("event") == "schedule"
-              and run.get("conclusion") == "success"
-              and run.get("workflowName") == "Daily Rikstoto full programs – 07 Oslo"
-              and datetime.fromisoformat(run["createdAt"].replace("Z", "+00:00"))
-                  .astimezone(ZoneInfo("Europe/Oslo")).date().isoformat() in dates
-          ]
-          matches.sort(key=lambda run: run["createdAt"], reverse=True)
-          if len(matches) == 1 and matches[0].get("headSha"):
-              print(matches[0]["databaseId"])
+          selected = select_collector_run(runs['workflow_runs'], dates, datetime.now(UTC))
+          if selected is not None:
+              print(selected['id'])
               (Path(os.environ["RUNNER_TEMP"]) / "pit003a-collector-run.json").write_text(
-                  json.dumps(matches[0]), encoding="utf-8",
+                  json.dumps(selected), encoding="utf-8",
               )
           PY
           selected="$(cat "$RUNNER_TEMP/pit003a-collector-selected.txt")"
@@ -301,12 +292,18 @@ jobs:
                             "pit003a-collector-run.json").read_text())
           document = {
               "source_repository": "Maremoo2/rikstoto-program-collector",
-              "github_run_id": info["databaseId"],
-              "created_at_utc": info["createdAt"],
+              "github_run_id": info["id"],
+              "created_at_utc": info["created_at"],
               "event": info["event"],
               "conclusion": info["conclusion"],
-              "workflow_name": info["workflowName"],
-              "head_sha": info["headSha"],
+              "workflow_name": info["name"],
+              "head_sha": info["head_sha"],
+              "workflow_id": info["workflow_id"],
+              "workflow_path": info["path"],
+              "head_branch": info["head_branch"],
+              "head_repository": info['head_repository']['full_name'],
+              "actor_id": info['actor']['id'],
+              "actor_login": info['actor']['login'],
               "obtained_via_authenticated_gh_cli": True,
           }
           Path("pit003a-collector-archive/provenance.json").write_text(
