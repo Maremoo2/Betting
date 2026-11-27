@@ -183,6 +183,130 @@ def _connection(db: Path):
     return conn
 
 
+def _automatic_collector_run():
+    return {'id': 123, 'event': 'workflow_dispatch', 'workflow_id': 388333234,
+            'path': '.github/workflows/rikstoto-morning.yml', 'head_branch': 'main',
+            'repository': {'full_name': 'Maremoo2/rikstoto-program-collector'},
+            'head_repository': {'full_name': 'Maremoo2/rikstoto-program-collector'},
+            'actor': {'id': 41898282, 'login': 'github-actions[bot]'},
+            'status': 'completed', 'conclusion': 'success', 'head_sha': 'a' * 40,
+            'created_at': '2026-11-02T18:00:00Z', 'updated_at': '2026-11-02T18:03:00Z'}
+
+
+@pytest.mark.parametrize('tamper', [None, 'human', 'fork', 'workflow', 'branch',
+                                   'future', 'failed', 'unknown_clock'])
+def test_collector_refresh_requires_authenticated_automatic_run_metadata(tamper):
+    from hbi.collector_handoff import select_collector_run
+
+    source = _automatic_collector_run()
+    if tamper == 'human':
+        source['actor'] = {'id': 42, 'login': 'Maremoo2'}
+    elif tamper == 'fork':
+        source['head_repository']['full_name'] = 'other/collector'
+    elif tamper == 'workflow':
+        source['workflow_id'] = 42
+    elif tamper == 'branch':
+        source['head_branch'] = 'test'
+    elif tamper == 'future':
+        source['updated_at'] = '2026-11-02T22:00:00Z'
+    elif tamper == 'failed':
+        source['conclusion'] = 'failure'
+    elif tamper == 'unknown_clock':
+        source['created_at'] = '2026-11-02T18:00:00'
+    selected = select_collector_run([source], {'2026-11-02'}, NOW)
+    assert (selected == source) if tamper is None else selected is None
+
+
+def test_refresh_chooses_latest_before_asof_and_blocks_equal_time_ambiguity():
+    from copy import deepcopy
+
+    from hbi.collector_handoff import select_collector_run
+
+    newer = _automatic_collector_run()
+    older = deepcopy(newer)
+    older.update(id=1, event='schedule', created_at='2026-11-02T06:00:00Z',
+                 updated_at='2026-11-02T06:05:00Z')
+    assert select_collector_run([older, newer], {'2026-11-02'}, NOW)['id'] == 123
+    twin = deepcopy(newer)
+    twin['id'] = 124
+    assert select_collector_run([newer, twin], {'2026-11-02'}, NOW) is None
+    assert select_collector_run([newer], {'2026-11-03'}, NOW) is None
+
+
+@pytest.mark.parametrize('tamper', [None, 'actor', 'workflow', 'fork', 'unauthenticated'])
+def test_refresh_origin_cannot_be_an_arbitrary_manual_dispatch(tamper):
+    from hbi.collector_handoff import authenticated_collector_origin
+
+    origin = {'source_repository': 'Maremoo2/rikstoto-program-collector',
+              'obtained_via_authenticated_gh_cli': True, 'conclusion': 'success',
+              'github_run_id': 123, 'event': 'workflow_dispatch',
+              'workflow_id': 388333234, 'head_branch': 'main',
+              'actor_id': 41898282, 'actor_login': 'github-actions[bot]',
+              'head_repository': 'Maremoo2/rikstoto-program-collector',
+              'workflow_path': '.github/workflows/rikstoto-morning.yml'}
+    if tamper == 'actor':
+        origin['actor_id'] = 42
+    elif tamper == 'workflow':
+        origin['workflow_path'] = '.github/workflows/other.yml'
+    elif tamper == 'fork':
+        origin['head_repository'] = 'other/collector'
+    elif tamper == 'unauthenticated':
+        origin['obtained_via_authenticated_gh_cli'] = False
+    assert authenticated_collector_origin(origin) is (tamper is None)
+
+
+@pytest.mark.parametrize('tamper', [None, 'name', 'registration', 'missing', 'reinstated', 'unknown'])
+def test_revision_allows_only_monotone_explicit_scratches_with_unchanged_identity(tamper):
+    from copy import deepcopy
+
+    from hbi.collector_handoff import _scratch_revision
+
+    old = {'1': {'name': 'Horse', 'reg': 'UELN-1', 'scratched': False}}
+    new = deepcopy(old)
+    new['1']['scratched'] = True
+    if tamper == 'name':
+        new['1']['name'] = 'Another horse'
+    elif tamper == 'registration':
+        new['1']['reg'] = 'UELN-2'
+    elif tamper == 'missing':
+        new = {}
+    elif tamper == 'reinstated':
+        old['1']['scratched'], new['1']['scratched'] = True, False
+    elif tamper == 'unknown':
+        new['1']['scratched'] = None
+    assert _scratch_revision(old, new) is (tamper is None)
+
+
+def test_authenticated_refreshed_original_appends_version_without_pit_promotion(tmp_path):
+    old = _archive_unicode(tmp_path / 'old', tmp=False)
+    fresh = _archive_unicode(tmp_path / 'fresh', tmp=False, scratched=True)
+    manifest_path = next(fresh.rglob('manifest.json'))
+    manifest = json.loads(manifest_path.read_text())
+    for receipt in manifest['requests']:
+        receipt['at_utc'] = (NOW - timedelta(seconds=90)).isoformat()
+    manifest_path.write_text(json.dumps(manifest))
+    db = tmp_path / 'state.sqlite'
+    _db(db, scratched=True)
+    with _connection(db) as conn:
+        previous = verify_import(conn, OriginalArchive(old), RID, asof=NOW, authenticated=True)
+        assert not previous['research_model_eligible']
+        prior_live = {'success': True, 'result': {'10': _rows(tmp=False)}}
+        conn.execute('INSERT INTO provider_payloads VALUES(?,?,?,?,?,?,?,?,?)', (
+            'prior-live', 'rikstoto', 'RACEDAY_STARTS', KEY, 10, None,
+            (NOW - timedelta(minutes=2)).isoformat(),
+            'https://www.rikstoto.no/api/racedays/' + KEY + '/starts', json.dumps(prior_live)))
+        before = conn.execute("SELECT payload_json FROM provider_payloads WHERE provider='collector'").fetchone()[0]
+        after = verify_import(conn, OriginalArchive(fresh), RID, asof=NOW, authenticated=True)
+        assert after['research_model_eligible'], after['blockers']
+        assert after['model_input_approved'] is False
+        assert after['pit_certified'] is False and after['bet_authority'] is False
+        retained = conn.execute("SELECT payload_json FROM provider_payloads WHERE provider='collector'").fetchall()
+        assert len(retained) == 2 and before in [row[0] for row in retained]
+        again = verify_import(conn, OriginalArchive(fresh), RID, asof=NOW, authenticated=True)
+        assert again['research_model_eligible']
+        assert conn.execute("SELECT COUNT(*) FROM provider_payloads WHERE provider='collector'").fetchone()[0] == 2
+
+
 def test_original_halmstad_shape_and_eight_horses_with_tmp_block(tmp_path):
     root = _archive_unicode(tmp_path / "collector")
     db = tmp_path / "hbi.sqlite"

@@ -73,6 +73,28 @@ def test_same_freeze_win_beats_earlier_probability_only_freeze():
     assert freeze_order((research_freeze(with_win=True), "b")) < freeze_order((older, "a"))
 
 
+@pytest.mark.parametrize('invalid', [None, 'missing', 'different_clock', 'future', 'wrong_provider'])
+def test_market_probability_uses_only_complete_same_freeze_win(invalid):
+    model = research_freeze(with_win=True)
+    for row in model['runners']:
+        row['horse_name'] = 'Runner ' + row['selection_id']
+    if invalid == 'missing':
+        model['runners'][0]['win_odds'] = None
+    elif invalid == 'different_clock':
+        model['runners'][0]['win_odds_observed_at_utc'] = '2026-11-13T17:15:49+00:00'
+    elif invalid == 'future':
+        for row in model['runners']:
+            row['win_odds_observed_at_utc'] = '2026-11-13T17:15:58+00:00'
+    elif invalid == 'wrong_provider':
+        model['runners'][0]['win_odds_provider'] = 'other'
+    rows = model_runners(model)
+    if invalid is None:
+        assert [r['market_p'] for r in rows] == [.5, .5]
+        assert sum(r['market_p'] for r in rows) == 1
+    else:
+        assert all(r['market_p'] is None and r['ev'] is None for r in rows)
+
+
 @pytest.mark.parametrize(("frozen", "blocked"), [
     ("2026-11-13T17:15:59+00:00", False),
     ("2026-11-13T17:16:00+00:00", True),

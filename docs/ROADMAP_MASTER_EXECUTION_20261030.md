@@ -1,6 +1,54 @@
 # Betting HQ – master-roadmap og gjennomføringsstatus
 
-## Gjeldende V1-notat – 27. november 2026
+## Gjeldende V1-utførelse – 27. november 2026, kveld
+
+Roadmapen V1 → V1.1 → V2 → V2.1 → V3 og eksisterende DONE-kriterier beholdes.
+Eldre daterte notater nedenfor er revisjonsbevis, ikke gjeldende aktiveringsstatus.
+
+- **V1 implementert/verifisert:** #230 er eiermerget til
+  `35618688df0cf0966cfd7d4b942f24e2cb96d05d`. Faktisk main-CI `46046557444`
+  har teknisk akseptanse og uavhengig SQLite-readback PASS, Ruff PASS og
+  2572 passed /119 skipped. Historisk kontroll er fortsatt FAIL: alle ni
+  grupper rapporterer de nøyaktig 16 godkjente SOURCE_UNRECOVERABLE-originalene.
+  Fire obligatoriske branch-protection-sjekker håndheves også for administratorer.
+- **V1 rapportering aktivert med HQ-mandat:** Eksisterende private workflow
+  `419038377`, `hq-nordic-acceptance.yml`, er aktivert med
+  `HQ_DAILY_REPORT_ENABLED=true`, daglig 23:50 Europe/Oslo. Første faktiske
+  scheduled execution er ikke ennå observert. GITHUB_TOKEN er tilstrekkelig;
+  ingen ny scheduler, tjeneste, token eller e-postutsendelse. Privat main-test
+  `46047235244` PASS: 37 løp /28 komplette Collector-felt /8 eksisterende
+  forskningsfrys /83 hesteprediksjoner /7 samtidige WIN-felt /15 resultatkoblinger
+  /7 skårbare modellpar /0 PIT. Snapshotet er ikke en fullført heldagsakseptanse.
+- **V1 konkret datakjedefeil:** CORE-003 valgte bare morgenkjøringer med
+  event=schedule og overså eksisterende automatiske Collector-oppfriskninger
+  med event=workflow_dispatch fra GitHub Actions-boten. Rettingen validerer
+  repository, main, workflow-ID, aktør og reelle tilgjengelighetstider.
+  Originalverifiserte senere strykningsversjoner bevares append-only; endret
+  identitet, gjeninnsetting, ufullstendig felt og ukjente/sene kilder blokkerer.
+  Autentisk åtteløps-replay på samme arkiverte SQLite gir 0→1
+  forskningskvalifiserte felt (Gävle 3, 11 aktive); 0 nye prediksjoner og 0 PIT.
+  Dette er retrospektiv teknisk validering, ikke et nytt førstartfrys.
+- **PR-konsolidering:** #228s kildearkivdel er erstattet av #230. Unik
+  historikkvalidering, sannsynlighetskontroll, paper-prisdiagnostikk og
+  resultat/CLV-endringer er bevart, ikke bulk-merget. Private #3s eksportør og
+  tester finnes byteidentisk i #2; #3 er lukket uten sletting av gren eller
+  unik revisjonsdokumentasjon. Forskningsstakken #221–226 og #227/#229 beholdes
+  adskilt uten grønn integrasjon mot dagens main. Ingen kildegjeld skjules.
+- **V1.1:** Varslingskode finnes i privat #1; ekstern levering og SMTP er ikke
+  godkjent/aktivert. V1 mangler fortsatt dokumentert ordinær scheduled
+  rapportkjøring og full operativ/prospektiv akseptanse før videre fasegodkjenning.
+- **V2 / V2.1 / V3:** Eksisterende historiske modeller, benchmark-, paper- og
+  produktkomponenter beholdes. Uavhengig datakvalifisering, kronologiske
+  holdouts, kvalifisert closing/CLV og prospektiv kalibrering mangler fortsatt.
+  Ingen trening, kombinasjonsmodell, modellpromotering eller BET-autoritet
+  aktiveres av dette mandatet. Tre gamle uoppgjorte saker er fortsatt separate
+  System Audit-blokkeringer; dagens forskningsskåring skriver ikke i disse.
+
+**Neste V1-akseptanse:** Verifiser det første faktisk planlagte dagsrapportresultatet
+og den samme korrigerte kildeveien på ordinære førstartobservasjoner. Rapportér
+kildekvalifisering, nye modellfrys og PIT separat. Ingen fase erklæres DONE.
+
+## Historisk V1-notat – 27. november 2026, før master-utførelsen
 
 Rekkefølgen V1 → V1.1 → V2 → V2.1 → V3 er uendret. PR #230 isolerer privat
 kildearkiv og CI-sikkerhet; #228 og øvrige funksjonspatcher er frosset. HQ har
