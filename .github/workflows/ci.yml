@@ -148,15 +148,29 @@ jobs:
 
       # Exact observed 4 Nov 2026 no-op index. A valid empty cohort must
       # contribute zero races without creating a false archive error.
-      - name: Replay MVP-016 original empty CORE-003 cohort (NO BET)
-        id: mvp016_original
-        if: github.event_name == 'pull_request'
+      # Only owner-authored, same-repository PRs with pinned fetch code receive the
+      # private read credential. Never pass it to pytest, replay or uploads.
+      - name: Read exact MVP-016 private original with reviewed fetch code
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == 'Maremoo2/Betting' &&
+          github.event.pull_request.user.login == 'Maremoo2'
         env:
           RESEARCH_ARCHIVE_READ_TOKEN: ${{ secrets.RESEARCH_ARCHIVE_READ_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/mvp016_source_recovery.py --root "$RUNNER_TEMP/mvp016-empty"
+          printf '%s  %s\n' \
+            886b25e7e6b3a8663bb7922895a5c3f8f03e82ae027386aa184c47552b3d2a1a scripts/mvp016_source_recovery.py \
+            b116322c332f259bb784901d197cbb2170b3fcfe2eacb63afe3dd789e8101408 docs/MVP016_SOURCE_ARCHIVE.json | sha256sum --check -
+          python -I -S scripts/mvp016_source_recovery.py --root "$RUNNER_TEMP/mvp016-empty"
+
+      - name: Replay MVP-016 original empty CORE-003 cohort (NO BET)
+        id: mvp016_original
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
           printf '%s  %s\n' \
             ebeb64f1fc27328c0ff5f063ede33ec1d08615e482d4a017680ea0d5813b9aa0 \
             "$RUNNER_TEMP/mvp016-empty/cohort-index.json" | sha256sum --check -

@@ -26,6 +26,10 @@ Public PR CI requires `RESEARCH_ARCHIVE_READ_TOKEN`: a fine-grained token with
 only Contents: Read access to that private repository. No write permission,
 account credential, production token or token literal is needed. Store it only
 as a Betting Actions secret. Fork PRs receive no secret and fail closed.
+The credential is scoped to a separate download step, restricted to owner-authored
+same-repository PRs. Fetch script and source contract must match reviewed SHA
+pins before Python runs in isolated standard-library-only mode (`-I -S`). Tests,
+replay, uploads and caches do not receive the credential.
 Rotate/revoke through GitHub; token expiry must not silently select another
 source. The fetcher verifies that the source repository is still private and
 downloads the exact pinned Git object over the authenticated GitHub API.
