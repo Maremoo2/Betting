@@ -22,6 +22,28 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+      # Only owner-authored, same-repository PRs with pinned fetch code receive the
+      # private read credential. Never pass it to pytest, replay or uploads.
+      - name: Read approved private CI originals with reviewed fetch code
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == 'Maremoo2/Betting' &&
+          github.event.pull_request.user.login == 'Maremoo2'
+        env:
+          RESEARCH_ARCHIVE_READ_TOKEN: ${{ secrets.RESEARCH_ARCHIVE_READ_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' \
+            886b25e7e6b3a8663bb7922895a5c3f8f03e82ae027386aa184c47552b3d2a1a scripts/mvp016_source_recovery.py \
+            b116322c332f259bb784901d197cbb2170b3fcfe2eacb63afe3dd789e8101408 docs/MVP016_SOURCE_ARCHIVE.json \
+            dbc6d5aecaaae6912740055b0ca36ff0e730571174d6983a210485e1ccd0d36a scripts/ci_originals.py \
+            c51e0365ccb8b7f40c1a5eccf2a1fb0f794a5515a416dc2df0d937e8347b7a63 src/hbi/ci_originals.py \
+            68dd1d131ce043c1da4b7900cfb1c6a97a4a974834da449073ca1a9973b2d606 docs/CI_HISTORICAL_SOURCES.json | sha256sum --check -
+          python -I -S scripts/mvp016_source_recovery.py --root "$RUNNER_TEMP/mvp016-empty"
+          python -I -S scripts/ci_originals.py fetch --root "$RUNNER_TEMP/ci-originals"
+          echo "CI_ORIGINAL_CACHE=$RUNNER_TEMP/ci-originals" >> "$GITHUB_ENV"
+
       - name: Install
         run: pip install -e ".[dev]"
       - name: Ruff
@@ -41,7 +63,7 @@ jobs:
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/mvp014-nov04"
           archive="$RUNNER_TEMP/mvp014-nov04.zip"
-          gh api repos/Maremoo2/rikstoto-program-collector/actions/artifacts/13300048964/zip > "$archive"
+          python scripts/ci_originals.py copy --artifact-id 13300048964 --dir "$archive"
           printf '%s  %s\n' \
             9d045fe402348a9465734198bb56dd9a415d6b135141ac6b16c294a053a10dab \
             "$archive" | sha256sum --check -
@@ -128,15 +150,13 @@ jobs:
               f.write('bootstrap=' + str(contract['mirror'] is None).lower() + '\n')
           PY
 
-      - name: Preserve exact V2 originals once for the versioned 90-day mirror
+      - name: Confirm bootstrap originals retained privately
         if: github.event_name == 'pull_request' && steps.replay_v2.outputs.bootstrap == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: core003-authentic-replay-v2-originals-${{ github.run_id }}
-          path: ${{ runner.temp }}/core003-v2-input/*.zip
-          if-no-files-found: error
-          retention-days: 90
-          compression-level: 0
+        run: python scripts/ci_originals.py verify-cache
+
+      - name: Encrypt exact SQLite handoff before public artifact transport
+        if: github.event_name == 'pull_request' && steps.replay_v2.outcome == 'success'
+        run: python -m hbi.ci_readback_transport seal --source "$RUNNER_TEMP/core003-v2-output" --destination "$RUNNER_TEMP/core003-v2-encrypted"
 
       - name: Publish V2 SQLite and receipt for separate-runner readback
         id: replay_v2_publish
@@ -144,29 +164,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: core003-authentic-replay-v2-readback-${{ github.run_id }}
-          path: ${{ runner.temp }}/core003-v2-output/
+          path: ${{ runner.temp }}/core003-v2-encrypted/
           if-no-files-found: error
           retention-days: 7
 
       # Exact observed 4 Nov 2026 no-op index. A valid empty cohort must
       # contribute zero races without creating a false archive error.
-      # Only owner-authored, same-repository PRs with pinned fetch code receive the
-      # private read credential. Never pass it to pytest, replay or uploads.
-      - name: Read exact MVP-016 private original with reviewed fetch code
-        if: >-
-          github.event_name == 'pull_request' &&
-          github.event.pull_request.head.repo.full_name == 'Maremoo2/Betting' &&
-          github.event.pull_request.user.login == 'Maremoo2'
-        env:
-          RESEARCH_ARCHIVE_READ_TOKEN: ${{ secrets.RESEARCH_ARCHIVE_READ_TOKEN }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          printf '%s  %s\n' \
-            886b25e7e6b3a8663bb7922895a5c3f8f03e82ae027386aa184c47552b3d2a1a scripts/mvp016_source_recovery.py \
-            b116322c332f259bb784901d197cbb2170b3fcfe2eacb63afe3dd789e8101408 docs/MVP016_SOURCE_ARCHIVE.json | sha256sum --check -
-          python -I -S scripts/mvp016_source_recovery.py --root "$RUNNER_TEMP/mvp016-empty"
-
       - name: Replay MVP-016 original empty CORE-003 cohort (NO BET)
         id: mvp016_original
         if: github.event_name == 'pull_request'
@@ -214,6 +217,303 @@ jobs:
 
       # Real scheduled 4 Nov source inventory changed during pagination.
       # Protect cumulative benchmark from a falsely zero-count published scorecard.
+      - name: Replay MVP-017 private local original archive on true GitHub bytes
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/mvp017-original"
+          python scripts/ci_originals.py extract --run 41796128435 --name bet-mvp-shadow-41796128435 --dir "$RUNNER_TEMP/mvp017-original"
+          printf '%s  %s\n' \
+            ebeb64f1fc27328c0ff5f063ede33ec1d08615e482d4a017680ea0d5813b9aa0 \
+            "$RUNNER_TEMP/mvp017-original/cohort-index.json" | sha256sum --check -
+          MVP017_PRIVATE_ARCHIVE_ORIGINAL_ROOT="$RUNNER_TEMP/mvp017-original" \
+            pytest -q tests/test_mvp017_private_original_archive.py
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          from hbi.mvp017_private_original_archive import store_original, verify_archive
+          base = Path(os.environ["RUNNER_TEMP"]) / "mvp017-original"
+          raw = base / "cohort-index.json"
+          root = Path(os.environ["RUNNER_TEMP"]) / "mvp017-scratch-private"
+          output = store_original(
+              archive_root=root, source_file=raw,
+              source_provider="RIKSTOTO",
+              endpoint="/api/racedays",
+              observed_at_utc="2026-11-04T07:59:00+00:00",
+              source_run_id=41796128435, source_artifact_id=13304793845,
+              approval_id="CI_LOCAL_SCRATCH_ONLY_MVP017",
+          )
+          verified = verify_archive(root)
+          assert verified["original_source_blobs"] == 1
+          assert verified["pit_certified"] is False and verified["bet_authority"] is False
+          assert output["original_sha256"] == hashlib.sha256(raw.read_bytes()).hexdigest()
+          attestation = {
+              "schema": "MVP017_LOCAL_REPLAY_EVIDENCE_V1",
+              "original_sha256": output["original_sha256"],
+              "receipt_sha256": output["receipt_sha256"],
+              "local_blob_count": verified["original_source_blobs"],
+              "local_receipt_count": verified["distinct_provenance_receipts"],
+              "external_retention_deployed": False,
+              "bet_authority": False,
+              "pit_certified": False,
+          }
+          (base / "evidence.json").write_text(
+              json.dumps(attestation, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+
+      - name: Upload MVP-017 metadata-only archive evidence (no raw bytes)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp017-local-private-archive-metadata-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp017-original/evidence.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      # Five original physical source reasons; no retrospective model freeze.
+      - name: Replay authenticated 21 Nov Collector, SQLite, Shadow and Pre-Watch
+        id: replay_nov21
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/p0-nov21"
+          python - "$RUNNER_TEMP/core003-v2-input" "$root" <<'PYTHON'
+          import sys
+          from scripts.core003_replay_v2 import extract_inputs
+
+          extract_inputs(sys.argv[1], sys.argv[2])
+          PYTHON
+          P0_NOV21_COLLECTOR_ROOT="$root/collector" \
+          P0_NOV21_SQLITE="$root/state/core003-pilot.sqlite" \
+          P0_NOV21_FROZEN_SHADOW="$root/model/race-001/shadow.json" \
+          P0_NOV21_SOURCE_REPORT="$root/report/core003-pilot-report.json" \
+          P0_PRODUCT_OUTPUT="$root/product" \
+            pytest -q -s tests/test_collector_nov21_rebaseline.py
+          for file in prewatch-day.json prewatch-day.md prewatch-events.jsonl; do
+            test -s "$root/product/$file"
+          done
+
+      - name: Upload authenticated Pre-Watch day readback (not live betting)
+        if: github.event_name == 'pull_request' && steps.replay_nov21.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3313-product-day-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/p0-nov21/product/prewatch-day.json
+            ${{ runner.temp }}/p0-nov21/product/prewatch-day.md
+            ${{ runner.temp }}/p0-nov21/product/prewatch-events.jsonl
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Replay DEV-009 outcome scorecard on original frozen Eskilstuna archive
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/dev009/models/41646155051"
+          python scripts/ci_originals.py extract --run 41646155051 --name bet-mvp-shadow-41646155051 --dir "$RUNNER_TEMP/dev009/models/41646155051"
+          printf '%s  %s\n' \
+            f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d \
+            "$RUNNER_TEMP/dev009/models/41646155051/race-001/shadow.json" \
+            | sha256sum --check -
+          DEV009_AUTHENTIC_ARCHIVE_ROOT="$RUNNER_TEMP/dev009/models" \
+            pytest -q tests/test_prospective_outcome_scorecard.py
+          python -m hbi.prospective_outcome_scorecard \
+            --models-root "$RUNNER_TEMP/dev009/models" \
+            --output-dir "$RUNNER_TEMP/dev009/scorecard" \
+            --fetch-official
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          data = json.loads((Path(os.environ["RUNNER_TEMP"]) /
+                             "dev009/scorecard/index.json").read_text())
+          assert data["bet_authority"] is False
+          assert data["v33_evaluator_called"] is False
+          assert data["counts"]["physical_races"] == 3
+          assert data["counts"]["complete_prediction_fields"] == 1
+          assert data["counts"]["not_evaluable"] >= 2
+          record = next(r for r in data["records"]
+                        if r["race_id"] == "RIKSTOTO:S1_NR_2026-11-03:8")
+          assert record["source_model_original_sha256"] == (
+              "f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d"
+          )
+          assert record["active_runners"] == 12
+          assert record["cohort"] == "PROSPECTIVE_NOT_PIT_CERTIFIED"
+          assert record["status"] in ("EVALUABLE_RESEARCH_ONLY", "NOT_EVALUABLE")
+          if record["status"] == "EVALUABLE_RESEARCH_ONLY":
+              assert len(record["original_result_receipts"]) == 2
+              assert all(r["raw_sha256"] for r in record["original_result_receipts"])
+          PY
+
+      - name: Upload DEV-009 original archive scorecard (NO BET)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev009-authentic-original-scorecard-${{ github.run_id }}
+          path: ${{ runner.temp }}/dev009/scorecard/index.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      # Five genuine model archives from 2 Nov exist on GitHub, but predate
+      # the immutable cohort index. Do not turn them into admitted models.
+      - name: Replay MVP-014 original legacy-index classification (NO PIT/BET)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/mvp014-legacy"
+          mkdir -p "$root"
+          for run in 41456642411 41459303701 41461113601 41462919513 41463276002; do
+            mkdir -p "$root/$run"
+            python scripts/ci_originals.py extract --run "$run" --name "bet-mvp-shadow-$run" --dir "$root/$run"
+          done
+          MVP014_LEGACY_ORIGINALS_ROOT="$root" \
+            pytest -q tests/test_dev011_coverage.py::test_authentic_nov2_five_legacy_originals_exist_without_cohort_indexes
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          from hbi.dev011_coverage import finalize, plan
+          root = Path(os.environ["RUNNER_TEMP"]) / "mvp014-legacy"
+          runs = (41456642411, 41459303701, 41461113601, 41462919513, 41463276002)
+          original_artifact_ids = (
+              13147076977, 13147433634, 13149181358, 13150157261, 13150442459,
+          )
+          artifacts = [{"id": aid, "name": f"bet-mvp-shadow-{run}",
+                        "expired": False, "workflow_run": {"id": run, "head_branch": "main"}}
+                       for run, aid in zip(runs, original_artifact_ids, strict=True)]
+          inventory = plan([{"total_count": 5, "artifacts": artifacts}],
+                           current_run_id=99999999, inventory_sha="f" * 64)
+          report = finalize(inventory, models_root=root, results_root=root / "results")
+          report["evidence_mode"] = "GENUINE_GITHUB_ORIGINAL_BYTES_REAL_ARTIFACT_IDS"
+          report["original_model_shas"] = {
+              str(run): [hashlib.sha256(f.read_bytes()).hexdigest()
+                         for f in sorted((root / str(run)).rglob("shadow.json"))]
+              for run in runs
+          }
+          (root / "legacy-coverage.json").write_text(
+              json.dumps(report, indent=2, sort_keys=True) + "\n"
+          )
+          PY
+
+      - name: Upload MVP-014 legacy-original coverage diagnosis (NO BET)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp014-legacy-original-coverage-${{ github.run_id }}
+          path: ${{ runner.temp }}/mvp014-legacy/legacy-coverage.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Replay DEV-011 retained Eskilstuna model and pinned originals (21 empty runs)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/dev011/models/41646155051" \
+            "$RUNNER_TEMP/dev011/results/41662283155"
+          python scripts/ci_originals.py extract --run 41646155051 --name bet-mvp-shadow-41646155051 --dir "$RUNNER_TEMP/dev011/models/41646155051"
+          python scripts/ci_originals.py extract --run 41662283155 --name dev009-authentic-original-scorecard-41662283155 --dir "$RUNNER_TEMP/dev011/results/41662283155"
+          printf '%s  %s\n' \
+            f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d \
+            "$RUNNER_TEMP/dev011/models/41646155051/race-001/shadow.json" \
+            | sha256sum --check -
+          DEV011_AUTHENTIC_MODEL_ROOT="$RUNNER_TEMP/dev011/models" \
+          DEV011_AUTHENTIC_RESULTS_ROOT="$RUNNER_TEMP/dev011/results" \
+          DEV011_CI_MANIFEST_DIR="$RUNNER_TEMP/dev011/coverage" \
+            pytest -q tests/test_dev011_coverage.py
+          python -m hbi.prospective_outcome_scorecard \
+            --models-root "$RUNNER_TEMP/dev011/models" \
+            --prior-results-root "$RUNNER_TEMP/dev011/results" \
+            --coverage-manifest "$RUNNER_TEMP/dev011/coverage/manifest.json" \
+            --output-dir "$RUNNER_TEMP/dev011/scorecard"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path(os.environ["RUNNER_TEMP"]) / "dev011/scorecard"
+          result = json.loads((root / "index.json").read_bytes())
+          assert result["counts"]["paired_champion_core004"] == 1
+          assert result["counts"]["pit_certified_paired"] == 0
+          assert result["cumulative_completeness"] == "COMPLETE_AVAILABLE_ORIGINAL_INVENTORY"
+          assert result["cumulative_original_inventory"]["recovered_artifacts"] == 22
+          assert result["bet_authority"] is False
+          record = next(r for r in result["records"]
+                        if r["race_id"] == "RIKSTOTO:S1_NR_2026-11-03:8")
+          assert record["winner_selection_id"] == "5"
+          assert record["source_model_original_sha256"] == (
+              "f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d"
+          )
+          assert record["outcome_source_mode"] == "PINNED_ARCHIVED_ORIGINAL"
+          assert all(r["raw_sha256"] and Path(r["raw_path"]).is_file()
+                     for r in record["original_result_receipts"])
+          PY
+
+      # DEV-013: compare two GENUINE distinct pre-T4 originals for one physical
+      # race. Official result receipt is reused only after raw SHA verification;
+      # this never updates a historical freeze or grants PIT/BET authority.
+      - name: Replay DEV-013 multi-freeze Eskilstuna WIN benchmark (NO BET)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/dev013/models/41635474321" \
+            "$RUNNER_TEMP/dev013/models/41646155051" \
+            "$RUNNER_TEMP/dev013/results/41662283155"
+          python scripts/ci_originals.py extract --run 41635474321 --name bet-mvp-shadow-41635474321 --dir "$RUNNER_TEMP/dev013/models/41635474321"
+          python scripts/ci_originals.py extract --run 41646155051 --name bet-mvp-shadow-41646155051 --dir "$RUNNER_TEMP/dev013/models/41646155051"
+          python scripts/ci_originals.py extract --run 41662283155 --name dev009-authentic-original-scorecard-41662283155 --dir "$RUNNER_TEMP/dev013/results/41662283155"
+          printf '%s  %s\n' \
+            d3036bc47fab25a5e1ca5b621fba6b0d340537b03f953449ab84400298a3b1d4 \
+            "$RUNNER_TEMP/dev013/models/41635474321/race-004/shadow.json" \
+            | sha256sum --check -
+          printf '%s  %s\n' \
+            f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d \
+            "$RUNNER_TEMP/dev013/models/41646155051/race-001/shadow.json" \
+            | sha256sum --check -
+          DEV013_AUTHENTIC_MODEL_ROOT="$RUNNER_TEMP/dev013/models" \
+          DEV013_AUTHENTIC_RESULTS_ROOT="$RUNNER_TEMP/dev013/results" \
+          DEV013_CI_OUTPUT_DIR="$RUNNER_TEMP/dev013/evidence" \
+            pytest -q tests/test_dev013_win_benchmark.py::test_authentic_eskilstuna_original_frozen_versions_and_official_receipts
+
+      - name: Upload DEV-013 genuine originals WIN comparison (NO BET)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev013-authentic-win-benchmark-${{ github.run_id }}
+          path: ${{ runner.temp }}/dev013/evidence/
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload DEV-011 real original cumulative scorecard (NO BET)
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev011-authentic-cumulative-scorecard-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/dev011/scorecard/index.json
+            ${{ runner.temp }}/dev011/coverage/manifest.json
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Replay MVP-016 genuine GitHub inventory outage (NO BET)
         if: github.event_name == 'pull_request'
         env:
@@ -223,12 +523,9 @@ jobs:
           set -euo pipefail
           root="$RUNNER_TEMP/mvp016-inventory"
           mkdir -p "$root"/{outage,healthy,false_zero}
-          gh run download 41817026855 --repo "$GITHUB_REPOSITORY" \
-            --name dev011-coverage-manifest-41817026855 --dir "$root/outage"
-          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
-            --name dev011-coverage-manifest-41814068321 --dir "$root/healthy"
-          gh run download 41817026855 --repo "$GITHUB_REPOSITORY" \
-            --name dev009-outcome-scorecards-41817026855 --dir "$root/false_zero"
+          python scripts/ci_originals.py extract --run 41817026855 --name dev011-coverage-manifest-41817026855 --dir "$root/outage"
+          python scripts/ci_originals.py extract --run 41814068321 --name dev011-coverage-manifest-41814068321 --dir "$root/healthy"
+          python scripts/ci_originals.py extract --run 41817026855 --name dev009-outcome-scorecards-41817026855 --dir "$root/false_zero"
           printf '%s  %s\n' \
             b14c61c979c656e49da382d574f3416293303e582b3b864b646df592282c4ac7 \
             "$root/outage/manifest.json" | sha256sum --check -
@@ -283,14 +580,10 @@ jobs:
           set -euo pipefail
           folder="$RUNNER_TEMP/mvp016-research"
           mkdir -p "$folder"/{scorecard,source,cohort,manifest}
-          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
-            --name dev009-outcome-scorecards-41814068321 --dir "$folder/scorecard"
-          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
-            --name core003-pilot-report-41814068321 --dir "$folder/source"
-          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
-            --name bet-mvp-shadow-41814068321 --dir "$folder/cohort"
-          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
-            --name dev011-coverage-manifest-41814068321 --dir "$folder/manifest"
+          python scripts/ci_originals.py extract --run 41814068321 --name dev009-outcome-scorecards-41814068321 --dir "$folder/scorecard"
+          python scripts/ci_originals.py extract --run 41814068321 --name core003-pilot-report-41814068321 --dir "$folder/source"
+          python scripts/ci_originals.py extract --run 41814068321 --name bet-mvp-shadow-41814068321 --dir "$folder/cohort"
+          python scripts/ci_originals.py extract --run 41814068321 --name dev011-coverage-manifest-41814068321 --dir "$folder/manifest"
           printf '%s  %s\n' \
             62b0d78ca75847d2f2bfe895af240e45eada96a7719aefe4f880c1da02cbe178 \
             "$folder/scorecard/index.json" | sha256sum --check -
@@ -349,20 +642,13 @@ jobs:
           root="$RUNNER_TEMP/mvp017-health"
           for part in early outage recent; do mkdir -p "$root/$part"; done
           mkdir -p "$root/v1"
-          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
-            --name dev009-outcome-scorecards-41814068321 --dir "$root/early/score"
-          gh run download 41814068321 --repo "$GITHUB_REPOSITORY" \
-            --name dev011-coverage-manifest-41814068321 --dir "$root/early/coverage"
-          gh run download 41817026855 --repo "$GITHUB_REPOSITORY" \
-            --name dev009-outcome-scorecards-41817026855 --dir "$root/outage/score"
-          gh run download 41817026855 --repo "$GITHUB_REPOSITORY" \
-            --name dev011-coverage-manifest-41817026855 --dir "$root/outage/coverage"
-          gh run download 41820503559 --repo "$GITHUB_REPOSITORY" \
-            --name dev009-outcome-scorecards-41820503559 --dir "$root/recent/score"
-          gh run download 41820503559 --repo "$GITHUB_REPOSITORY" \
-            --name dev011-coverage-manifest-41820503559 --dir "$root/recent/coverage"
-          gh run download 41820373324 --repo "$GITHUB_REPOSITORY" \
-            --name hbi-v1-system-audit-41820373324 --dir "$root/v1"
+          python scripts/ci_originals.py extract --run 41814068321 --name dev009-outcome-scorecards-41814068321 --dir "$root/early/score"
+          python scripts/ci_originals.py extract --run 41814068321 --name dev011-coverage-manifest-41814068321 --dir "$root/early/coverage"
+          python scripts/ci_originals.py extract --run 41817026855 --name dev009-outcome-scorecards-41817026855 --dir "$root/outage/score"
+          python scripts/ci_originals.py extract --run 41817026855 --name dev011-coverage-manifest-41817026855 --dir "$root/outage/coverage"
+          python scripts/ci_originals.py extract --run 41820503559 --name dev009-outcome-scorecards-41820503559 --dir "$root/recent/score"
+          python scripts/ci_originals.py extract --run 41820503559 --name dev011-coverage-manifest-41820503559 --dir "$root/recent/coverage"
+          python scripts/ci_originals.py extract --run 41820373324 --name hbi-v1-system-audit-41820373324 --dir "$root/v1"
           python - <<'PY'
           import hashlib
           import json
@@ -445,15 +731,13 @@ jobs:
           set -euo pipefail
           root="$RUNNER_TEMP/mvp018-original-scratches"
           mkdir -p "$root/scorecard"
-          gh run download 41826490000 --repo "$GITHUB_REPOSITORY" \
-            --name dev009-outcome-scorecards-41826490000 --dir "$root/scorecard"
+          python scripts/ci_originals.py extract --run 41826490000 --name dev009-outcome-scorecards-41826490000 --dir "$root/scorecard"
           printf '%s  %s\n' \
             a7cc16d026ea08e0042dc4d6c5c2d75d3212bfd5fb00203dbbbbc36455f11d2b \
             "$root/scorecard/index.json" | sha256sum --check -
           for run in 41488067799 41492573978 41499820309 41708503913; do
             mkdir -p "$root/models/$run"
-            gh run download "$run" --repo "$GITHUB_REPOSITORY" \
-              --name "bet-mvp-shadow-$run" --dir "$root/models/$run"
+            python scripts/ci_originals.py extract --run "$run" --name "bet-mvp-shadow-$run" --dir "$root/models/$run"
           done
           MVP018_ORIGINAL_SCRATCH_REPLAY_ROOT="$root" \
             pytest -q tests/test_mvp018_official_prestart_scratches.py
@@ -494,68 +778,6 @@ jobs:
           retention-days: 30
 
       # Local scratch-only archive replay. Never upload the copied raw original.
-      - name: Replay MVP-017 private local original archive on true GitHub bytes
-        if: github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/mvp017-original"
-          gh run download 41796128435 --repo "$GITHUB_REPOSITORY" \
-            --name bet-mvp-shadow-41796128435 \
-            --dir "$RUNNER_TEMP/mvp017-original"
-          printf '%s  %s\n' \
-            ebeb64f1fc27328c0ff5f063ede33ec1d08615e482d4a017680ea0d5813b9aa0 \
-            "$RUNNER_TEMP/mvp017-original/cohort-index.json" | sha256sum --check -
-          MVP017_PRIVATE_ARCHIVE_ORIGINAL_ROOT="$RUNNER_TEMP/mvp017-original" \
-            pytest -q tests/test_mvp017_private_original_archive.py
-          python - <<'PY'
-          import hashlib
-          import json
-          import os
-          from pathlib import Path
-          from hbi.mvp017_private_original_archive import store_original, verify_archive
-          base = Path(os.environ["RUNNER_TEMP"]) / "mvp017-original"
-          raw = base / "cohort-index.json"
-          root = Path(os.environ["RUNNER_TEMP"]) / "mvp017-scratch-private"
-          output = store_original(
-              archive_root=root, source_file=raw,
-              source_provider="RIKSTOTO",
-              endpoint="/api/racedays",
-              observed_at_utc="2026-11-04T07:59:00+00:00",
-              source_run_id=41796128435, source_artifact_id=13304793845,
-              approval_id="CI_LOCAL_SCRATCH_ONLY_MVP017",
-          )
-          verified = verify_archive(root)
-          assert verified["original_source_blobs"] == 1
-          assert verified["pit_certified"] is False and verified["bet_authority"] is False
-          assert output["original_sha256"] == hashlib.sha256(raw.read_bytes()).hexdigest()
-          attestation = {
-              "schema": "MVP017_LOCAL_REPLAY_EVIDENCE_V1",
-              "original_sha256": output["original_sha256"],
-              "receipt_sha256": output["receipt_sha256"],
-              "local_blob_count": verified["original_source_blobs"],
-              "local_receipt_count": verified["distinct_provenance_receipts"],
-              "external_retention_deployed": False,
-              "bet_authority": False,
-              "pit_certified": False,
-          }
-          (base / "evidence.json").write_text(
-              json.dumps(attestation, indent=2, sort_keys=True) + "\n"
-          )
-          PY
-
-      - name: Upload MVP-017 metadata-only archive evidence (no raw bytes)
-        if: github.event_name == 'pull_request' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mvp017-local-private-archive-metadata-${{ github.run_id }}
-          path: ${{ runner.temp }}/mvp017-original/evidence.json
-          if-no-files-found: warn
-          retention-days: 30
-
-      # Five original physical source reasons; no retrospective model freeze.
       - name: Replay MVP-018 no-freeze source provenance against original 65-race cohort
         if: github.event_name == 'pull_request'
         env:
@@ -565,15 +787,13 @@ jobs:
           set -euo pipefail
           root="$RUNNER_TEMP/mvp018-freeze"
           mkdir -p "$root/scorecard"
-          gh run download 41826490000 --repo "$GITHUB_REPOSITORY" \
-            --name dev009-outcome-scorecards-41826490000 --dir "$root/scorecard"
+          python scripts/ci_originals.py extract --run 41826490000 --name dev009-outcome-scorecards-41826490000 --dir "$root/scorecard"
           printf '%s  %s\n' \
             a7cc16d026ea08e0042dc4d6c5c2d75d3212bfd5fb00203dbbbbc36455f11d2b \
             "$root/scorecard/index.json" | sha256sum --check -
           for run in 41689647527 41710594697 41665938596 41826490000 41811192493; do
             mkdir -p "$root/run-$run"
-            gh run download "$run" --repo "$GITHUB_REPOSITORY" \
-              --name "bet-mvp-shadow-$run" --dir "$root/run-$run"
+            python scripts/ci_originals.py extract --run "$run" --name "bet-mvp-shadow-$run" --dir "$root/run-$run"
           done
           python - <<'PY'
           import hashlib
@@ -638,14 +858,10 @@ jobs:
           set -euo pipefail
           root="$RUNNER_TEMP/mvp018-funnel"
           mkdir -p "$root"/{scorecard,source,cohort,manifest}
-          gh run download 41832416078 --repo "$GITHUB_REPOSITORY" \
-            --name dev009-outcome-scorecards-41832416078 --dir "$root/scorecard"
-          gh run download 41832416078 --repo "$GITHUB_REPOSITORY" \
-            --name core003-pilot-report-41832416078 --dir "$root/source"
-          gh run download 41832416078 --repo "$GITHUB_REPOSITORY" \
-            --name bet-mvp-shadow-41832416078 --dir "$root/cohort"
-          gh run download 41832416078 --repo "$GITHUB_REPOSITORY" \
-            --name dev011-coverage-manifest-41832416078 --dir "$root/manifest"
+          python scripts/ci_originals.py extract --run 41832416078 --name dev009-outcome-scorecards-41832416078 --dir "$root/scorecard"
+          python scripts/ci_originals.py extract --run 41832416078 --name core003-pilot-report-41832416078 --dir "$root/source"
+          python scripts/ci_originals.py extract --run 41832416078 --name bet-mvp-shadow-41832416078 --dir "$root/cohort"
+          python scripts/ci_originals.py extract --run 41832416078 --name dev011-coverage-manifest-41832416078 --dir "$root/manifest"
           printf '%s  %s\n' \
             a4a667bd596bde42b9e3dbed6d96247731067fe76f82b33ea816194fa68b5ff7 \
             "$root/scorecard/index.json" | sha256sum --check -
@@ -704,14 +920,10 @@ jobs:
           set -euo pipefail
           root="$RUNNER_TEMP/mvp019b-original"
           mkdir -p "$root"/{scorecard,source,cohort,manifest}
-          gh run download 41879063497 --repo "$GITHUB_REPOSITORY" \
-            --name dev009-outcome-scorecards-41879063497 --dir "$root/scorecard"
-          gh run download 41879063497 --repo "$GITHUB_REPOSITORY" \
-            --name core003-pilot-report-41879063497 --dir "$root/source"
-          gh run download 41879063497 --repo "$GITHUB_REPOSITORY" \
-            --name bet-mvp-shadow-41879063497 --dir "$root/cohort"
-          gh run download 41879063497 --repo "$GITHUB_REPOSITORY" \
-            --name dev011-coverage-manifest-41879063497 --dir "$root/manifest"
+          python scripts/ci_originals.py extract --run 41879063497 --name dev009-outcome-scorecards-41879063497 --dir "$root/scorecard"
+          python scripts/ci_originals.py extract --run 41879063497 --name core003-pilot-report-41879063497 --dir "$root/source"
+          python scripts/ci_originals.py extract --run 41879063497 --name bet-mvp-shadow-41879063497 --dir "$root/cohort"
+          python scripts/ci_originals.py extract --run 41879063497 --name dev011-coverage-manifest-41879063497 --dir "$root/manifest"
           printf '%s  %s\n' \
             6ec0392fd9620b41be90610b5348a019e0a9e43a975562960f8f04d2cbd61a9a \
             "$root/scorecard/index.json" | sha256sum --check -
@@ -750,49 +962,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/dev012-original"
-          gh run download 41663427015 --repo "$GITHUB_REPOSITORY" \
-            --name pit003a-collector-evidence-41663427015 \
-            --dir "$RUNNER_TEMP/dev012-original"
+          python scripts/ci_originals.py extract --run 41663427015 --name pit003a-collector-evidence-41663427015 --dir "$RUNNER_TEMP/dev012-original"
           HBI_DEV012_AUTHENTIC_ARCHIVE="$RUNNER_TEMP/dev012-original" \
             pytest -q tests/test_dev012_pdf_continuation.py
 
       # Both contracts use the same four original ZIPs. Reverify the shared
       # inputs before the separate Pre-Watch and rollback assertions.
-      - name: Replay authenticated 21 Nov Collector, SQLite, Shadow and Pre-Watch
-        id: replay_nov21
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          set -euo pipefail
-          root="$RUNNER_TEMP/p0-nov21"
-          python - "$RUNNER_TEMP/core003-v2-input" "$root" <<'PYTHON'
-          import sys
-          from scripts.core003_replay_v2 import extract_inputs
-
-          extract_inputs(sys.argv[1], sys.argv[2])
-          PYTHON
-          P0_NOV21_COLLECTOR_ROOT="$root/collector" \
-          P0_NOV21_SQLITE="$root/state/core003-pilot.sqlite" \
-          P0_NOV21_FROZEN_SHADOW="$root/model/race-001/shadow.json" \
-          P0_NOV21_SOURCE_REPORT="$root/report/core003-pilot-report.json" \
-          P0_PRODUCT_OUTPUT="$root/product" \
-            pytest -q -s tests/test_collector_nov21_rebaseline.py
-          for file in prewatch-day.json prewatch-day.md prewatch-events.jsonl; do
-            test -s "$root/product/$file"
-          done
-
-      - name: Upload authenticated Pre-Watch day readback (not live betting)
-        if: github.event_name == 'pull_request' && steps.replay_nov21.outcome == 'success'
-        uses: actions/upload-artifact@v4
-        with:
-          name: v3313-product-day-${{ github.run_id }}
-          path: |
-            ${{ runner.temp }}/p0-nov21/product/prewatch-day.json
-            ${{ runner.temp }}/p0-nov21/product/prewatch-day.md
-            ${{ runner.temp }}/p0-nov21/product/prewatch-events.jsonl
-          if-no-files-found: error
-          retention-days: 30
-
       - name: Replay frozen Eskilstuna originals through automatic MVP-009 diagnostics
         if: github.event_name == 'pull_request'
         env:
@@ -802,12 +977,8 @@ jobs:
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/mvp009/bet-mvp-shadow" \
             "$RUNNER_TEMP/mvp009/pit003a-attestations"
-          gh run download 41626023709 --repo "$GITHUB_REPOSITORY" \
-            --name bet-mvp-shadow-41626023709 \
-            --dir "$RUNNER_TEMP/mvp009/bet-mvp-shadow"
-          gh run download 41626023709 --repo "$GITHUB_REPOSITORY" \
-            --name pit003a-attestations-41626023709 \
-            --dir "$RUNNER_TEMP/mvp009/pit003a-attestations"
+          python scripts/ci_originals.py extract --run 41626023709 --name bet-mvp-shadow-41626023709 --dir "$RUNNER_TEMP/mvp009/bet-mvp-shadow"
+          python scripts/ci_originals.py extract --run 41626023709 --name pit003a-attestations-41626023709 --dir "$RUNNER_TEMP/mvp009/pit003a-attestations"
           printf '%s  %s\n' \
             4853ed6bc8c7c7063a5898f4b815e552989d29d9b3121372fd338eb0e63f9916 \
             "$RUNNER_TEMP/mvp009/bet-mvp-shadow/race-001/shadow.json" | sha256sum --check -
@@ -848,227 +1019,12 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
-      - name: Replay DEV-009 outcome scorecard on original frozen Eskilstuna archive
-        if: github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/dev009/models/41646155051"
-          gh run download 41646155051 --repo "$GITHUB_REPOSITORY" \
-            --name bet-mvp-shadow-41646155051 \
-            --dir "$RUNNER_TEMP/dev009/models/41646155051"
-          printf '%s  %s\n' \
-            f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d \
-            "$RUNNER_TEMP/dev009/models/41646155051/race-001/shadow.json" \
-            | sha256sum --check -
-          DEV009_AUTHENTIC_ARCHIVE_ROOT="$RUNNER_TEMP/dev009/models" \
-            pytest -q tests/test_prospective_outcome_scorecard.py
-          python -m hbi.prospective_outcome_scorecard \
-            --models-root "$RUNNER_TEMP/dev009/models" \
-            --output-dir "$RUNNER_TEMP/dev009/scorecard" \
-            --fetch-official
-          python - <<'PY'
-          import json
-          import os
-          from pathlib import Path
-          data = json.loads((Path(os.environ["RUNNER_TEMP"]) /
-                             "dev009/scorecard/index.json").read_text())
-          assert data["bet_authority"] is False
-          assert data["v33_evaluator_called"] is False
-          assert data["counts"]["physical_races"] == 3
-          assert data["counts"]["complete_prediction_fields"] == 1
-          assert data["counts"]["not_evaluable"] >= 2
-          record = next(r for r in data["records"]
-                        if r["race_id"] == "RIKSTOTO:S1_NR_2026-11-03:8")
-          assert record["source_model_original_sha256"] == (
-              "f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d"
-          )
-          assert record["active_runners"] == 12
-          assert record["cohort"] == "PROSPECTIVE_NOT_PIT_CERTIFIED"
-          assert record["status"] in ("EVALUABLE_RESEARCH_ONLY", "NOT_EVALUABLE")
-          if record["status"] == "EVALUABLE_RESEARCH_ONLY":
-              assert len(record["original_result_receipts"]) == 2
-              assert all(r["raw_sha256"] for r in record["original_result_receipts"])
-          PY
-
-      - name: Upload DEV-009 original archive scorecard (NO BET)
-        if: github.event_name == 'pull_request' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dev009-authentic-original-scorecard-${{ github.run_id }}
-          path: ${{ runner.temp }}/dev009/scorecard/
-          if-no-files-found: warn
-          retention-days: 30
-
-      # Five genuine model archives from 2 Nov exist on GitHub, but predate
-      # the immutable cohort index. Do not turn them into admitted models.
-      - name: Replay MVP-014 original legacy-index classification (NO PIT/BET)
-        if: github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          root="$RUNNER_TEMP/mvp014-legacy"
-          mkdir -p "$root"
-          for run in 41456642411 41459303701 41461113601 41462919513 41463276002; do
-            mkdir -p "$root/$run"
-            gh run download "$run" --repo "$GITHUB_REPOSITORY" \
-              --name "bet-mvp-shadow-$run" --dir "$root/$run"
-          done
-          MVP014_LEGACY_ORIGINALS_ROOT="$root" \
-            pytest -q tests/test_dev011_coverage.py::test_authentic_nov2_five_legacy_originals_exist_without_cohort_indexes
-          python - <<'PY'
-          import hashlib
-          import json
-          import os
-          from pathlib import Path
-          from hbi.dev011_coverage import finalize, plan
-          root = Path(os.environ["RUNNER_TEMP"]) / "mvp014-legacy"
-          runs = (41456642411, 41459303701, 41461113601, 41462919513, 41463276002)
-          original_artifact_ids = (
-              13147076977, 13147433634, 13149181358, 13150157261, 13150442459,
-          )
-          artifacts = [{"id": aid, "name": f"bet-mvp-shadow-{run}",
-                        "expired": False, "workflow_run": {"id": run, "head_branch": "main"}}
-                       for run, aid in zip(runs, original_artifact_ids, strict=True)]
-          inventory = plan([{"total_count": 5, "artifacts": artifacts}],
-                           current_run_id=99999999, inventory_sha="f" * 64)
-          report = finalize(inventory, models_root=root, results_root=root / "results")
-          report["evidence_mode"] = "GENUINE_GITHUB_ORIGINAL_BYTES_REAL_ARTIFACT_IDS"
-          report["original_model_shas"] = {
-              str(run): [hashlib.sha256(f.read_bytes()).hexdigest()
-                         for f in sorted((root / str(run)).rglob("shadow.json"))]
-              for run in runs
-          }
-          (root / "legacy-coverage.json").write_text(
-              json.dumps(report, indent=2, sort_keys=True) + "\n"
-          )
-          PY
-
-      - name: Upload MVP-014 legacy-original coverage diagnosis (NO BET)
-        if: github.event_name == 'pull_request' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mvp014-legacy-original-coverage-${{ github.run_id }}
-          path: ${{ runner.temp }}/mvp014-legacy/legacy-coverage.json
-          if-no-files-found: warn
-          retention-days: 30
-
-      - name: Replay DEV-011 retained Eskilstuna model and pinned originals (21 empty runs)
-        if: github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/dev011/models/41646155051" \
-            "$RUNNER_TEMP/dev011/results/41662283155"
-          gh run download 41646155051 --repo "$GITHUB_REPOSITORY" \
-            --name bet-mvp-shadow-41646155051 \
-            --dir "$RUNNER_TEMP/dev011/models/41646155051"
-          gh run download 41662283155 --repo "$GITHUB_REPOSITORY" \
-            --name dev009-authentic-original-scorecard-41662283155 \
-            --dir "$RUNNER_TEMP/dev011/results/41662283155"
-          printf '%s  %s\n' \
-            f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d \
-            "$RUNNER_TEMP/dev011/models/41646155051/race-001/shadow.json" \
-            | sha256sum --check -
-          DEV011_AUTHENTIC_MODEL_ROOT="$RUNNER_TEMP/dev011/models" \
-          DEV011_AUTHENTIC_RESULTS_ROOT="$RUNNER_TEMP/dev011/results" \
-          DEV011_CI_MANIFEST_DIR="$RUNNER_TEMP/dev011/coverage" \
-            pytest -q tests/test_dev011_coverage.py
-          python -m hbi.prospective_outcome_scorecard \
-            --models-root "$RUNNER_TEMP/dev011/models" \
-            --prior-results-root "$RUNNER_TEMP/dev011/results" \
-            --coverage-manifest "$RUNNER_TEMP/dev011/coverage/manifest.json" \
-            --output-dir "$RUNNER_TEMP/dev011/scorecard"
-          python - <<'PY'
-          import json
-          import os
-          from pathlib import Path
-
-          root = Path(os.environ["RUNNER_TEMP"]) / "dev011/scorecard"
-          result = json.loads((root / "index.json").read_bytes())
-          assert result["counts"]["paired_champion_core004"] == 1
-          assert result["counts"]["pit_certified_paired"] == 0
-          assert result["cumulative_completeness"] == "COMPLETE_AVAILABLE_ORIGINAL_INVENTORY"
-          assert result["cumulative_original_inventory"]["recovered_artifacts"] == 22
-          assert result["bet_authority"] is False
-          record = next(r for r in result["records"]
-                        if r["race_id"] == "RIKSTOTO:S1_NR_2026-11-03:8")
-          assert record["winner_selection_id"] == "5"
-          assert record["source_model_original_sha256"] == (
-              "f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d"
-          )
-          assert record["outcome_source_mode"] == "PINNED_ARCHIVED_ORIGINAL"
-          assert all(r["raw_sha256"] and Path(r["raw_path"]).is_file()
-                     for r in record["original_result_receipts"])
-          PY
-
-      # DEV-013: compare two GENUINE distinct pre-T4 originals for one physical
-      # race. Official result receipt is reused only after raw SHA verification;
-      # this never updates a historical freeze or grants PIT/BET authority.
-      - name: Replay DEV-013 multi-freeze Eskilstuna WIN benchmark (NO BET)
-        if: github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/dev013/models/41635474321" \
-            "$RUNNER_TEMP/dev013/models/41646155051" \
-            "$RUNNER_TEMP/dev013/results/41662283155"
-          gh run download 41635474321 --repo "$GITHUB_REPOSITORY" \
-            --name bet-mvp-shadow-41635474321 \
-            --dir "$RUNNER_TEMP/dev013/models/41635474321"
-          gh run download 41646155051 --repo "$GITHUB_REPOSITORY" \
-            --name bet-mvp-shadow-41646155051 \
-            --dir "$RUNNER_TEMP/dev013/models/41646155051"
-          gh run download 41662283155 --repo "$GITHUB_REPOSITORY" \
-            --name dev009-authentic-original-scorecard-41662283155 \
-            --dir "$RUNNER_TEMP/dev013/results/41662283155"
-          printf '%s  %s\n' \
-            d3036bc47fab25a5e1ca5b621fba6b0d340537b03f953449ab84400298a3b1d4 \
-            "$RUNNER_TEMP/dev013/models/41635474321/race-004/shadow.json" \
-            | sha256sum --check -
-          printf '%s  %s\n' \
-            f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d \
-            "$RUNNER_TEMP/dev013/models/41646155051/race-001/shadow.json" \
-            | sha256sum --check -
-          DEV013_AUTHENTIC_MODEL_ROOT="$RUNNER_TEMP/dev013/models" \
-          DEV013_AUTHENTIC_RESULTS_ROOT="$RUNNER_TEMP/dev013/results" \
-          DEV013_CI_OUTPUT_DIR="$RUNNER_TEMP/dev013/evidence" \
-            pytest -q tests/test_dev013_win_benchmark.py::test_authentic_eskilstuna_original_frozen_versions_and_official_receipts
-
-      - name: Upload DEV-013 genuine originals WIN comparison (NO BET)
-        if: github.event_name == 'pull_request' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dev013-authentic-win-benchmark-${{ github.run_id }}
-          path: ${{ runner.temp }}/dev013/evidence/
-          if-no-files-found: warn
-          retention-days: 30
-
-      - name: Upload DEV-011 real original cumulative scorecard (NO BET)
-        if: github.event_name == 'pull_request' && always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dev011-authentic-cumulative-scorecard-${{ github.run_id }}
-          path: |
-            ${{ runner.temp }}/dev011/scorecard/
-            ${{ runner.temp }}/dev011/coverage/
-          if-no-files-found: warn
-          retention-days: 30
-
       - name: Upload immutable historical research model and Collector source provenance
         if: github.event_name == 'pull_request' && always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp004-historical-research-${{ github.run_id }}
-          path: ${{ runner.temp }}/mvp004-historical-report
+          path: ${{ runner.temp }}/ci-originals/verification.json
           if-no-files-found: warn
           retention-days: 30
 
@@ -1088,6 +1044,31 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # Only owner-authored, same-repository PRs with pinned fetch code receive the
+      # private read credential. Never pass it to pytest, replay or uploads.
+      - name: Independently restore approved private sources
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == 'Maremoo2/Betting' &&
+          github.event.pull_request.user.login == 'Maremoo2'
+        env:
+          RESEARCH_ARCHIVE_READ_TOKEN: ${{ secrets.RESEARCH_ARCHIVE_READ_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' \
+            886b25e7e6b3a8663bb7922895a5c3f8f03e82ae027386aa184c47552b3d2a1a scripts/mvp016_source_recovery.py \
+            b116322c332f259bb784901d197cbb2170b3fcfe2eacb63afe3dd789e8101408 docs/MVP016_SOURCE_ARCHIVE.json \
+            dbc6d5aecaaae6912740055b0ca36ff0e730571174d6983a210485e1ccd0d36a scripts/ci_originals.py \
+            c51e0365ccb8b7f40c1a5eccf2a1fb0f794a5515a416dc2df0d937e8347b7a63 src/hbi/ci_originals.py \
+            68dd1d131ce043c1da4b7900cfb1c6a97a4a974834da449073ca1a9973b2d606 docs/CI_HISTORICAL_SOURCES.json | sha256sum --check -
+          python -I -S scripts/ci_originals.py fetch --root "$RUNNER_TEMP/ci-originals"
+          echo "CI_ORIGINAL_CACHE=$RUNNER_TEMP/ci-originals" >> "$GITHUB_ENV"
+
+      - name: Install reviewed readback tools
+        run: pip install -e ".[dev]"
+      - name: Independently verify all retained originals
+        run: python scripts/ci_originals.py verify-cache
       - name: Require exact artifact from this producer attempt
         env:
           REPLAY_ARTIFACT_ID: ${{ needs.test.outputs.replay_v2_artifact_id }}
@@ -1097,8 +1078,10 @@ jobs:
           artifact-ids: ${{ needs.test.outputs.replay_v2_artifact_id }}
           merge-multiple: true
           path: recovered
+      - name: Authenticate and decrypt exact producer transport
+        run: python -m hbi.ci_readback_transport open --source recovered --destination recovered-private
       - name: Verify transported SQLite SHA, counts, ledger and integrity
-        run: python scripts/core003_replay_v2.py readback --root recovered
+        run: python scripts/core003_replay_v2.py readback --root recovered-private
       # Test the frozen #215 implementation with this proposed contract without
       # modifying that PR, its checks, its branch, or any production workflow.
       - uses: actions/checkout@v4

@@ -4,6 +4,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
+import shutil
 import sqlite3
 import subprocess
 import zipfile
@@ -86,6 +88,13 @@ def gh_json(endpoint):
 
 
 def download(entry, destination):
+    if os.environ.get("CI_ORIGINAL_CACHE"):
+        from hbi.ci_originals import cached_archive
+
+        source = cached_archive(entry)
+        with Path(destination).open("xb") as target, source.open("rb") as original:
+            shutil.copyfileobj(original, target)
+        return {"transport": "REVIEWED_PRIVATE_GIT_ORIGINAL", "source": entry}
     endpoint = ("repos/" + entry["repository"] + "/actions/artifacts/"
                 + str(entry["artifact_id"]))
     metadata = gh_json(endpoint)
@@ -108,7 +117,7 @@ def fetch(root):
         mirror = root.parent / "replay-v2-pinned-mirror.zip"
         download(contract["mirror"], mirror)
         unpack(mirror, root)
-        origin = "PINNED_90_DAY_MIRROR"
+        origin = "PINNED_MIRROR_BYTES_PRIVATE_GIT" if os.environ.get("CI_ORIGINAL_CACHE") else "PINNED_90_DAY_MIRROR"
     else:
         # Bootstrap only; replaced with the pinned mirror before final review.
         for entry in contract["artifacts"]:
