@@ -1,5 +1,16 @@
 # Betting HQ – master-roadmap og gjennomføringsstatus
 
+## Gjeldende V1-notat – 27. november 2026
+
+Rekkefølgen V1 → V1.1 → V2 → V2.1 → V3 er uendret. PR #230 isolerer privat
+kildearkiv og CI-sikkerhet; #228 og øvrige funksjonspatcher er frosset. HQ har
+godkjent et avgrenset teknisk CI-skille for de eksakt dokumenterte 16 tapte
+originalene. Historiske påstander forblir SOURCE_UNRECOVERABLE; regresjoner,
+hashavvik og nye kildegap blokkerer fortsatt. Se `CI_APPROVED_SOURCE_LOSS_20261127.json`.
+Jägersro 4/5/6 er et separat teknisk regresjonsgrunnlag, ikke PIT-godkjenning.
+V1 krever fortsatt faktisk løpsdekning med analyse eller presis avvisning; ingen
+heldagsakseptanse eller fase er erklært DONE. Ingen merge eller produksjonsaktivering.
+
 ## Gjeldende gjennomføringsnotat – 23. november 2026
 
 De fem eksisterende fasene og V1 → V1.1 → V2 → V2.1 → V3 beholdes. Ingen ny roadmap.

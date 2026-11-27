@@ -1,0 +1,289 @@
+{
+  "schema": "HQ_DOCUMENTED_SOURCE_LOSS_20261127_V1",
+  "authorization": "HQ \u2013 SIMPLIFY AND DELIVER V1, 2026-11-27; technical-only exception, no historical claim approval",
+  "original_zip_pins": {
+    "13147076977": "6ff6df2d6e76af04265ed199139e0b432e7baa6d738a791153a9da40ef3a0d43",
+    "13147433634": "6f7ee5286f0f25d4633005b134144bc880660c4b7fb2120a8c830d7cc3347b5e",
+    "13149181358": "7f9168872b33e72b258557caad5bed1ff1ff285f35ec82a7aacac324738c2f0f",
+    "13150157261": "cb48ccc658ec340b881fa855ee98a19cd749ed878e01e988b2a5443b6c9d896a",
+    "13150442459": "0665a3211b0bc5b46cd67b068cbd062df8e765959d714c1c59434e9da64a0505",
+    "13162906690": "1122a3af2b9505f6822143dddf914f8626a96678ae1d246885f66b0c05b9e859",
+    "13164543152": "d0501c4075c454af41bb663cfa8d0154ecd16f3d97c74adce0103bb34b0f6e00",
+    "13168417335": "a247098ef6642c9b9fbcda39a50474df96c7cb52b648159a4a692f3e6da04f91",
+    "13225379902": "da648bffcd804173c922e956087f7d5be4c59cd3a7fffcaee16010575eadd891",
+    "13225524391": "e45c750dd01a54e41c93af9905a41c4979eece5924678c0bd43a9031b941431c",
+    "13230691299": "c8dd4fbbaba17e2059742efbcdc26a72aa387571d3cfedd38df30affb18ef0c4",
+    "13235845295": "006898f8988690f52f1b6c17178e757b49bd3625fc506b681473144305e57130",
+    "13243490434": "c2e5fa05b19287bc96ec8d7f83b2a37b6d6c7d51d2e8de5f679b40b47dd6347b",
+    "13244810522": "7fdf4a54916af8814182505d21eb6f76c3eef7249432acbfe7efc18e6a94409b",
+    "13245606773": "56a907e2e4567f0926cccae834ca6fbd0bab2c1702de571d08b8ffd7a603d112",
+    "13257326927": "a36fc1ce81fb68cff1daca84342dd5a8bc1517f9e076bebff1aeead36a5f221a",
+    "13267816642": "cafe439031b4be5f89853c1015d895a61b62fd0751922a85a2f6a051e69688ac",
+    "13267848493": "903ba642d1ea42edce231f1b5271be0ae05cd9cea7792f0d2ddc2d402cee7be9",
+    "13300048964": "9d045fe402348a9465734198bb56dd9a415d6b135141ac6b16c294a053a10dab",
+    "13304793845": "2b2683ba14774b637237f99484f1b8256321744c0552c0d30a5635bd549a6cfa",
+    "13311119836": "0c0c3f8be2aa1f2fa76bdb9b0e6adf3c967554bdb877638d6bdb8cb3614f4cbb",
+    "13313329016": "719e12cdc4405b6e21b1d1e1002a7bfc9b98c1f92f021474a705b03171311242",
+    "13314117015": "2e903e480d4ee86a46af8472665b7711b26a43d9e39036f251bfa9daf34c6f78",
+    "13314296054": "ece57003cd57baaaf4342e99ff7e634a8808095a4e51b16fe8c7fd409036b709",
+    "13314445420": "8e597ef2e9989404e57fcaa8d67444f5cb375eb15d02aa9866b8006f353a975a",
+    "13315511779": "31f08853eebc4d8ee7a36297966f83390e62f79542aea9dd4db5160ad3447872",
+    "13315945255": "475ed9bd96e8f5ecea7f700091d57ab40edc5505d3c1c16f4bbcdb514679cd2e",
+    "13316866794": "3588afc03acced3ca2b60dac48929b1b4238ce515047045c57536a8423c5b96c",
+    "13317420559": "fc6169b933a589b3128e565de93ed7023872b29d10385c7e0652ef9e33947884",
+    "13317520139": "a8cdcf987aa1326e96adb36cf046aad58ec2e44f37a6b1ec47dc273c835fb2b6",
+    "13319117566": "f7507ac56650cfdedff2999cc9e9d20616f1d6947f8b69eb6b053b402174ffb2",
+    "13320200641": "b477a1830d226d7acb4fcc8bbc49b94cf093bb19368247a4dbbeb88eb5f2fec3",
+    "13324021063": "960bae998a68fcf7359fc045cd0476b8afb53c6b2eca4648a7d08bf1ca3ee262",
+    "13324315724": "c4a8f4e46c36651ea350d36d981c2966db6e04faab3f2041feaf479ad0f584fc",
+    "13324990108": "4275ff8e46b075a71a31687d39d65e3505dda7e4004ad2e2fe96f443df5a01f7",
+    "13324990118": "1c0ef6c4b4467afe5bbaf455fc70ce54f61b5b699d59fd41fd32a19861a6fad3",
+    "13348981011": "dab7078dfcd0507856e665461e04f10a78fa0caa18729f10aea2f17cf77053ea",
+    "13348981022": "152717d5cd3037e0ec17686d383bc3dc03dc25abe8cc505e0ef8b2d58315fc1c",
+    "13349320545": "b46bcaf7394b1ea501bae2c63a83d288da4e441c70bdfdd84ed448d7a0cd29d1",
+    "13349440390": "a98951a43fd7bd4d595dab79696ac06dc5cefaa1e2d83f3b17d04835a0ed9093",
+    "14695542768": "ddb07503641d88aec4f90ef263f0fdf322c8a8ed852c8ee28d8fec19e49ceff4",
+    "14708117248": "51e6cb4ee388d098b1cb3894f6133e293a30194ccb3d19ab41435c222881b699",
+    "14708301894": "84a67bc202bdf53455c4276eea5a45543c1365cf06420f4b3a5075c3a34047a9",
+    "14708341778": "c25d4c569c8cb74924853fe4b6ea0bbac68effb983487ff6d4af8e0bb88cfd23",
+    "14769603393": "c3b6b3a24f1bfc861060015a378bc891d7c48925ce8242be633a246e5829df75"
+  },
+  "lost_originals": {
+    "13225524391": {
+      "zip_sha256": "e45c750dd01a54e41c93af9905a41c4979eece5924678c0bd43a9031b941431c",
+      "locked_members": {}
+    },
+    "13244810522": {
+      "zip_sha256": "7fdf4a54916af8814182505d21eb6f76c3eef7249432acbfe7efc18e6a94409b",
+      "locked_members": {
+        "**/meetings/F1_NR_2026-11-03/full_program.pdf": "e565e0f797a74c7c82f7bf9e302d7b6a33a6433cea2334d5e093904f5447fb57",
+        "**/meetings/F1_NR_2026-11-03/starts.raw.json": "a4e4330ae9fc9279619333ecf55604c042021227a0bec0d3d69fd512b33eeea0"
+      }
+    },
+    "13314117015": {
+      "zip_sha256": "2e903e480d4ee86a46af8472665b7711b26a43d9e39036f251bfa9daf34c6f78",
+      "locked_members": {
+        "index.json": "62b0d78ca75847d2f2bfe895af240e45eada96a7719aefe4f880c1da02cbe178"
+      }
+    },
+    "13314296054": {
+      "zip_sha256": "ece57003cd57baaaf4342e99ff7e634a8808095a4e51b16fe8c7fd409036b709",
+      "locked_members": {
+        "core003-pilot-report.json": "151168c074b7d1f0c92bb1c568f70bd23d2669a8903540a26c9b97f32121a7d7"
+      }
+    },
+    "13314445420": {
+      "zip_sha256": "8e597ef2e9989404e57fcaa8d67444f5cb375eb15d02aa9866b8006f353a975a",
+      "locked_members": {
+        "manifest.json": "ecb4477a0ec5fc9c954862943ab8b39876d7b13c6adf701bf4e777eaa9f9df33"
+      }
+    },
+    "13315511779": {
+      "zip_sha256": "31f08853eebc4d8ee7a36297966f83390e62f79542aea9dd4db5160ad3447872",
+      "locked_members": {
+        "manifest.json": "b14c61c979c656e49da382d574f3416293303e582b3b864b646df592282c4ac7"
+      }
+    },
+    "13315945255": {
+      "zip_sha256": "475ed9bd96e8f5ecea7f700091d57ab40edc5505d3c1c16f4bbcdb514679cd2e",
+      "locked_members": {
+        "index.json": "be7604e5b9604aa5439769e716038ad863854588fb6340b8333b4f77392e4481"
+      }
+    },
+    "13317420559": {
+      "zip_sha256": "fc6169b933a589b3128e565de93ed7023872b29d10385c7e0652ef9e33947884",
+      "locked_members": {
+        "manifest.json": "657b6f177e540c53f293f0beadb1ea0811130c544bf1f8a3cc185bf1ca831e94"
+      }
+    },
+    "13317520139": {
+      "zip_sha256": "a8cdcf987aa1326e96adb36cf046aad58ec2e44f37a6b1ec47dc273c835fb2b6",
+      "locked_members": {
+        "index.json": "8a8012777ac49256e95aab9f3f5e2555a938cb8117826d6f47ddb5410f2343e5"
+      }
+    },
+    "13320200641": {
+      "zip_sha256": "b477a1830d226d7acb4fcc8bbc49b94cf093bb19368247a4dbbeb88eb5f2fec3",
+      "locked_members": {
+        "index.json": "a7cc16d026ea08e0042dc4d6c5c2d75d3212bfd5fb00203dbbbbc36455f11d2b"
+      }
+    },
+    "13324021063": {
+      "zip_sha256": "960bae998a68fcf7359fc045cd0476b8afb53c6b2eca4648a7d08bf1ca3ee262",
+      "locked_members": {
+        "core003-pilot-report.json": "b75eb90a215ef1fe251da9d0d8df630cece2c7c003e2659a69a259390e67cb58"
+      }
+    },
+    "13324315724": {
+      "zip_sha256": "c4a8f4e46c36651ea350d36d981c2966db6e04faab3f2041feaf479ad0f584fc",
+      "locked_members": {
+        "manifest.json": "67a2ca0296c5fd571fa58c4b3a90f13d5155cb03228866bd8e0062a737951f33"
+      }
+    },
+    "13324990108": {
+      "zip_sha256": "4275ff8e46b075a71a31687d39d65e3505dda7e4004ad2e2fe96f443df5a01f7",
+      "locked_members": {
+        "index.json": "a4a667bd596bde42b9e3dbed6d96247731067fe76f82b33ea816194fa68b5ff7"
+      }
+    },
+    "13348981022": {
+      "zip_sha256": "152717d5cd3037e0ec17686d383bc3dc03dc25abe8cc505e0ef8b2d58315fc1c",
+      "locked_members": {
+        "core003-pilot-report.json": "ab5a773ef530b061659d2ff2ee78f16806fd97637be6c57f29768d9c51cad560"
+      }
+    },
+    "13349320545": {
+      "zip_sha256": "b46bcaf7394b1ea501bae2c63a83d288da4e441c70bdfdd84ed448d7a0cd29d1",
+      "locked_members": {
+        "manifest.json": "a9b5c7efa0a35191f4693658df58161d553556f3dcc4e1ecc638a2c8b0c4a01e"
+      }
+    },
+    "13349440390": {
+      "zip_sha256": "a98951a43fd7bd4d595dab79696ac06dc5cefaa1e2d83f3b17d04835a0ed9093",
+      "locked_members": {
+        "index.json": "6ec0392fd9620b41be90610b5348a019e0a9e43a975562960f8f04d2cbd61a9a"
+      }
+    }
+  },
+  "groups": [
+    {
+      "step": "Replay MVP-016 genuine GitHub inventory outage (NO BET)",
+      "required_artifacts": [
+        13314445420,
+        13315511779,
+        13315945255
+      ],
+      "missing_artifacts": [
+        13314445420,
+        13315511779,
+        13315945255
+      ],
+      "source_status": "SOURCE_UNRECOVERABLE",
+      "key": "hist01"
+    },
+    {
+      "step": "Replay MVP-016 original research status (NO BET)",
+      "required_artifacts": [
+        13313329016,
+        13314117015,
+        13314296054,
+        13314445420
+      ],
+      "missing_artifacts": [
+        13314117015,
+        13314296054,
+        13314445420
+      ],
+      "source_status": "SOURCE_UNRECOVERABLE",
+      "key": "hist02"
+    },
+    {
+      "step": "Replay MVP-017 last-known-valid health on 3 GitHub runs and V1 audit",
+      "required_artifacts": [
+        13314117015,
+        13314445420,
+        13315511779,
+        13315945255,
+        13316866794,
+        13317420559,
+        13317520139
+      ],
+      "missing_artifacts": [
+        13314117015,
+        13314445420,
+        13315511779,
+        13315945255,
+        13317420559,
+        13317520139
+      ],
+      "source_status": "SOURCE_UNRECOVERABLE",
+      "key": "hist03"
+    },
+    {
+      "step": "Replay MVP-018 four official pre-frozen scratched runner results (NO BET)",
+      "required_artifacts": [
+        13162906690,
+        13164543152,
+        13168417335,
+        13267816642,
+        13320200641
+      ],
+      "missing_artifacts": [
+        13320200641
+      ],
+      "source_status": "SOURCE_UNRECOVERABLE",
+      "key": "hist04"
+    },
+    {
+      "step": "Replay MVP-018 no-freeze source provenance against original 65-race cohort",
+      "required_artifacts": [
+        13245606773,
+        13257326927,
+        13267848493,
+        13311119836,
+        13319117566,
+        13320200641
+      ],
+      "missing_artifacts": [
+        13320200641
+      ],
+      "source_status": "SOURCE_UNRECOVERABLE",
+      "key": "hist05"
+    },
+    {
+      "step": "Replay MVP-018 67-race physical coverage funnel (NO BET)",
+      "required_artifacts": [
+        13324021063,
+        13324315724,
+        13324990108,
+        13324990118
+      ],
+      "missing_artifacts": [
+        13324021063,
+        13324315724,
+        13324990108
+      ],
+      "source_status": "SOURCE_UNRECOVERABLE",
+      "key": "hist06"
+    },
+    {
+      "step": "Replay MVP-019B disjoint source/current cohort originals (NO BET)",
+      "required_artifacts": [
+        13348981011,
+        13348981022,
+        13349320545,
+        13349440390
+      ],
+      "missing_artifacts": [
+        13348981022,
+        13349320545,
+        13349440390
+      ],
+      "source_status": "SOURCE_UNRECOVERABLE",
+      "key": "hist07"
+    },
+    {
+      "step": "Replay DEV-012 against original 3 Nov Vincennes PDF and starts",
+      "required_artifacts": [
+        13244810522
+      ],
+      "missing_artifacts": [
+        13244810522
+      ],
+      "source_status": "SOURCE_UNRECOVERABLE",
+      "key": "hist08"
+    },
+    {
+      "step": "Replay frozen Eskilstuna originals through automatic MVP-009 diagnostics",
+      "required_artifacts": [
+        13225379902,
+        13225524391
+      ],
+      "missing_artifacts": [
+        13225524391
+      ],
+      "source_status": "SOURCE_UNRECOVERABLE",
+      "key": "hist09"
+    }
+  ]
+}
