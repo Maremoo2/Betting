@@ -88,7 +88,6 @@ def model_runners(model):
             "fair": 1 / r["champion_p_win"] if r["champion_p_win"] > 0 else None,
             "win": r.get("win_odds") if same_win else None,
             "win_at": r.get("win_odds_observed_at_utc") if same_win else None,
-            "market_p": same_win[r["selection_id"]] if same_win else None,
             "ev": r["champion_p_win"] * r["win_odds"] - 1 if same_win else None,
             "status": r.get("research_status") if r.get("research_status") in {"WATCH", "PASS"} else None,
             "starts": r.get("historical_starts"), "wins": r.get("historical_wins"),
@@ -598,10 +597,9 @@ def render(report):
     def analysis_table(analysis):
         text.append(f"Frys {clock_label(analysis['created_at_utc'])} · {analysis['versions']} · Forskningsestimater, PIT ikke sertifisert.")
         html.append(f"<p>{escape(text[-1])}</p>")
-        table(["Nr", "Hest", "Champion", "CORE-004", "Fair odds", "WIN", "Marked p(win)", "EV", "Vurdering og grunnlag"], [
+        table(["Nr", "Hest", "Champion", "CORE-004", "Fair odds", "WIN", "EV", "Vurdering og grunnlag"], [
             [str(r["number"]), r["name"], number(r["p"], 100, "%"), number(r["core"], 100, "%"),
              number(r["fair"]), f"{number(r['win'])} · {clock_label(r['win_at'])}",
-             number(r.get("market_p"), 100, "%"),
              number(r["ev"], 100, "%"),
              f"{r['status'] or 'Ingen klassifisering'} · Historikk {r['starts']} starter / {r['wins']} seire"
              + (f" · Minste BET-odds {number(r['minimum_odds'])}" if r["minimum_odds"] else "")]
