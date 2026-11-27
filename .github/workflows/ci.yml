@@ -38,11 +38,15 @@ jobs:
             886b25e7e6b3a8663bb7922895a5c3f8f03e82ae027386aa184c47552b3d2a1a scripts/mvp016_source_recovery.py \
             b116322c332f259bb784901d197cbb2170b3fcfe2eacb63afe3dd789e8101408 docs/MVP016_SOURCE_ARCHIVE.json \
             dbc6d5aecaaae6912740055b0ca36ff0e730571174d6983a210485e1ccd0d36a scripts/ci_originals.py \
-            c51e0365ccb8b7f40c1a5eccf2a1fb0f794a5515a416dc2df0d937e8347b7a63 src/hbi/ci_originals.py \
+            79fa4d40261194092f0e284842139103b9481868b25928f3fc9b71f495906d48 src/hbi/ci_originals.py \
             68dd1d131ce043c1da4b7900cfb1c6a97a4a974834da449073ca1a9973b2d606 docs/CI_HISTORICAL_SOURCES.json | sha256sum --check -
           python -I -S scripts/mvp016_source_recovery.py --root "$RUNNER_TEMP/mvp016-empty"
           python -I -S scripts/ci_originals.py fetch --root "$RUNNER_TEMP/ci-originals"
           echo "CI_ORIGINAL_CACHE=$RUNNER_TEMP/ci-originals" >> "$GITHUB_ENV"
+
+      - name: Validate exact HQ-approved source-loss scope
+        id: source_plan
+        run: python scripts/ci_originals.py historical-plan --report "$RUNNER_TEMP/historical-source-plan.json"
 
       - name: Install
         run: pip install -e ".[dev]"
@@ -514,8 +518,139 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+      - name: Upload immutable historical research model and Collector source provenance
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvp004-historical-research-${{ github.run_id }}
+          path: ${{ runner.temp }}/ci-originals/verification.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Report authenticated API quota after an archive failure
+        if: failure() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api rate_limit --jq '.resources.core | {limit, remaining, reset, used}'
+
+  replay-v2-independent-readback:
+    if: always() && github.event_name == 'pull_request' && needs.test.outputs.replay_v2_status == 'success'
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # Only owner-authored, same-repository PRs with pinned fetch code receive the
+      # private read credential. Never pass it to pytest, replay or uploads.
+      - name: Independently restore approved private sources
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == 'Maremoo2/Betting' &&
+          github.event.pull_request.user.login == 'Maremoo2'
+        env:
+          RESEARCH_ARCHIVE_READ_TOKEN: ${{ secrets.RESEARCH_ARCHIVE_READ_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' \
+            886b25e7e6b3a8663bb7922895a5c3f8f03e82ae027386aa184c47552b3d2a1a scripts/mvp016_source_recovery.py \
+            b116322c332f259bb784901d197cbb2170b3fcfe2eacb63afe3dd789e8101408 docs/MVP016_SOURCE_ARCHIVE.json \
+            dbc6d5aecaaae6912740055b0ca36ff0e730571174d6983a210485e1ccd0d36a scripts/ci_originals.py \
+            79fa4d40261194092f0e284842139103b9481868b25928f3fc9b71f495906d48 src/hbi/ci_originals.py \
+            68dd1d131ce043c1da4b7900cfb1c6a97a4a974834da449073ca1a9973b2d606 docs/CI_HISTORICAL_SOURCES.json | sha256sum --check -
+          python -I -S scripts/ci_originals.py fetch --root "$RUNNER_TEMP/ci-originals"
+          echo "CI_ORIGINAL_CACHE=$RUNNER_TEMP/ci-originals" >> "$GITHUB_ENV"
+
+      - name: Install reviewed readback tools
+        run: pip install -e ".[dev]"
+      - name: Independently verify all retained originals
+        run: python scripts/ci_originals.py verify-cache
+      - name: Require exact artifact from this producer attempt
+        env:
+          REPLAY_ARTIFACT_ID: ${{ needs.test.outputs.replay_v2_artifact_id }}
+        run: test -n "$REPLAY_ARTIFACT_ID"
+      - uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ needs.test.outputs.replay_v2_artifact_id }}
+          merge-multiple: true
+          path: recovered
+      - name: Authenticate and decrypt exact producer transport
+        run: python -m hbi.ci_readback_transport open --source recovered --destination recovered-private
+      - name: Verify transported SQLite SHA, counts, ledger and integrity
+        run: python scripts/core003_replay_v2.py readback --root recovered-private
+      # Test the frozen #215 implementation with this proposed contract without
+      # modifying that PR, its checks, its branch, or any production workflow.
+      - uses: actions/checkout@v4
+        if: github.head_ref == 'fix/core003-authentic-replay-v2'
+        with:
+          ref: 3f5e223f6b4f9f7ef1537b64abf4b0d3e82af985
+          path: pr215
+      - name: Install pinned PR 215 candidate
+        if: github.head_ref == 'fix/core003-authentic-replay-v2'
+        run: pip install -e "./pr215[dev]"
+      - name: Full pinned PR 215 Ruff and Ubuntu Pytest
+        if: github.head_ref == 'fix/core003-authentic-replay-v2'
+        working-directory: pr215
+        run: |
+          ruff check .
+          pytest -q --junitxml="$RUNNER_TEMP/pr215-full.xml"
+      - name: Replay proposed V2 contract against pinned PR 215 source
+        if: github.head_ref == 'fix/core003-authentic-replay-v2'
+        working-directory: pr215
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PYTHONPATH: ${{ github.workspace }}/pr215/src
+          CORE003_REPLAY_V2_EXPECT_SOURCE_ROOT: ${{ github.workspace }}/pr215/src
+        run: |
+          set -euo pipefail
+          python ../scripts/core003_replay_v2.py fetch --root "$RUNNER_TEMP/pr215-v2-input"
+          CORE003_REPLAY_V2_INPUT_ROOT="$RUNNER_TEMP/pr215-v2-input" \
+          CORE003_REPLAY_V2_REQUIRED=1 \
+            pytest -c pyproject.toml -q -s ../tests/test_core003_authentic_replay_v2.py
+
+  historical-research-evidence:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      technical_status: ${{ steps.history_summary.outputs.technical_status }}
+      historical_status: ${{ steps.history_summary.outputs.historical_status }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # Only owner-authored, same-repository PRs with pinned fetch code receive the
+      # private read credential. Never pass it to pytest, replay or uploads.
+      - name: Read approved private historical sources
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == 'Maremoo2/Betting' &&
+          github.event.pull_request.user.login == 'Maremoo2'
+        env:
+          RESEARCH_ARCHIVE_READ_TOKEN: ${{ secrets.RESEARCH_ARCHIVE_READ_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' \
+            886b25e7e6b3a8663bb7922895a5c3f8f03e82ae027386aa184c47552b3d2a1a scripts/mvp016_source_recovery.py \
+            b116322c332f259bb784901d197cbb2170b3fcfe2eacb63afe3dd789e8101408 docs/MVP016_SOURCE_ARCHIVE.json \
+            dbc6d5aecaaae6912740055b0ca36ff0e730571174d6983a210485e1ccd0d36a scripts/ci_originals.py \
+            79fa4d40261194092f0e284842139103b9481868b25928f3fc9b71f495906d48 src/hbi/ci_originals.py \
+            68dd1d131ce043c1da4b7900cfb1c6a97a4a974834da449073ca1a9973b2d606 docs/CI_HISTORICAL_SOURCES.json | sha256sum --check -
+          python -I -S scripts/ci_originals.py fetch --root "$RUNNER_TEMP/ci-originals"
+          echo "CI_ORIGINAL_CACHE=$RUNNER_TEMP/ci-originals" >> "$GITHUB_ENV"
+
+      - name: Plan all nine historical evidence groups
+        id: source_plan
+        run: python scripts/ci_originals.py historical-plan --report "$RUNNER_TEMP/historical-plan.json"
+      - name: Install historical replay tools
+        run: pip install -e ".[dev]"
       - name: Replay MVP-016 genuine GitHub inventory outage (NO BET)
-        if: github.event_name == 'pull_request'
+        id: hist01
+        if: ${{ !cancelled() && steps.source_plan.outputs.hist01 == 'READY' }}
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -572,7 +707,8 @@ jobs:
 
       # Genuine 4 November four-original scorecard join: never a PIT certificate.
       - name: Replay MVP-016 original research status (NO BET)
-        if: github.event_name == 'pull_request'
+        id: hist02
+        if: ${{ !cancelled() && steps.source_plan.outputs.hist02 == 'READY' }}
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -633,7 +769,8 @@ jobs:
       # Offline original-backed health. A failed later GitHub inventory must
       # not make the last prior validated scorecard look like zero races.
       - name: Replay MVP-017 last-known-valid health on 3 GitHub runs and V1 audit
-        if: github.event_name == 'pull_request'
+        id: hist03
+        if: ${{ !cancelled() && steps.source_plan.outputs.hist03 == 'READY' }}
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -723,7 +860,8 @@ jobs:
       # An official complete-result list can include verified, PRE-frozen
       # scratches; it cannot change the frozen active field retroactively.
       - name: Replay MVP-018 four official pre-frozen scratched runner results (NO BET)
-        if: github.event_name == 'pull_request'
+        id: hist04
+        if: ${{ !cancelled() && steps.source_plan.outputs.hist04 == 'READY' }}
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -779,7 +917,8 @@ jobs:
 
       # Local scratch-only archive replay. Never upload the copied raw original.
       - name: Replay MVP-018 no-freeze source provenance against original 65-race cohort
-        if: github.event_name == 'pull_request'
+        id: hist05
+        if: ${{ !cancelled() && steps.source_plan.outputs.hist05 == 'READY' }}
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -850,7 +989,8 @@ jobs:
 
       # Original-joined physical race funnel, never a freeze or betting authority.
       - name: Replay MVP-018 67-race physical coverage funnel (NO BET)
-        if: github.event_name == 'pull_request'
+        id: hist06
+        if: ${{ !cancelled() && steps.source_plan.outputs.hist06 == 'READY' }}
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -912,7 +1052,8 @@ jobs:
       # Validate the four real source files independently: never invent a
       # benchmark row, PIT certificate or model freeze to join the cohorts.
       - name: Replay MVP-019B disjoint source/current cohort originals (NO BET)
-        if: github.event_name == 'pull_request'
+        id: hist07
+        if: ${{ !cancelled() && steps.source_plan.outputs.hist07 == 'READY' }}
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -955,7 +1096,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
       - name: Replay DEV-012 against original 3 Nov Vincennes PDF and starts
-        if: github.event_name == 'pull_request'
+        id: hist08
+        if: ${{ !cancelled() && steps.source_plan.outputs.hist08 == 'READY' }}
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -969,7 +1111,8 @@ jobs:
       # Both contracts use the same four original ZIPs. Reverify the shared
       # inputs before the separate Pre-Watch and rollback assertions.
       - name: Replay frozen Eskilstuna originals through automatic MVP-009 diagnostics
-        if: github.event_name == 'pull_request'
+        id: hist09
+        if: ${{ !cancelled() && steps.source_plan.outputs.hist09 == 'READY' }}
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -1019,95 +1162,36 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
-      - name: Upload immutable historical research model and Collector source provenance
-        if: github.event_name == 'pull_request' && always()
+      - name: Report all nine historical research outcomes
+        id: history_summary
+        if: always()
+        env:
+          HISTORICAL_OUTCOMES: '{"hist01":"${{ steps.hist01.outcome }}","hist02":"${{ steps.hist02.outcome }}","hist03":"${{ steps.hist03.outcome }}","hist04":"${{ steps.hist04.outcome }}","hist05":"${{ steps.hist05.outcome }}","hist06":"${{ steps.hist06.outcome }}","hist07":"${{ steps.hist07.outcome }}","hist08":"${{ steps.hist08.outcome }}","hist09":"${{ steps.hist09.outcome }}"}'
+        run: python scripts/ci_originals.py historical-summary --report "$RUNNER_TEMP/historical-evidence-status.json"
+      - name: Publish historical evidence status (metadata only)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mvp004-historical-research-${{ github.run_id }}
-          path: ${{ runner.temp }}/ci-originals/verification.json
-          if-no-files-found: warn
+          name: historical-research-evidence-${{ github.run_id }}
+          path: ${{ runner.temp }}/historical-evidence-status.json
+          if-no-files-found: error
           retention-days: 30
+      - name: Require fully verified historical research evidence
+        if: steps.history_summary.outputs.historical_status != 'PASS'
+        run: |
+          echo 'Historical evidence remains unverified; consult all-nine-group status.'
+          exit 1
 
-      - name: Report authenticated API quota after an archive failure
-        if: failure() && github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh api rate_limit --jq '.resources.core | {limit, remaining, reset, used}'
-
-  replay-v2-independent-readback:
-    if: always() && github.event_name == 'pull_request' && needs.test.outputs.replay_v2_status == 'success'
-    needs: test
+  technical-acceptance:
+    if: always() && github.event_name == 'pull_request'
+    needs: [test, replay-v2-independent-readback, historical-research-evidence]
     runs-on: ubuntu-latest
-    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      # Only owner-authored, same-repository PRs with pinned fetch code receive the
-      # private read credential. Never pass it to pytest, replay or uploads.
-      - name: Independently restore approved private sources
-        if: >-
-          github.event_name == 'pull_request' &&
-          github.event.pull_request.head.repo.full_name == 'Maremoo2/Betting' &&
-          github.event.pull_request.user.login == 'Maremoo2'
+      - name: Require technical jobs and reject historical regressions or new gaps
         env:
-          RESEARCH_ARCHIVE_READ_TOKEN: ${{ secrets.RESEARCH_ARCHIVE_READ_TOKEN }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          printf '%s  %s\n' \
-            886b25e7e6b3a8663bb7922895a5c3f8f03e82ae027386aa184c47552b3d2a1a scripts/mvp016_source_recovery.py \
-            b116322c332f259bb784901d197cbb2170b3fcfe2eacb63afe3dd789e8101408 docs/MVP016_SOURCE_ARCHIVE.json \
-            dbc6d5aecaaae6912740055b0ca36ff0e730571174d6983a210485e1ccd0d36a scripts/ci_originals.py \
-            c51e0365ccb8b7f40c1a5eccf2a1fb0f794a5515a416dc2df0d937e8347b7a63 src/hbi/ci_originals.py \
-            68dd1d131ce043c1da4b7900cfb1c6a97a4a974834da449073ca1a9973b2d606 docs/CI_HISTORICAL_SOURCES.json | sha256sum --check -
-          python -I -S scripts/ci_originals.py fetch --root "$RUNNER_TEMP/ci-originals"
-          echo "CI_ORIGINAL_CACHE=$RUNNER_TEMP/ci-originals" >> "$GITHUB_ENV"
-
-      - name: Install reviewed readback tools
-        run: pip install -e ".[dev]"
-      - name: Independently verify all retained originals
-        run: python scripts/ci_originals.py verify-cache
-      - name: Require exact artifact from this producer attempt
-        env:
-          REPLAY_ARTIFACT_ID: ${{ needs.test.outputs.replay_v2_artifact_id }}
-        run: test -n "$REPLAY_ARTIFACT_ID"
-      - uses: actions/download-artifact@v4
-        with:
-          artifact-ids: ${{ needs.test.outputs.replay_v2_artifact_id }}
-          merge-multiple: true
-          path: recovered
-      - name: Authenticate and decrypt exact producer transport
-        run: python -m hbi.ci_readback_transport open --source recovered --destination recovered-private
-      - name: Verify transported SQLite SHA, counts, ledger and integrity
-        run: python scripts/core003_replay_v2.py readback --root recovered-private
-      # Test the frozen #215 implementation with this proposed contract without
-      # modifying that PR, its checks, its branch, or any production workflow.
-      - uses: actions/checkout@v4
-        if: github.head_ref == 'fix/core003-authentic-replay-v2'
-        with:
-          ref: 3f5e223f6b4f9f7ef1537b64abf4b0d3e82af985
-          path: pr215
-      - name: Install pinned PR 215 candidate
-        if: github.head_ref == 'fix/core003-authentic-replay-v2'
-        run: pip install -e "./pr215[dev]"
-      - name: Full pinned PR 215 Ruff and Ubuntu Pytest
-        if: github.head_ref == 'fix/core003-authentic-replay-v2'
-        working-directory: pr215
-        run: |
-          ruff check .
-          pytest -q --junitxml="$RUNNER_TEMP/pr215-full.xml"
-      - name: Replay proposed V2 contract against pinned PR 215 source
-        if: github.head_ref == 'fix/core003-authentic-replay-v2'
-        working-directory: pr215
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PYTHONPATH: ${{ github.workspace }}/pr215/src
-          CORE003_REPLAY_V2_EXPECT_SOURCE_ROOT: ${{ github.workspace }}/pr215/src
-        run: |
-          set -euo pipefail
-          python ../scripts/core003_replay_v2.py fetch --root "$RUNNER_TEMP/pr215-v2-input"
-          CORE003_REPLAY_V2_INPUT_ROOT="$RUNNER_TEMP/pr215-v2-input" \
-          CORE003_REPLAY_V2_REQUIRED=1 \
-            pytest -c pyproject.toml -q -s ../tests/test_core003_authentic_replay_v2.py
+          CI_NEEDS: ${{ toJSON(needs) }}
+        run: python -I -S scripts/ci_originals.py technical-gate

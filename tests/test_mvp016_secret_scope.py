@@ -13,7 +13,7 @@ def workflow_steps():
 def test_only_reviewed_first_party_fetch_step_receives_private_secret():
     steps = workflow_steps()
     secret_steps = [s for s in steps if "RESEARCH_ARCHIVE_READ_TOKEN:" in s]
-    assert len(secret_steps) == 2  # Producer and independent retained-source reader.
+    assert len(secret_steps) == 3  # Producer, independent reader, historical evidence job.
     for step in secret_steps:
         assert "github.event.pull_request.head.repo.full_name == 'Maremoo2/Betting'" in step
         assert "github.event.pull_request.user.login == 'Maremoo2'" in step

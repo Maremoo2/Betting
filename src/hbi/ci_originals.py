@@ -209,16 +209,99 @@ def verify_cache():
     return {"scope": "VERIFIED_ORIGINALS_ONLY", "verified_count": len(verified), "ids": verified}
 
 
+APPROVED_LOSS = CATALOG.with_name("CI_APPROVED_SOURCE_LOSS_20261127.json")
+APPROVED_LOSS_SHA = "35543d7f52085438fee3b8d725ffc1c95d84fd1dd45d711c41a9890211dc70af"
+
+
+def approved_loss():
+    if digest(APPROVED_LOSS) != APPROVED_LOSS_SHA:
+        raise ValueError("SOURCE_LOSS_APPROVAL_SHA_MISMATCH")
+    return json.loads(APPROVED_LOSS.read_bytes())
+
+
+def historical_status(outcomes=None):
+    """Only HQ's exact lost bytes are exempt; test failures and new gaps are not."""
+    approval = approved_loss()
+    rows = []
+    error = None
+    try:
+        entries = {str(e["artifact_id"]): e for e in catalog()["sources"]}
+        if {k: e["zip_sha256"] for k, e in entries.items()} != approval["original_zip_pins"]:
+            raise ValueError("HISTORICAL_SOURCE_PIN_SET_CHANGED")
+        missing = set()
+        for ident, entry in entries.items():
+            if entry["state"] != "SOURCE_UNRECOVERABLE":
+                continue
+            pin = {"zip_sha256": entry["zip_sha256"], "locked_members": entry.get("locked_members", {})}
+            if approval["lost_originals"].get(ident) != pin:
+                raise ValueError("NEW_OR_CHANGED_SOURCE_GAP")
+            missing.add(int(ident))
+        verify_cache()  # Corrupt/deleted retained originals remain blocking.
+    except (ValueError, OSError, KeyError) as exc:
+        missing, error = set(), str(exc)
+    keys = {g["key"] for g in approval["groups"]}
+    if outcomes is not None and set(outcomes) != keys:
+        error = "HISTORICAL_TEST_OUTCOMES_INCOMPLETE"
+    for group in approval["groups"]:
+        absent = sorted(set(group["required_artifacts"]) & missing)
+        status = "SYSTEM_ERROR" if error else "SOURCE_UNRECOVERABLE" if absent else "READY"
+        actual = outcomes.get(group["key"], "") if outcomes is not None else "NOT_RUN_PLAN"
+        if outcomes is not None and not error:
+            if status == "READY":
+                status = "PASS" if actual == "success" else "FAIL_REGRESSION"
+            elif actual != "skipped":
+                status = "FAIL_REGRESSION"  # No bypass or fabricated replay success.
+        rows.append({"key": group["key"], "step": group["step"], "status": status,
+                     "test_outcome": actual, "missing_artifacts": absent,
+                     "missing_original_pins": {str(i): approval["lost_originals"][str(i)] for i in absent}})
+    failed = error is not None or any(r["status"] in {"SYSTEM_ERROR", "FAIL_REGRESSION"} for r in rows)
+    debt = any(r["status"] == "SOURCE_UNRECOVERABLE" for r in rows)
+    return {"scope": "TECHNICAL_EXCEPTION_NOT_HISTORICAL_APPROVAL", "groups": rows, "error": error,
+            "technical_status": "FAIL_REGRESSION" if failed else "READY_FOR_TESTS" if outcomes is None
+            else "PASS_WITH_DOCUMENTED_SOURCE_DEBT" if debt else "PASS_ALL_RESEARCH_REPLAYS",
+            "historical_status": "FAIL_REGRESSION" if failed else "SOURCE_UNRECOVERABLE" if debt
+            else "NOT_RUN" if outcomes is None else "PASS", "all_research_evidence_verified": not failed and not debt and outcomes is not None}
+
+
+def technical_acceptance(needs):
+    """Mandatory aggregate rejects cancelled, absent or failed required jobs."""
+    if any(needs.get(k, {}).get("result") != "success" for k in ("test", "replay-v2-independent-readback")):
+        raise ValueError("REQUIRED_TECHNICAL_JOB_NOT_PASS")
+    history = needs.get("historical-research-evidence", {})
+    status = history.get("outputs", {}).get("technical_status")
+    if (status, history.get("result")) not in {
+        ("PASS_WITH_DOCUMENTED_SOURCE_DEBT", "failure"), ("PASS_ALL_RESEARCH_REPLAYS", "success"),
+    }:
+        raise ValueError("HISTORICAL_REGRESSION_OR_UNVERIFIED_STATUS")
+    return {"technical_acceptance": "PASS", "historical_status": status,
+            "all_ci_checks_pass": status == "PASS_ALL_RESEARCH_REPLAYS", "bet_authority": False}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("fetch", "extract", "copy", "verify-cache"))
+    parser.add_argument("action", choices=("fetch", "extract", "copy", "verify-cache", "historical-plan", "historical-summary", "technical-gate"))
+    parser.add_argument("--report", type=Path)
     parser.add_argument("--root", type=Path)
     parser.add_argument("--artifact-id", type=int)
     parser.add_argument("--run", type=int)
     parser.add_argument("--name")
     parser.add_argument("--dir", type=Path)
     args = parser.parse_args()
-    if args.action == "fetch":
+    if args.action in {"historical-plan", "historical-summary"}:
+        outcomes = json.loads(os.environ["HISTORICAL_OUTCOMES"]) if args.action == "historical-summary" else None
+        result = historical_status(outcomes)
+        args.report.write_text(json.dumps(result, indent=2), encoding="utf-8")
+        if os.environ.get("GITHUB_OUTPUT"):
+            with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as stream:
+                stream.writelines(row["key"] + "=" + row["status"] + "\n" for row in result["groups"])
+                stream.write("technical_status=" + result["technical_status"] + "\n")
+                stream.write("historical_status=" + result["historical_status"] + "\n")
+        print(json.dumps(result))
+        if result["technical_status"] == "FAIL_REGRESSION":
+            raise SystemExit(1)
+    elif args.action == "technical-gate":
+        print(json.dumps(technical_acceptance(json.loads(os.environ["CI_NEEDS"]))))
+    elif args.action == "fetch":
         print(json.dumps(fetch(args.root)))
     elif args.action == "verify-cache":
         print(json.dumps(verify_cache()))
