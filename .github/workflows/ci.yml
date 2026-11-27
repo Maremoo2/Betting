@@ -615,7 +615,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     outputs:
-      technical_status: ${{ steps.history_summary.outputs.technical_status }}
+      technical_status: ${{ steps.history_verdict.outputs.technical_status }}
       historical_status: ${{ steps.history_summary.outputs.historical_status }}
     steps:
       - uses: actions/checkout@v4
@@ -1176,11 +1176,28 @@ jobs:
           path: ${{ runner.temp }}/historical-evidence-status.json
           if-no-files-found: error
           retention-days: 30
-      - name: Require fully verified historical research evidence
-        if: steps.history_summary.outputs.historical_status != 'PASS'
+      - name: Finalize historical status without hiding job failures
+        id: history_verdict
+        if: always()
+        env:
+          PRIOR_JOB_STATUS: ${{ job.status }}
+          SUMMARY_STATUS: ${{ steps.history_summary.outputs.technical_status }}
         run: |
-          echo 'Historical evidence remains unverified; consult all-nine-group status.'
-          exit 1
+          if [ "$PRIOR_JOB_STATUS" != success ]; then
+            echo 'technical_status=FAIL_REGRESSION' >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          case "$SUMMARY_STATUS" in
+            PASS_WITH_DOCUMENTED_SOURCE_DEBT)
+              echo 'technical_status=PASS_WITH_DOCUMENTED_SOURCE_DEBT' >> "$GITHUB_OUTPUT"
+              echo 'Historical evidence remains SOURCE_UNRECOVERABLE, never PASS.'
+              exit 1 ;;
+            PASS_ALL_RESEARCH_REPLAYS)
+              echo 'technical_status=PASS_ALL_RESEARCH_REPLAYS' >> "$GITHUB_OUTPUT" ;;
+            *)
+              echo 'technical_status=FAIL_REGRESSION' >> "$GITHUB_OUTPUT"
+              exit 1 ;;
+          esac
 
   technical-acceptance:
     if: always() && github.event_name == 'pull_request'

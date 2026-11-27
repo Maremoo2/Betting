@@ -91,3 +91,16 @@ def test_unknown_history_output_cannot_hide_failure():
     n = needs()
     n["historical-research-evidence"]["outputs"] = {}
     with pytest.raises(ValueError): ci.technical_acceptance(n)
+
+
+def test_final_verdict_checks_infrastructure_failures_after_status_upload():
+    from pathlib import Path
+
+    text = (Path(__file__).parents[1] / ".github/workflows/ci.yml").read_text()
+    job = text.split("  historical-research-evidence:", 1)[1].split("  technical-acceptance:", 1)[0]
+    assert "technical_status: ${{ steps.history_verdict.outputs.technical_status }}" in job
+    assert job.index("Publish historical evidence status") < job.index("id: history_verdict")
+    final = job.split("id: history_verdict", 1)[1]
+    assert "PRIOR_JOB_STATUS: ${{ job.status }}" in final
+    assert 'if [ "$PRIOR_JOB_STATUS" != success ]' in final
+    assert "technical_status=FAIL_REGRESSION" in final
