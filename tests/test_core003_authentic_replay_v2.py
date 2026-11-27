@@ -83,6 +83,7 @@ def test_missing_pinned_mirror_has_no_fallback_to_other_sources(tmp_path, monkey
 
 
 def test_unapproved_artifact_provenance_is_rejected(tmp_path, monkeypatch):
+    monkeypatch.delenv("CI_ORIGINAL_CACHE", raising=False)  # Exercise the original live-API route.
     entry = load_contract()["artifacts"][0]
     monkeypatch.setattr(replay, "gh_json", lambda endpoint: {
         "expired": False, "workflow_run": {"id": entry["run_id"] + 1},

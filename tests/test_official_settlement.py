@@ -106,3 +106,43 @@ def test_ambiguous_or_unconfirmed_zero_finish_still_pending(tmp_path, attribute,
     client = DisqualifiedClient()
     setattr(client, attribute, value)
     assert settle_open_shadow_tickets(store, client=client).pending == 1
+
+
+@pytest.mark.parametrize("selection", ["1", "2"])
+def test_terminal_final_odds_never_become_qualified_closing_or_clv(tmp_path, selection):
+    """Synthetic settlement contract; actual original replay is separate."""
+    class TerminalPrices(ResultsClient):
+        def raceday_results(self, *args):
+            result = super().raceday_results(*args)
+            result.payload["result"]["finalOdds"]["winOdds"]["1"]["2"] = {
+                "odds": 7.5, "payoutStatus": "Dividends"}
+            return result
+
+    store = _store(tmp_path)
+    ticket(store, selection)
+    assert settle_open_shadow_tickets(store, client=TerminalPrices()).settled == 1
+    row = store.fetch_table("shadow_tickets")[0]
+    assert row["closing_price"] is None and row["clv"] is None
+    details = json.loads(row["result_json"])
+    assert details["official_final_odds"] == (2.5 if selection == "1" else 7.5)
+    assert details["price_time_status"] == "TERMINAL_SETTLEMENT_NOT_PRESTART_CLOSING"
+    assert row["net_pnl_nok"] == (37.5 if selection == "1" else -25)
+    assert settle_open_shadow_tickets(store, client=TerminalPrices()).attempted == 0
+
+
+def test_legacy_terminal_clv_is_not_promoted_or_rewritten_in_daily_report(tmp_path):
+    from datetime import date
+
+    from hbi.nightly import build_daily_report
+
+    store = _store(tmp_path)
+    ticket(store, "1")
+    store.settle_shadow_ticket(ticket_id="loss", settled_at=datetime(2026, 9, 28, tzinfo=UTC),
+        gross_return_nok=62.5, net_pnl_nok=37.5, settlement_source_uri="legacy-terminal-source",
+        closing_price=2.5, clv=.1, result={"official_final_odds": 2.5})
+    before = store.fetch_table("shadow_tickets")
+    report = build_daily_report(store, date(2026, 9, 27))
+    assert report["positive_clv_tickets"] == report["qualified_clv_tickets"] == 0
+    assert report["legacy_unqualified_clv_values"] == 1
+    assert report["roi"] == 1.5
+    assert store.fetch_table("shadow_tickets") == before

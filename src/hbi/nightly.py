@@ -10,7 +10,6 @@ from datetime import UTC, date, datetime, time, timedelta
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 
-from .benchmark import closing_line_value
 from .providers.rikstoto import RikstotoClient
 from .storage import SQLiteStore
 
@@ -307,11 +306,11 @@ def settle_open_shadow_tickets(
             emit("UNSUPPORTED_PRODUCT")
             continue
 
-        close = price
-        decision_price = ticket.get("available_price")
+        # Official final dividends establish settlement, not an observed
+        # before-start closing market. Preserve the price separately and leave
+        # CLV unavailable until an independently qualified closing source exists.
+        close = None
         clv = None
-        if decision_price is not None and close is not None and close > 1:
-            clv = closing_line_value(float(decision_price), float(close))
         net = gross - stake
         store.settle_shadow_ticket(
             ticket_id=str(ticket["ticket_id"]),
@@ -326,7 +325,8 @@ def settle_open_shadow_tickets(
                 "finish": finishes.get(selection),
                 "selection": selection,
                 "product": product,
-                "official_final_odds": close,
+                "official_final_odds": price,
+                "price_time_status": "TERMINAL_SETTLEMENT_NOT_PRESTART_CLOSING",
             },
         )
         settled += 1
@@ -358,10 +358,11 @@ def build_daily_report(store: SQLiteStore, report_date: date) -> dict[str, objec
     gross = sum(float(ticket.get("gross_return_nok") or 0) for ticket in settled)
     net = sum(float(ticket.get("net_pnl_nok") or 0) for ticket in settled)
     wins = sum(float(ticket.get("gross_return_nok") or 0) > 0 for ticket in settled)
-    positive_clv = sum(
-        ticket.get("clv") is not None and float(ticket["clv"]) > 0
-        for ticket in settled
-    )
+    # Existing terminal-derived values remain in the original ticket ledger.
+    # Without independently verified before-start closing originals they cannot
+    # enter a qualified CLV aggregate, including on historical report replay.
+    legacy_clv = [ticket for ticket in settled if ticket.get("clv") is not None]
+    positive_clv = 0
     roi = None if settled_stake <= 0 else net / settled_stake
 
     by_product: dict[str, dict[str, float | int]] = {}
@@ -392,6 +393,9 @@ def build_daily_report(store: SQLiteStore, report_date: date) -> dict[str, objec
         "settled_tickets": len(settled),
         "winning_tickets": wins,
         "positive_clv_tickets": positive_clv,
+        "qualified_clv_tickets": 0,
+        "closing_status": "BLOCKED_NO_VERIFIED_PRESTART_CLOSING_ORIGINAL",
+        "legacy_unqualified_clv_values": len(legacy_clv),
         "not_executable": len(tickets) - len(executable),
         "by_product": by_product,
     }

@@ -1,0 +1,3777 @@
+{
+  "schema": "CI_HISTORICAL_ORIGINALS_V1",
+  "baseline_commit": "f82823f48febe30e38dd02551d43d5248a6b1280",
+  "private_repository": "Maremoo2/betting-hq-private-research",
+  "sources": [
+    {
+      "artifact_id": 13147076977,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41456642411,
+      "artifact_name": "bet-mvp-shadow-41456642411",
+      "zip_filename": "13147076977.zip",
+      "zip_sha256": "6ff6df2d6e76af04265ed199139e0b432e7baa6d738a791153a9da40ef3a0d43",
+      "dependent_steps": [
+        "Replay MVP-014 original legacy-index classification (NO PIT/BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_dev011_coverage.py::test_authentic_nov2_five_legacy_originals_exist_without_cohort_indexes"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 5791,
+      "members": [
+        {
+          "path": "runners.csv",
+          "sha256": "18c213217d241cb8aab1a6fe7ce028b84b7102e89386e92c3195700424624c6d",
+          "bytes": 10182
+        },
+        {
+          "path": "shadow.json",
+          "sha256": "9c4e0d2862ef1988a8babad2529a5f13ce3c896c10a857038d910a9cc187127b",
+          "bytes": 29487
+        },
+        {
+          "path": "shadow.md",
+          "sha256": "27f6b34864d1d625b2e742bee7c8c1300207c6bebfc453be850f78c7176dbe0f",
+          "bytes": 6786
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13147076977.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41456642411.zip",
+      "locked_members": {}
+    },
+    {
+      "artifact_id": 13147433634,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41459303701,
+      "artifact_name": "bet-mvp-shadow-41459303701",
+      "zip_filename": "13147433634.zip",
+      "zip_sha256": "6f7ee5286f0f25d4633005b134144bc880660c4b7fb2120a8c830d7cc3347b5e",
+      "dependent_steps": [
+        "Replay MVP-014 original legacy-index classification (NO PIT/BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_dev011_coverage.py::test_authentic_nov2_five_legacy_originals_exist_without_cohort_indexes"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 6276,
+      "members": [
+        {
+          "path": "runners.csv",
+          "sha256": "42469e8e1e9948c1251007eb98278203daac160d0dba3ed7bc7505dc398887c6",
+          "bytes": 9729
+        },
+        {
+          "path": "shadow.json",
+          "sha256": "3f01e5563c1d12c7ae3549e6e6e2c9753524d1d063b741b639e97cf9d2aa460f",
+          "bytes": 29145
+        },
+        {
+          "path": "shadow.md",
+          "sha256": "74f39c484f59ee1e13c6f7591f072db30cc3a6ddf8f51b87c9a9b69e4818c799",
+          "bytes": 7831
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13147433634.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41459303701.zip",
+      "locked_members": {}
+    },
+    {
+      "artifact_id": 13149181358,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41461113601,
+      "artifact_name": "bet-mvp-shadow-41461113601",
+      "zip_filename": "13149181358.zip",
+      "zip_sha256": "7f9168872b33e72b258557caad5bed1ff1ff285f35ec82a7aacac324738c2f0f",
+      "dependent_steps": [
+        "Replay MVP-014 original legacy-index classification (NO PIT/BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_dev011_coverage.py::test_authentic_nov2_five_legacy_originals_exist_without_cohort_indexes"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 6220,
+      "members": [
+        {
+          "path": "runners.csv",
+          "sha256": "9deb33e1c63a8e3c4263949ca7a74b525c5ea4c0291e985febc78f4561cba920",
+          "bytes": 14097
+        },
+        {
+          "path": "shadow.json",
+          "sha256": "380db85cbf812f52446a53492f41e88e9a6a8a823de4e2912f27e02e5f7b713b",
+          "bytes": 39348
+        },
+        {
+          "path": "shadow.md",
+          "sha256": "d3286a5ca003c47289526834e3f897a8585400f44fbe5e3329f01fdb1430dd56",
+          "bytes": 8443
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13149181358.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41461113601.zip",
+      "locked_members": {}
+    },
+    {
+      "artifact_id": 13150157261,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41462919513,
+      "artifact_name": "bet-mvp-shadow-41462919513",
+      "zip_filename": "13150157261.zip",
+      "zip_sha256": "cb48ccc658ec340b881fa855ee98a19cd749ed878e01e988b2a5443b6c9d896a",
+      "dependent_steps": [
+        "Replay MVP-014 original legacy-index classification (NO PIT/BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_dev011_coverage.py::test_authentic_nov2_five_legacy_originals_exist_without_cohort_indexes"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 21579,
+      "members": [
+        {
+          "path": "RIKSTOTO_F4_NR_2026-11-02_4/runners.csv",
+          "sha256": "70ef2fb0018813e5a6779f65dca2986996e706d9c72c355789d1ed88d7c4f163",
+          "bytes": 13456
+        },
+        {
+          "path": "RIKSTOTO_F4_NR_2026-11-02_4/shadow.md",
+          "sha256": "fdeebf27a2f37237cd3fed56ccd4000b3c2d561cfc021ce55a4c4a13b8b3eac6",
+          "bytes": 9988
+        },
+        {
+          "path": "RIKSTOTO_F4_NR_2026-11-02_4/shadow.json",
+          "sha256": "c6317248eb9346b454ff0af99be607190e07e2b67aeb794a1aa4cf1887a78a13",
+          "bytes": 38998
+        },
+        {
+          "path": "RIKSTOTO_F4_NR_2026-11-02_5/runners.csv",
+          "sha256": "68171eeb97f371c6d26fe5d1b000e4a5e64d75c5bd67a229672827e5f7148eb4",
+          "bytes": 6630
+        },
+        {
+          "path": "RIKSTOTO_F4_NR_2026-11-02_5/shadow.json",
+          "sha256": "d9752172495bdea53bff9f7e5196b16ec7199bb5ffdfba2edf16078aa377c023",
+          "bytes": 22630
+        },
+        {
+          "path": "RIKSTOTO_F4_NR_2026-11-02_5/shadow.md",
+          "sha256": "063f96f5762967aa34a33572c90b401ffcceee7ee765a1a0a00dac38d830d73d",
+          "bytes": 6315
+        },
+        {
+          "path": "RIKSTOTO_S3_NR_2026-11-02_1/runners.csv",
+          "sha256": "15c99e238a71ce71b8e9f03d1fda7ca6582bd93b42600dd74534d2fa496a925d",
+          "bytes": 6199
+        },
+        {
+          "path": "RIKSTOTO_S3_NR_2026-11-02_1/shadow.json",
+          "sha256": "4e0550cc0b1f4f4d04d685fa24602c8b8585b86b308b935f96cf21d93258f718",
+          "bytes": 21158
+        },
+        {
+          "path": "RIKSTOTO_S3_NR_2026-11-02_1/shadow.md",
+          "sha256": "e451b727978c3a8808d5ffe6806411459d41766c582d1443897171d11ff17cbd",
+          "bytes": 5787
+        },
+        {
+          "path": "index.json",
+          "sha256": "342a2a021fde7b636eb6eb91b18396e3bde3433c648dfc1741852aaff3acf4b9",
+          "bytes": 1335
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13150157261.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41462919513.zip",
+      "locked_members": {}
+    },
+    {
+      "artifact_id": 13150442459,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41463276002,
+      "artifact_name": "bet-mvp-shadow-41463276002",
+      "zip_filename": "13150442459.zip",
+      "zip_sha256": "0665a3211b0bc5b46cd67b068cbd062df8e765959d714c1c59434e9da64a0505",
+      "dependent_steps": [
+        "Replay MVP-014 original legacy-index classification (NO PIT/BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_dev011_coverage.py::test_authentic_nov2_five_legacy_originals_exist_without_cohort_indexes"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 21584,
+      "members": [
+        {
+          "path": "RIKSTOTO_F4_NR_2026-11-02_4/runners.csv",
+          "sha256": "e29acefc8d74f4cb1277770ffe2be75709c250269b6bbaa115579c8ca6e6dffd",
+          "bytes": 13456
+        },
+        {
+          "path": "RIKSTOTO_F4_NR_2026-11-02_4/shadow.json",
+          "sha256": "acaa528c62854bb1514dc164f16bca0efff99f2c92f26bc191d012ccb5a41d62",
+          "bytes": 38998
+        },
+        {
+          "path": "RIKSTOTO_F4_NR_2026-11-02_4/shadow.md",
+          "sha256": "28751111cd1270a5528b21835d93189eaa7c07c1770f5f7bfdcbb62dbe0923a2",
+          "bytes": 9988
+        },
+        {
+          "path": "RIKSTOTO_F4_NR_2026-11-02_5/runners.csv",
+          "sha256": "a70745a1944d12566e08750581ec22979b4b770d093270d158f45105bff54e88",
+          "bytes": 6630
+        },
+        {
+          "path": "RIKSTOTO_F4_NR_2026-11-02_5/shadow.json",
+          "sha256": "c30410f763ff3f59ca76642dc509634ae21e2961a06e181ae06aaf76a2327b59",
+          "bytes": 22630
+        },
+        {
+          "path": "RIKSTOTO_F4_NR_2026-11-02_5/shadow.md",
+          "sha256": "994075d15000c72e6e9d5984ec59d6f3668ad86bd3a5846cca75a9552fee71c0",
+          "bytes": 6315
+        },
+        {
+          "path": "RIKSTOTO_S3_NR_2026-11-02_1/runners.csv",
+          "sha256": "15c99e238a71ce71b8e9f03d1fda7ca6582bd93b42600dd74534d2fa496a925d",
+          "bytes": 6199
+        },
+        {
+          "path": "RIKSTOTO_S3_NR_2026-11-02_1/shadow.json",
+          "sha256": "1595e2080fddb953a663af269921f67cc3b7c1c62fedc584b755ad5c0feacff4",
+          "bytes": 21158
+        },
+        {
+          "path": "RIKSTOTO_S3_NR_2026-11-02_1/shadow.md",
+          "sha256": "7c627020fcf494e98ecfc82317001be576a452f6de22542e6998ec96c67f5617",
+          "bytes": 5787
+        },
+        {
+          "path": "index.json",
+          "sha256": "11569f3b19c3c1e3f250ac611631d051815862beeabbed563096b434f0a76420",
+          "bytes": 1335
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13150442459.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41463276002.zip",
+      "locked_members": {}
+    },
+    {
+      "artifact_id": 13162906690,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41488067799,
+      "artifact_name": "bet-mvp-shadow-41488067799",
+      "zip_filename": "13162906690.zip",
+      "zip_sha256": "1122a3af2b9505f6822143dddf914f8626a96678ae1d246885f66b0c05b9e859",
+      "dependent_steps": [
+        "Replay MVP-018 four official pre-frozen scratched runner results (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp018_official_prestart_scratches.py"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 43890,
+      "members": [
+        {
+          "path": "race-001/runners.csv",
+          "sha256": "eb58d56aba6ee44bc8b8c1fc612b999abc9a9b62acb8d165185c930f397627ec",
+          "bytes": 8040
+        },
+        {
+          "path": "race-001/shadow.json",
+          "sha256": "f3a5feec152ed1fa752094ade7905fa542dcb0ae610e87cc0cb21b9a2cc21db9",
+          "bytes": 27189
+        },
+        {
+          "path": "cohort-index.json",
+          "sha256": "657c7b034c359e2da1486e834aacdb12192ad46e7b9a538bb0aabbfb9c38eb7b",
+          "bytes": 8876
+        },
+        {
+          "path": "race-001/shadow.md",
+          "sha256": "69dcd42b386b1ef3641f20ce57141fd10c2ae7160e597581f0bf814981aa4bbe",
+          "bytes": 8759
+        },
+        {
+          "path": "race-002/runners.csv",
+          "sha256": "3efb02d5fdd87b1bf51773b2b8da590697fb2328209bfc8c851c58ce4abdfcb0",
+          "bytes": 6535
+        },
+        {
+          "path": "race-002/shadow.md",
+          "sha256": "90b97a4134bf0db10901c19e78459b684a7054a0763a33dd1423be020e184639",
+          "bytes": 7123
+        },
+        {
+          "path": "race-002/shadow.json",
+          "sha256": "ecf2318a1dca144046bf34c01039567f384ca673b30290d7ee76cc3fa61ccd22",
+          "bytes": 22458
+        },
+        {
+          "path": "race-003/runners.csv",
+          "sha256": "99bc4971589ec70f2a21f0a903f2647ea12765941191270506c40549f769d19f",
+          "bytes": 4490
+        },
+        {
+          "path": "race-003/shadow.json",
+          "sha256": "139d546ecfb43455879c662f093ee65847215735a8338347c96e41a1619bb378",
+          "bytes": 16338
+        },
+        {
+          "path": "race-003/shadow.md",
+          "sha256": "e97e9a847156b872eb819b9d748bae2c895254d313e867d82a477a9fc5fd0517",
+          "bytes": 4838
+        },
+        {
+          "path": "race-004/runners.csv",
+          "sha256": "b9f6c27a6c5207c23ab9b3c4e8c8baf97415d81005b0fef32eb8db935815844d",
+          "bytes": 6841
+        },
+        {
+          "path": "race-004/shadow.json",
+          "sha256": "4aff01922c3340736e118f526b296fc9a2b4af3a307ff873cda3689509f867e7",
+          "bytes": 21951
+        },
+        {
+          "path": "race-004/shadow.md",
+          "sha256": "e01d22381bd71decb417d390a8d87ccaec21a7e6162143db20ba9b1f6f433688",
+          "bytes": 5288
+        },
+        {
+          "path": "race-005/runners.csv",
+          "sha256": "a8bf125e1588270d35affda1c2c29b47c57e42bb79407fc039d7a95360af4cc8",
+          "bytes": 4664
+        },
+        {
+          "path": "race-005/shadow.json",
+          "sha256": "4d3517758dd00c56d7a384f4231675012ee3d093da66077384bb3578d7485c28",
+          "bytes": 16514
+        },
+        {
+          "path": "race-005/shadow.md",
+          "sha256": "62ae77ce0382bcf51c1b80fc6b1d30449f9af092f8ed8856d4f87ec32bfefbc5",
+          "bytes": 4863
+        },
+        {
+          "path": "race-006/runners.csv",
+          "sha256": "2938577588588621c6481e575066ce98f3101a9a5aa05736f12204df8ce62a01",
+          "bytes": 8396
+        },
+        {
+          "path": "race-006/shadow.json",
+          "sha256": "8171e88f6c08d122050f1abb0516d8cb95eb670cb59e28fc4d459fd1f7d8901e",
+          "bytes": 26233
+        },
+        {
+          "path": "race-006/shadow.md",
+          "sha256": "b0bde7ff6f2be1194ec796b9d45d4b27890aefc0c1c1cd7be6eec923347b68e3",
+          "bytes": 5865
+        },
+        {
+          "path": "race-007/runners.csv",
+          "sha256": "1ce5b95aa18de31f308e2c3e3bf91bdd9fb13b82c5ffec2faf0ec783df5fcba7",
+          "bytes": 505
+        },
+        {
+          "path": "race-007/shadow.json",
+          "sha256": "58a1660935f1eb77d530f124b710da8a3119182c26541dfb4e0ef6959a3d6c35",
+          "bytes": 4116
+        },
+        {
+          "path": "race-007/shadow.md",
+          "sha256": "34688057ad7b8dedf3b53ee47f642e1d3e338b95d80da8461d653282b069142b",
+          "bytes": 2391
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13162906690.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41488067799.zip",
+      "locked_members": {}
+    },
+    {
+      "artifact_id": 13164543152,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41492573978,
+      "artifact_name": "bet-mvp-shadow-41492573978",
+      "zip_filename": "13164543152.zip",
+      "zip_sha256": "d0501c4075c454af41bb663cfa8d0154ecd16f3d97c74adce0103bb34b0f6e00",
+      "dependent_steps": [
+        "Replay MVP-018 four official pre-frozen scratched runner results (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp018_official_prestart_scratches.py"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 42961,
+      "members": [
+        {
+          "path": "race-001/runners.csv",
+          "sha256": "fe1c3b22f51d930227fe097d9bdbf644d7cddc7b2e81620dfd3e8cc6c60ca66d",
+          "bytes": 4341
+        },
+        {
+          "path": "race-001/shadow.json",
+          "sha256": "bced22ffc0917e004aad89aaf0489866d1cebe7373eb4a5648b7850c16aa61fe",
+          "bytes": 16043
+        },
+        {
+          "path": "cohort-index.json",
+          "sha256": "36da2c0705d17d77eeeab2d3b949d018d4508daa30658626bbf3be15e56bbb77",
+          "bytes": 10161
+        },
+        {
+          "path": "race-001/shadow.md",
+          "sha256": "759aaac0ee44fa3c613307200f578c57deba7e9c64d79d78edd6da4be6d50023",
+          "bytes": 5443
+        },
+        {
+          "path": "race-002/runners.csv",
+          "sha256": "15f967c210a9ba8db928742ad21fb5f4aa71d7f0aded98fdd07300eed4877ec8",
+          "bytes": 6578
+        },
+        {
+          "path": "race-002/shadow.json",
+          "sha256": "fbd9276b862987b536e985ede344ce3a89d7571de5885493c4fbdf8976857371",
+          "bytes": 21617
+        },
+        {
+          "path": "race-002/shadow.md",
+          "sha256": "305973274f9aa92fe9f7a11f0f88025aea4332c03545b95c7c2da992bfd25226",
+          "bytes": 5832
+        },
+        {
+          "path": "race-003/runners.csv",
+          "sha256": "f6608a58a27d6d86ef52976ece1a27024ce38a8f424290e94bf9df3da0568212",
+          "bytes": 4501
+        },
+        {
+          "path": "race-003/shadow.json",
+          "sha256": "8bd98ddfa9c3471d85f6922a6f0f036934a95557ac8b971761c51284603f3b72",
+          "bytes": 16216
+        },
+        {
+          "path": "race-003/shadow.md",
+          "sha256": "df883b25943828873d0b9c171626a6dc577851cf4946e6c1465bb0a8cd5d6368",
+          "bytes": 5569
+        },
+        {
+          "path": "race-004/runners.csv",
+          "sha256": "076ff7364f780f738a5fb0d7d82258aeb93f1f9d7b8e3d434114e49ecd050d7b",
+          "bytes": 8396
+        },
+        {
+          "path": "race-004/shadow.json",
+          "sha256": "e72764082a93238e035d6e53482a6c2339ed95d59227bb96ce772a5ec7be3236",
+          "bytes": 26233
+        },
+        {
+          "path": "race-004/shadow.md",
+          "sha256": "d9e154af1979a90e5cd6cc69e29e6c4ee6917266562692c21d09e20ea6f8b3d8",
+          "bytes": 5865
+        },
+        {
+          "path": "race-005/runners.csv",
+          "sha256": "115111f8a4aa5269d11bf72f0215765c44b98d3966c802672b6e07d467d319eb",
+          "bytes": 6908
+        },
+        {
+          "path": "race-005/shadow.json",
+          "sha256": "96c6f6e7f7a6d4a02d24ec7460403b7c5192bb7ad4f6512d9956822378462942",
+          "bytes": 22901
+        },
+        {
+          "path": "race-005/shadow.md",
+          "sha256": "df44ed1f6807b6440a72452331815d31794ddc6e3c38ca522511a501481fe684",
+          "bytes": 6220
+        },
+        {
+          "path": "race-006/runners.csv",
+          "sha256": "1ce5b95aa18de31f308e2c3e3bf91bdd9fb13b82c5ffec2faf0ec783df5fcba7",
+          "bytes": 505
+        },
+        {
+          "path": "race-006/shadow.json",
+          "sha256": "4ed12b2bce8a5b507b2b9060963be82625afc5a0872dad3e3e5894903ad7b202",
+          "bytes": 4119
+        },
+        {
+          "path": "race-006/shadow.md",
+          "sha256": "44f3c82e81b932901976adc568f27a767684fdf781b7a8982596ba2462811fa0",
+          "bytes": 2394
+        },
+        {
+          "path": "race-007/runners.csv",
+          "sha256": "1ce5b95aa18de31f308e2c3e3bf91bdd9fb13b82c5ffec2faf0ec783df5fcba7",
+          "bytes": 505
+        },
+        {
+          "path": "race-007/shadow.json",
+          "sha256": "0d7a57784d9a0a4957f24052714df0741802b884948d1d88b718bb4dd05534fb",
+          "bytes": 4116
+        },
+        {
+          "path": "race-007/shadow.md",
+          "sha256": "856a5463b0069548340dbdb53c6443fa83d1cbd5cbe477abba9c83b10c29da34",
+          "bytes": 2391
+        },
+        {
+          "path": "race-008/runners.csv",
+          "sha256": "1ce5b95aa18de31f308e2c3e3bf91bdd9fb13b82c5ffec2faf0ec783df5fcba7",
+          "bytes": 505
+        },
+        {
+          "path": "race-008/shadow.json",
+          "sha256": "d4e60f77d9c6f812eac9e0ac62ae31e34862ceaad068166d5f7c42bb23b4cc70",
+          "bytes": 4119
+        },
+        {
+          "path": "race-008/shadow.md",
+          "sha256": "23e3e1f345ba0de9652d559f054601475dc0db31551a56526068bea1fbfe0ede",
+          "bytes": 2394
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13164543152.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41492573978.zip",
+      "locked_members": {}
+    },
+    {
+      "artifact_id": 13168417335,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41499820309,
+      "artifact_name": "bet-mvp-shadow-41499820309",
+      "zip_filename": "13168417335.zip",
+      "zip_sha256": "a247098ef6642c9b9fbcda39a50474df96c7cb52b648159a4a692f3e6da04f91",
+      "dependent_steps": [
+        "Replay MVP-018 four official pre-frozen scratched runner results (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp018_official_prestart_scratches.py"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 41416,
+      "members": [
+        {
+          "path": "cohort-index.json",
+          "sha256": "990a62269490c08d819fc4133a4e37cbae6606acfa24f8f28bf5f957f50a7cf6",
+          "bytes": 10555
+        },
+        {
+          "path": "race-001/shadow.json",
+          "sha256": "543b4b99afe8fa8230efa0ab1bd5c7ea338051e659962dfe75a1397e29c0e717",
+          "bytes": 22612
+        },
+        {
+          "path": "race-001/runners.csv",
+          "sha256": "a42ef5389b8fdc55b14ba1e8ea9ea1686f1cce6ba42ef78cd847156bba5de8c4",
+          "bytes": 6686
+        },
+        {
+          "path": "race-001/shadow.md",
+          "sha256": "f13ff3368dad58fe2ae1729cd2d66559896b1c53aebfbe2015eec875b44c333c",
+          "bytes": 7230
+        },
+        {
+          "path": "race-002/runners.csv",
+          "sha256": "ff30833b6393935bc05cb59ea59492eb438e63ee6f24ba8d61b753a552ebe8d5",
+          "bytes": 9891
+        },
+        {
+          "path": "race-002/shadow.json",
+          "sha256": "dc88c072c103a0359b2db004769b65ee06855c8c78caf54ca435cfa45475abf9",
+          "bytes": 31070
+        },
+        {
+          "path": "race-002/shadow.md",
+          "sha256": "5259e0c679b50af87f28a582c9d8f5579e17b7122e21e6ba52610313663dd516",
+          "bytes": 6738
+        },
+        {
+          "path": "race-003/runners.csv",
+          "sha256": "499f6f48f90b9e4e8e69dadf656a76079fc22f6f7c1ddd9ebbf6d765bf9fb079",
+          "bytes": 6756
+        },
+        {
+          "path": "race-003/shadow.json",
+          "sha256": "04847dd9813338eb425d8885d0b022806c1f7add2c27f8374b3d60707d85e4ad",
+          "bytes": 22744
+        },
+        {
+          "path": "race-003/shadow.md",
+          "sha256": "f5d7d9de55de8c3c3d91f0650f04d5ebec2b374e8404573f2a6aee75bb7e5ed9",
+          "bytes": 6237
+        },
+        {
+          "path": "race-004/runners.csv",
+          "sha256": "2c9d304eb1a3b589b290d52bb5f383c07e3080d77a932b966d7524d866850dd7",
+          "bytes": 9279
+        },
+        {
+          "path": "race-004/shadow.json",
+          "sha256": "94bb8e2001860efa175c938c1f26927805ef7d89f89ffebb068a0ee93e5d380b",
+          "bytes": 28488
+        },
+        {
+          "path": "race-004/shadow.md",
+          "sha256": "702de11c0e601a75a3f4cd860865a6ccf5eddafee59014b72b7cc782d9159ded",
+          "bytes": 6189
+        },
+        {
+          "path": "race-005/runners.csv",
+          "sha256": "1ce5b95aa18de31f308e2c3e3bf91bdd9fb13b82c5ffec2faf0ec783df5fcba7",
+          "bytes": 505
+        },
+        {
+          "path": "race-005/shadow.json",
+          "sha256": "a9277fa31a2accd09fd8a280087aceea1572fd43d819fe320834c4c0874b861b",
+          "bytes": 4109
+        },
+        {
+          "path": "race-005/shadow.md",
+          "sha256": "ea72c39fac6e7be3a574441268769d2df301e6ba4cdef4805ff1076c75454251",
+          "bytes": 2391
+        },
+        {
+          "path": "race-006/runners.csv",
+          "sha256": "1ce5b95aa18de31f308e2c3e3bf91bdd9fb13b82c5ffec2faf0ec783df5fcba7",
+          "bytes": 505
+        },
+        {
+          "path": "race-006/shadow.json",
+          "sha256": "fbeb6e3e06653129b78ad592e3102df378c983f701d286d0fad8046520bfefb6",
+          "bytes": 4112
+        },
+        {
+          "path": "race-006/shadow.md",
+          "sha256": "bca70092be800651706910c7c0e406d3da0d59a643629bbae8342bb42bb6f3bb",
+          "bytes": 2394
+        },
+        {
+          "path": "race-007/runners.csv",
+          "sha256": "1ce5b95aa18de31f308e2c3e3bf91bdd9fb13b82c5ffec2faf0ec783df5fcba7",
+          "bytes": 505
+        },
+        {
+          "path": "race-007/shadow.json",
+          "sha256": "a8d5282e21d43d7ef44dcb38656eb7e7bb62a83f3fbefea5d1908ea83dedb3d3",
+          "bytes": 4109
+        },
+        {
+          "path": "race-008/runners.csv",
+          "sha256": "1ce5b95aa18de31f308e2c3e3bf91bdd9fb13b82c5ffec2faf0ec783df5fcba7",
+          "bytes": 505
+        },
+        {
+          "path": "race-007/shadow.md",
+          "sha256": "bebd23b39ed17f5ff396fa37e062e9b07ded2e8e3e0454913618056aa52a4212",
+          "bytes": 2391
+        },
+        {
+          "path": "race-008/shadow.json",
+          "sha256": "da836010939746f3e9b943c929a7533e1d35be74443344b9f9fd65404f742554",
+          "bytes": 4112
+        },
+        {
+          "path": "race-008/shadow.md",
+          "sha256": "291de61f6347067de8ae0c5604f883a5d93d4515034dccdf5bcc22a5a281bccd",
+          "bytes": 2394
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13168417335.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41499820309.zip",
+      "locked_members": {}
+    },
+    {
+      "artifact_id": 13225379902,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41626023709,
+      "artifact_name": "bet-mvp-shadow-41626023709",
+      "zip_filename": "13225379902.zip",
+      "zip_sha256": "da648bffcd804173c922e956087f7d5be4c59cd3a7fffcaee16010575eadd891",
+      "dependent_steps": [
+        "Replay frozen Eskilstuna originals through automatic MVP-009 diagnostics"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp009_auto_decision_audit.py"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 21693,
+      "members": [
+        {
+          "path": "cohort-index.json",
+          "sha256": "3000852bd5a9e35c7d2d07eebc5e3d5db5cde851a3522b02e56ea3f1b6016313",
+          "bytes": 64792
+        },
+        {
+          "path": "race-001/runners.csv",
+          "sha256": "8544f6d17f77b51498dbe9de7f8dc368684d96a4b98f52b34178dd1f82cb7ab7",
+          "bytes": 6514
+        },
+        {
+          "path": "race-001/collector-research-report.json",
+          "sha256": "fc61edce2b15087257307db1df9f1c48fcd6000aeb03af4a5ae1170b857eeeff",
+          "bytes": 17553
+        },
+        {
+          "path": "race-001/shadow.json",
+          "sha256": "4853ed6bc8c7c7063a5898f4b815e552989d29d9b3121372fd338eb0e63f9916",
+          "bytes": 22469
+        },
+        {
+          "path": "race-001/shadow.md",
+          "sha256": "f067caf2f6f05d902fa8a5fe323c2e630424b93f9b07ec73f7074c2d075f5446",
+          "bytes": 7340
+        },
+        {
+          "path": "race-002/runners.csv",
+          "sha256": "21f1ab6b588cf01c224c1f58379fa0dda82b7ff7b301570d79b92b9b5f2279f0",
+          "bytes": 5610
+        },
+        {
+          "path": "race-002/shadow.json",
+          "sha256": "4f9ffae547cb45438aea8bcc15155c254659d8c413223fda3dae0e6b7266b9a6",
+          "bytes": 21744
+        },
+        {
+          "path": "race-002/shadow.md",
+          "sha256": "4f1abc8dab05e1fbfd9afdde387078633a473ef6b0671d398ddda4f9581f99f6",
+          "bytes": 5740
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13225379902.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41626023709.zip",
+      "locked_members": {
+        "race-001/shadow.json": "4853ed6bc8c7c7063a5898f4b815e552989d29d9b3121372fd338eb0e63f9916"
+      }
+    },
+    {
+      "artifact_id": 13225524391,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41626023709,
+      "artifact_name": "pit003a-attestations-41626023709",
+      "zip_filename": "13225524391.zip",
+      "zip_sha256": "e45c750dd01a54e41c93af9905a41c4979eece5924678c0bd43a9031b941431c",
+      "dependent_steps": [
+        "Replay frozen Eskilstuna originals through automatic MVP-009 diagnostics"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp009_auto_decision_audit.py"
+      ],
+      "network_http_status": 404,
+      "state": "SOURCE_UNRECOVERABLE",
+      "source_bytes": null,
+      "members": [],
+      "provenance": "NOT_FOUND_CURRENT_OR_ID_NAMED_BACKUP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "index.json (full contents unavailable; original ZIP SHA remains pinned)"
+      ],
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "pit003a-attestations-41626023709.zip",
+      "locked_members": {}
+    },
+    {
+      "artifact_id": 13230691299,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41635474321,
+      "artifact_name": "bet-mvp-shadow-41635474321",
+      "zip_filename": "13230691299.zip",
+      "zip_sha256": "c8dd4fbbaba17e2059742efbcdc26a72aa387571d3cfedd38df30affb18ef0c4",
+      "dependent_steps": [
+        "Replay DEV-013 multi-freeze Eskilstuna WIN benchmark (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_dev013_win_benchmark.py::test_authentic_eskilstuna_original_frozen_versions_and_official_receipts"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 33895,
+      "members": [
+        {
+          "path": "cohort-index.json",
+          "sha256": "efae7f43e7adea8842e3a5bac27e73227b8576227c8ea43cb1a3e9761ba0ede5",
+          "bytes": 63468
+        },
+        {
+          "path": "race-001/runners.csv",
+          "sha256": "f2e0a01373d4297941db621cc8b814cdeba40ae6116b3bbfe1d8f0da6bc39785",
+          "bytes": 6845
+        },
+        {
+          "path": "race-001/collector-research-report.json",
+          "sha256": "c2c630ab2a03feebdbd94feeb83395f79a1cb0c0890eaf478f0ff1ce4b7cf1c7",
+          "bytes": 17591
+        },
+        {
+          "path": "race-001/shadow.json",
+          "sha256": "fc354eb074f2378e2be4f2033ddbf7d7db85b32675d2716346598a119d99f4cc",
+          "bytes": 22802
+        },
+        {
+          "path": "race-001/shadow.md",
+          "sha256": "72e1a021d981a16dec6a6e6440e767e41cc837c198a431cc950376d84fa8fd8f",
+          "bytes": 7383
+        },
+        {
+          "path": "race-002/runners.csv",
+          "sha256": "5942c4282074fd220e232da9aa71fc3dccc753ea881ea25939d4cc4a1cc22101",
+          "bytes": 5975
+        },
+        {
+          "path": "race-002/shadow.json",
+          "sha256": "586caa0cde3aecb1220cb8719dd3e9193354b2142f1bad3ee3f62610157fdd92",
+          "bytes": 19896
+        },
+        {
+          "path": "race-002/shadow.md",
+          "sha256": "ce82c73c5ca8fbeea2152cb92d95420329b8a56379171d7bae2b7e2b8c5a59cb",
+          "bytes": 5561
+        },
+        {
+          "path": "race-003/runners.csv",
+          "sha256": "0c309ca4fc0d6a2aee454fb2fc53af713ab6906205eccc6c93ad52cd224308ed",
+          "bytes": 4878
+        },
+        {
+          "path": "race-003/shadow.json",
+          "sha256": "8825bb48d866c3765d7a1392a5e452d01ebc09de8400b00add31c120c2801000",
+          "bytes": 16723
+        },
+        {
+          "path": "race-003/shadow.md",
+          "sha256": "a26f47a7095e9088784afb85bff2e9792702c75105cf63876446f4843b0314af",
+          "bytes": 4895
+        },
+        {
+          "path": "race-004/runners.csv",
+          "sha256": "1df60ea673feebe6f89c1a92ade2a5cb6c3791ea347ef18194f9621ea42a7e45",
+          "bytes": 6795
+        },
+        {
+          "path": "race-004/shadow.json",
+          "sha256": "d3036bc47fab25a5e1ca5b621fba6b0d340537b03f953449ab84400298a3b1d4",
+          "bytes": 22792
+        },
+        {
+          "path": "race-004/shadow.md",
+          "sha256": "91e369c37b1835377cb4f4e8111ea529f181a80a5780bfcf3e23854ddfee8b06",
+          "bytes": 6323
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13230691299.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41635474321.zip",
+      "locked_members": {
+        "race-004/shadow.json": "d3036bc47fab25a5e1ca5b621fba6b0d340537b03f953449ab84400298a3b1d4"
+      }
+    },
+    {
+      "artifact_id": 13235845295,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41646155051,
+      "artifact_name": "bet-mvp-shadow-41646155051",
+      "zip_filename": "13235845295.zip",
+      "zip_sha256": "006898f8988690f52f1b6c17178e757b49bd3625fc506b681473144305e57130",
+      "dependent_steps": [
+        "Replay DEV-009 outcome scorecard on original frozen Eskilstuna archive",
+        "Replay DEV-011 retained Eskilstuna model and pinned originals (21 empty runs)",
+        "Replay DEV-013 multi-freeze Eskilstuna WIN benchmark (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_dev011_coverage.py",
+        "tests/test_dev013_win_benchmark.py::test_authentic_eskilstuna_original_frozen_versions_and_official_receipts",
+        "tests/test_prospective_outcome_scorecard.py"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 13982,
+      "members": [
+        {
+          "path": "cohort-index.json",
+          "sha256": "fa87f4f0f3f1c44ad74ea5c35023c24aacf46dd82006b78b8f833844e395e06a",
+          "bytes": 46563
+        },
+        {
+          "path": "race-001/collector-research-report.json",
+          "sha256": "1035ee530cf7562eb1d6bf2fa4a7c9347ac13bff7d5ec5dbc5dccf98cdd155d1",
+          "bytes": 17621
+        },
+        {
+          "path": "race-001/runners.csv",
+          "sha256": "20c5da3ff9924552f86bad77a7c4cfe17f278cad06a75d72a03e5a092fd66f91",
+          "bytes": 6559
+        },
+        {
+          "path": "race-001/shadow.json",
+          "sha256": "f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d",
+          "bytes": 22522
+        },
+        {
+          "path": "race-001/shadow.md",
+          "sha256": "ab97bcb8e1e9370257cc0110eab537973a2ecd4c9673a4f5f90f7c1ded1517af",
+          "bytes": 7438
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13235845295.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41646155051.zip",
+      "locked_members": {
+        "race-001/shadow.json": "f04dd8f19254764114739009383371e3367c445c917c8fac5b08cf085e814a6d"
+      }
+    },
+    {
+      "artifact_id": 13243490434,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41662283155,
+      "artifact_name": "dev009-authentic-original-scorecard-41662283155",
+      "zip_filename": "13243490434.zip",
+      "zip_sha256": "c2e5fa05b19287bc96ec8d7f83b2a37b6d6c7d51d2e8de5f679b40b47dd6347b",
+      "dependent_steps": [
+        "Replay DEV-011 retained Eskilstuna model and pinned originals (21 empty runs)",
+        "Replay DEV-013 multi-freeze Eskilstuna WIN benchmark (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_dev011_coverage.py",
+        "tests/test_dev013_win_benchmark.py::test_authentic_eskilstuna_original_frozen_versions_and_official_receipts"
+      ],
+      "network_http_status": 200,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 4111,
+      "members": [
+        {
+          "path": "official-e226ab9e5892f29d/complete.raw.json",
+          "sha256": "0e779cd381b89c21d794394b8fc3bae4fb1bb94f8d9208028c03f936fad0782b",
+          "bytes": 3402
+        },
+        {
+          "path": "index.json",
+          "sha256": "8601ef956aabc146d158186e68f16929bff8a2434478e2a1b5a8c7e9c36ab46c",
+          "bytes": 6129
+        },
+        {
+          "path": "official-e226ab9e5892f29d/raceday.raw.json",
+          "sha256": "1941cee46964f14a87f6b52bd54b58e40fc7e3a0b37e3d22bd4194b4e28e520d",
+          "bytes": 6015
+        }
+      ],
+      "provenance": "CURRENT_AUTHENTICATED_ARTIFACT",
+      "workflow_run_head": "7bf1a53eb40041c8c5bc83ff20afb90bbda1b857",
+      "historical_zip_digest_origin": "AUTHENTICATED_ARTIFACT_METADATA",
+      "required_member_patterns_if_unavailable": [
+        "index.json + referenced result receipts"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13243490434.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "dev009-authentic-original-scorecard-41662283155.zip",
+      "locked_members": {}
+    },
+    {
+      "artifact_id": 13244810522,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41663427015,
+      "artifact_name": "pit003a-collector-evidence-41663427015",
+      "zip_filename": "13244810522.zip",
+      "zip_sha256": "7fdf4a54916af8814182505d21eb6f76c3eef7249432acbfe7efc18e6a94409b",
+      "dependent_steps": [
+        "Replay DEV-012 against original 3 Nov Vincennes PDF and starts"
+      ],
+      "dependent_tests": [
+        "tests/test_dev012_pdf_continuation.py"
+      ],
+      "network_http_status": 404,
+      "state": "SOURCE_UNRECOVERABLE",
+      "source_bytes": null,
+      "members": [],
+      "provenance": "NOT_FOUND_CURRENT_OR_ID_NAMED_BACKUP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "**/meetings/F1_NR_2026-11-03/full_program.pdf",
+        "**/meetings/F1_NR_2026-11-03/starts.raw.json"
+      ],
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "pit003a-collector-evidence-41663427015.zip",
+      "locked_members": {
+        "**/meetings/F1_NR_2026-11-03/full_program.pdf": "e565e0f797a74c7c82f7bf9e302d7b6a33a6433cea2334d5e093904f5447fb57",
+        "**/meetings/F1_NR_2026-11-03/starts.raw.json": "a4e4330ae9fc9279619333ecf55604c042021227a0bec0d3d69fd512b33eeea0"
+      }
+    },
+    {
+      "artifact_id": 13245606773,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41665938596,
+      "artifact_name": "bet-mvp-shadow-41665938596",
+      "zip_filename": "13245606773.zip",
+      "zip_sha256": "56a907e2e4567f0926cccae834ca6fbd0bab2c1702de571d08b8ffd7a603d112",
+      "dependent_steps": [
+        "Replay MVP-018 no-freeze source provenance against original 65-race cohort"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp018_freeze_provenance.py"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 882,
+      "members": [
+        {
+          "path": "cohort-index.json",
+          "sha256": "a371cfd49e21eb8cf70abdf0be3923e19a21e3161f4ede87467d23c8ba2c4a8e",
+          "bytes": 3061
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13245606773.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41665938596.zip",
+      "locked_members": {
+        "cohort-index.json": "a371cfd49e21eb8cf70abdf0be3923e19a21e3161f4ede87467d23c8ba2c4a8e"
+      }
+    },
+    {
+      "artifact_id": 13257326927,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41689647527,
+      "artifact_name": "bet-mvp-shadow-41689647527",
+      "zip_filename": "13257326927.zip",
+      "zip_sha256": "a36fc1ce81fb68cff1daca84342dd5a8bc1517f9e076bebff1aeead36a5f221a",
+      "dependent_steps": [
+        "Replay MVP-018 no-freeze source provenance against original 65-race cohort"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp018_freeze_provenance.py"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 3411,
+      "members": [
+        {
+          "path": "cohort-index.json",
+          "sha256": "ff60ace9f57c3c1193b9024ae48012f12349d4cecc0b7d75f0cc6bd5fcaaf552",
+          "bytes": 48824
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13257326927.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41689647527.zip",
+      "locked_members": {
+        "cohort-index.json": "ff60ace9f57c3c1193b9024ae48012f12349d4cecc0b7d75f0cc6bd5fcaaf552"
+      }
+    },
+    {
+      "artifact_id": 13267816642,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41708503913,
+      "artifact_name": "bet-mvp-shadow-41708503913",
+      "zip_filename": "13267816642.zip",
+      "zip_sha256": "cafe439031b4be5f89853c1015d895a61b62fd0751922a85a2f6a051e69688ac",
+      "dependent_steps": [
+        "Replay MVP-018 four official pre-frozen scratched runner results (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp018_official_prestart_scratches.py"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 14217,
+      "members": [
+        {
+          "path": "cohort-index.json",
+          "sha256": "592543dcebc2563933327ed8edf8b92f84c1d161327cbec8f25e9e4ace79109a",
+          "bytes": 49758
+        },
+        {
+          "path": "race-001/collector-research-report.json",
+          "sha256": "9bf504e9c00b335b83c0657694a18b8082a1df7b43cd72c88b4120dc17882780",
+          "bytes": 17457
+        },
+        {
+          "path": "race-001/runners.csv",
+          "sha256": "8941de0c50fbd8b81adc959786fbe0672544eec809f19dced70821a3120214ca",
+          "bytes": 6362
+        },
+        {
+          "path": "race-001/shadow.json",
+          "sha256": "948000498efb619192fb88cde594f82e2befb6628bd9937e5dd5e31c4f96378d",
+          "bytes": 22297
+        },
+        {
+          "path": "race-001/shadow.md",
+          "sha256": "eb492ac2908f1b5ea5dc7d7cbd96c9f43f4575431d96d7b848be8fc0c8124c6f",
+          "bytes": 7218
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13267816642.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41708503913.zip",
+      "locked_members": {}
+    },
+    {
+      "artifact_id": 13267848493,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41710594697,
+      "artifact_name": "bet-mvp-shadow-41710594697",
+      "zip_filename": "13267848493.zip",
+      "zip_sha256": "903ba642d1ea42edce231f1b5271be0ae05cd9cea7792f0d2ddc2d402cee7be9",
+      "dependent_steps": [
+        "Replay MVP-018 no-freeze source provenance against original 65-race cohort"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp018_freeze_provenance.py"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 2947,
+      "members": [
+        {
+          "path": "cohort-index.json",
+          "sha256": "5cc2a0d920e4dd8db9b0100a9554af79e9941e53dc74ea11bab8d6a0578c1596",
+          "bytes": 32077
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13267848493.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41710594697.zip",
+      "locked_members": {
+        "cohort-index.json": "5cc2a0d920e4dd8db9b0100a9554af79e9941e53dc74ea11bab8d6a0578c1596"
+      }
+    },
+    {
+      "artifact_id": 13300048964,
+      "repository": "Maremoo2/rikstoto-program-collector",
+      "run_id": 41784797103,
+      "artifact_name": "rikstoto-morning-programs",
+      "zip_filename": "13300048964.zip",
+      "zip_sha256": "9d045fe402348a9465734198bb56dd9a415d6b135141ac6b16c294a053a10dab",
+      "dependent_steps": [
+        "Replay MVP-014 4 Nov genuine PDF race headers (NO PIT/BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp014_pdf_header_clock.py"
+      ],
+      "network_http_status": 200,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 1682904,
+      "members": [
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/discovery_calendar.json",
+          "sha256": "42e5d22cc5fa746835f49c369398e6e78aea06ac375a0267a5f21e474798f39f",
+          "bytes": 242
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/discovery_calendar.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/discovery_multitracks.json",
+          "sha256": "3c88c87ea2ee68cbb6121e5f1b174d079bba65849964245cd5c39bd54fb3f499",
+          "bytes": 226
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/discovery_multitracks.raw.json",
+          "sha256": "b4c28f2aa16956fc39809cd3c4b4106eb7327e1113715f27a64144a13bd5763e",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/discovery_racedays.json",
+          "sha256": "9c0b75f21dbe7fd5690d67276da2ee25469b4b9e0bd1c24900fd2df8dd2e3d1f",
+          "bytes": 467614
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/discovery_racedays.raw.json",
+          "sha256": "5437d609b4bbfddcfe359964f2573a6e4bee89a49d6f30324d633ae9a0acb9f3",
+          "bytes": 251309
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/discovery_spa_schedule.json",
+          "sha256": "da3d01fb8ec322ee192a66377decb8b3f1bb39198b0babdb45f5bfcf18a7397d",
+          "bytes": 2729
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/frontpage.html",
+          "sha256": "bf912f44d6541c6ba9becb2b8a00558a76f7542865a2bc088c6fd3f860832bc8",
+          "bytes": 559290
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/frontpage.txt",
+          "sha256": "4b85218fcb94a01ae26410217d984955bd864721d28ccb321b0915f47f21ba40",
+          "bytes": 2439
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/manifest.json",
+          "sha256": "f56f6e1451dec259668b060d7da6e666c52186ca9d4bf8106b0f5467901e8874",
+          "bytes": 87142
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/driver_changes.json",
+          "sha256": "ca0c584843bcb2da909cfbb590670c6ecaed5f6cd8cac25928d9892da2a1c64c",
+          "bytes": 249
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/driver_changes.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/full_program.pdf",
+          "sha256": "b5b7f5999fed5241cef3c16b27cf31161c010822474b5417d97710e15f828496",
+          "bytes": 136072
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/full_program.txt",
+          "sha256": "b2592f0025c80b0c107e527c953c6a297fb61ab90735368b7944bb34923fd500",
+          "bytes": 95373
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/race_01.json",
+          "sha256": "e6617bd6d33e8c603465292ea47d8d928efa59388a120e26e9097009093fc560",
+          "bytes": 33268
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/race_01.raw.json",
+          "sha256": "851ef0c5b6aff7dde6cd679378636bd5b64a65657b3de85069ecd9784bd9aaf6",
+          "bytes": 18374
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/race_02.json",
+          "sha256": "fd7768c5b298672aed458aad8b3e3f90e125f61e2abfe1d4f075132679c76792",
+          "bytes": 28090
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/race_03.json",
+          "sha256": "dda2c062d10bccbbb54940c85904aec4ee6117e70dd5b3c3d1b0638fea202237",
+          "bytes": 33950
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/race_02.raw.json",
+          "sha256": "48a24e3da7d9c0eaadf73dc0470e443b0e562d6b609f3a20edabe04b53d12d23",
+          "bytes": 15932
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/race_03.raw.json",
+          "sha256": "629ad838a0eafad9526dd376cc388bcf56c77b24603950409ea3977d605194e8",
+          "bytes": 19056
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/race_04.json",
+          "sha256": "3db000ce505a825aed19b266b1b148c679c987fb13b67b14f67b655ae538cf07",
+          "bytes": 33572
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/race_04.raw.json",
+          "sha256": "b814eca16845f7643e780702021ecc967d15371b3647ec798e4d24d46aa3b5ab",
+          "bytes": 18678
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/race_05.json",
+          "sha256": "390921899f1d0b8513d9b646d9e5d3de36201f00a95de7a473540a8f4a4ee04c",
+          "bytes": 33457
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/race_05.raw.json",
+          "sha256": "45951e647a6ebc7d926c72ba58de67b39fa3e03f6d69cdf2640e20673882b6b3",
+          "bytes": 18563
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/race_06.json",
+          "sha256": "521c15deeccc663fec43f1b07ea91128160478849254d4967f7a4465ea1d94c6",
+          "bytes": 27385
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/race_06.raw.json",
+          "sha256": "8d15e060e8498ecc1cac14c9366e5fb8117090a1fcbca3af48c6bd56e3e9d1cf",
+          "bytes": 15227
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/race_07.json",
+          "sha256": "a9ab5c089708d0a69928b14f45ec46e72b1cf7eb1ff1fb17e741808a1a87216a",
+          "bytes": 37640
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/race_07.raw.json",
+          "sha256": "ab3e4f1d6ea4a4a6406fbd04f2e4ddc80284039720c3484fc9fa079bc3c8b7ed",
+          "bytes": 20922
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/race_08.json",
+          "sha256": "71ee028d49f62f2813cad03e671fa6a38f4185b7b33dc4b7b6831998a00a5db5",
+          "bytes": 37678
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/race_08.raw.json",
+          "sha256": "463c9e6c9d4ab880fa5d980ef8640932e6dad7be8a38a230563a59409dcc651e",
+          "bytes": 20960
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/scratchings.json",
+          "sha256": "015751bdfc016980eb51cf5d59e8a5d834d92d0dee65137cb1a1fc5e3bf168ea",
+          "bytes": 435
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/starts.json",
+          "sha256": "f7c671e322af22fbb1913a6d2706642a92fa91d52e078f58370dc022d17a5a06",
+          "bytes": 49098
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/starts.raw.json",
+          "sha256": "3ad6930eaf0f6add093e6fb201076ba6c5a5c948eb49af087db6ca9b897bbd3b",
+          "bytes": 32919
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F1_NR_2026-11-04/structured_program.json",
+          "sha256": "a257811883bef0215613c2691cce4a49b4f5746df3bfb3cb015371a90dc9bc11",
+          "bytes": 610000
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F2_NR_2026-11-04/driver_changes.json",
+          "sha256": "816071747c1fd5bba02699c328a47ca86fa9b41b1baeabcf09b6304510fd0507",
+          "bytes": 249
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F2_NR_2026-11-04/driver_changes.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F2_NR_2026-11-04/full_program.pdf",
+          "sha256": "28e2091b68d551ffc65aac7c03ccefc1a973c2066bcad5436a0d01a5cb740510",
+          "bytes": 59749
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F2_NR_2026-11-04/full_program.txt",
+          "sha256": "55438e2f6927286eebe37b319ee02762bd58b1bbc6f2662a6032f91117b4492f",
+          "bytes": 27709
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F2_NR_2026-11-04/race_01.json",
+          "sha256": "725c9572d5ceb5f7a296294ee5bdc7b2c8202413849a6aedaaebcc24e6f3af01",
+          "bytes": 14752
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F2_NR_2026-11-04/race_01.raw.json",
+          "sha256": "d87b9b2b1a002864a62df69778962f3ed1f0cbf3d9b8caa64776086c4df5ee2e",
+          "bytes": 8066
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F2_NR_2026-11-04/race_02.json",
+          "sha256": "821156707f6f36275d37ff705e706a1cf42f3660446665c2011ea04dcb3eb25b",
+          "bytes": 26911
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F2_NR_2026-11-04/race_02.raw.json",
+          "sha256": "14c9b5e16cc5750cbcb9bc159b1dc6f5eab672e20656f0f4ca64ef537820b533",
+          "bytes": 14753
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F2_NR_2026-11-04/race_03.json",
+          "sha256": "ef4d8d952268e16b72e1485e2e96457f1ea058c0f9133e9655e0f9f0e4a09f2d",
+          "bytes": 19059
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F2_NR_2026-11-04/race_03.raw.json",
+          "sha256": "38b983c4fcfa0236ba3392fed3fc4f1ddaab1e0a226ac886614e83c07d712c81",
+          "bytes": 10549
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F2_NR_2026-11-04/race_04.json",
+          "sha256": "2c7ef1ccd5d44e547b1301b5d43fc67363518818fc6e64c8d33a92f441a38a8b",
+          "bytes": 22967
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F2_NR_2026-11-04/race_04.raw.json",
+          "sha256": "a94c2ed2f6155c25d71bf8960ea90210d2519a6ea598d84dd4d0199b5cba49e1",
+          "bytes": 12633
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F2_NR_2026-11-04/scratchings.json",
+          "sha256": "8d648cae9ac4cbe557be8dc128bce396df3485e4f5aae328a37f849159472e7e",
+          "bytes": 236
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F2_NR_2026-11-04/starts.json",
+          "sha256": "2e208e3b26e0cb48df577778ee97376eaa61e2f2a851aea2ae1257793ab54433",
+          "bytes": 15699
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F2_NR_2026-11-04/starts.raw.json",
+          "sha256": "30f4db225d2fe04d169cb1e715f5dd4c388bdeeaf4b79ecfab869c00d3dfca04",
+          "bytes": 10416
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/F2_NR_2026-11-04/structured_program.json",
+          "sha256": "ca1e866cac1fc4134ec9dedeabb5944a47b7b52df32ca30561be3a8d1bbd42b7",
+          "bytes": 184109
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/driver_changes.json",
+          "sha256": "a356ad6b8aeeec2558c13ec6396c75cefddba0a7096e73db02f93237a2a909f4",
+          "bytes": 459
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/driver_changes.raw.json",
+          "sha256": "c52b95b2182ee95ac40ec5d7f0a84da95e01fbdc717a75da3c0725db2f0ad71e",
+          "bytes": 201
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/full_program.pdf",
+          "sha256": "f562baa4102b0c6655ffe1829e65369d8b48dc75de87fada3d03a5ab0b0b0210",
+          "bytes": 73682
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/full_program.txt",
+          "sha256": "dd4c1815f26aeedd2753334cb6719cded53cbf4eb6ac29aba479d02011db458f",
+          "bytes": 39663
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/race_01.json",
+          "sha256": "17d65b2f0110305d9c606ad5ee209ecb90f1470645f03600e8314185617ed7c5",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/race_01.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/race_02.json",
+          "sha256": "b6eb5a3bd59aa38a4c2d93a65ef531a1ec630cd8eb4c2c8d7c792553bc649552",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/race_02.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/race_03.json",
+          "sha256": "d90ce6e42c7314ff0ed08acaf66aa8b258d73c9272691e1f3f5644479f908dfd",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/race_03.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/race_04.json",
+          "sha256": "91fa294b46d919ff2221a5feba47753c329c6719e03eed685c04925aa48847bb",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/race_04.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/race_05.json",
+          "sha256": "bcdefe97d1fa4b2208cc47a95f60162da1229aee7b2791e31be80749c66bd54f",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/race_05.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/scratchings.json",
+          "sha256": "e64de6c6bf3a008372446cc73f23351f3900ea2f9d10125dca9bc6c2c357976d",
+          "bytes": 424
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/starts.json",
+          "sha256": "40b8b3f41216fd4d893fcdf6901b4a70fcf809bfd4611303bbe8c925e26e47fa",
+          "bytes": 20766
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/starts.raw.json",
+          "sha256": "1e4a6abf7b3212c896b4c8c6129d9f546804c93baf3fa53e7088cf25d7765d50",
+          "bytes": 13578
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S1_NR_2026-11-04/structured_program.json",
+          "sha256": "567d1c4504fd54162bb98ddc6ebd7cfee10de03421a5a0d73d01c342b7340e84",
+          "bytes": 251484
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/driver_changes.json",
+          "sha256": "439627b1085e3d01d34a00809008e7399eadc1052c64fd6e702f1b533b25c6e5",
+          "bytes": 249
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/driver_changes.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/full_program.pdf",
+          "sha256": "897c6c636d7c70c2ed106b3d8365061378e0e3d85dc41453c7ee2b2fbe463a01",
+          "bytes": 136316
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/full_program.txt",
+          "sha256": "a45d8a761fcc6ef3f7611e4383aa2b5cd9367327686c3e91a71d70f845f3a507",
+          "bytes": 123555
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_01.json",
+          "sha256": "4576b5ef9ab4d71df4230c72bd8595662be1279a613f0c1572856b783956f5ef",
+          "bytes": 15330
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_01.raw.json",
+          "sha256": "4762d622d0c4bad2255b0c7ff34e7533360ec54099726497282c5bdf680d0e28",
+          "bytes": 8644
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_02.json",
+          "sha256": "87da7303d915db5ac8979926802997b1f7cd6ce6af60646221ecb6d95e01daa5",
+          "bytes": 21158
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_02.raw.json",
+          "sha256": "c41e2903709227f4f0361a1a1ac2410ea0448178dd6a6df46eec5e7d9cf7513d",
+          "bytes": 11736
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_03.json",
+          "sha256": "fa9fcccc15570ba8d4f9c35c4f91d7e647236383d49a63720f5a098df8aee3bd",
+          "bytes": 25577
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_03.raw.json",
+          "sha256": "70d107bb05d78db8591d6b11881900f3efdb282b608ae222aff6b18a02bf2f1a",
+          "bytes": 14331
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_04.json",
+          "sha256": "5a71b9394b581d1f1a913dd10904bb73518e64af6051977807ea555fd4b2c731",
+          "bytes": 15347
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_04.raw.json",
+          "sha256": "383428040cac728fd7f03726436f3b5eb5154ad56231624e4f79304494202b43",
+          "bytes": 8661
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_05.json",
+          "sha256": "3bdfbb506f2c8e7813f7e478c806a62f04a3ab5113bed51eaeeb08d7e53dcb62",
+          "bytes": 19713
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_05.raw.json",
+          "sha256": "bd4e44c704fe206e3dcae5b74e7ac9cc334ddcb2bf7df4576c50711cd5842f65",
+          "bytes": 11203
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_06.json",
+          "sha256": "45b4487d020e2118643e9d09773f5a542f629308a2dd6b1d313fc472cae0c583",
+          "bytes": 19471
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_06.raw.json",
+          "sha256": "07abcad6bb7f7e9283a8fada50ca1588b9821ff8cd7d4435df13ed460bd80ca2",
+          "bytes": 10961
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_07.json",
+          "sha256": "371eeccd133fb4608793971d4d09c1e1da5c422bdb57b2f8ca64181aafae9ae2",
+          "bytes": 27056
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_07.raw.json",
+          "sha256": "cb1d43c75de869c557a6950633f074ff664d2ec3c310dbb1bd19113c953b7db4",
+          "bytes": 15810
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_08.json",
+          "sha256": "49f8166c94bb633a1f6c6956bde557edec049e9a7afb4366583c12ea1b1b934e",
+          "bytes": 24656
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_08.raw.json",
+          "sha256": "60c3925eb8b061193535ec33fe4fac5ec6c6d406d0fbcddaae37c021b4ac600e",
+          "bytes": 14322
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_09.json",
+          "sha256": "14b0f8644803a51481a1eb055230fef3667fad09020d1b34d40b2f945ec9304c",
+          "bytes": 27050
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_09.raw.json",
+          "sha256": "1f0c4be1f44c12063495fa055127f6c7511668280be1b1d044f353a90e4ea912",
+          "bytes": 15804
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_10.json",
+          "sha256": "ecd92b129ddcc4baa23638ae149e65cd0b7a6398191870702d332ed2a1e8a421",
+          "bytes": 27096
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/race_10.raw.json",
+          "sha256": "49941377a88000ff7e77821d5377ccfe67e079016ad2da48a51f249f895e91b3",
+          "bytes": 15849
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/scratchings.json",
+          "sha256": "e17264f96f556152db691aacd2af08293b80a4f845d3a7d8f20c710ad9e06c7e",
+          "bytes": 431
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/starts.json",
+          "sha256": "d89b84ff2d755e33213b4528f4b99ba858cd04337822f36eb79d0ce21797d2a5",
+          "bytes": 37730
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/starts.raw.json",
+          "sha256": "b3da4823aafaaf2386dc89be37421fae1ca2242517298aff71d54b8f9a6fb420",
+          "bytes": 24671
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S2_NR_2026-11-04/structured_program.json",
+          "sha256": "def1fc55ca28730b0b27b2e1c8de78fc1d2d15e8d6e735b799e60b44f40f8169",
+          "bytes": 563965
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/driver_changes.json",
+          "sha256": "3cb412a7be8f19dbf9536f0d910a540d4d927fa3a21d6c3795100c075bcb37bf",
+          "bytes": 249
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/driver_changes.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/full_program.pdf",
+          "sha256": "ddbe3bf9fe96dd04492509c184de9ae6491e9660f4f2772d2b8f07645eb74ba2",
+          "bytes": 121498
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/full_program.txt",
+          "sha256": "db1ca863bea2a7599ab1504334b56c4a5b218311e0be9d9ddcf9bd7a04a8a40d",
+          "bytes": 106743
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/race_01.json",
+          "sha256": "831c351876918b63da5cc258db546fb997e1cf06c6dc10a53bd3ef339544c196",
+          "bytes": 25424
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/race_01.raw.json",
+          "sha256": "069911ecd98cc70d03de5ecd70acac5d5a6d45e93b0143387de96cd74fa82dab",
+          "bytes": 14178
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/race_02.json",
+          "sha256": "4fd603b7fe599b6ad73c9c6d2c2967b39c3c5e80a0539ab1a2b62f0298c20200",
+          "bytes": 23576
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/race_02.raw.json",
+          "sha256": "56966d08d8627e47368c8cc796b9228ed061a66413984998d1358c5c746e4196",
+          "bytes": 13242
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/race_03.json",
+          "sha256": "ae0fe0c13f78a97ed4608ae90e44b6901dd89aa4d793dabbe1a54c772f3290f8",
+          "bytes": 17463
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/race_03.raw.json",
+          "sha256": "550ab60bb0af7832fd1dab3c1d40b2e0ac03fa7ff03f400dc812d1e0c9f1911e",
+          "bytes": 9865
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/race_04.json",
+          "sha256": "47a8d50c0f79d9e7d78ec46bf0bc4e4eef00b44e42e8415088c52cba8473225d",
+          "bytes": 21464
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/race_04.raw.json",
+          "sha256": "37ca40c03c6ff33e0c6a605fc4629dc3c921a0855a27faa0e02c8a553e419959",
+          "bytes": 12042
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/race_05.json",
+          "sha256": "2daff724423be882c23fbd3f104c25e3419c678c6b675189fb6ebb40bdd48380",
+          "bytes": 20440
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/race_05.raw.json",
+          "sha256": "92156d659dee535639f322376d942e6094548f9a979daa086fd495651947183f",
+          "bytes": 11930
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/race_06.json",
+          "sha256": "ab1525c5b5f2b570632b1623551cad1e410abea63afb8480c77607a0f772e844",
+          "bytes": 26891
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/race_06.raw.json",
+          "sha256": "159b4a9381ffc4cb0d1a6dd7ce753212edf38ae16eb3a94e306335b450070a74",
+          "bytes": 15645
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/race_07.json",
+          "sha256": "144c1483dc5f82400a74c3a52a47f08c1021e6bccb3e12625b91add1e5fc7eff",
+          "bytes": 24835
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/race_07.raw.json",
+          "sha256": "39d615fc7416046de1b5e70cbda56a987edd9498110c6190e84710ed2657886d",
+          "bytes": 14501
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/race_08.json",
+          "sha256": "104a14eded3dbf0c348993b565bf5362af938b71dca5adf736cbaf71b1e7cec3",
+          "bytes": 24655
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/race_08.raw.json",
+          "sha256": "f8f506b1513633f6e4956c774af2b8f42b2d58b81c828ab6741ded49f8e3c28b",
+          "bytes": 14321
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/scratchings.json",
+          "sha256": "b3731e50ee98fb5e3f549a33514f350c72e24bee70a997cbbc1e1d92ff8faaf5",
+          "bytes": 620
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/starts.json",
+          "sha256": "ed9667431b150b02dda0e17e9070de2c132ad927558b1f4a573f2c31e99bc5aa",
+          "bytes": 31405
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/starts.raw.json",
+          "sha256": "fe1cde9c8642d8f526eb95c69c524c7b24243ba6669540f9126197e5ff4ea386",
+          "bytes": 20518
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S3_NR_2026-11-04/structured_program.json",
+          "sha256": "0b06dd5d6d87c8a6668d01f58143f494273944625e38edfa1bacfcae4db441cc",
+          "bytes": 494534
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/composite_physical_lineage.json",
+          "sha256": "3806af0e148ecdff2af33f319e07f2d6ba417c8159d35eb91e9d606064dd55e4",
+          "bytes": 2761
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/driver_changes.json",
+          "sha256": "96749f20358e62ded0fa40cfa1462bd370d633b5bdde78d31aea869f22e83ac1",
+          "bytes": 249
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/driver_changes.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/full_program.pdf",
+          "sha256": "9e6596b262c47f453b720d8ca620dd435a6f73ed611aac9f497f99fbe6e01d1a",
+          "bytes": 127286
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/full_program.txt",
+          "sha256": "fe8e0277c831cbfeeb0ccc4bd4245b9495a2003778969e0ed7110d3e4ac0cb16",
+          "bytes": 122550
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/race_01.json",
+          "sha256": "9d238f627a8d6811026289744e19a1d602024c73e1db0e1b737aaf9a01bad6e6",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/race_01.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/race_02.json",
+          "sha256": "25d8cf8030b23dbd25489de34dfc0ecb268aa9f117ed4e55f8b6b4a9d5d19c9a",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/race_02.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/race_03.json",
+          "sha256": "70022ca1006e4c16c414e0e34007fc4a407d2121644c25bf0325fa5adc4cf496",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/race_03.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/race_04.json",
+          "sha256": "b6ab6d3ae7751cd37388d2100fecfc77e777ec9e51a514cd00cc6fd19bc247a6",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/race_04.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/race_05.json",
+          "sha256": "7a96b25af5954ed0c2f1904c6aa5a73b050e208a2894d5def6e3b4167582b6d0",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/race_05.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/race_06.json",
+          "sha256": "295bb41bdb059f7231b180023ffdbecde2c135967a546c536b912eaaeeb4859e",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/race_06.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/race_07.json",
+          "sha256": "eb22124c6e6cc5f067cf9ac3312e06f5d6d24088ae33f80d0370dd84e51b686c",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/race_07.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/race_08.json",
+          "sha256": "4782932da43f7f4ca5df12b8a90fbb6fbc5b170a528a87e2998b2d27eb0708ec",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/race_08.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/scratchings.json",
+          "sha256": "82002f31feb601efb8d553793f60d9170bbc19ada8ff4c744adfd38c3ce45a58",
+          "bytes": 430
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/starts.json",
+          "sha256": "6044d45a58b21e8846981b51a34130604b8a9708e68b70f5c6df345b875ec63c",
+          "bytes": 33649
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/starts.raw.json",
+          "sha256": "e434c150c793dc5d6e76afb513baa1ccb1ec647919db65c104c829ef6dff0a12",
+          "bytes": 22006
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/meetings/S5_NR_2026-11-04/structured_program.json",
+          "sha256": "a087aec1fa1a321604a4bdda6e25e4d073fb0c630bee909e08c8457e2c3542e4",
+          "bytes": 535294
+        },
+        {
+          "path": "output/daily/2026-11-04/20261104T062026070621Z/structured_program_day.json",
+          "sha256": "5eea90c8f01311e69e86ff518d791d5315350da62411f4cd0023d5e9409d196b",
+          "bytes": 2638191
+        },
+        {
+          "path": "daily-console.log",
+          "sha256": "f98baeae38f733ceed4ca0ce4ec3253a3913e08ffe6114e13e04dd369d65e2bd",
+          "bytes": 326
+        }
+      ],
+      "provenance": "CURRENT_AUTHENTICATED_ARTIFACT",
+      "workflow_run_head": "1de553b57758a6dd79a034d600dd594f68f27a1c",
+      "historical_zip_digest_origin": "AUTHENTICATED_ARTIFACT_METADATA",
+      "required_member_patterns_if_unavailable": [
+        "Unknown full member list; see unchanged test/source contract"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13300048964.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "rikstoto-morning-programs.zip",
+      "locked_members": {}
+    },
+    {
+      "artifact_id": 13304793845,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41796128435,
+      "artifact_name": "bet-mvp-shadow-41796128435",
+      "zip_filename": "13304793845.zip",
+      "zip_sha256": "2b2683ba14774b637237f99484f1b8256321744c0552c0d30a5635bd549a6cfa",
+      "dependent_steps": [
+        "Replay MVP-016 original empty CORE-003 cohort (NO BET)",
+        "Replay MVP-017 private local original archive on true GitHub bytes"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp016_empty_cohort.py",
+        "tests/test_mvp017_private_original_archive.py"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 575,
+      "members": [
+        {
+          "path": "cohort-index.json",
+          "sha256": "ebeb64f1fc27328c0ff5f063ede33ec1d08615e482d4a017680ea0d5813b9aa0",
+          "bytes": 718
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13304793845.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41796128435.zip",
+      "locked_members": {
+        "cohort-index.json": "ebeb64f1fc27328c0ff5f063ede33ec1d08615e482d4a017680ea0d5813b9aa0"
+      }
+    },
+    {
+      "artifact_id": 13311119836,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41811192493,
+      "artifact_name": "bet-mvp-shadow-41811192493",
+      "zip_filename": "13311119836.zip",
+      "zip_sha256": "0c0c3f8be2aa1f2fa76bdb9b0e6adf3c967554bdb877638d6bdb8cb3614f4cbb",
+      "dependent_steps": [
+        "Replay MVP-018 no-freeze source provenance against original 65-race cohort"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp018_freeze_provenance.py"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 2436,
+      "members": [
+        {
+          "path": "cohort-index.json",
+          "sha256": "afb2f64cccbaf89837ef22c2368468fff36538b2ce1ece70fb46db34ecadb49a",
+          "bytes": 28634
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13311119836.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41811192493.zip",
+      "locked_members": {
+        "cohort-index.json": "afb2f64cccbaf89837ef22c2368468fff36538b2ce1ece70fb46db34ecadb49a"
+      }
+    },
+    {
+      "artifact_id": 13313329016,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41814068321,
+      "artifact_name": "bet-mvp-shadow-41814068321",
+      "zip_filename": "13313329016.zip",
+      "zip_sha256": "719e12cdc4405b6e21b1d1e1002a7bfc9b98c1f92f021474a705b03171311242",
+      "dependent_steps": [
+        "Replay MVP-016 original research status (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp016_research_status.py"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 2389,
+      "members": [
+        {
+          "path": "cohort-index.json",
+          "sha256": "3b804af346a340c6713b64319fd4201881040a264360e4a014069bb60c3e7cd0",
+          "bytes": 26528
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13313329016.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41814068321.zip",
+      "locked_members": {
+        "cohort-index.json": "3b804af346a340c6713b64319fd4201881040a264360e4a014069bb60c3e7cd0"
+      }
+    },
+    {
+      "artifact_id": 13314117015,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41814068321,
+      "artifact_name": "dev009-outcome-scorecards-41814068321",
+      "zip_filename": "13314117015.zip",
+      "zip_sha256": "2e903e480d4ee86a46af8472665b7711b26a43d9e39036f251bfa9daf34c6f78",
+      "dependent_steps": [
+        "Replay MVP-016 original research status (NO BET)",
+        "Replay MVP-017 last-known-valid health on 3 GitHub runs and V1 audit"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp016_research_status.py",
+        "tests/test_mvp017_research_health.py"
+      ],
+      "network_http_status": 404,
+      "state": "SOURCE_UNRECOVERABLE",
+      "source_bytes": null,
+      "members": [],
+      "provenance": "NOT_FOUND_CURRENT_OR_ID_NAMED_BACKUP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "index.json + referenced result receipts"
+      ],
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "dev009-outcome-scorecards-41814068321.zip",
+      "locked_members": {
+        "index.json": "62b0d78ca75847d2f2bfe895af240e45eada96a7719aefe4f880c1da02cbe178"
+      }
+    },
+    {
+      "artifact_id": 13314296054,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41814068321,
+      "artifact_name": "core003-pilot-report-41814068321",
+      "zip_filename": "13314296054.zip",
+      "zip_sha256": "ece57003cd57baaaf4342e99ff7e634a8808095a4e51b16fe8c7fd409036b709",
+      "dependent_steps": [
+        "Replay MVP-016 original research status (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp016_research_status.py"
+      ],
+      "network_http_status": 404,
+      "state": "SOURCE_UNRECOVERABLE",
+      "source_bytes": null,
+      "members": [],
+      "provenance": "NOT_FOUND_CURRENT_OR_ID_NAMED_BACKUP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "core003-pilot-report.json"
+      ],
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "core003-pilot-report-41814068321.zip",
+      "locked_members": {
+        "core003-pilot-report.json": "151168c074b7d1f0c92bb1c568f70bd23d2669a8903540a26c9b97f32121a7d7"
+      }
+    },
+    {
+      "artifact_id": 13314445420,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41814068321,
+      "artifact_name": "dev011-coverage-manifest-41814068321",
+      "zip_filename": "13314445420.zip",
+      "zip_sha256": "8e597ef2e9989404e57fcaa8d67444f5cb375eb15d02aa9866b8006f353a975a",
+      "dependent_steps": [
+        "Replay MVP-016 genuine GitHub inventory outage (NO BET)",
+        "Replay MVP-016 original research status (NO BET)",
+        "Replay MVP-017 last-known-valid health on 3 GitHub runs and V1 audit"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp016_inventory_outage.py",
+        "tests/test_mvp016_research_status.py",
+        "tests/test_mvp017_research_health.py"
+      ],
+      "network_http_status": 404,
+      "state": "SOURCE_UNRECOVERABLE",
+      "source_bytes": null,
+      "members": [],
+      "provenance": "NOT_FOUND_CURRENT_OR_ID_NAMED_BACKUP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "manifest.json"
+      ],
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "dev011-coverage-manifest-41814068321.zip",
+      "locked_members": {
+        "manifest.json": "ecb4477a0ec5fc9c954862943ab8b39876d7b13c6adf701bf4e777eaa9f9df33"
+      }
+    },
+    {
+      "artifact_id": 13315511779,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41817026855,
+      "artifact_name": "dev011-coverage-manifest-41817026855",
+      "zip_filename": "13315511779.zip",
+      "zip_sha256": "31f08853eebc4d8ee7a36297966f83390e62f79542aea9dd4db5160ad3447872",
+      "dependent_steps": [
+        "Replay MVP-016 genuine GitHub inventory outage (NO BET)",
+        "Replay MVP-017 last-known-valid health on 3 GitHub runs and V1 audit"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp016_inventory_outage.py",
+        "tests/test_mvp017_research_health.py"
+      ],
+      "network_http_status": 404,
+      "state": "SOURCE_UNRECOVERABLE",
+      "source_bytes": null,
+      "members": [],
+      "provenance": "NOT_FOUND_CURRENT_OR_ID_NAMED_BACKUP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "manifest.json"
+      ],
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "dev011-coverage-manifest-41817026855.zip",
+      "locked_members": {
+        "manifest.json": "b14c61c979c656e49da382d574f3416293303e582b3b864b646df592282c4ac7"
+      }
+    },
+    {
+      "artifact_id": 13315945255,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41817026855,
+      "artifact_name": "dev009-outcome-scorecards-41817026855",
+      "zip_filename": "13315945255.zip",
+      "zip_sha256": "475ed9bd96e8f5ecea7f700091d57ab40edc5505d3c1c16f4bbcdb514679cd2e",
+      "dependent_steps": [
+        "Replay MVP-016 genuine GitHub inventory outage (NO BET)",
+        "Replay MVP-017 last-known-valid health on 3 GitHub runs and V1 audit"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp016_inventory_outage.py",
+        "tests/test_mvp017_research_health.py"
+      ],
+      "network_http_status": 404,
+      "state": "SOURCE_UNRECOVERABLE",
+      "source_bytes": null,
+      "members": [],
+      "provenance": "NOT_FOUND_CURRENT_OR_ID_NAMED_BACKUP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "index.json + referenced result receipts"
+      ],
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "dev009-outcome-scorecards-41817026855.zip",
+      "locked_members": {
+        "index.json": "be7604e5b9604aa5439769e716038ad863854588fb6340b8333b4f77392e4481"
+      }
+    },
+    {
+      "artifact_id": 13316866794,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41820373324,
+      "artifact_name": "hbi-v1-system-audit-41820373324",
+      "zip_filename": "13316866794.zip",
+      "zip_sha256": "3588afc03acced3ca2b60dac48929b1b4238ce515047045c57536a8423c5b96c",
+      "dependent_steps": [
+        "Replay MVP-017 last-known-valid health on 3 GitHub runs and V1 audit"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp017_research_health.py"
+      ],
+      "network_http_status": 200,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 422795,
+      "members": [
+        {
+          "path": "v1-readiness.json",
+          "sha256": "d58710691683bc1577976630f0654d1f7582cbc9e4caf17ef2e987c9248c2678",
+          "bytes": 461
+        },
+        {
+          "path": "research-v1/october-operations.json",
+          "sha256": "4642ff5ab3cbe5b6542f893467985d60ce33b6103da340d6be4a293d4c3ad98c",
+          "bytes": 532654
+        },
+        {
+          "path": "research-v1/october-tracker.html",
+          "sha256": "40ac7f4930bfdc0fa88fecc5f8320c230b9e78c5dfaad6304fbb46eb1d68ba14",
+          "bytes": 1719296
+        },
+        {
+          "path": "research-v1/october-tracker.json",
+          "sha256": "76b7df909bcc36e54e08d96f65967c5d596aa9d6707c6ed8238b6afd38e814f9",
+          "bytes": 2529516
+        },
+        {
+          "path": "research-v1/research-learning-dataset.csv",
+          "sha256": "7a0fec9970aa2d708cd6e5062b72f3dc4d0a9136f18a35e5b5ce66a94b6dd57b",
+          "bytes": 348605
+        },
+        {
+          "path": "research-v1/research-learning-dataset.json",
+          "sha256": "e33624e0bc3fbadeb4150d9eb60f732cf764c95f3f3110f49f7f3b98aa3e66d9",
+          "bytes": 1189287
+        },
+        {
+          "path": "research-v1/research-status.json",
+          "sha256": "a6101dfe5ab51b305ec4d190868b8290f66177a1e377422f0d865a5c14cb6ab9",
+          "bytes": 3864
+        },
+        {
+          "path": "research-v1/v1-system-audit.json",
+          "sha256": "9ecf547e1792522b15865163bff765c2a87ce90d5220496a7f9f46be369861a6",
+          "bytes": 15217
+        },
+        {
+          "path": "research-v1/v1-system-audit.md",
+          "sha256": "d2af59a8cddde6ea606b11d2bb51e30b510236ee3757b295fb7bd243df1e0bc6",
+          "bytes": 1365
+        }
+      ],
+      "provenance": "CURRENT_AUTHENTICATED_ARTIFACT",
+      "workflow_run_head": "2937150ee0ce5bb7a0f6bb2ebe9ede7b894d01d3",
+      "historical_zip_digest_origin": "AUTHENTICATED_ARTIFACT_METADATA",
+      "required_member_patterns_if_unavailable": [
+        "research-v1/v1-system-audit.json"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13316866794.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "hbi-v1-system-audit-41820373324.zip",
+      "locked_members": {
+        "research-v1/v1-system-audit.json": "9ecf547e1792522b15865163bff765c2a87ce90d5220496a7f9f46be369861a6"
+      }
+    },
+    {
+      "artifact_id": 13317420559,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41820503559,
+      "artifact_name": "dev011-coverage-manifest-41820503559",
+      "zip_filename": "13317420559.zip",
+      "zip_sha256": "fc6169b933a589b3128e565de93ed7023872b29d10385c7e0652ef9e33947884",
+      "dependent_steps": [
+        "Replay MVP-017 last-known-valid health on 3 GitHub runs and V1 audit"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp017_research_health.py"
+      ],
+      "network_http_status": 404,
+      "state": "SOURCE_UNRECOVERABLE",
+      "source_bytes": null,
+      "members": [],
+      "provenance": "NOT_FOUND_CURRENT_OR_ID_NAMED_BACKUP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "manifest.json"
+      ],
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "dev011-coverage-manifest-41820503559.zip",
+      "locked_members": {
+        "manifest.json": "657b6f177e540c53f293f0beadb1ea0811130c544bf1f8a3cc185bf1ca831e94"
+      }
+    },
+    {
+      "artifact_id": 13317520139,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41820503559,
+      "artifact_name": "dev009-outcome-scorecards-41820503559",
+      "zip_filename": "13317520139.zip",
+      "zip_sha256": "a8cdcf987aa1326e96adb36cf046aad58ec2e44f37a6b1ec47dc273c835fb2b6",
+      "dependent_steps": [
+        "Replay MVP-017 last-known-valid health on 3 GitHub runs and V1 audit"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp017_research_health.py"
+      ],
+      "network_http_status": 404,
+      "state": "SOURCE_UNRECOVERABLE",
+      "source_bytes": null,
+      "members": [],
+      "provenance": "NOT_FOUND_CURRENT_OR_ID_NAMED_BACKUP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "index.json + referenced result receipts"
+      ],
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "dev009-outcome-scorecards-41820503559.zip",
+      "locked_members": {
+        "index.json": "8a8012777ac49256e95aab9f3f5e2555a938cb8117826d6f47ddb5410f2343e5"
+      }
+    },
+    {
+      "artifact_id": 13319117566,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41826490000,
+      "artifact_name": "bet-mvp-shadow-41826490000",
+      "zip_filename": "13319117566.zip",
+      "zip_sha256": "f7507ac56650cfdedff2999cc9e9d20616f1d6947f8b69eb6b053b402174ffb2",
+      "dependent_steps": [
+        "Replay MVP-018 no-freeze source provenance against original 65-race cohort"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp018_freeze_provenance.py"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 2917,
+      "members": [
+        {
+          "path": "cohort-index.json",
+          "sha256": "87e8cd9751a9987e49180c95c62d16ea418767fdbecaff3345c634f409c5dae4",
+          "bytes": 39444
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13319117566.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41826490000.zip",
+      "locked_members": {
+        "cohort-index.json": "87e8cd9751a9987e49180c95c62d16ea418767fdbecaff3345c634f409c5dae4"
+      }
+    },
+    {
+      "artifact_id": 13320200641,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41826490000,
+      "artifact_name": "dev009-outcome-scorecards-41826490000",
+      "zip_filename": "13320200641.zip",
+      "zip_sha256": "b477a1830d226d7acb4fcc8bbc49b94cf093bb19368247a4dbbeb88eb5f2fec3",
+      "dependent_steps": [
+        "Replay MVP-018 four official pre-frozen scratched runner results (NO BET)",
+        "Replay MVP-018 no-freeze source provenance against original 65-race cohort"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp018_freeze_provenance.py",
+        "tests/test_mvp018_official_prestart_scratches.py"
+      ],
+      "network_http_status": 404,
+      "state": "SOURCE_UNRECOVERABLE",
+      "source_bytes": null,
+      "members": [],
+      "provenance": "NOT_FOUND_CURRENT_OR_ID_NAMED_BACKUP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "index.json + referenced result receipts"
+      ],
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "dev009-outcome-scorecards-41826490000.zip",
+      "locked_members": {
+        "index.json": "a7cc16d026ea08e0042dc4d6c5c2d75d3212bfd5fb00203dbbbbc36455f11d2b"
+      }
+    },
+    {
+      "artifact_id": 13324021063,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41832416078,
+      "artifact_name": "core003-pilot-report-41832416078",
+      "zip_filename": "13324021063.zip",
+      "zip_sha256": "960bae998a68fcf7359fc045cd0476b8afb53c6b2eca4648a7d08bf1ca3ee262",
+      "dependent_steps": [
+        "Replay MVP-018 67-race physical coverage funnel (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp018_coverage_funnel.py",
+        "tests/test_mvp019_source_readiness.py"
+      ],
+      "network_http_status": 404,
+      "state": "SOURCE_UNRECOVERABLE",
+      "source_bytes": null,
+      "members": [],
+      "provenance": "NOT_FOUND_CURRENT_OR_ID_NAMED_BACKUP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "core003-pilot-report.json"
+      ],
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "core003-pilot-report-41832416078.zip",
+      "locked_members": {
+        "core003-pilot-report.json": "b75eb90a215ef1fe251da9d0d8df630cece2c7c003e2659a69a259390e67cb58"
+      }
+    },
+    {
+      "artifact_id": 13324315724,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41832416078,
+      "artifact_name": "dev011-coverage-manifest-41832416078",
+      "zip_filename": "13324315724.zip",
+      "zip_sha256": "c4a8f4e46c36651ea350d36d981c2966db6e04faab3f2041feaf479ad0f584fc",
+      "dependent_steps": [
+        "Replay MVP-018 67-race physical coverage funnel (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp018_coverage_funnel.py",
+        "tests/test_mvp019_source_readiness.py"
+      ],
+      "network_http_status": 404,
+      "state": "SOURCE_UNRECOVERABLE",
+      "source_bytes": null,
+      "members": [],
+      "provenance": "NOT_FOUND_CURRENT_OR_ID_NAMED_BACKUP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "manifest.json"
+      ],
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "dev011-coverage-manifest-41832416078.zip",
+      "locked_members": {
+        "manifest.json": "67a2ca0296c5fd571fa58c4b3a90f13d5155cb03228866bd8e0062a737951f33"
+      }
+    },
+    {
+      "artifact_id": 13324990108,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41832416078,
+      "artifact_name": "dev009-outcome-scorecards-41832416078",
+      "zip_filename": "13324990108.zip",
+      "zip_sha256": "4275ff8e46b075a71a31687d39d65e3505dda7e4004ad2e2fe96f443df5a01f7",
+      "dependent_steps": [
+        "Replay MVP-018 67-race physical coverage funnel (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp018_coverage_funnel.py",
+        "tests/test_mvp019_source_readiness.py"
+      ],
+      "network_http_status": 404,
+      "state": "SOURCE_UNRECOVERABLE",
+      "source_bytes": null,
+      "members": [],
+      "provenance": "NOT_FOUND_CURRENT_OR_ID_NAMED_BACKUP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "index.json + referenced result receipts"
+      ],
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "dev009-outcome-scorecards-41832416078.zip",
+      "locked_members": {
+        "index.json": "a4a667bd596bde42b9e3dbed6d96247731067fe76f82b33ea816194fa68b5ff7"
+      }
+    },
+    {
+      "artifact_id": 13324990118,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41832416078,
+      "artifact_name": "bet-mvp-shadow-41832416078",
+      "zip_filename": "13324990118.zip",
+      "zip_sha256": "1c0ef6c4b4467afe5bbaf455fc70ce54f61b5b699d59fd41fd32a19861a6fad3",
+      "dependent_steps": [
+        "Replay MVP-018 67-race physical coverage funnel (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp018_coverage_funnel.py",
+        "tests/test_mvp019_source_readiness.py"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 3451,
+      "members": [
+        {
+          "path": "cohort-index.json",
+          "sha256": "5a39954a79ca2e4d765092bfef64386eb8d77d5c9fb6685645306911c008de04",
+          "bytes": 59281
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13324990118.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41832416078.zip",
+      "locked_members": {
+        "cohort-index.json": "5a39954a79ca2e4d765092bfef64386eb8d77d5c9fb6685645306911c008de04"
+      }
+    },
+    {
+      "artifact_id": 13348981011,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41879063497,
+      "artifact_name": "bet-mvp-shadow-41879063497",
+      "zip_filename": "13348981011.zip",
+      "zip_sha256": "dab7078dfcd0507856e665461e04f10a78fa0caa18729f10aea2f17cf77053ea",
+      "dependent_steps": [
+        "Replay MVP-019B disjoint source/current cohort originals (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp019_operational_readiness.py"
+      ],
+      "network_http_status": 404,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 52587,
+      "members": [
+        {
+          "path": "cohort-index.json",
+          "sha256": "f3af0f08f203044b0cede78ca41b395828144aad794ec21ace3ef4520541dec7",
+          "bytes": 101695
+        },
+        {
+          "path": "race-001/collector-research-report.json",
+          "sha256": "8b268c446cbc0a41263fc3c8fd3b860ffff8ee46d4d3bc8c060a86c34a60f0bd",
+          "bytes": 17476
+        },
+        {
+          "path": "race-001/runners.csv",
+          "sha256": "76106708bc892282cd7ffefba96b62f8be6a7c657923669ac1e0bebc41cebfdc",
+          "bytes": 6355
+        },
+        {
+          "path": "race-001/shadow.json",
+          "sha256": "f95bfa8a03f5d0fc47e58b32bf79333aebe1e933c3d9fa234746adf6be882614",
+          "bytes": 22306
+        },
+        {
+          "path": "race-001/shadow.md",
+          "sha256": "fbe83e111f2504961d3514222b38d7be2c4bcdc045f08dddf1109de03072004a",
+          "bytes": 7221
+        },
+        {
+          "path": "race-002/collector-research-report.json",
+          "sha256": "be79e0cec13383050326c9f120431ba1f0066b733067e06ab150b0a32cac2ded",
+          "bytes": 17511
+        },
+        {
+          "path": "race-002/runners.csv",
+          "sha256": "3cc414d0f9947169baa2eba03e1e5c89c148be39bd7e578a06a9a588869b7ae5",
+          "bytes": 6691
+        },
+        {
+          "path": "race-002/shadow.json",
+          "sha256": "9b0105dfb66d61493629b22807232fea532765a383d4c450b030c0cf2c80d963",
+          "bytes": 22641
+        },
+        {
+          "path": "race-002/shadow.md",
+          "sha256": "931e842d04c749dd0d5c2a436ea01c3f4a4ca46136fb439fb23a9ee8968302a9",
+          "bytes": 7274
+        },
+        {
+          "path": "race-003/runners.csv",
+          "sha256": "02aaa04bd2ea7606fe374742a3387f0b8f1a4dc4ef65942e29e0249ba86f8ba1",
+          "bytes": 6216
+        },
+        {
+          "path": "race-003/shadow.json",
+          "sha256": "9d067c548add66b1513ed6240d7fbb787150f5a591536757e7e5c6c5270400fa",
+          "bytes": 21177
+        },
+        {
+          "path": "race-003/shadow.md",
+          "sha256": "313acba7ba0d49179342b2ea823bf7bfd48de38279b6575e7f4aea0b5e212cea",
+          "bytes": 5883
+        },
+        {
+          "path": "race-004/runners.csv",
+          "sha256": "2eb67676ee27b47701c27dd549f68b4f9756487f85c08d53220b822635c139cf",
+          "bytes": 4657
+        },
+        {
+          "path": "race-004/shadow.json",
+          "sha256": "08bb3437570860d83d91101b5c4a23f5ca0f5ff876bbfed6e4b83e335ae50e3c",
+          "bytes": 16522
+        },
+        {
+          "path": "race-004/shadow.md",
+          "sha256": "78b4dc44ac2f70874c972100255788c8c1e393df8568fbf772482f14d4714fc8",
+          "bytes": 4869
+        },
+        {
+          "path": "race-005/runners.csv",
+          "sha256": "d2ebdfc27d9dc387757f3db5d735fc44de2cb61f5239567675d100eb97975a88",
+          "bytes": 5187
+        },
+        {
+          "path": "race-005/shadow.json",
+          "sha256": "eb0f6b371e61286cf4a5b42453bce861fdd64231e3c6c78d5df5574d2780b4ed",
+          "bytes": 18086
+        },
+        {
+          "path": "race-005/shadow.md",
+          "sha256": "0a62927107598e71ff625c1c2062059d1417e654ade398edf0f99aefbe158708",
+          "bytes": 5243
+        },
+        {
+          "path": "race-006/runners.csv",
+          "sha256": "9326c18bcbf55a49d8c3628019d0e653fa4b07beff6d2c77b04781e957fff6a2",
+          "bytes": 5957
+        },
+        {
+          "path": "race-006/shadow.json",
+          "sha256": "f69437dc9092d26ea1acb26428d09b46fef2611a0221fa24df7dff867aea33d6",
+          "bytes": 19883
+        },
+        {
+          "path": "race-006/shadow.md",
+          "sha256": "178b6b1a3ab773b6673a7f25722d216c084725df5c316e21521fda3e547cff42",
+          "bytes": 5510
+        }
+      ],
+      "provenance": "LOCAL_EXACT_UPLOAD_ZIP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/13348981011.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "bet-mvp-shadow-41879063497.zip",
+      "locked_members": {
+        "cohort-index.json": "f3af0f08f203044b0cede78ca41b395828144aad794ec21ace3ef4520541dec7"
+      }
+    },
+    {
+      "artifact_id": 13348981022,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41879063497,
+      "artifact_name": "core003-pilot-report-41879063497",
+      "zip_filename": "13348981022.zip",
+      "zip_sha256": "152717d5cd3037e0ec17686d383bc3dc03dc25abe8cc505e0ef8b2d58315fc1c",
+      "dependent_steps": [
+        "Replay MVP-019B disjoint source/current cohort originals (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp019_operational_readiness.py"
+      ],
+      "network_http_status": 404,
+      "state": "SOURCE_UNRECOVERABLE",
+      "source_bytes": null,
+      "members": [],
+      "provenance": "NOT_FOUND_CURRENT_OR_ID_NAMED_BACKUP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "core003-pilot-report.json"
+      ],
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "core003-pilot-report-41879063497.zip",
+      "locked_members": {
+        "core003-pilot-report.json": "ab5a773ef530b061659d2ff2ee78f16806fd97637be6c57f29768d9c51cad560"
+      }
+    },
+    {
+      "artifact_id": 13349320545,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41879063497,
+      "artifact_name": "dev011-coverage-manifest-41879063497",
+      "zip_filename": "13349320545.zip",
+      "zip_sha256": "b46bcaf7394b1ea501bae2c63a83d288da4e441c70bdfdd84ed448d7a0cd29d1",
+      "dependent_steps": [
+        "Replay MVP-019B disjoint source/current cohort originals (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp019_operational_readiness.py"
+      ],
+      "network_http_status": 404,
+      "state": "SOURCE_UNRECOVERABLE",
+      "source_bytes": null,
+      "members": [],
+      "provenance": "NOT_FOUND_CURRENT_OR_ID_NAMED_BACKUP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "manifest.json"
+      ],
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "dev011-coverage-manifest-41879063497.zip",
+      "locked_members": {
+        "manifest.json": "a9b5c7efa0a35191f4693658df58161d553556f3dcc4e1ecc638a2c8b0c4a01e"
+      }
+    },
+    {
+      "artifact_id": 13349440390,
+      "repository": "Maremoo2/Betting",
+      "run_id": 41879063497,
+      "artifact_name": "dev009-outcome-scorecards-41879063497",
+      "zip_filename": "13349440390.zip",
+      "zip_sha256": "a98951a43fd7bd4d595dab79696ac06dc5cefaa1e2d83f3b17d04835a0ed9093",
+      "dependent_steps": [
+        "Replay MVP-019B disjoint source/current cohort originals (NO BET)"
+      ],
+      "dependent_tests": [
+        "tests/test_mvp019_operational_readiness.py"
+      ],
+      "network_http_status": 404,
+      "state": "SOURCE_UNRECOVERABLE",
+      "source_bytes": null,
+      "members": [],
+      "provenance": "NOT_FOUND_CURRENT_OR_ID_NAMED_BACKUP",
+      "workflow_run_head": null,
+      "historical_zip_digest_origin": "PREEXISTING_ORIGINAL_UPLOAD_LOG_AUDIT",
+      "required_member_patterns_if_unavailable": [
+        "index.json + referenced result receipts"
+      ],
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "dev009-outcome-scorecards-41879063497.zip",
+      "locked_members": {
+        "index.json": "6ec0392fd9620b41be90610b5348a019e0a9e43a975562960f8f04d2cbd61a9a"
+      }
+    },
+    {
+      "artifact_id": 14695542768,
+      "repository": "Maremoo2/rikstoto-program-collector",
+      "run_id": 44874876371,
+      "artifact_name": "rikstoto-morning-programs",
+      "zip_filename": "14695542768.zip",
+      "zip_sha256": "ddb07503641d88aec4f90ef263f0fdf322c8a8ed852c8ee28d8fec19e49ceff4",
+      "dependent_steps": [
+        "Replay CORE003_AUTHENTIC_REPLAY_V2 through unchanged SQLite model gate",
+        "Replay authenticated 21 Nov Collector, SQLite, Shadow and Pre-Watch"
+      ],
+      "dependent_tests": [
+        "tests/test_collector_nov21_rebaseline.py",
+        "tests/test_core003_authentic_replay_v2.py"
+      ],
+      "network_http_status": 200,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 1646504,
+      "members": [
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/discovery_calendar.json",
+          "sha256": "606b136ada5b6f50a2a1d276524806e33181c95711b62a441369933855aeb35d",
+          "bytes": 242
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/discovery_calendar.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/discovery_multitracks.json",
+          "sha256": "b25e52ebea1f7887f9874f2a4bd89b3a86007d7a67ce704a590d1def99eef34d",
+          "bytes": 226
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/discovery_multitracks.raw.json",
+          "sha256": "b4c28f2aa16956fc39809cd3c4b4106eb7327e1113715f27a64144a13bd5763e",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/discovery_racedays.json",
+          "sha256": "43f3a40879873e0d296504fede98aefe462dfd0d9cbd060dc0ac69a9b93ef8cc",
+          "bytes": 630979
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/discovery_racedays.raw.json",
+          "sha256": "3f6b45a3e739b668212601315771f74e88b72fb4eac0db85b832fc11c9d4c83d",
+          "bytes": 340865
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/discovery_spa_schedule.json",
+          "sha256": "68d3c708aba05e9abde2b4625755c6f13d022855975b3853998939c7f8858583",
+          "bytes": 2431
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/frontpage.html",
+          "sha256": "4aa6597daca64a3eb85f6092e605a9e674185f601d70a3b3841307a1b63af00b",
+          "bytes": 654311
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/frontpage.txt",
+          "sha256": "84aeb41c2313b7ca8c411dfc9238eea3a859e4b2bbae5034c05bfcdb35b3e002",
+          "bytes": 2448
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/manifest.json",
+          "sha256": "27d81e314c091805caf458bc4bfae794cffae221ed1f50669771a05ad6c5b58d",
+          "bytes": 80575
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/driver_changes.json",
+          "sha256": "771fd93bcdcb1a028f1c757ff69c63f4a9714daefa83b3e2ded28cc1d4c806bb",
+          "bytes": 249
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/driver_changes.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/full_program.pdf",
+          "sha256": "1c9e0617fbfccb636a1a135f54397be8ce94f73064bb8f9c461f9294107d3867",
+          "bytes": 111762
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/full_program.txt",
+          "sha256": "1371887b8fe51aa91bb15a1e2bff9a73be3ee4d98815922615e52e2c2dab2395",
+          "bytes": 109299
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/race_01.json",
+          "sha256": "6eec308e91558f18cea830cbdaad8b6fa98b417941505b48c7c9998c3b2122cd",
+          "bytes": 11167
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/race_01.raw.json",
+          "sha256": "4857ca7c10f3d2c2aeadf3cc7be43451f36077356b7ebc9cac158c89f1c279a0",
+          "bytes": 6305
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/race_02.json",
+          "sha256": "7df5609f1a269c64a0f79a719bc5ffa3a225efc5b84e40eba3c541206c39856d",
+          "bytes": 25836
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/race_02.raw.json",
+          "sha256": "274bf70a859720c940d25ea1e0611037db18279866228187c38eb926499d6374",
+          "bytes": 14590
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/race_03.json",
+          "sha256": "0e98fc6fbdc759642c77b1355332a811b2b989de6e3f2b5de48c018dc5a1835e",
+          "bytes": 19340
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/race_03.raw.json",
+          "sha256": "b07c960c41ac433b2a5a5034293698afb76058f61973805b33b58bb8ce2f6423",
+          "bytes": 10830
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/race_04.json",
+          "sha256": "be319458d2a972fcb8e90877ee28109f46726a9cb97273b01ec8cce5af4a8bdb",
+          "bytes": 19509
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/race_04.raw.json",
+          "sha256": "330b85ec1f24d24252d2603f12f173910215a06dd8d10606a2288b60bbf6a7bd",
+          "bytes": 10999
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/race_05.json",
+          "sha256": "816eaa3d83ad092ebe9dee05b6f8336cda4916dc14ee1114a241c67e5b8bc09a",
+          "bytes": 15243
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/race_06.json",
+          "sha256": "262ffe55ac18b1044d268ed68a5b8df35e61332d531ca905eb95af7d6bd09dcc",
+          "bytes": 21472
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/race_05.raw.json",
+          "sha256": "90f1bc67cf7d78c464a671090ade2b596953cc386e1bbd2c41bcb08380fc39b5",
+          "bytes": 8557
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/race_06.raw.json",
+          "sha256": "56c92c95a7f01d5c0d8fcf69c9c9a5a72e4ff807fb66bc7fcc7830d1b8f46d0a",
+          "bytes": 12050
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/race_07.json",
+          "sha256": "d9403f1cc4db6cf14dc23af14edf71f44ba2c539dfc90bfadfa272bf440d15af",
+          "bytes": 23678
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/race_07.raw.json",
+          "sha256": "f1ec07602745a1c36e94d702c58df0de6babb482d37bbfff60585607bdc7298a",
+          "bytes": 13344
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/race_08.json",
+          "sha256": "a6fb4b89112cf6bfc57a311cb83593cbd083d541beab33e7bf519f4cd5d21230",
+          "bytes": 25712
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/race_08.raw.json",
+          "sha256": "a0c5d442dc12211842562c9e345f06c9538aa674e7e6cad36ea646e0b1f254ae",
+          "bytes": 14466
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/scratchings.json",
+          "sha256": "0f9282a7ee010a9b753103d505ae9fbc2cc8c14381a58b135ffdb9e92ec55c1b",
+          "bytes": 1202
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/starts.json",
+          "sha256": "d5cdb08547be5a1105e94b0eec3fb427b6526dc8614a530ba95d949663bcf68d",
+          "bytes": 27932
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/starts.raw.json",
+          "sha256": "6e9a8cc1196474e969d7d3497231611d6ea646ec8f39fe46dbffe44d88476852",
+          "bytes": 18179
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/HA_NR_2026-11-21/structured_program.json",
+          "sha256": "a3f80c941d6e4c5cb142d7d31b6fb726d9409723aaf6ef6620248a30c3822784",
+          "bytes": 536643
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/driver_changes.json",
+          "sha256": "02a2c25cfebb3ca1aa5f655f514510c67005996705a596f2143ac56fda4d783b",
+          "bytes": 249
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/driver_changes.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/full_program.pdf",
+          "sha256": "de7e40149067da4ebbd496c8ca681eed6af1a9fd34087dd0999c3fbaf6d06920",
+          "bytes": 137157
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/full_program.txt",
+          "sha256": "d1a08183e9deb10bacab1287f635d789b2982551bd663e530f870d962ae18587",
+          "bytes": 138135
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_01.json",
+          "sha256": "12f99bf33d99bd5ed1632b49c99cee08fb02bb0600f094ff85487728914dd3d4",
+          "bytes": 25581
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_01.raw.json",
+          "sha256": "400ab4b948609b6ce00598f41ecd2676a15d4680634af7fc300018c5736c3988",
+          "bytes": 14335
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_02.json",
+          "sha256": "af13721f9e69873634ceaddb8115c200a7c358ffff3ad22faf0b447533c95624",
+          "bytes": 21414
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_02.raw.json",
+          "sha256": "29e388b9c56c3c48d2c1e4e8a5229fdddfe0ee78f286083c3625abced03343a4",
+          "bytes": 11992
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_03.json",
+          "sha256": "6508c304e02754b414f2b6a53cfdbb8285a509c65ad8c8ebf3077d336e79e759",
+          "bytes": 21366
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_03.raw.json",
+          "sha256": "2fb4a59fa4f2c74b476f56ec721424c87f38287b31a99639f85c255695296175",
+          "bytes": 11944
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_04.json",
+          "sha256": "2f0e55ad02d5bcbc5a76fa18a8dda94415d4557604c74f927a1598faf99365c1",
+          "bytes": 19686
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_04.raw.json",
+          "sha256": "127bddf28bb94ee35f30a49769fbe6c4056d88b36866753e1a43c3d4b827e326",
+          "bytes": 11176
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_05.json",
+          "sha256": "3ff1cecc1b8cc12b39d9c4c44d614fb593dfb945bbe218421161685a3b5470e8",
+          "bytes": 23708
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_05.raw.json",
+          "sha256": "88cf7302acb355f25ef5f86c43504fd005c2a021a084d9e8872da74d92fa2e0e",
+          "bytes": 13374
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_06.json",
+          "sha256": "da6158ca9f6df4caf64a744bf74168584c40a5155299412a316500dff60aa9f0",
+          "bytes": 25672
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_06.raw.json",
+          "sha256": "9154289aa518454d689271697771ab276b03b4b497e3be92dc1c2dce982464bc",
+          "bytes": 14426
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_07.json",
+          "sha256": "5c3a5996a7452a2daa8950c1eb71042550378850acfb00076012a2c6cbb4634b",
+          "bytes": 23603
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_07.raw.json",
+          "sha256": "45baca16e720d812586c4954b9f0464a3781dcf630213b1b2de2aa8674daa126",
+          "bytes": 13269
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_08.json",
+          "sha256": "6a4b1acd63d4c57c33b3ff7c5ec090ba540b763052fcebcc0d872504f41d19a6",
+          "bytes": 25664
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_08.raw.json",
+          "sha256": "2ff5d2436ae7ab42e932052f87f219a61fe0ad69408bd24dcb121767e898549b",
+          "bytes": 14418
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_09.json",
+          "sha256": "f3ff9ca7c973c7a0f73240d3be580a273e6c076cce4baede751da2c603edcd39",
+          "bytes": 25687
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/race_09.raw.json",
+          "sha256": "0f40b158b40a1e5db4a2bf3122a5b7a6d97bc8462ff889f6286c57e5c071bb30",
+          "bytes": 14441
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/scratchings.json",
+          "sha256": "c83b3012d76e9b1440d78c402f3bd9d14bba36992a17cc3b82fa27c85a24347c",
+          "bytes": 616
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/starts.json",
+          "sha256": "77db68880263320bd83ff6beb2f15fe8a2896d73caaa86a1b540fa1c78d10b13",
+          "bytes": 36113
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/starts.raw.json",
+          "sha256": "fb346b2ad5f2d7c9b9c480213d3b7bcb1703e397a0a1df99e1633f20f1032354",
+          "bytes": 23321
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/OR_NR_2026-11-21/structured_program.json",
+          "sha256": "3a045f13585500fc2f4c15e0ec80dcbb3adcd5572621b13e7486dffe7bd0e78d",
+          "bytes": 693689
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/driver_changes.json",
+          "sha256": "d2ac88cd71ae624044b0d9dff9e2b21fc2b5e6ac0143f9cbeec430668301eed0",
+          "bytes": 249
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/driver_changes.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/full_program.pdf",
+          "sha256": "afbcec5635e5510fdae08411cdcc9e3eb07a31bfd46d3055a580147fadfb0f65",
+          "bytes": 198295
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/full_program.txt",
+          "sha256": "e512ad47db96554edcea10ae898fc382b450147d8c351a9d7e20fd32e77e71eb",
+          "bytes": 200278
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_01.json",
+          "sha256": "3dad516fbfc09ba2f34d0435a1ea1b1bb2bd7d3e29d61438f63fe4f1e135eb40",
+          "bytes": 25434
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_01.raw.json",
+          "sha256": "4a5d690418c80e3be2751bc16b74d23a6be6298110fa03957d5352b2662f2221",
+          "bytes": 14188
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_02.json",
+          "sha256": "b59d6a2abb83a1e13fcbc438905378dfabfa5002f1256f3fdc162561e3c4821b",
+          "bytes": 25773
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_02.raw.json",
+          "sha256": "757a9195ee86f21738832b3f6a654194fc4bc57a18d06d2db0d696ead7327562",
+          "bytes": 14527
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_03.json",
+          "sha256": "8710bd596b3efd973d76141242e30a495bcfc4505d6d9d75fdd55a7db0d4c740",
+          "bytes": 25754
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_03.raw.json",
+          "sha256": "70cddcd204a8c3e404ad915332f494e9866b6421d0ba08f3cf6add8630ee4740",
+          "bytes": 14508
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_04.json",
+          "sha256": "e8d78b27cf39ad2f40a1f41c1ef683da7804b345336357f1c8685ac2f1d02915",
+          "bytes": 25914
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_04.raw.json",
+          "sha256": "0a6b2ac17296fb6afd83c81e82e6a067b8c45f6b763fe8329e863660ff0c6e71",
+          "bytes": 14668
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_05.json",
+          "sha256": "97c19e9ca7cb3226e6785d99efd2248e81093458d5b79b569e4703bc795ece4a",
+          "bytes": 26764
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_05.raw.json",
+          "sha256": "44acaab3c7780fd86d7e733c005d8d1d25e951f4610a86d0a1d69a24195076cf",
+          "bytes": 15518
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_06.json",
+          "sha256": "5877cd5f5093337fd8d6546da94b8363bae33a0f5a9158c001f306f390236d6a",
+          "bytes": 22877
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_06.raw.json",
+          "sha256": "22a0e553b07853172b243ca7ce5c31827108d004325cd0a0a516085d45b916dc",
+          "bytes": 13455
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_07.json",
+          "sha256": "3791a3210bc9ec5a75f0019024c52a612158b52d4d573adf0b34ef06de371b7e",
+          "bytes": 33568
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_07.raw.json",
+          "sha256": "15722f15e8e35be9f4637faf77f99fd9316c7f6f99173c385f29baff0be5aee9",
+          "bytes": 19586
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_08.json",
+          "sha256": "5cdb945848ce86c077262983f197b8dc621c195f021bf51afcacb35d43e18d71",
+          "bytes": 26948
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_08.raw.json",
+          "sha256": "8defd7a80d095a429783364d926cb4d0b5fe95711063b01a1fb7b3bdf6758acd",
+          "bytes": 15702
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_09.json",
+          "sha256": "3dec52604319e973229cc42e6af401babc8744467eedc238f5d86c9d09dcde34",
+          "bytes": 27083
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_09.raw.json",
+          "sha256": "d3e31ec2f6442d4108a71b737f1bda95f6ff715e9e0b9440ace27c9795f8ccbe",
+          "bytes": 15837
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_10.json",
+          "sha256": "c4973f82186ba4ddd3cc95e821c489466fc95f31953304eba14a100ae0ee66c5",
+          "bytes": 33595
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_10.raw.json",
+          "sha256": "9a718a8ded022e3a00e381aee503091fee7b90dfd867cfbe2e6bd9baa7589df1",
+          "bytes": 19612
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_11.json",
+          "sha256": "6f73020f268c5eebd580ec4b7d948481dfa4c8ab57b60f39abc1f184a0d1d6a3",
+          "bytes": 27018
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_11.raw.json",
+          "sha256": "02dfe1bd7ed236bbd7dbddb1b62feda1c5a18e54f95e236670c56009d152694e",
+          "bytes": 15771
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_12.json",
+          "sha256": "ec8cce09b7f79413d0a3021482fa6b55657a71ad3c988a305d8fe4b4bd73fa97",
+          "bytes": 27007
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/race_12.raw.json",
+          "sha256": "59634b093cb1add6cf08c9c449f29471bc384a4eb87a2516673dd8004f78223a",
+          "bytes": 15760
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/scratchings.json",
+          "sha256": "c6e5a814beb75db64d23aaa64142b072c568e8509b75f6551bfeaea9cf1cf0ac",
+          "bytes": 1985
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/starts.json",
+          "sha256": "8a5ec6b00358650ea050a40a620c242a163caa7fe96e88a61f4801f51d804b31",
+          "bytes": 55240
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/starts.raw.json",
+          "sha256": "92d71078ff3225f24ccfca6347d6c7dfeefdf0df8d49f34e3bbb451a9a44c87c",
+          "bytes": 36229
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S1_NR_2026-11-21/structured_program.json",
+          "sha256": "38104b20acd7103d62753a053f0c650c9635fad011334bf1ae1794c64e5bb8ff",
+          "bytes": 1018144
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/driver_changes.json",
+          "sha256": "08bb89fd7e3b7bd943703c8ea1bec362b5c7efbd6baccfe8e3c36176d46e0c6d",
+          "bytes": 249
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/driver_changes.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/full_program.pdf",
+          "sha256": "d4832e3f8ead350b6a0a4a51fc773add4f2f155a666b31fd0ed41c9d84f9aaff",
+          "bytes": 78848
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/full_program.txt",
+          "sha256": "aac0edfc0af3f6ed6b06186a411055d88deb4ebc557c65233dc6f41822a0a1a3",
+          "bytes": 42313
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_01.json",
+          "sha256": "7d78b87e18591a613805d98826735191222310c00faf6cebda9d3fdef14429e2",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_01.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_02.json",
+          "sha256": "3f56f0e4ebd45cbc4acfbe34cf060768d6e620c321b51d39e5c22de33b84c8ef",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_02.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_04.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_03.json",
+          "sha256": "a400e752cf6f71691227819a980774955b507418a7370b37ed53cdfefbca2b9c",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_03.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_04.json",
+          "sha256": "99ddac476d137b2be48594af34ef8ccd4cba56dc38d8a756a326dbb9789bbc04",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_05.json",
+          "sha256": "0ca8f150c9a3bcb22e895337df81a2d62064cf4afc6b1a220e01ff452d8110ae",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_05.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_06.json",
+          "sha256": "3b54d93b656f756d7e10f3bf3f093fcbc03300e8d91f4f18d998cc10ccea8fa7",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_06.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_08.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_07.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_07.json",
+          "sha256": "20970af56f71218dfb266712e1564d95da018b754e254af9bc7ba38b2db234ff",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_08.json",
+          "sha256": "73765ff1e4322ea1d7a09158fc09d316e8bee9764995a8aa95917186c8702329",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_09.json",
+          "sha256": "5d2efb96f9bf88a467d16f86bcfb0949045166bf4f0c19f552d6ad4953c61171",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_09.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_10.json",
+          "sha256": "2b9afeee3a6840a8947d7338f7478cdda0566801697a938d68dee367055f1e18",
+          "bytes": 245
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/scratchings.json",
+          "sha256": "2a2f3862c219d07acec3d74ab2218f7368be08caba18c54bc411407b27b69a4a",
+          "bytes": 236
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/starts.json",
+          "sha256": "4354789ac9cf04e5cfbde1c3b163b40a84e8aeaf65eb008ba82f51c6922c0e98",
+          "bytes": 34111
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/race_10.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/starts.raw.json",
+          "sha256": "9d25bbe2404264b12001fc9dae99a9d1fdc7b7032f1b1fd2cffe71a1518b9ac7",
+          "bytes": 22816
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/S2_NR_2026-11-21/structured_program.json",
+          "sha256": "8d893dfe1f9903577b632bcdad2e13f6718d94986f7787d9b246c3455e091d7f",
+          "bytes": 378707
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/composite_physical_lineage.json",
+          "sha256": "75ee9b5425d4c5caad943c3e1448f58174ae1d234f309bcd4e29568f5978bbd8",
+          "bytes": 1532
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/driver_changes.json",
+          "sha256": "bc159dbd9f155ad0d2b6197454c68484fa60f3851c5a6c1b175a655a689fb818",
+          "bytes": 249
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/driver_changes.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/full_program.pdf",
+          "sha256": "73069e4b14117a459f6d6113f397abeaa5517b98eeb4ec97aaea12e2623fcaaf",
+          "bytes": 75621
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/full_program.txt",
+          "sha256": "48fa155a03d5ce493288e1de5e30efd11a9ad669d07d5fee14038ed4b98b680e",
+          "bytes": 64997
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/race_01.json",
+          "sha256": "329687cc7d89a0b679aad6226d8ffa46265380999bebf90061918a355ae673ce",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/race_01.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/race_02.json",
+          "sha256": "7b5a3d48f586436fab348c3fba7cbe319b90d3767b35bef39dd208dcee53f79e",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/race_02.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/race_03.json",
+          "sha256": "ea5b975bf65f06438773e0befd77faff7c89eabd36fab4b27788ebe3382f5228",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/race_03.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/race_04.json",
+          "sha256": "be60f2f214ab63a3b9401e1e37e0eb6d5a0d0bea0d1cd0f2303db46c8d61bd5d",
+          "bytes": 244
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/race_04.raw.json",
+          "sha256": "d99610c05be0723b7372b2e0ebbd8724c00b17b8ec1cd0a82d005519608b87ee",
+          "bytes": 60
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/scratchings.json",
+          "sha256": "dba039b33313e5932f86abe8d3593d1eb62bcf5740624892f9a1efff60357847",
+          "bytes": 428
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/starts.json",
+          "sha256": "4feeae2f389e65fc5cea816f9e4a235aade329a9b980bd21d889ad921055936a",
+          "bytes": 17072
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/starts.raw.json",
+          "sha256": "6a873750bdf0cb1da5f04b5138f20369450fe51e6b43ff1f08842497ab39ad3f",
+          "bytes": 11033
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/meetings/X1_NR_2026-11-21/structured_program.json",
+          "sha256": "163d8a4b3368f35c4768244e146c5b9b816697eaf3b85672e07be81b468606d8",
+          "bytes": 315667
+        },
+        {
+          "path": "output/daily/2026-11-21/20261121T061839807399Z/structured_program_day.json",
+          "sha256": "16b947efc00f25edb8af7c36bb5b8919f532d283be5b979fa035c9fbaffc230c",
+          "bytes": 2941881
+        },
+        {
+          "path": "daily-console.log",
+          "sha256": "a428235705a6172186b2e424492a18184ff180c1d389f75a8b51b1255ee4d397",
+          "bytes": 326
+        }
+      ],
+      "provenance": "CURRENT_AUTHENTICATED_ARTIFACT",
+      "workflow_run_head": "21031b554d34f1bfd8538b85e7c7183fa7d42c74",
+      "historical_zip_digest_origin": "AUTHENTICATED_ARTIFACT_METADATA",
+      "required_member_patterns_if_unavailable": [
+        "Unknown full member list; see unchanged test/source contract"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/14695542768.zip",
+      "dependency_kind": "INNER_ORIGINAL_PROVENANCE_CURRENTLY_SUPPLIED_BY_MIRROR",
+      "original_zip_filename": "rikstoto-morning-programs.zip",
+      "locked_members": {}
+    },
+    {
+      "artifact_id": 14708117248,
+      "repository": "Maremoo2/Betting",
+      "run_id": 44907636310,
+      "artifact_name": "core003-pilot-state",
+      "zip_filename": "14708117248.zip",
+      "zip_sha256": "51e6cb4ee388d098b1cb3894f6133e293a30194ccb3d19ab41435c222881b699",
+      "dependent_steps": [
+        "Replay CORE003_AUTHENTIC_REPLAY_V2 through unchanged SQLite model gate",
+        "Replay authenticated 21 Nov Collector, SQLite, Shadow and Pre-Watch"
+      ],
+      "dependent_tests": [
+        "tests/test_collector_nov21_rebaseline.py",
+        "tests/test_core003_authentic_replay_v2.py"
+      ],
+      "network_http_status": 200,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 39961780,
+      "members": [
+        {
+          "path": "core003-pilot.sqlite",
+          "sha256": "c8d460aa6e50f5c7f63a976e70e572bd5cc7fc4148ee9bddef786dea2984b20d",
+          "bytes": 215150592
+        }
+      ],
+      "provenance": "CURRENT_AUTHENTICATED_ARTIFACT",
+      "workflow_run_head": "f9cfbd1403ab392d89808d9eea4534b331696b29",
+      "historical_zip_digest_origin": "AUTHENTICATED_ARTIFACT_METADATA",
+      "required_member_patterns_if_unavailable": [
+        "Unknown full member list; see unchanged test/source contract"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/14708117248.zip",
+      "dependency_kind": "INNER_ORIGINAL_PROVENANCE_CURRENTLY_SUPPLIED_BY_MIRROR",
+      "original_zip_filename": "core003-pilot-state.zip",
+      "locked_members": {}
+    },
+    {
+      "artifact_id": 14708301894,
+      "repository": "Maremoo2/Betting",
+      "run_id": 44907636310,
+      "artifact_name": "core003-pilot-report-44907636310",
+      "zip_filename": "14708301894.zip",
+      "zip_sha256": "84a67bc202bdf53455c4276eea5a45543c1365cf06420f4b3a5075c3a34047a9",
+      "dependent_steps": [
+        "Replay CORE003_AUTHENTIC_REPLAY_V2 through unchanged SQLite model gate",
+        "Replay authenticated 21 Nov Collector, SQLite, Shadow and Pre-Watch"
+      ],
+      "dependent_tests": [
+        "tests/test_collector_nov21_rebaseline.py",
+        "tests/test_core003_authentic_replay_v2.py"
+      ],
+      "network_http_status": 200,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 1752,
+      "members": [
+        {
+          "path": "core003-pilot-report.json",
+          "sha256": "6d1cc224c789734eb136ffe87fbe53e1864080f98a40d827e605277a8ece533e",
+          "bytes": 12247
+        }
+      ],
+      "provenance": "CURRENT_AUTHENTICATED_ARTIFACT",
+      "workflow_run_head": "f9cfbd1403ab392d89808d9eea4534b331696b29",
+      "historical_zip_digest_origin": "AUTHENTICATED_ARTIFACT_METADATA",
+      "required_member_patterns_if_unavailable": [
+        "core003-pilot-report.json"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/14708301894.zip",
+      "dependency_kind": "INNER_ORIGINAL_PROVENANCE_CURRENTLY_SUPPLIED_BY_MIRROR",
+      "original_zip_filename": "core003-pilot-report-44907636310.zip",
+      "locked_members": {}
+    },
+    {
+      "artifact_id": 14708341778,
+      "repository": "Maremoo2/Betting",
+      "run_id": 44907636310,
+      "artifact_name": "bet-mvp-shadow-44907636310",
+      "zip_filename": "14708341778.zip",
+      "zip_sha256": "c25d4c569c8cb74924853fe4b6ea0bbac68effb983487ff6d4af8e0bb88cfd23",
+      "dependent_steps": [
+        "Replay CORE003_AUTHENTIC_REPLAY_V2 through unchanged SQLite model gate",
+        "Replay authenticated 21 Nov Collector, SQLite, Shadow and Pre-Watch"
+      ],
+      "dependent_tests": [
+        "tests/test_collector_nov21_rebaseline.py",
+        "tests/test_core003_authentic_replay_v2.py"
+      ],
+      "network_http_status": 200,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 27341,
+      "members": [
+        {
+          "path": "cohort-index.json",
+          "sha256": "60212cc24e0afc36e8d098a9742d615ebf80edfbbbb6a193513415e4f4542572",
+          "bytes": 49160
+        },
+        {
+          "path": "race-001/collector-research-report.json",
+          "sha256": "cf8d0e9decd6b18cf504f355d88a77d7b06400def1be7fc649ca89682d892610",
+          "bytes": 17476
+        },
+        {
+          "path": "race-001/runners.csv",
+          "sha256": "4b0e9a193cd85380497245a8d2b33bb3b8db64f294c364f62b18ca08b892088c",
+          "bytes": 6366
+        },
+        {
+          "path": "race-001/shadow.json",
+          "sha256": "33b5b2d96f2f82732bc43197b583427996e8c056b9bf04f25515c9b89f9514f0",
+          "bytes": 22302
+        },
+        {
+          "path": "race-001/shadow.md",
+          "sha256": "6074f797158c5fb8d41ee0dd38baa07e2741b5ea4d0e0a89e7d15f35561ecd81",
+          "bytes": 7253
+        },
+        {
+          "path": "race-002/runners.csv",
+          "sha256": "21cb0da9ed83494cc6335864e6ed4c49766bda9914080ce83ee0369982006001",
+          "bytes": 6088
+        },
+        {
+          "path": "race-002/shadow.json",
+          "sha256": "89e307bcc5edd0c06baa613e941250b8ac29af13ba687f3183cadef66bca21eb",
+          "bytes": 22073
+        },
+        {
+          "path": "race-002/shadow.md",
+          "sha256": "a9053f7cb65412c576058535f1be0472d53ff263d9fd4c59c1d2eb477ad68a5c",
+          "bytes": 6183
+        },
+        {
+          "path": "race-003/runners.csv",
+          "sha256": "533085a152cc6455842cbbfd29c020ed08487b88f22a598d306cf40d4d3c0eee",
+          "bytes": 5721
+        },
+        {
+          "path": "race-003/shadow.json",
+          "sha256": "aa093289171ada70d8752d5948c9e700240492613764fa84e89200b3e80f4191",
+          "bytes": 19662
+        },
+        {
+          "path": "race-003/shadow.md",
+          "sha256": "1ef924efd81f16efcaf54134561e74dd9cdf4cfa98811664575e1aa42cf27810",
+          "bytes": 5567
+        }
+      ],
+      "provenance": "CURRENT_AUTHENTICATED_ARTIFACT",
+      "workflow_run_head": "f9cfbd1403ab392d89808d9eea4534b331696b29",
+      "historical_zip_digest_origin": "AUTHENTICATED_ARTIFACT_METADATA",
+      "required_member_patterns_if_unavailable": [
+        "cohort-index.json and/or race-*/shadow.json; legacy indexes may intentionally be absent"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/14708341778.zip",
+      "dependency_kind": "INNER_ORIGINAL_PROVENANCE_CURRENTLY_SUPPLIED_BY_MIRROR",
+      "original_zip_filename": "bet-mvp-shadow-44907636310.zip",
+      "locked_members": {}
+    },
+    {
+      "artifact_id": 14769603393,
+      "repository": "Maremoo2/Betting",
+      "run_id": 45062690629,
+      "artifact_name": "core003-authentic-replay-v2-originals-45062690629",
+      "zip_filename": "14769603393.zip",
+      "zip_sha256": "c3b6b3a24f1bfc861060015a378bc891d7c48925ce8242be633a246e5829df75",
+      "dependent_steps": [
+        "Replay CORE003_AUTHENTIC_REPLAY_V2 through unchanged SQLite model gate",
+        "Replay authenticated 21 Nov Collector, SQLite, Shadow and Pre-Watch"
+      ],
+      "dependent_tests": [
+        "tests/test_collector_nov21_rebaseline.py",
+        "tests/test_core003_authentic_replay_v2.py"
+      ],
+      "network_http_status": 200,
+      "state": "VERIFIED_ORIGINAL",
+      "source_bytes": 41637849,
+      "members": [
+        {
+          "path": "collector.zip",
+          "sha256": "ddb07503641d88aec4f90ef263f0fdf322c8a8ed852c8ee28d8fec19e49ceff4",
+          "bytes": 1646504
+        },
+        {
+          "path": "model.zip",
+          "sha256": "c25d4c569c8cb74924853fe4b6ea0bbac68effb983487ff6d4af8e0bb88cfd23",
+          "bytes": 27341
+        },
+        {
+          "path": "report.zip",
+          "sha256": "84a67bc202bdf53455c4276eea5a45543c1365cf06420f4b3a5075c3a34047a9",
+          "bytes": 1752
+        },
+        {
+          "path": "state.zip",
+          "sha256": "51e6cb4ee388d098b1cb3894f6133e293a30194ccb3d19ab41435c222881b699",
+          "bytes": 39961780
+        }
+      ],
+      "provenance": "CURRENT_AUTHENTICATED_ARTIFACT",
+      "workflow_run_head": "48a6f18d842d86d0de833d325fdc56c9d760435e",
+      "historical_zip_digest_origin": "AUTHENTICATED_ARTIFACT_METADATA",
+      "required_member_patterns_if_unavailable": [
+        "Unknown full member list; see unchanged test/source contract"
+      ],
+      "archive_path": "archive/ci-originals/20261127/artifacts/14769603393.zip",
+      "dependency_kind": "ACTIVE_HISTORICAL_SOURCE",
+      "original_zip_filename": "core003-authentic-replay-v2-originals-45062690629.zip",
+      "locked_members": {}
+    }
+  ],
+  "private_commit": "1deb08459b819ba76af3130a5d28e27317d6243c",
+  "supplementary_dependencies": [
+    {
+      "kind": "RETIRED_LEGACY_NOT_ACTIVE_REPLACEMENT",
+      "run_id": 41518035718,
+      "artifact_id": 13176561174,
+      "file": "core003-pilot.sqlite",
+      "sha256": "60dbb4d350c252fd1f6dd7d8ba2c19e841153bd0e260318938e1b888bda913b0",
+      "status": "NOT_REPRODUCIBLE_SOURCE_EXPIRED",
+      "test": "tests/test_collector_handoff_real_archive.py",
+      "contract": "docs/CORE003_AUTHENTIC_REPLAY_V2.json:legacy"
+    },
+    {
+      "kind": "CURRENT_RUN_INDEPENDENT_HANDOFF",
+      "source": "needs.test.outputs.replay_v2_artifact_id",
+      "status": "NEW_JOB_REQUIRED",
+      "transport": "AES-GCM encrypted existing replay.sqlite and receipt.json; no historical artifact lookup",
+      "verification": "Existing exact SQLite SHA, integrity, counts and migration ledger remain required"
+    }
+  ]
+}
