@@ -104,3 +104,13 @@ def test_final_verdict_checks_infrastructure_failures_after_status_upload():
     assert "PRIOR_JOB_STATUS: ${{ job.status }}" in final
     assert 'if [ "$PRIOR_JOB_STATUS" != success ]' in final
     assert "technical_status=FAIL_REGRESSION" in final
+
+
+def test_main_and_bounded_dispatch_use_the_same_required_jobs():
+    from pathlib import Path
+
+    text = (Path(__file__).parents[1] / ".github/workflows/ci.yml").read_text()
+    for job in ["replay-v2-independent-readback", "historical-research-evidence", "technical-acceptance"]:
+        body = text.split("  " + job + ":", 1)[1].split("    steps:", 1)[0]
+        assert "github.ref == 'refs/heads/main'" in body
+        assert "github.event_name == 'workflow_dispatch'" in body

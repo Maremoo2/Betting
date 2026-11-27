@@ -26,9 +26,13 @@ jobs:
       # private read credential. Never pass it to pytest, replay or uploads.
       - name: Read approved private CI originals with reviewed fetch code
         if: >-
-          github.event_name == 'pull_request' &&
-          github.event.pull_request.head.repo.full_name == 'Maremoo2/Betting' &&
-          github.event.pull_request.user.login == 'Maremoo2'
+          (github.event_name == 'pull_request' &&
+           github.event.pull_request.head.repo.full_name == 'Maremoo2/Betting' &&
+           github.event.pull_request.user.login == 'Maremoo2') ||
+          (github.actor == 'Maremoo2' &&
+           ((github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+            (github.event_name == 'workflow_dispatch' &&
+             (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/fix/private-ci-source-archive'))))
         env:
           RESEARCH_ARCHIVE_READ_TOKEN: ${{ secrets.RESEARCH_ARCHIVE_READ_TOKEN }}
         shell: bash
@@ -58,7 +62,7 @@ jobs:
       # Exactly the real 4 Nov morning Collector original, not a synthetic
       # startlist or a fabricated T-4 receipt. Former parser rejected 3/35.
       - name: Replay MVP-014 4 Nov genuine PDF race headers (NO PIT/BET)
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive'))
         env:
           # Public Collector archive; keep exact original SHA, use scoped CI access.
           GH_TOKEN: ${{ github.token }}
@@ -121,7 +125,7 @@ jobs:
           PY
 
       - name: Upload MVP-014 original 4 Nov PDF replay evidence (NO BET)
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp014-original-pdf-headers-${{ github.run_id }}
@@ -133,7 +137,7 @@ jobs:
       # its status is NOT_REPRODUCIBLE_SOURCE_EXPIRED, never V2 PASS.
       - name: Replay CORE003_AUTHENTIC_REPLAY_V2 through unchanged SQLite model gate
         id: replay_v2
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive'))
         env:
           # Final V2 mirror is in this repository; do not consume the shared
           # cross-repository Collector installation token for same-repo reads.
@@ -155,16 +159,16 @@ jobs:
           PY
 
       - name: Confirm bootstrap originals retained privately
-        if: github.event_name == 'pull_request' && steps.replay_v2.outputs.bootstrap == 'true'
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && steps.replay_v2.outputs.bootstrap == 'true'
         run: python scripts/ci_originals.py verify-cache
 
       - name: Encrypt exact SQLite handoff before public artifact transport
-        if: github.event_name == 'pull_request' && steps.replay_v2.outcome == 'success'
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && steps.replay_v2.outcome == 'success'
         run: python -m hbi.ci_readback_transport seal --source "$RUNNER_TEMP/core003-v2-output" --destination "$RUNNER_TEMP/core003-v2-encrypted"
 
       - name: Publish V2 SQLite and receipt for separate-runner readback
         id: replay_v2_publish
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive'))
         uses: actions/upload-artifact@v4
         with:
           name: core003-authentic-replay-v2-readback-${{ github.run_id }}
@@ -176,7 +180,7 @@ jobs:
       # contribute zero races without creating a false archive error.
       - name: Replay MVP-016 original empty CORE-003 cohort (NO BET)
         id: mvp016_original
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive'))
         shell: bash
         run: |
           set -euo pipefail
@@ -211,7 +215,7 @@ jobs:
           PY
 
       - name: Upload MVP-016 original empty cohort replay (NO BET)
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp016-empty-cohort-original-${{ github.run_id }}
@@ -222,7 +226,7 @@ jobs:
       # Real scheduled 4 Nov source inventory changed during pagination.
       # Protect cumulative benchmark from a falsely zero-count published scorecard.
       - name: Replay MVP-017 private local original archive on true GitHub bytes
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive'))
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -272,7 +276,7 @@ jobs:
           PY
 
       - name: Upload MVP-017 metadata-only archive evidence (no raw bytes)
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp017-local-private-archive-metadata-${{ github.run_id }}
@@ -283,7 +287,7 @@ jobs:
       # Five original physical source reasons; no retrospective model freeze.
       - name: Replay authenticated 21 Nov Collector, SQLite, Shadow and Pre-Watch
         id: replay_nov21
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive'))
         shell: bash
         run: |
           set -euo pipefail
@@ -305,7 +309,7 @@ jobs:
           done
 
       - name: Upload authenticated Pre-Watch day readback (not live betting)
-        if: github.event_name == 'pull_request' && steps.replay_nov21.outcome == 'success'
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && steps.replay_nov21.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: v3313-product-day-${{ github.run_id }}
@@ -317,7 +321,7 @@ jobs:
           retention-days: 30
 
       - name: Replay DEV-009 outcome scorecard on original frozen Eskilstuna archive
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive'))
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -360,7 +364,7 @@ jobs:
           PY
 
       - name: Upload DEV-009 original archive scorecard (NO BET)
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: dev009-authentic-original-scorecard-${{ github.run_id }}
@@ -371,7 +375,7 @@ jobs:
       # Five genuine model archives from 2 Nov exist on GitHub, but predate
       # the immutable cohort index. Do not turn them into admitted models.
       - name: Replay MVP-014 original legacy-index classification (NO PIT/BET)
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive'))
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -414,7 +418,7 @@ jobs:
           PY
 
       - name: Upload MVP-014 legacy-original coverage diagnosis (NO BET)
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp014-legacy-original-coverage-${{ github.run_id }}
@@ -423,7 +427,7 @@ jobs:
           retention-days: 30
 
       - name: Replay DEV-011 retained Eskilstuna model and pinned originals (21 empty runs)
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive'))
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -473,7 +477,7 @@ jobs:
       # race. Official result receipt is reused only after raw SHA verification;
       # this never updates a historical freeze or grants PIT/BET authority.
       - name: Replay DEV-013 multi-freeze Eskilstuna WIN benchmark (NO BET)
-        if: github.event_name == 'pull_request'
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive'))
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -499,7 +503,7 @@ jobs:
             pytest -q tests/test_dev013_win_benchmark.py::test_authentic_eskilstuna_original_frozen_versions_and_official_receipts
 
       - name: Upload DEV-013 genuine originals WIN comparison (NO BET)
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: dev013-authentic-win-benchmark-${{ github.run_id }}
@@ -508,7 +512,7 @@ jobs:
           retention-days: 30
 
       - name: Upload DEV-011 real original cumulative scorecard (NO BET)
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: dev011-authentic-cumulative-scorecard-${{ github.run_id }}
@@ -519,7 +523,7 @@ jobs:
           retention-days: 30
 
       - name: Upload immutable historical research model and Collector source provenance
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp004-historical-research-${{ github.run_id }}
@@ -534,7 +538,7 @@ jobs:
         run: gh api rate_limit --jq '.resources.core | {limit, remaining, reset, used}'
 
   replay-v2-independent-readback:
-    if: always() && github.event_name == 'pull_request' && needs.test.outputs.replay_v2_status == 'success'
+    if: always() && (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && needs.test.outputs.replay_v2_status == 'success'
     needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 18
@@ -547,9 +551,13 @@ jobs:
       # private read credential. Never pass it to pytest, replay or uploads.
       - name: Independently restore approved private sources
         if: >-
-          github.event_name == 'pull_request' &&
-          github.event.pull_request.head.repo.full_name == 'Maremoo2/Betting' &&
-          github.event.pull_request.user.login == 'Maremoo2'
+          (github.event_name == 'pull_request' &&
+           github.event.pull_request.head.repo.full_name == 'Maremoo2/Betting' &&
+           github.event.pull_request.user.login == 'Maremoo2') ||
+          (github.actor == 'Maremoo2' &&
+           ((github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+            (github.event_name == 'workflow_dispatch' &&
+             (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/fix/private-ci-source-archive'))))
         env:
           RESEARCH_ARCHIVE_READ_TOKEN: ${{ secrets.RESEARCH_ARCHIVE_READ_TOKEN }}
         shell: bash
@@ -612,7 +620,7 @@ jobs:
             pytest -c pyproject.toml -q -s ../tests/test_core003_authentic_replay_v2.py
 
   historical-research-evidence:
-    if: github.event_name == 'pull_request'
+    if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive'))
     runs-on: ubuntu-latest
     outputs:
       technical_status: ${{ steps.history_verdict.outputs.technical_status }}
@@ -626,9 +634,13 @@ jobs:
       # private read credential. Never pass it to pytest, replay or uploads.
       - name: Read approved private historical sources
         if: >-
-          github.event_name == 'pull_request' &&
-          github.event.pull_request.head.repo.full_name == 'Maremoo2/Betting' &&
-          github.event.pull_request.user.login == 'Maremoo2'
+          (github.event_name == 'pull_request' &&
+           github.event.pull_request.head.repo.full_name == 'Maremoo2/Betting' &&
+           github.event.pull_request.user.login == 'Maremoo2') ||
+          (github.actor == 'Maremoo2' &&
+           ((github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+            (github.event_name == 'workflow_dispatch' &&
+             (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/fix/private-ci-source-archive'))))
         env:
           RESEARCH_ARCHIVE_READ_TOKEN: ${{ secrets.RESEARCH_ARCHIVE_READ_TOKEN }}
         shell: bash
@@ -697,7 +709,7 @@ jobs:
           PY
 
       - name: Upload MVP-016 original inventory outage replay evidence
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp016-original-inventory-outage-${{ github.run_id }}
@@ -758,7 +770,7 @@ jobs:
           PY
 
       - name: Upload MVP-016 original joined research-status evidence
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp016-original-research-status-${{ github.run_id }}
@@ -849,7 +861,7 @@ jobs:
           PY
 
       - name: Upload MVP-017 health metadata only (NO BET)
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp017-original-health-${{ github.run_id }}
@@ -907,7 +919,7 @@ jobs:
           PY
 
       - name: Upload MVP-018 original scratched results evidence (metadata only)
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp018-original-pre-frozen-scratches-${{ github.run_id }}
@@ -979,7 +991,7 @@ jobs:
           PY
 
       - name: Upload MVP-018 source diagnostics (no originals or BET)
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp018-freeze-source-diagnostics-${{ github.run_id }}
@@ -1031,7 +1043,7 @@ jobs:
             --output-dir "$root/readiness"
 
       - name: Upload MVP-018 original physical coverage funnel (NO BET)
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp018-original-coverage-funnel-${{ github.run_id }}
@@ -1041,7 +1053,7 @@ jobs:
 
       # Separate read-only original-backed diagnostics, not a PIT/BET gate.
       - name: Upload MVP-019 original source readiness (NO BET)
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp019-original-source-readiness-${{ github.run_id }}
@@ -1088,7 +1100,7 @@ jobs:
             --output-dir "$root/report"
 
       - name: Upload MVP-019B disjoint source readiness evidence (NO BET)
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp019b-original-disjoint-readiness-${{ github.run_id }}
@@ -1154,7 +1166,7 @@ jobs:
           PY
 
       - name: Upload real-original MVP-009 decision diagnostics (NO BET)
-        if: github.event_name == 'pull_request' && always()
+        if: (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive')) && always()
         uses: actions/upload-artifact@v4
         with:
           name: mvp009-original-decision-diagnostics-${{ github.run_id }}
@@ -1200,7 +1212,7 @@ jobs:
           esac
 
   technical-acceptance:
-    if: always() && github.event_name == 'pull_request'
+    if: always() && (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/fix/private-ci-source-archive'))
     needs: [test, replay-v2-independent-readback, historical-research-evidence]
     runs-on: ubuntu-latest
     steps:

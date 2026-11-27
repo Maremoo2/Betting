@@ -19,6 +19,9 @@ def test_only_reviewed_first_party_fetch_step_receives_private_secret():
         assert "github.event.pull_request.user.login == 'Maremoo2'" in step
         assert "python -I -S scripts/ci_originals.py fetch" in step
         assert "pytest" not in step
+        assert "github.actor == 'Maremoo2'" in step
+        assert "github.event_name == 'push' && github.ref == 'refs/heads/main'" in step
+        assert "github.ref == 'refs/heads/fix/private-ci-source-archive'" in step
         for path in ("scripts/ci_originals.py", "src/hbi/ci_originals.py", "docs/CI_HISTORICAL_SOURCES.json"):
             assert hashlib.sha256((ROOT / path).read_bytes()).hexdigest() in step
     step = secret_steps[0]
