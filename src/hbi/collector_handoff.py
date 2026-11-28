@@ -42,7 +42,12 @@ def name_key(value: str) -> str:
 
 
 def select_collector_run(runs: list[dict], dates: set[str], asof: datetime) -> dict | None:
-    """Select actual completed automatic Collector runs, not arbitrary dispatches."""
+    """Select actual completed automatic Collector runs, not arbitrary dispatches.
+
+    The existing refresh dispatcher uses GitHub's bot identity. The event name
+    alone is never automatic-source provenance: bind the repository, workflow,
+    main branch, actor and completed-before-asof clocks as well.
+    """
     if asof.utcoffset() is None:
         raise ValueError('COLLECTOR_SELECTION_CLOCK_UNKNOWN')
     accepted = []

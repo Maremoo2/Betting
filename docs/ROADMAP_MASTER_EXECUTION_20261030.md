@@ -1,6 +1,6 @@
 # Betting HQ – master-roadmap og gjennomføringsstatus
 
-## Gjeldende V1-utførelse – 27. november 2026, kveld
+## Gjeldende V1-utførelse – oppdatert 28. november 2026
 
 Roadmapen V1 → V1.1 → V2 → V2.1 → V3 og eksisterende DONE-kriterier beholdes.
 Eldre daterte notater nedenfor er revisjonsbevis, ikke gjeldende aktiveringsstatus.
@@ -14,11 +14,27 @@ Eldre daterte notater nedenfor er revisjonsbevis, ikke gjeldende aktiveringsstat
 - **V1 rapportering aktivert med HQ-mandat:** Eksisterende private workflow
   `419038377`, `hq-nordic-acceptance.yml`, er aktivert med
   `HQ_DAILY_REPORT_ENABLED=true`, daglig 23:50 Europe/Oslo. Første faktiske
-  scheduled execution er ikke ennå observert. GITHUB_TOKEN er tilstrekkelig;
+  scheduled execution `46079483705` startet 27. november kl. 23:55:11 Oslo
+  og fullførte PASS. GITHUB_TOKEN er tilstrekkelig;
   ingen ny scheduler, tjeneste, token eller e-postutsendelse. Privat main-test
   `46047235244` PASS: 37 løp /28 komplette Collector-felt /8 eksisterende
   forskningsfrys /83 hesteprediksjoner /7 samtidige WIN-felt /15 resultatkoblinger
   /7 skårbare modellpar /0 PIT. Snapshotet er ikke en fullført heldagsakseptanse.
+- **Observerte ordinære resultater:** Privat main
+  `40fd361757330e303d25087fd9abf349a97a847f` produserte den planlagte
+  27. november-rapporten med 37 løp /28 Collector-felt /14 forskningsfrys
+  /153 hesteprediksjoner /14 samtidige WIN-felt /37 resultatkoblinger
+  /14 skårbare modellpar /0 PIT. Artefakt `15236421291`, ZIP SHA-256
+  `81b1e27297eaf9c1bcf84bdc2e10c82ea62fd77f321946d9b72019eac2f0f5a6`;
+  167 kildearkivpinner og ingen dupliserte fysiske løp. Markedssannsynlighet
+  vises fra komplett samtidig WIN, ellers som utilgjengelig. Privat #5 er
+  merget etter 11 tester og autentisk automatisk rapporttest PASS.
+- **Retting på main:** #231 er merget til
+  `bb994e1d452e9e8e2aef50e149f5528f4f8c6011`. PR- og main-CI
+  (`46051539636` / `46052330690`) har Ruff, 2593 passed /119 skipped,
+  teknisk akseptanse og uavhengig readback PASS. Samlet CI er fortsatt
+  FAIL på den separat rapporterte historiske kildegjelden. Ingen ny
+  historisk akseptanseunntak eller kildehash ble innført.
 - **V1 konkret datakjedefeil:** CORE-003 valgte bare morgenkjøringer med
   event=schedule og overså eksisterende automatiske Collector-oppfriskninger
   med event=workflow_dispatch fra GitHub Actions-boten. Rettingen validerer
@@ -28,6 +44,12 @@ Eldre daterte notater nedenfor er revisjonsbevis, ikke gjeldende aktiveringsstat
   Autentisk åtteløps-replay på samme arkiverte SQLite gir 0→1
   forskningskvalifiserte felt (Gävle 3, 11 aktive); 0 nye prediksjoner og 0 PIT.
   Dette er retrospektiv teknisk validering, ikke et nytt førstartfrys.
+  Etter merge har ordinære schedule-kjøringer `46052466955`, `46054724266`,
+  `46056588645`, `46059439164` og `46062058293` produsert fem verifiserte
+  før-T−4-frys for Gävle 6–10 (60 hester). Gävle 6 hadde også et eldre frys;
+  fire nye fysiske modellfelt/48 hester tilkom etter snapshotet med 10/105.
+  Dette er operativ evidens, ikke et kausalt mål på forbedringen fra kodeendringen.
+  Ingen av disse forskningsfeltene er uavhengig PIT-sertifisert.
 - **PR-konsolidering:** #228s kildearkivdel er erstattet av #230. Unik
   historikkvalidering, sannsynlighetskontroll, paper-prisdiagnostikk og
   resultat/CLV-endringer er bevart, ikke bulk-merget. Private #3s eksportør og
@@ -35,8 +57,9 @@ Eldre daterte notater nedenfor er revisjonsbevis, ikke gjeldende aktiveringsstat
   unik revisjonsdokumentasjon. Forskningsstakken #221–226 og #227/#229 beholdes
   adskilt uten grønn integrasjon mot dagens main. Ingen kildegjeld skjules.
 - **V1.1:** Varslingskode finnes i privat #1; ekstern levering og SMTP er ikke
-  godkjent/aktivert. V1 mangler fortsatt dokumentert ordinær scheduled
-  rapportkjøring og full operativ/prospektiv akseptanse før videre fasegodkjenning.
+  godkjent/aktivert. V1 har nå observert ordinær scheduled rapportkjøring,
+  men mangler fortsatt komplett datakvalifisering og alle obligatoriske
+  operative/P0-kriterier før videre fasegodkjenning.
 - **V2 / V2.1 / V3:** Eksisterende historiske modeller, benchmark-, paper- og
   produktkomponenter beholdes. Uavhengig datakvalifisering, kronologiske
   holdouts, kvalifisert closing/CLV og prospektiv kalibrering mangler fortsatt.
@@ -44,9 +67,12 @@ Eldre daterte notater nedenfor er revisjonsbevis, ikke gjeldende aktiveringsstat
   aktiveres av dette mandatet. Tre gamle uoppgjorte saker er fortsatt separate
   System Audit-blokkeringer; dagens forskningsskåring skriver ikke i disse.
 
-**Neste V1-akseptanse:** Verifiser det første faktisk planlagte dagsrapportresultatet
-og den samme korrigerte kildeveien på ordinære førstartobservasjoner. Rapportér
-kildekvalifisering, nye modellfrys og PIT separat. Ingen fase erklæres DONE.
+**Neste V1-oppgave:** Avklar `NO_PROVIDER_RACE` for Jarlsberg mot eksisterende
+originalkalender og løpsreferanser; rett bare en originalbekreftet koblingsfeil.
+Manglende ekstern historikk/identitet må fortsatt blokkeres. Første planlagte
+rapport og den korrigerte kildeveien er operativt observert, men 23/37 løp i
+dagsrapporten mangler modellfrys, PIT=0 og tre gamle oppgjør blokkerer System Audit.
+Rapportér kildekvalifisering, nye modellfrys og PIT separat. Ingen fase er DONE.
 
 ## Historisk V1-notat – 27. november 2026, før master-utførelsen
 
@@ -78,7 +104,7 @@ Betting HQ skal selvstendig følge hele det norske og svenske travprogrammet, an
 
 | Milepæl | Prioritet | Leveranse og akseptanse | Gjeldende status |
 | --- | --- | --- | --- |
-| **V1 · Automatisk NO/SE-analyse** | P0 | Avstem fysiske løp mot kildenes dagsprogram. Regnskapsfør hvert løp med et gyldig, originalverifisert fullfeltfrys før konservativ T−4 eller en dokumentert avvisning. Bevar WIN-originaler og tidspunkt. Koble offisielle resultater til riktig løp og frys, og publiser én dagsrapport med sporbare tall. | Mandagens private heldagstest er aktivert. To planlagte SQLite-kjøringer har bestått gjenoppretting med identisk SHA-256. Faktisk heldagsdrift avventer løpsdagen. |
+| **V1 · Automatisk NO/SE-analyse** | P0 | Avstem fysiske løp mot kildenes dagsprogram. Regnskapsfør hvert løp med et gyldig, originalverifisert fullfeltfrys før konservativ T−4 eller en dokumentert avvisning. Bevar WIN-originaler og tidspunkt. Koble offisielle resultater til riktig løp og frys, og publiser én dagsrapport med sporbare tall. | Daglig rapport aktivert kl. 23:50 Oslo; første scheduled rapport PASS 27. november. 37 løp, 14 forskningsfrys, 153 hesteprediksjoner og 14 skårbare modellpar. Alle løp synlige; 23 uten modellfrys, 0 PIT og tre gamle oppgjør hindrer full V1-godkjenning. |
 | **V1.1 · Forskningsvarsling** | P0 | Koble eksisterende førstartfrys og dagsrapport til varsling om nye WATCH-kandidater, vesentlige endringer og én dagsoppsummering. Verifiser originalrapporten, gjenopprett privat varslingsstate og lagre utsendingskrav før SMTP. Kandidatvarsler utløper ved T−4. Ekstern levering krever godkjent SMTP og mottaker. | Arbeidet fortsetter i privat [Draft PR #1](https://github.com/Maremoo2/betting-hq-private-research/pull/1). Lokal SMTP-test og duplikatkontroll bestod. Kobling til rapportutgiver og ekstern levering avventer godkjenning og konfigurasjon. |
 | **V2 · Historisk trening og modellvalidering** | P1, etter V1.1 | Bygg en kildeverifisert kohort med identitet, historikk kjent før cutoff og separat offisiell resultatfasit. Bruk kronologisk trening og validering, og behold urørt test og lukket 2025-lockbox etter gjeldende regler. Sammenlign Champion, CORE-004, kandidater og samtidig normalisert WIN på identiske løp med log loss, Brier og kalibrering. | Senere milepæl. Trenings- og evalueringsakseptanse dokumenteres separat fra driftsdekning. |
 | **V2.1 · V75/V4/V85-kuponganalyse** | P1, etter V2 | Knytt frosne løpsanalyser til offisielle, ordnede avdelinger og vis dokumenterte verdiindikasjoner per løp. Positiv kupong-EV krever en separat, validert modell for kombinasjonssannsynlighet og utbetaling. | Senere milepæl. Eksisterende arbeid med fysisk avdelingsmapping fra Draft PR #1 er teknisk grunnlag. |
