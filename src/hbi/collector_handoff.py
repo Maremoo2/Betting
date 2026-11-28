@@ -157,12 +157,22 @@ def pdf_field(pdf_bytes: bytes, number: int, runners: dict, date: str) -> str:
 
     with fitz.open(stream=pdf_bytes, filetype="pdf") as document:
         pages = [page.get_text() for page in document]
+        # A printed race badge can touch/overlap a long title. Plain-text
+        # extraction then glues separate PDF spans ("HOPPERLøp 6"). Preserve
+        # those original boundaries for header recognition; never split a
+        # guessed suffix out of a single title span. Keep full-page text for
+        # the existing clock and complete runner checks below.
+        headers = [
+            [span["text"] for block in page.get_text("dict")["blocks"]
+             for line in block.get("lines", []) for span in line["spans"]]
+            for page in document
+        ]
     labels_by_page = []
-    for text in pages:
+    for text, spans in zip(pages, headers, strict=True):
         # Only physical header lines BEFORE START KL can identify the race.
         # Post-clock horse weights/form zeros may occur among the first 14
         # extracted lines and must never be mistaken for another race label.
-        header = text.splitlines()[:14]
+        header = spans[:14]
         for i, line in enumerate(header):
             if re.search(
                 r"\bSTART\s+KL\.?\s*\d{1,2}:\d{2}\b", line, re.IGNORECASE

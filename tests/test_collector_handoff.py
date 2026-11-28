@@ -537,6 +537,49 @@ def test_pool_card_pdf_header_resolves_physical_race_number(tmp_path):
         pdf_field(body, 10, runners, "2026-11-02")
 
 
+@pytest.mark.parametrize("bad_header", [None, "single_span", "conflict", "no_clock"])
+def test_separate_pdf_race_badge_is_not_lost_when_title_touches_it(bad_header):
+    """Biri's long title and physical badge touch in the original PDF.
+
+    Missing delimiters must neither merge adjacent races nor invent a label
+    inside a single title span. Conflicting labels and missing clocks block.
+    """
+    from hbi.collector_handoff import pdf_field
+
+    pdf = fitz.open()
+    for number, clock, name in [(5, "20:10", "ALPHA"), (6, "20:32", "BETA")]:
+        page = pdf.new_page()
+        if number == 5:
+            page.insert_text((50, 50), "Lop 5")
+        elif bad_header == "single_span":
+            page.insert_text((50, 50), "HOPPERLop 6")
+        else:
+            title = "HOPPER"
+            page.insert_text((50, 50), title, fontsize=9)
+            edge = 50 + fitz.get_text_length(title, fontsize=9)
+            page.insert_text((edge, 50), "Lop 6", fontsize=11)
+            if bad_header == "conflict":
+                page.insert_text((300, 50), "Lop 7")
+        if number == 5 or bad_header != "no_clock":
+            page.insert_text((50, 70), "START KL. " + clock)
+        page.insert_text((50, 100), "1 " + name + ", Driver")
+    body = pdf.tobytes()
+    pdf.close()
+    if bad_header is None:
+        assert "HOPPERLop 6" in fitz.open(stream=body, filetype="pdf")[1].get_text()
+        assert pdf_field(body, 5, {"1": {"name": "ALPHA"}}, "2026-11-28") == (
+            "2026-11-28T19:10:00+00:00"
+        )
+        assert pdf_field(body, 6, {"1": {"name": "BETA"}}, "2026-11-28") == (
+            "2026-11-28T19:32:00+00:00"
+        )
+        with pytest.raises(ValueError, match="FIELD_MISMATCH"):
+            pdf_field(body, 5, {"1": {"name": "BETA"}}, "2026-11-28")
+    else:
+        with pytest.raises(ValueError, match="PHYSICAL_RACE_AMBIGUOUS"):
+            pdf_field(body, 6, {"1": {"name": "BETA"}}, "2026-11-28")
+
+
 def test_two_physical_races_share_original_sha_but_have_separate_idempotent_sqlite_rows():
     from hbi.collector_handoff import _persist_original_roster
 
