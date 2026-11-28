@@ -67,12 +67,38 @@ Eldre daterte notater nedenfor er revisjonsbevis, ikke gjeldende aktiveringsstat
   aktiveres av dette mandatet. Tre gamle uoppgjorte saker er fortsatt separate
   System Audit-blokkeringer; dagens forskningsskåring skriver ikke i disse.
 
-**Neste V1-oppgave:** Avklar `NO_PROVIDER_RACE` for Jarlsberg mot eksisterende
-originalkalender og løpsreferanser; rett bare en originalbekreftet koblingsfeil.
-Manglende ekstern historikk/identitet må fortsatt blokkeres. Første planlagte
-rapport og den korrigerte kildeveien er operativt observert, men 23/37 løp i
-dagsrapporten mangler modellfrys, PIT=0 og tre gamle oppgjør blokkerer System Audit.
-Rapportér kildekvalifisering, nye modellfrys og PIT separat. Ingen fase er DONE.
+**V1 kildekontroll 28. november:** Alle ni Jarlsberg-felt finnes i SQLite og
+har gjentatte `NO_PROVIDER_RACE`-avvisninger. Jarlsberg finnes ikke i den
+arkiverte ATG-dagskalenderen for 27. november; de enkelte førstartskallene har
+hashkvitteringer, men ikke bevarte kalenderbytes. Ingen dokumentert feil
+track-alias kan derfor reparere manglende providerhistorikk. De 23 løpene uten
+modellfrys fordeler seg på 13 kilde-/modellportavvisninger, ni Kalmar-løp uten
+verifisert Rikstoto-mapping og ett sent Jarlsberg-felt. Årsakene overlapper.
+
+En isolert, faktisk førstartstest av alle åtte Biri-felt 28. november avdekket
+en separat PDF-feil: den originale, selvstendige «Løp 6»-teksten limes sammen
+med tittelen i flatt tekstuttrekk. Bevaring av originale PDF-spanngrenser
+gjenoppretter program-/klokkekontrollen for Biri 5 og 6 (24 oppførte hester).
+Samme 36 originale felt gir to reparerte og 34 uendrede PDF-kontroller; dette
+er ikke to nye modellfelt. Manglende historikk og ATG-heste-ID blokkerer
+fortsatt. Ingen identitets-, fullfelt-, tids- eller bettingport er endret.
+Manuell CLOUD-RUN-003 `46131891186` på main er PASS: 20 løp/222 hester,
+to komplette provider-karrierefelt, null strenge modellopptak og null PIT.
+Dette er en isolert prospektiv kildetest, ikke en automatisk heldagsakseptanse.
+
+De samme 14 svenske forskningsfeltene/153 hestene fra dagsrapporten er
+etterregnet: Champion log loss/Brier 1,952537/0,814536; CORE-004
+1,838245/0,786900; samtidig normalisert WIN 1,675828/0,720194.
+Markedet skårer best i dette lille, selekterte utvalget. Ingen kalibrering
+eller statistisk edge er dokumentert. Alle tre gamle oppgjør har nå originale
+offisielle svar, men valgt hest har `place=0`; eksisterende oppgjørskontrakt
+avviser fortsatt den uavklarte resultatkoden. Ingen oppgjør er endret.
+
+**Neste V1-oppgave:** Skaff en autoritativ, gjentakbar identitets-/historikkilde
+for norske felt som mangler provider-ID/karrierehistorikk. Bevar eksplisitt
+blokkering og særskilt PIT-attestasjon. Daglig rapportering forblir aktiv;
+PIT=0 og de tre oppgjørene blokkerer fortsatt full V1-godkjenning.
+Ingen fase er DONE. Ingen V1.1-aktivering følger av PDF-rettelsen.
 
 ## Historisk V1-notat – 27. november 2026, før master-utførelsen
 
